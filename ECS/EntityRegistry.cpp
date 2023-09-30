@@ -1,65 +1,61 @@
 #include "EntityRegistry.h"
 
-uint32_t ECSEngine::EntityRegistry::Create()
+ECSEngine::EntityId ECSEngine::EntityRegistry::Create()
 {
-	Entity entity;
-
-	size_t size = Entities.size();
-	if (size >= UINT64_MAX)
+	if (Entities.size() >= UINT64_MAX && EntityPool.size() == 0)
 	{
-		return INVALID_ID;
+		return UINT64_MAX;
 	}
 
-	entity.Id = size;
+	if (EntityPool.size() > 0)
+	{
+		EntityId id = EntityPool.back();
+		EntityPool.pop_back();
+		Entities[id].IsAlive = true;
+		return id;
+	}
+
+	Entity entity;
+	entity.Id = Entities.size();
+	entity.IsAlive = true;
 	Entities.push_back(entity);
 	return entity.Id;
 }
 
-void ECSEngine::EntityRegistry::Destroy(EntityId entityId)
+bool ECSEngine::EntityRegistry::Destroy(EntityId entityId)
 {
 	if (!IsValid(entityId))
 	{
-		return;
-	}
-
-	const Entity& entity = Entities[entityId];
-	
-
-	Entities.erase(Entities.begin() + entityId);
-}
-
-bool ECSEngine::EntityRegistry::IsValid(EntityId entityId) const
-{
-	// TODO: this doesn't account for destroyed entities.
-	return entityId < Entities.size() && entityId != INVALID_ID;
-}
-
-bool ECSEngine::EntityRegistry::AddComponent_Internal(EntityId entityId, ComponentId typeId)
-{
-	if (!IsValid(entityId))
-	{
-		return;
-	}
-
-	if (HasComponent_Internal(entityId, typeId))
-	{
-		// Entity already has a component of that type.
 		return false;
 	}
 
 	Entity& entity = Entities[entityId];
-	entity.Components.set(typeId, true);
-	
-	// todo: allocate component data
+	entity.IsAlive = false;
+	for (size_t i = 0; i < s_componentCounter; ++i)
+	{
+		// remove all components
+		entity.Components.set(i, false);
+	}
 
+	EntityPool.push_back(entity.Id);
 	return true;
+}
+
+bool ECSEngine::EntityRegistry::IsValid(EntityId entityId) const
+{
+	if (entityId >= Entities.size() && entityId == UINT64_MAX)
+	{
+		return false;
+	}
+
+	return Entities[entityId].IsAlive;
 }
 
 bool ECSEngine::EntityRegistry::RemoveComponent_Internal(EntityId entityId, ComponentId componentId)
 {
 	if (!IsValid(entityId))
 	{
-		return;
+		return false;
 	}
 
 	if (!HasComponent_Internal(entityId, componentId))
@@ -70,19 +66,15 @@ bool ECSEngine::EntityRegistry::RemoveComponent_Internal(EntityId entityId, Comp
 
 	Entity& entity = Entities[entityId];
 	entity.Components.set(componentId, false);
+	return true;
 }
 
 bool ECSEngine::EntityRegistry::HasComponent_Internal(EntityId entityId, ComponentId typeId)
 {
 	if (!IsValid(entityId))
 	{
-		return;
+		return false;
 	}
 
 	return Entities[entityId].Components.test(typeId);
 }
-
-//bool ECSEngine::EntityRegistry::Query_Internal(QueryResult& OutResult, const std::vector<ComponentId>& typeIds)
-//{
-//	return false;
-//}

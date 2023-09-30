@@ -5,6 +5,6 @@
 # Add source to this project's executable.
 add_executable (ECSEngine "ECSEngine.cpp" "ECSEngine.h")
 
-target_link_libraries(ECSEngine PRIVATE "ECS")
+target_link_libraries(ECSEngine PUBLIC "ECS")
 
 # TODO: Add tests and install targets if needed.

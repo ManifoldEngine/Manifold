@@ -6,9 +6,7 @@
 #include <vector>
 #include <string>
 #include <string_view>
-#include <map>
 #include <stdexcept>
-#include <OSUtils/OSUtils.h>
 #include "Entity.h"
 
 // TODO: do not use STL for exposed classes.
@@ -19,39 +17,61 @@ namespace ECSEngine {
 
 	class ECS_API EntityRegistry
 	{
-	
+#define INITIAL_COMPONENT_COUNT 1000
 	public:
-		struct ECS_API QueryResult {
-			uint32_t Count = 0;
-			std::vector<EntityId> EntityIds;
-		};
-
-		uint32_t Create();
-		void Destroy(EntityId entityId);
+		EntityId Create();
+		bool Destroy(EntityId entityId);
 		
 		template<typename TComponent>
-		bool AddComponent(EntityId entityId, const TComponent& component);
+		TComponent* AddComponent(EntityId entityId);
+
+		template<typename TComponent>
+		TComponent* GetComponent(EntityId entityId);
 		
 		template<typename TComponent>
 		bool RemoveComponent(EntityId entityId);
 
 		template<typename TComponent>
 		bool HasComponent(EntityId entityId);
-
-		//template<class ... TComponents>
-		//bool Query(QueryResult& OutResult, const TComponents& ... args);
+		
+		bool IsValid(EntityId entityId) const;
 
 	private:
-		std::vector<unsigned char> ComponentStore;
-		std::vector<Entity> Entities;
-		// std::map<std::string_view, ComponentId> TypeNameToTypeIdMap;
+		struct ComponentPool {
 
-		bool IsValid(EntityId entityId) const;
+			ComponentPool(size_t inElementsSize) : ElementSize(inElementsSize)
+			{
+				Capacity = INITIAL_COMPONENT_COUNT;
+				Data = std::vector<unsigned char>(Capacity * ElementSize, 0);
+			};
+
+			inline void* Get(size_t index)
+			{
+				if (index >= Capacity)
+				{
+					// We don't have enough room. double the capacity until we do.
+					while (Capacity < index)
+					{
+						Capacity *= 2;
+					}
+
+					Data.resize(Capacity * ElementSize);
+				}
+
+				return &Data[0] + index * ElementSize;
+			}
+
+			std::vector<unsigned char> Data;
+			size_t Capacity;
+			size_t ElementSize;
+		};
+
+		std::vector<ComponentPool*> ComponentPools;
+		std::vector<Entity> Entities;
+		std::vector<EntityId> EntityPool;
 		
-		bool AddComponent_Internal(EntityId entityId, ComponentId componentId);
 		bool RemoveComponent_Internal(EntityId entityId, ComponentId componentId);
 		bool HasComponent_Internal(EntityId entityId, ComponentId componentId);
-		//bool Query_Internal(QueryResult& OutResult, const std::vector<ComponentId>& componentIds);
 
 		// Converts a TComponent type into a numerical identifier.
 		template<typename TComponent>
@@ -59,37 +79,71 @@ namespace ECSEngine {
 	};
 
 	template<typename TComponent>
-	inline bool EntityRegistry::AddComponent(EntityId entityId, const TComponent& component)
+	inline TComponent* EntityRegistry::AddComponent(EntityId entityId)
 	{
-		ComponentId typeId = GetComponentId<TComponent>();
-		return AddComponent_Internal(entityId, typeId);
+		if (!IsValid(entityId))
+		{
+			return nullptr;
+		}
+
+		ComponentId componentId = GetComponentId<TComponent>();
+
+		if (HasComponent_Internal(entityId, componentId))
+		{
+			// Entity already has a component of that type.
+			return nullptr;
+		}
+
+		if (componentId >= ComponentPools.size())
+		{
+			ComponentPools.resize(componentId + 1, nullptr);
+		}
+		if (ComponentPools[componentId] == nullptr)
+		{
+			ComponentPools[componentId] = new ComponentPool(sizeof(TComponent));
+		}
+
+		// this is a placement new
+		void* buffer = ComponentPools[componentId]->Get(entityId);
+		TComponent* component = new (buffer) TComponent();
+
+		Entity& entity = Entities[entityId];
+		entity.Components.set(componentId, true);
+
+		return component;
+	}
+
+	template<typename TComponent>
+	inline TComponent* EntityRegistry::GetComponent(EntityId entityId)
+	{
+		if (!IsValid(entityId))
+		{
+			return nullptr;
+		}
+
+		ComponentId componentId = GetComponentId<TComponent>();
+		if (componentId >= ComponentPools.size())
+		{
+			// that component doesn't have a pool yet.
+			return nullptr;
+		}
+
+		return static_cast<TComponent*>(ComponentPools[componentId]->Get(entityId));
 	}
 
 	template<typename TComponent>
 	inline bool EntityRegistry::RemoveComponent(EntityId entityId)
 	{
-		ComponentId typeId = GetComponentId<TComponent>();
-		return RemoveComponent_Internal(entityId, typeId);
+		ComponentId componentId = GetComponentId<TComponent>();
+		return RemoveComponent_Internal(entityId, componentId);
 	}
 
 	template<typename TComponent>
 	inline bool EntityRegistry::HasComponent(EntityId entityId)
 	{
-		size_t typeId = GetComponentId<TComponent>();
-		return HasComponent_Internal(entityId, typeId);
+		size_t componentId = GetComponentId<TComponent>();
+		return HasComponent_Internal(entityId, componentId);
 	}
-
-	//template<class ...TComponents>
-	//inline bool EntityRegistry::Query(QueryResult& OutResult, const TComponents & ...args)
-	//{
-	//	std::vector<ComponentId> componentIds;
-	//	for (size_t i = 0; i < args.length; i++)
-	//	{
-	//		componentIds.push_back(GetComponentId(args[i]));
-	//	}
-
-	//	return Query_Internal(OutResult, componentIds);
-	//}
 
 	// TODO: does this world on all platforms ?
 	extern ComponentId s_componentCounter = 0;
@@ -99,21 +153,6 @@ namespace ECSEngine {
 		static ComponentId s_componentId = s_componentCounter++;
 		return s_componentId;
 	}
-
-	/*template<typename T>
-	inline ComponentId EntityRegistry::Convert()
-	{
-		const std::string_view typeName = GetTypeName<T>();
-		if (auto typeIdIt = TypeNameToTypeIdMap.find(typeName); typeIdIt != TypeNameToTypeIdMap.end())
-		{
-			return typeIdIt->second;
-			
-		}
-		
-		const ComponentId componentId = TypeNameToTypeIdMap.size();
-		TypeNameToTypeIdMap.insert({ typeName,  componentId });
-		return componentId;
-	}*/
 }
 
 #pragma warning(default:4251)

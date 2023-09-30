@@ -12,12 +12,14 @@ namespace ECSEngine {
 	using EntityId = size_t;
 	using ComponentId = size_t;
 
-#define INVALID_ID UINT64_MAX;
 	const int MAX_COMPONENTS = 64;
 
 	struct ECS_API Entity
 	{
-		EntityId Id = INVALID_ID;
+		EntityId Id = UINT64_MAX;
+
+		// TODO: this is kinda messed up. This means that when an entity is reused it will have the same id as in its previous life.
+		bool IsAlive = false;
 
 		// TODO: can't use std datastructure in exported dlls >:(
 		std::bitset<MAX_COMPONENTS> Components;
