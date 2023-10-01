@@ -31,11 +31,7 @@ bool ECSEngine::EntityRegistry::Destroy(EntityId entityId)
 
 	Entity& entity = Entities[entityId];
 	entity.IsAlive = false;
-	for (size_t i = 0; i < s_componentCounter; ++i)
-	{
-		// remove all components
-		entity.Components.set(i, false);
-	}
+	entity.Components.reset();
 
 	EntityPool.push_back(entity.Id);
 	return true;

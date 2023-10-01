@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <ECS/EntityRegistry.h>
+#include <ECS/RegistryView.h>
 
 using namespace ECSEngine;
 

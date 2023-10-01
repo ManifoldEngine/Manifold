@@ -23,6 +23,11 @@ namespace ECSEngine {
 
 		// TODO: can't use std datastructure in exported dlls >:(
 		std::bitset<MAX_COMPONENTS> Components;
+
+		inline bool HasComponents(const std::bitset<MAX_COMPONENTS>& ComponentMask) const 
+		{
+			return ComponentMask == (ComponentMask & Components);
+		};
 	};
 }
 

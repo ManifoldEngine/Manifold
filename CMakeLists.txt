@@ -19,8 +19,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
-
 # Include sub-projects.
 add_subdirectory("ECSEngine")
 add_subdirectory("ECS")

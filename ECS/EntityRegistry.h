@@ -19,6 +19,9 @@ namespace ECSEngine {
 	{
 #define INITIAL_COMPONENT_COUNT 1000
 	public:
+		template<typename ...TComponents>
+		friend class RegistryView;
+
 		EntityId Create();
 		bool Destroy(EntityId entityId);
 		
@@ -35,6 +38,10 @@ namespace ECSEngine {
 		bool HasComponent(EntityId entityId);
 		
 		bool IsValid(EntityId entityId) const;
+
+		// Converts a TComponent type into a numerical identifier.
+		template<typename TComponent>
+		static ComponentId GetComponentId();
 
 	private:
 		struct ComponentPool {
@@ -72,10 +79,6 @@ namespace ECSEngine {
 		
 		bool RemoveComponent_Internal(EntityId entityId, ComponentId componentId);
 		bool HasComponent_Internal(EntityId entityId, ComponentId componentId);
-
-		// Converts a TComponent type into a numerical identifier.
-		template<typename TComponent>
-		ComponentId GetComponentId() const;
 	};
 
 	template<typename TComponent>
@@ -121,10 +124,16 @@ namespace ECSEngine {
 			return nullptr;
 		}
 
+
 		ComponentId componentId = GetComponentId<TComponent>();
 		if (componentId >= ComponentPools.size())
 		{
 			// that component doesn't have a pool yet.
+			return nullptr;
+		}
+
+		if (HasComponent_Internal(entityId, componentId))
+		{
 			return nullptr;
 		}
 
@@ -148,7 +157,7 @@ namespace ECSEngine {
 	// TODO: does this world on all platforms ?
 	extern ComponentId s_componentCounter = 0;
 	template<typename TComponent>
-	inline ComponentId EntityRegistry::GetComponentId() const
+	inline ComponentId EntityRegistry::GetComponentId()
 	{
 		static ComponentId s_componentId = s_componentCounter++;
 		return s_componentId;
