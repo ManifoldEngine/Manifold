@@ -22,142 +22,142 @@ namespace ECSEngine {
 		template<typename ...TComponents>
 		friend class RegistryView;
 
-		EntityId Create();
-		bool Destroy(EntityId entityId);
+		EntityId create();
+		bool destroy(EntityId entityId);
 		
 		template<typename TComponent>
-		TComponent* AddComponent(EntityId entityId);
+		TComponent* addComponent(EntityId entityId);
 
 		template<typename TComponent>
-		TComponent* GetComponent(EntityId entityId);
+		TComponent* getComponent(EntityId entityId);
 		
 		template<typename TComponent>
-		bool RemoveComponent(EntityId entityId);
+		bool removeComponent(EntityId entityId);
 
 		template<typename TComponent>
-		bool HasComponent(EntityId entityId);
+		bool hasComponent(EntityId entityId);
 		
-		bool IsValid(EntityId entityId) const;
+		bool isValid(EntityId entityId) const;
 
 		// Converts a TComponent type into a numerical identifier.
 		template<typename TComponent>
-		static ComponentId GetComponentId();
+		static ComponentId getComponentId();
 
 	private:
 		struct ComponentPool {
 
-			ComponentPool(size_t inElementsSize) : ElementSize(inElementsSize)
+			ComponentPool(size_t inElementsSize) : elementSize(inElementsSize)
 			{
-				Capacity = INITIAL_COMPONENT_COUNT;
-				Data = std::vector<unsigned char>(Capacity * ElementSize, 0);
+				capacity = INITIAL_COMPONENT_COUNT;
+				data = std::vector<unsigned char>(capacity * elementSize, 0);
 			};
 
 			inline void* Get(size_t index)
 			{
-				if (index >= Capacity)
+				if (index >= capacity)
 				{
 					// We don't have enough room. double the capacity until we do.
-					while (Capacity < index)
+					while (capacity < index)
 					{
-						Capacity *= 2;
+						capacity *= 2;
 					}
 
-					Data.resize(Capacity * ElementSize);
+					data.resize(capacity * elementSize);
 				}
 
-				return &Data[0] + index * ElementSize;
+				return &data[0] + index * elementSize;
 			}
 
-			std::vector<unsigned char> Data;
-			size_t Capacity;
-			size_t ElementSize;
+			std::vector<unsigned char> data;
+			size_t capacity;
+			size_t elementSize;
 		};
 
-		std::vector<ComponentPool*> ComponentPools;
-		std::vector<Entity> Entities;
-		std::vector<EntityId> EntityPool;
+		std::vector<ComponentPool*> m_componentPools;
+		std::vector<Entity> m_entities;
+		std::vector<EntityId> m_entityPool;
 		
-		bool RemoveComponent_Internal(EntityId entityId, ComponentId componentId);
-		bool HasComponent_Internal(EntityId entityId, ComponentId componentId);
+		bool removeComponent_Internal(EntityId entityId, ComponentId componentId);
+		bool hasComponent_Internal(EntityId entityId, ComponentId componentId);
 	};
 
 	template<typename TComponent>
-	inline TComponent* EntityRegistry::AddComponent(EntityId entityId)
+	inline TComponent* EntityRegistry::addComponent(EntityId entityId)
 	{
-		if (!IsValid(entityId))
+		if (!isValid(entityId))
 		{
 			return nullptr;
 		}
 
-		ComponentId componentId = GetComponentId<TComponent>();
+		ComponentId componentId = getComponentId<TComponent>();
 
-		if (HasComponent_Internal(entityId, componentId))
+		if (hasComponent_Internal(entityId, componentId))
 		{
 			// Entity already has a component of that type.
 			return nullptr;
 		}
 
-		if (componentId >= ComponentPools.size())
+		if (componentId >= m_componentPools.size())
 		{
-			ComponentPools.resize(componentId + 1, nullptr);
+			m_componentPools.resize(componentId + 1, nullptr);
 		}
-		if (ComponentPools[componentId] == nullptr)
+		if (m_componentPools[componentId] == nullptr)
 		{
-			ComponentPools[componentId] = new ComponentPool(sizeof(TComponent));
+			m_componentPools[componentId] = new ComponentPool(sizeof(TComponent));
 		}
 
 		// this is a placement new
-		void* buffer = ComponentPools[componentId]->Get(entityId);
+		void* buffer = m_componentPools[componentId]->Get(entityId);
 		TComponent* component = new (buffer) TComponent();
 
-		Entity& entity = Entities[entityId];
-		entity.Components.set(componentId, true);
+		Entity& entity = m_entities[entityId];
+		entity.components.set(componentId, true);
 
 		return component;
 	}
 
 	template<typename TComponent>
-	inline TComponent* EntityRegistry::GetComponent(EntityId entityId)
+	inline TComponent* EntityRegistry::getComponent(EntityId entityId)
 	{
-		if (!IsValid(entityId))
+		if (!isValid(entityId))
 		{
 			return nullptr;
 		}
 
 
-		ComponentId componentId = GetComponentId<TComponent>();
-		if (componentId >= ComponentPools.size())
+		ComponentId componentId = getComponentId<TComponent>();
+		if (componentId >= m_componentPools.size())
 		{
 			// that component doesn't have a pool yet.
 			return nullptr;
 		}
 
-		if (HasComponent_Internal(entityId, componentId))
+		if (!hasComponent_Internal(entityId, componentId))
 		{
 			return nullptr;
 		}
 
-		return static_cast<TComponent*>(ComponentPools[componentId]->Get(entityId));
+		return static_cast<TComponent*>(m_componentPools[componentId]->Get(entityId));
 	}
 
 	template<typename TComponent>
-	inline bool EntityRegistry::RemoveComponent(EntityId entityId)
+	inline bool EntityRegistry::removeComponent(EntityId entityId)
 	{
-		ComponentId componentId = GetComponentId<TComponent>();
-		return RemoveComponent_Internal(entityId, componentId);
+		ComponentId componentId = getComponentId<TComponent>();
+		return removeComponent_Internal(entityId, componentId);
 	}
 
 	template<typename TComponent>
-	inline bool EntityRegistry::HasComponent(EntityId entityId)
+	inline bool EntityRegistry::hasComponent(EntityId entityId)
 	{
-		size_t componentId = GetComponentId<TComponent>();
-		return HasComponent_Internal(entityId, componentId);
+		size_t componentId = getComponentId<TComponent>();
+		return hasComponent_Internal(entityId, componentId);
 	}
 
 	// TODO: does this world on all platforms ?
 	extern ComponentId s_componentCounter = 0;
 	template<typename TComponent>
-	inline ComponentId EntityRegistry::GetComponentId()
+	inline ComponentId EntityRegistry::getComponentId()
 	{
 		static ComponentId s_componentId = s_componentCounter++;
 		return s_componentId;

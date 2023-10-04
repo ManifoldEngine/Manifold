@@ -14,7 +14,22 @@ namespace ECSEngine
     class ECS_API RegistryView
     {
     public:
-        RegistryView(EntityRegistry& registry);
+        RegistryView(EntityRegistry& registry)
+            : m_registryPtr(&registry)
+        {
+            if (sizeof...(TComponents) == 0)
+            {
+                m_bisAll = true;
+            }
+            else
+            {
+                int componentIds[] = { 0, EntityRegistry::getComponentId<TComponents>() ... };
+                for (size_t i = 1; i < (sizeof...(TComponents) + 1); ++i)
+                {
+                    m_componentMask.set(componentIds[i]);
+                }
+            }
+        }
 
         struct Iterator
         {
@@ -31,40 +46,49 @@ namespace ECSEngine
             Iterator& operator++();
 
         private:
-            EntityId CurrentEntityId;
-            EntityRegistry* RegistryPtr;
-            std::bitset<ECSEngine::MAX_COMPONENTS> ComponentMask;
-            bool IsAll = false;
+            EntityId m_currentEntityId;
+            EntityRegistry* m_registryPtr;
+            std::bitset<ECSEngine::MAX_COMPONENTS> m_componentMask;
+            bool m_bisAll = false;
 
-            bool IsValidIndex() const;
+            bool isValidIndex() const;
         };
 
-        const Iterator begin() const;
-        const Iterator end() const;
+        const Iterator begin() const
+        {
+            if (m_bisAll)
+            {
+                return Iterator(m_registryPtr, 0, m_componentMask, m_bisAll);
+            }
+
+            EntityId entityId = 0;
+            for (; m_registryPtr->m_entities.size(); ++entityId)
+            {
+                if (!m_registryPtr->isValid(entityId))
+                {
+                    continue;
+                }
+
+                Entity& entity = m_registryPtr->m_entities[entityId];
+                if (entity.HasComponents(m_componentMask))
+                {
+                    break;
+                }
+            }
+
+            return Iterator(m_registryPtr, entityId, m_componentMask, m_bisAll);
+        }
+
+        const Iterator end() const
+        {
+            return Iterator(m_registryPtr, m_registryPtr->m_entities.size(), m_componentMask, m_bisAll);
+        }
 
     private:
-        EntityRegistry* RegistryPtr = nullptr;
-        std::bitset<ECSEngine::MAX_COMPONENTS> ComponentMask;
-        bool IsAll = false;
+        EntityRegistry* m_registryPtr = nullptr;
+        std::bitset<ECSEngine::MAX_COMPONENTS> m_componentMask;
+        bool m_bisAll = false;
     };
-
-    template<typename ...TComponents>
-    inline RegistryView<TComponents...>::RegistryView(EntityRegistry& registry)
-        : RegistryPtr(&registry)
-    {
-        if (sizeof...(TComponents) == 0)
-        {
-            IsAll = true;
-        }
-        else
-        {
-            int componentIds[] = { 0, EntityRegistry::GetComponentId<TComponents>() ... };
-            for (size_t i = 1; i < (sizeof...(TComponents) + 1); ++i)
-            {
-                ComponentMask.set(componentIds[i]);
-            }
-        }
-    }
 
     // ITERATOR BEGIN
     template<typename ...TComponents>
@@ -74,28 +98,28 @@ namespace ECSEngine
         std::bitset<ECSEngine::MAX_COMPONENTS> InComponentMask,
         bool InIsAll
     ) :
-        CurrentEntityId(InCurrentEntityId),
-        RegistryPtr(InRegistryPtr),
-        ComponentMask(InComponentMask),
-        IsAll(InIsAll)
+        m_currentEntityId(InCurrentEntityId),
+        m_registryPtr(InRegistryPtr),
+        m_componentMask(InComponentMask),
+        m_bisAll(InIsAll)
     {}
 
     template<typename ...TComponents>
     inline EntityId RegistryView<TComponents...>::Iterator::operator*() const
     {
-        return RegistryPtr->Entities[CurrentEntityId];
+        return m_registryPtr->m_entities[m_currentEntityId];
     }
     
     template<typename ...TComponents>
     inline bool RegistryView<TComponents...>::Iterator::operator==(const Iterator& other) const
     {
-        return CurrentEntityId == other.CurrentEntityId;
+        return m_currentEntityId == other.m_currentEntityId;
     }
     
     template<typename ...TComponents>
     inline bool RegistryView<TComponents...>::Iterator::operator!=(const Iterator& other) const
     {
-        return CurrentEntityId != other.CurrentEntityId;
+        return m_currentEntityId != other.m_currentEntityId;
     }
 
     template<typename ...TComponents>
@@ -103,55 +127,23 @@ namespace ECSEngine
     {
         do
         {
-            CurrentEntityId++;
-        } while (CurrentEntityId < RegistryPtr->Entities.size() && !IsValidIndex(CurrentEntityId));
+            m_currentEntityId++;
+        } while (m_currentEntityId < m_registryPtr->m_entities.size() && !isValidIndex(m_currentEntityId));
         return *this;
     }
 
     template<typename ...TComponents>
-    inline bool RegistryView<TComponents...>::Iterator::IsValidIndex() const
+    inline bool RegistryView<TComponents...>::Iterator::isValidIndex() const
     {
-        if (!RegistryPtr->IsValid(CurrentEntityId))
+        if (!m_registryPtr->isValid(m_currentEntityId))
         {
             return false;
         }
 
-        const Entity& entity = RegistryPtr->Entities[CurrentEntityId];
-        return IsAll || entity.HasComponents(ComponentMask);
+        const Entity& entity = m_registryPtr->m_entities[m_currentEntityId];
+        return m_bisAll || entity.HasComponents(m_componentMask);
     }
     // ITERATOR END
-
-    template<typename ...TComponents>
-    inline const RegistryView<TComponents...>::Iterator RegistryView<TComponents...>::begin() const
-    {
-        if (IsAll)
-        {
-            return Iterator(RegistryPtr, 0, ComponentMask, IsAll);
-        }
-
-        EntityId entityId = 0;
-        for (; RegistryPtr->Entities.size(); ++entityId)
-        {
-            if (!RegistryPtr->IsValid(entityId))
-            {
-                continue;
-            }
-
-            Entity& entity = RegistryPtr->Entities[entityId];
-            if (entity.HasComponents(ComponentMask))
-            {
-                break;
-            }
-        }
-       
-        return Iterator(RegistryPtr, entityId, ComponentMask, IsAll);
-    }
-
-    template<typename ...TComponents>
-    inline const RegistryView<TComponents...>::Iterator RegistryView<TComponents...>::end() const
-    {
-        return Iterator(RegistryPtr, RegistryPtr->Entities.size(), ComponentMask, IsAll);
-    }
 }
 
 #pragma warning(default:4251)

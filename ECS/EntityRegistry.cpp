@@ -1,76 +1,76 @@
 #include "EntityRegistry.h"
 
-ECSEngine::EntityId ECSEngine::EntityRegistry::Create()
+ECSEngine::EntityId ECSEngine::EntityRegistry::create()
 {
-	if (Entities.size() >= UINT64_MAX && EntityPool.size() == 0)
+	if (m_entities.size() >= UINT64_MAX && m_entityPool.size() == 0)
 	{
 		return UINT64_MAX;
 	}
 
-	if (EntityPool.size() > 0)
+	if (m_entityPool.size() > 0)
 	{
-		EntityId id = EntityPool.back();
-		EntityPool.pop_back();
-		Entities[id].IsAlive = true;
+		EntityId id = m_entityPool.back();
+		m_entityPool.pop_back();
+		m_entities[id].bisAlive = true;
 		return id;
 	}
 
 	Entity entity;
-	entity.Id = Entities.size();
-	entity.IsAlive = true;
-	Entities.push_back(entity);
-	return entity.Id;
+	entity.id = m_entities.size();
+	entity.bisAlive = true;
+	m_entities.push_back(entity);
+	return entity.id;
 }
 
-bool ECSEngine::EntityRegistry::Destroy(EntityId entityId)
+bool ECSEngine::EntityRegistry::destroy(EntityId entityId)
 {
-	if (!IsValid(entityId))
+	if (!isValid(entityId))
 	{
 		return false;
 	}
 
-	Entity& entity = Entities[entityId];
-	entity.IsAlive = false;
-	entity.Components.reset();
+	Entity& entity = m_entities[entityId];
+	entity.bisAlive = false;
+	entity.components.reset();
 
-	EntityPool.push_back(entity.Id);
+	m_entityPool.push_back(entity.id);
 	return true;
 }
 
-bool ECSEngine::EntityRegistry::IsValid(EntityId entityId) const
+bool ECSEngine::EntityRegistry::isValid(EntityId entityId) const
 {
-	if (entityId >= Entities.size() && entityId == UINT64_MAX)
+	if (entityId >= m_entities.size() && entityId == UINT64_MAX)
 	{
 		return false;
 	}
 
-	return Entities[entityId].IsAlive;
+	return m_entities[entityId].bisAlive;
 }
 
-bool ECSEngine::EntityRegistry::RemoveComponent_Internal(EntityId entityId, ComponentId componentId)
+bool ECSEngine::EntityRegistry::removeComponent_Internal(EntityId entityId, ComponentId componentId)
 {
-	if (!IsValid(entityId))
+	if (!isValid(entityId))
 	{
 		return false;
 	}
 
-	if (!HasComponent_Internal(entityId, componentId))
+	if (!hasComponent_Internal(entityId, componentId))
 	{
 		// Entity doesn't have a component of that type.
 		return false;
 	}
 
-	Entity& entity = Entities[entityId];
-	entity.Components.set(componentId, false);
+	Entity& entity = m_entities[entityId];
+	entity.components.set(componentId, false);
 	return true;
 }
 
-bool ECSEngine::EntityRegistry::HasComponent_Internal(EntityId entityId, ComponentId typeId)
+bool ECSEngine::EntityRegistry::hasComponent_Internal(EntityId entityId, ComponentId typeId)
 {
-	if (!IsValid(entityId))
+	if (!isValid(entityId))
 	{
 		return false;
 	}
 
-	return Entities[entityId].Components.test(typeId);
+	return m_entities[entityId].components.test(typeId);
 }

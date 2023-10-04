@@ -16,17 +16,17 @@ namespace ECSEngine {
 
 	struct ECS_API Entity
 	{
-		EntityId Id = UINT64_MAX;
+		EntityId id = UINT64_MAX;
 
 		// TODO: this is kinda messed up. This means that when an entity is reused it will have the same id as in its previous life.
-		bool IsAlive = false;
+		bool bisAlive = false;
 
 		// TODO: can't use std datastructure in exported dlls >:(
-		std::bitset<MAX_COMPONENTS> Components;
+		std::bitset<MAX_COMPONENTS> components;
 
-		inline bool HasComponents(const std::bitset<MAX_COMPONENTS>& ComponentMask) const 
+		inline bool HasComponents(const std::bitset<MAX_COMPONENTS>& componentMask) const 
 		{
-			return ComponentMask == (ComponentMask & Components);
+			return componentMask == (componentMask & components);
 		};
 	};
 }
