@@ -1,0 +1,1 @@
+#include "RegistryView.h"

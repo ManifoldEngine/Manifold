@@ -1,20 +1,22 @@
 #pragma once
 
 #include "ECS.h"
+#include "Entity.h"
 #include <cstddef>
 #include <cstdint>
 #include <vector>
 #include <string>
 #include <string_view>
 #include <stdexcept>
-#include "Entity.h"
 
 // TODO: do not use STL for exposed classes.
 // warning C4251: 'ECSEngine::EntityRegistry::ComponentStore': class 'std::vector<unsigned char,std::allocator<unsigned char>>' needs to have dll-interface to be used by clients of class 'ECSEngine::EntityRegistry'
 #pragma warning(disable:4251)
 
 namespace ECSEngine {
-
+	/*
+	 * Holds a collection of entity and manage their component's memory.
+	 */
 	class ECS_API EntityRegistry
 	{
 #define INITIAL_COMPONENT_COUNT 1000
@@ -36,6 +38,8 @@ namespace ECSEngine {
 
 		template<typename TComponent>
 		bool hasComponent(EntityId entityId);
+
+		size_t size() const;
 		
 		bool isValid(EntityId entityId) const;
 
@@ -44,6 +48,8 @@ namespace ECSEngine {
 		static ComponentId getComponentId();
 
 	private:
+		static ComponentId s_componentCounter;
+
 		struct ComponentPool {
 
 			ComponentPool(size_t inElementsSize) : elementSize(inElementsSize)
@@ -154,8 +160,6 @@ namespace ECSEngine {
 		return hasComponent_Internal(entityId, componentId);
 	}
 
-	// TODO: does this world on all platforms ?
-	extern ComponentId s_componentCounter = 0;
 	template<typename TComponent>
 	inline ComponentId EntityRegistry::getComponentId()
 	{

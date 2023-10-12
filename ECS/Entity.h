@@ -14,6 +14,9 @@ namespace ECSEngine {
 
 	const int MAX_COMPONENTS = 64;
 
+	/*
+	 * An entity. It knows about its id and the components it has.
+	 */
 	struct ECS_API Entity
 	{
 		EntityId id = UINT64_MAX;

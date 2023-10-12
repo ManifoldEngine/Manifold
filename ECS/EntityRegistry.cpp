@@ -1,6 +1,10 @@
 #include "EntityRegistry.h"
 
-ECSEngine::EntityId ECSEngine::EntityRegistry::create()
+using namespace ECSEngine;
+
+ComponentId EntityRegistry::s_componentCounter = 0;
+
+EntityId EntityRegistry::create()
 {
 	if (m_entities.size() >= UINT64_MAX && m_entityPool.size() == 0)
 	{
@@ -22,7 +26,7 @@ ECSEngine::EntityId ECSEngine::EntityRegistry::create()
 	return entity.id;
 }
 
-bool ECSEngine::EntityRegistry::destroy(EntityId entityId)
+bool EntityRegistry::destroy(EntityId entityId)
 {
 	if (!isValid(entityId))
 	{
@@ -37,7 +41,12 @@ bool ECSEngine::EntityRegistry::destroy(EntityId entityId)
 	return true;
 }
 
-bool ECSEngine::EntityRegistry::isValid(EntityId entityId) const
+size_t EntityRegistry::size() const
+{
+	return m_entities.size() - m_entityPool.size();
+}
+
+bool EntityRegistry::isValid(EntityId entityId) const
 {
 	if (entityId >= m_entities.size() && entityId == UINT64_MAX)
 	{
@@ -47,7 +56,7 @@ bool ECSEngine::EntityRegistry::isValid(EntityId entityId) const
 	return m_entities[entityId].bisAlive;
 }
 
-bool ECSEngine::EntityRegistry::removeComponent_Internal(EntityId entityId, ComponentId componentId)
+bool EntityRegistry::removeComponent_Internal(EntityId entityId, ComponentId componentId)
 {
 	if (!isValid(entityId))
 	{
@@ -65,7 +74,7 @@ bool ECSEngine::EntityRegistry::removeComponent_Internal(EntityId entityId, Comp
 	return true;
 }
 
-bool ECSEngine::EntityRegistry::hasComponent_Internal(EntityId entityId, ComponentId typeId)
+bool EntityRegistry::hasComponent_Internal(EntityId entityId, ComponentId typeId)
 {
 	if (!isValid(entityId))
 	{
