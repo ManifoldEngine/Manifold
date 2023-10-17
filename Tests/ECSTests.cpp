@@ -1,8 +1,8 @@
 #ifdef ECSE_TEST
 
 #include "simpleTests.h"
-#include "EntityRegistry.h"
-#include "RegistryView.h"
+#include "ECS/EntityRegistry.h"
+#include "ECS/RegistryView.h"
 
 using namespace ECSEngine;
 

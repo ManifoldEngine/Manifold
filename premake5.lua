@@ -1,5 +1,6 @@
 workspace "ECSEngine"
     outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
+    moduledir = "Modules"
 
     configurations { "Debug", "Test", "Release" }
     startproject "Sandbox"
@@ -29,18 +30,20 @@ project "ECSEngine"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
 
-    includedirs { "ECS/" }
+    includedirs { moduledir }
 
     defines { "%{prj.name}_EXPORTS" }
 
+-- Modules
 project "ECS"
     kind "SharedLib"
-    location "%{prj.name}"
+    location (moduledir .. "/%{prj.name}")
 
-    files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
+    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
 
     defines { "%{prj.name}_EXPORTS" }
 
+-- Executables
 project "Sandbox"
     kind "ConsoleApp"
     location "%{prj.name}"
@@ -49,7 +52,7 @@ project "Sandbox"
 
     links { "ECS" }
 
-    includedirs { "ECSEngine", "ECS" }
+    includedirs { "ECSEngine", moduledir }
 
     defines { "%{prj.name}_EXPORTS" }
 
@@ -60,4 +63,4 @@ project "Tests"
     filter "configurations:Test"
         files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
         links { "ECS" }
-        includedirs { "ECS" }
+        includedirs { moduledir }
