@@ -66,5 +66,5 @@ project "Tests"
 
     filter "configurations:Test"
         files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
-        links { "ECS" }
-        includedirs { moduledir }
+        links { "Core", "ECS" }
+        includedirs { "Core", moduledir }
