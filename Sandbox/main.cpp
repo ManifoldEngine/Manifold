@@ -1,10 +1,9 @@
 #include <iostream>
-#include "EntityRegistry.h"
-#include "RegistryView.h"
-
-using namespace ECSEngine;
+#include <Application.h>
 
 int main(int argc, char** argv)
 {
+	ECSEngine::Application app;
+	app.run();
 	return 0;
 }

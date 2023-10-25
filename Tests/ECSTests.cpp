@@ -8,7 +8,8 @@ using namespace ECSEngine;
 
 ST_TEST(CreateEditDestroyEntities, "Should create a registry, create an entity, add a component, edit the component, then destroy the entity")
 {
-	struct DataComponent {
+	struct DataComponent 
+	{
 		int someData = 5;
 	};
 
@@ -50,7 +51,104 @@ ST_TEST(CreateEditDestroyEntities, "Should create a registry, create an entity, 
 	ST_ASSERT(!registry.isValid(entityId), "Entity should not be valid anymore");
 
 	auto* pComponentFromRegistryAfterDelete = registry.getComponent<DataComponent>(entityId);
-	ST_ASSERT(pComponentFromRegistryAfterDelete == nullptr, "Entity's component should be nullptr after delete.")
+	ST_ASSERT(pComponentFromRegistryAfterDelete == nullptr, "Entity's component should be nullptr after delete.");
+
+	EntityRegistry::resetComponentIds();
+}
+
+ST_TEST(AddAndRemoveComponents, "Should create a registry and an entity, then add and remove a component")
+{
+	struct DataComponent
+	{
+		int someData = 5;
+	};
+
+	// create a registry
+	EntityRegistry registry;
+
+	// create an entity
+	EntityId entityId = registry.create();
+	
+	ST_ASSERT(entityId == 0, "Should be the first entity addded.");
+
+	// add a DataComponent
+	DataComponent* pDataComponent = registry.addComponent<DataComponent>(entityId);
+	ST_ASSERT(pDataComponent != nullptr, "Component should not be a nullptr.");
+	if (pDataComponent == nullptr)
+	{
+		return;
+	}
+
+	const bool bDidRemoveDataComponent = registry.removeComponent<DataComponent>(entityId);
+	ST_ASSERT(bDidRemoveDataComponent, "Should have removed the Data component");
+
+	pDataComponent = registry.getComponent<DataComponent>(entityId);
+	ST_ASSERT(pDataComponent == nullptr, "Component should be a nullptr.");
+	
+	EntityRegistry::resetComponentIds();
+}
+
+ST_TEST(RecycleEntities, "Should create a registry and an entity, then properly recycle the entity and its components")
+{
+	struct DataComponent
+	{
+		int someData = 5;
+	};
+
+	struct OtherDataComponent {
+		int someOtherData = 10;
+	};
+
+	// create a registry
+	EntityRegistry registry;
+
+	// create an entity
+	EntityId entityId = registry.create();
+
+	ST_ASSERT(entityId == 0, "Should be the first entity addded.");
+
+	// add a DataComponent
+	DataComponent* pDataComponent = registry.addComponent<DataComponent>(entityId);
+	ST_ASSERT(pDataComponent != nullptr, "Component should not be a nullptr.");
+	if (pDataComponent == nullptr)
+	{
+		return;
+	}
+
+	// destroy the entity, which should be added to the entity pool
+	const bool bDidDestroy = registry.destroy(entityId);
+	ST_ASSERT(bDidDestroy, "Should have detroyed entity");
+
+	pDataComponent = registry.getComponent<DataComponent>(entityId);
+	ST_ASSERT(pDataComponent == nullptr, "Component should be a nullptr.");
+
+	// we expect the entity to be recycled
+	entityId = registry.create();
+	ST_ASSERT(entityId == 0, "Should be the first entity addded.");
+
+	// Entity should not have a DataComponent
+	pDataComponent = registry.getComponent<DataComponent>(entityId);
+	ST_ASSERT(pDataComponent == nullptr, "Component should be a nullptr.");
+
+	OtherDataComponent* pOtherDataComponent = registry.addComponent<OtherDataComponent>(entityId);
+	ST_ASSERT(pOtherDataComponent != nullptr, "Component should not be a nullptr.");
+	if (pOtherDataComponent == nullptr)
+	{
+		return;
+	}
+
+	pOtherDataComponent->someOtherData += 10;
+
+	OtherDataComponent* pOtherOtherDataComponent = registry.getComponent<OtherDataComponent>(entityId);
+	ST_ASSERT(pOtherOtherDataComponent != nullptr, "Other Component should not be a nullptr.");
+	if (pOtherOtherDataComponent == nullptr)
+	{
+		return;
+	}
+
+	ST_ASSERT(pOtherOtherDataComponent->someOtherData == pOtherDataComponent->someOtherData, "we should be able to mutate a component of a recycled entity.");
+
+	EntityRegistry::resetComponentIds();
 }
 
 ST_TEST(CreateRegistryView, "Should create a registry view and iterate through it")
@@ -118,6 +216,8 @@ ST_TEST(CreateRegistryView, "Should create a registry view and iterate through i
 		entityCounter++;
 	}
 	ST_ASSERT(entityCounter == 10, "Should iterate over all entities");
+	
+	EntityRegistry::resetComponentIds();
 }
 
 ST_TEST(ChaoticEntityCreation, "We should be able to create entities, some without component, and some with components")
@@ -151,6 +251,8 @@ ST_TEST(ChaoticEntityCreation, "We should be able to create entities, some witho
 		ST_ASSERT(pComponent != nullptr, "should have a DataComponent");
 	}
 	ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent in the registry view");
+	
+	EntityRegistry::resetComponentIds();
 }
 
 ST_TEST(ComponentIdAssignation, "ComponentIds should be consecutive")
@@ -161,5 +263,7 @@ ST_TEST(ComponentIdAssignation, "ComponentIds should be consecutive")
 		
 	ST_ASSERT(componentId1 - componentId0 == 1, "The second componentid should follow the first one");
 	ST_ASSERT(componentId2 - componentId1 == 1, "The third componentid should follow the second one");
+
+	EntityRegistry::resetComponentIds();
 }
 #endif

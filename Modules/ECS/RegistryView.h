@@ -1,8 +1,10 @@
 #pragma once
 
 #include "ECS.h"
-#include "Entity.h"
+#include "Internals/EntityContainer.h"
 #include "EntityRegistry.h"
+#include "Entity.h"
+#include <bitset>
 
 namespace ECSEngine
 {
@@ -66,15 +68,14 @@ namespace ECSEngine
             }
 
             EntityId entityId = 0;
-            for (; entityId < m_pRegistry->m_entities.size(); ++entityId)
+            for (; entityId < m_pRegistry->size(); ++entityId)
             {
                 if (!m_pRegistry->isValid(entityId))
                 {
                     continue;
                 }
 
-                const Entity& entity = m_pRegistry->m_entities[entityId];
-                if (entity.HasComponents(m_componentMask))
+                if (m_pRegistry->getEntity(entityId)->hasComponents(m_componentMask))
                 {
                     break;
                 }
@@ -85,7 +86,7 @@ namespace ECSEngine
 
         const Iterator end() const
         {
-            return Iterator(m_pRegistry, m_pRegistry->m_entities.size(), m_componentMask, m_bisAll);
+            return Iterator(m_pRegistry, m_pRegistry->size(), m_componentMask, m_bisAll);
         }
 
     private:
@@ -132,7 +133,7 @@ namespace ECSEngine
         do
         {
             m_currentEntityId++;
-        } while (m_currentEntityId < m_pRegistry->m_entities.size() && !isValidIndex());
+        } while (m_currentEntityId < m_pRegistry->size() && !isValidIndex());
         return *this;
     }
 
@@ -144,8 +145,8 @@ namespace ECSEngine
             return false;
         }
 
-        const Entity& entity = m_pRegistry->m_entities[m_currentEntityId];
-        return m_bIsAll || entity.HasComponents(m_componentMask);
+        const Entity* entity = m_pRegistry->getEntity(m_currentEntityId);
+        return m_bIsAll || entity->hasComponents(m_componentMask);
     }
     // ITERATOR END
 }

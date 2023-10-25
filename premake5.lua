@@ -24,13 +24,15 @@ workspace "ECSEngine"
         defines { "ECSE_RELEASE" }
         optimize "On"
     
-project "ECSEngine"
+project "Core"
     kind "SharedLib"
     location "%{prj.name}"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
 
-    includedirs { moduledir }
+    links { "ECS" }
+
+    includedirs { "%{prj.name}", moduledir }
 
     defines { "%{prj.name}_EXPORTS" }
 
@@ -41,6 +43,8 @@ project "ECS"
 
     files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
 
+    includedirs { moduledir .. "/%{prj.name}" }
+
     defines { "%{prj.name}_EXPORTS" }
 
 -- Executables
@@ -50,9 +54,9 @@ project "Sandbox"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
 
-    links { "ECS" }
+    links { "Core" }
 
-    includedirs { "ECSEngine", moduledir }
+    includedirs { "Core", moduledir }
 
     defines { "%{prj.name}_EXPORTS" }
 

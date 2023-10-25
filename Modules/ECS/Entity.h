@@ -2,36 +2,43 @@
 
 #include "ECS.h"
 #include <cstdint>
-#include <bitset>
 
-// TODO: do not use STL for exposed classes.
-// warning C4251: 'ECSEngine::EntityRegistry::ComponentStore': class 'std::vector<unsigned char,std::allocator<unsigned char>>' needs to have dll-interface to be used by clients of class 'ECSEngine::EntityRegistry'
-#pragma warning(disable:4251)
+namespace std {
+	template<size_t _Bits>
+	class bitset;
+}
 
 namespace ECSEngine {
+
+	const int MAX_COMPONENTS = 64;
+
 	using EntityId = size_t;
 	using ComponentId = size_t;
 
-	const int MAX_COMPONENTS = 64;
+	const EntityId INVALID_ID = UINT64_MAX;
 
 	/*
 	 * An entity. It knows about its id and the components it has.
 	 */
-	struct ECS_API Entity
+	class ECS_API Entity
 	{
+	public:
+		Entity();
+		Entity(const Entity& other);
+		~Entity();
+
 		EntityId id = UINT64_MAX;
 
 		// TODO: this is kinda messed up. This means that when an entity is reused it will have the same id as in its previous life.
 		bool bisAlive = false;
 
-		// TODO: can't use std datastructure in exported dlls >:(
-		std::bitset<MAX_COMPONENTS> components;
+		bool hasComponent(ComponentId componentId) const;
+		bool hasComponents(const std::bitset<MAX_COMPONENTS>& componentMask) const;
+		void setComponentBit(ComponentId componentId);
+		void resetComponentBit(ComponentId componentId);
+		void resetComponentBits();
 
-		inline bool HasComponents(const std::bitset<MAX_COMPONENTS>& componentMask) const 
-		{
-			return componentMask == (componentMask & components);
-		};
+	private:
+		std::bitset<MAX_COMPONENTS>* m_pComponents = nullptr;
 	};
 }
-
-#pragma warning(default:4251)
