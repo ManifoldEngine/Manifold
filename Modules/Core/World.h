@@ -14,10 +14,12 @@ namespace ECSEngine
 		World();
 		~World();
 
+		void initialize();
 		virtual void tick(float deltaTime) override;
 		SystemContainer& getSystemContainer();
 
 	private:
-		SystemContainer* m_systemContainer = nullptr;
+		SystemContainer* m_pSystemContainer = nullptr;
+		bool m_bIsInitialized = false;
 	};
 }

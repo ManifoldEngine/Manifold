@@ -13,6 +13,16 @@ World::~World()
 	delete m_systemContainer;
 }
 
+void World::initialize()
+{
+	if (m_bIsInitialized)
+	{
+		return;
+	}
+
+	m_systemContainer->initialize();
+}
+
 void World::tick(float deltaTime)
 {
 	m_systemContainer->tick(deltaTime);

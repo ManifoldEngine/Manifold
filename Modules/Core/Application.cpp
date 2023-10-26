@@ -8,22 +8,24 @@ using namespace ECSEngine;
 
 Application::Application()
 {
-	m_systemContainer = new SystemContainer();
+	m_pSystemContainer = new SystemContainer();
 }
 
 Application::~Application()
 {
-	delete m_systemContainer;
+	delete m_pSystemContainer;
 }
 
 SystemContainer& Application::getSystemContainer()
 {
-	return *m_systemContainer;
+	return *m_pSystemContainer;
 }
 
 void Application::run()
 {
 	Time::onApplicationStart();
+	m_pSystemContainer->initialize();
+	m_world.initialize();
 	while (m_bIsRunning)
 	{
 		Time::onNewFrame();
@@ -38,6 +40,6 @@ void Application::stop()
 
 void Application::tick(float deltaTime)
 {
-	m_systemContainer->tick(deltaTime);
+	m_pSystemContainer->tick(deltaTime);
 	m_world.tick(deltaTime);
 }
