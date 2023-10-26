@@ -1,36 +1,30 @@
 #pragma once
 
-#include "Core.h"
-#include "Interfaces/IWorldObject.h"
-#include "Interfaces/ITickable.h"
+#include <Core/Core.h>
 #include <string_view>
-#include <memory>
-
 
 namespace ECSEngine
 {
 	class EntityRegistry;
+	class SystemContainer;
 	
-	class Core_API SystemBase : public IWorldObject
+	class Core_API SystemBase
 	{
 	public:
 		virtual std::string_view getName() const;
 		virtual float getFrameTime() const;
 		virtual bool shouldTick(EntityRegistry& entityRegistry) const;
 
-		void initialize(World* inpWorld, EntityRegistry& entityRegistry);
+		void initialize(EntityRegistry& entityRegistry, SystemContainer& systemContainer);
 		void deinitialize(EntityRegistry& entityRegistry);
-
-		// Inherited via IWorldObject
-		World* getWorld() const override;
 
 		virtual void tick(float deltaTime, EntityRegistry& entityRegistry);
 	
 	protected:
-		virtual void onInitialize(EntityRegistry& entityRegistry);
+		virtual void onInitialize(EntityRegistry& entityRegistry, SystemContainer& systemContainer);
 		virtual void onDeinitialize(EntityRegistry& entityRegistry);
-	
+
 	private:
-		World* pWorld;
+		bool m_bIsInitialized = false;
 	};
 }

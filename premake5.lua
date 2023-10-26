@@ -24,19 +24,19 @@ workspace "ECSEngine"
         defines { "ECSE_RELEASE" }
         optimize "On"
     
+-- Modules
 project "Core"
     kind "SharedLib"
-    location "%{prj.name}"
+    location (moduledir .. "/%{prj.name}")
 
-    files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
+    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
 
     links { "ECS" }
 
-    includedirs { "%{prj.name}", moduledir }
+    includedirs { moduledir, moduledir .. "/%{prj.name}" }
 
     defines { "%{prj.name}_EXPORTS" }
 
--- Modules
 project "ECS"
     kind "SharedLib"
     location (moduledir .. "/%{prj.name}")
@@ -56,7 +56,7 @@ project "Sandbox"
 
     links { "Core" }
 
-    includedirs { "Core", moduledir }
+    includedirs { moduledir }
 
     defines { "%{prj.name}_EXPORTS" }
 
@@ -67,4 +67,4 @@ project "Tests"
     filter "configurations:Test"
         files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
         links { "Core", "ECS" }
-        includedirs { "Core", moduledir }
+        includedirs {  moduledir }

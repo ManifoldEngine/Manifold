@@ -1,7 +1,21 @@
 #include "Application.h"
-#include <iostream>
+#include <Core/System/SystemContainer.h>
 
 using namespace ECSEngine;
+
+Application::Application()
+{
+	m_systemContainer = new SystemContainer();
+}
+
+Application::~Application()
+{
+}
+
+SystemContainer& Application::getSystemContainer()
+{
+	return *m_systemContainer;
+}
 
 void Application::run()
 {
@@ -19,12 +33,4 @@ void Application::stop()
 void Application::tick(float deltaTime)
 {
 	m_world.tick(.16f);
-}
-
-void ECSEngine::Application::registerTickable(ITickable* pTickable)
-{
-}
-
-void ECSEngine::Application::unRegisterTickable(ITickable* pTickable)
-{
 }

@@ -9,17 +9,20 @@ namespace ECSEngine
 	class Core_API Application : public ITickable
 	{
 	public:
+		Application();
+		~Application();
+
 		void run();
 		void stop();
 
 		// Inherited via ITickable
 		virtual void tick(float deltaTime) override;
-
-		void registerTickable(ITickable* pTickable);
-		void unRegisterTickable(ITickable* pTickable);
 	
+		SystemContainer& getSystemContainer();
 	private:
 		bool m_bIsRunning = true;
 		World m_world;
+
+		SystemContainer* m_systemContainer = nullptr;
 	};
 }
