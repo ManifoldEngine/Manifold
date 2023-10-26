@@ -10,6 +10,7 @@ Application::Application()
 
 Application::~Application()
 {
+	delete m_systemContainer;
 }
 
 SystemContainer& Application::getSystemContainer()
