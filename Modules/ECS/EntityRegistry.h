@@ -4,7 +4,8 @@
 #include "Internals/EntityContainer.h"
 #include "Entity.h"
 
-namespace ECSEngine {
+namespace ECSEngine
+{
 	/*
 	 * Holds a collection of entity and manage their component's memory.
 	 */

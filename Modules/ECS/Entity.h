@@ -3,12 +3,14 @@
 #include "ECS.h"
 #include <cstdint>
 
-namespace std {
+namespace std 
+{
 	template<size_t _Bits>
 	class bitset;
 }
 
-namespace ECSEngine {
+namespace ECSEngine 
+{
 
 	const int MAX_COMPONENTS = 64;
 

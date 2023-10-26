@@ -1,5 +1,8 @@
 #include "Application.h"
 #include <Core/System/SystemContainer.h>
+#include <Core/CoreTime.h>
+
+#include <iostream>
 
 using namespace ECSEngine;
 
@@ -20,9 +23,11 @@ SystemContainer& Application::getSystemContainer()
 
 void Application::run()
 {
+	Time::onApplicationStart();
 	while (m_bIsRunning)
 	{
-		tick(.16f);
+		Time::onNewFrame();
+		tick(Time::getDeltaTime());
 	}
 }
 
@@ -33,5 +38,6 @@ void Application::stop()
 
 void Application::tick(float deltaTime)
 {
-	m_world.tick(.16f);
+	m_systemContainer->tick(deltaTime);
+	m_world.tick(deltaTime);
 }
