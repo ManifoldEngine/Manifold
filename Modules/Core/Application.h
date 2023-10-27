@@ -23,6 +23,6 @@ namespace ECSEngine
 		bool m_bIsRunning = true;
 		World m_world;
 
-		SystemContainer* m_systemContainer = nullptr;
+		SystemContainer* m_pSystemContainer = nullptr;
 	};
 }

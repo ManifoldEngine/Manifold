@@ -18,7 +18,7 @@ workspace "ECSEngine"
     filter "configurations:Test"
         defines { "ECSE_DEBUG", "ECSE_TEST" }
         symbols "On"
-        includedirs { "vendors/SimpleTests" }
+        includedirs { "third-parties/SimpleTests" }
     
     filter "configurations:Release"
         defines { "ECSE_RELEASE" }

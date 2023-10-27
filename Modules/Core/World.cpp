@@ -5,12 +5,12 @@ using namespace ECSEngine;
 
 World::World()
 {
-	m_systemContainer = new SystemContainer();
+	m_pSystemContainer = new SystemContainer();
 }
 
 World::~World()
 {
-	delete m_systemContainer;
+	delete m_pSystemContainer;
 }
 
 void World::initialize()
@@ -20,15 +20,15 @@ void World::initialize()
 		return;
 	}
 
-	m_systemContainer->initialize();
+	m_pSystemContainer->initialize();
 }
 
 void World::tick(float deltaTime)
 {
-	m_systemContainer->tick(deltaTime);
+	m_pSystemContainer->tick(deltaTime);
 }
 
 SystemContainer& World::getSystemContainer()
 {
-	return *m_systemContainer;
+	return *m_pSystemContainer;
 }

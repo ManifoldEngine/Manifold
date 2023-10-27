@@ -20,7 +20,7 @@ Makefile
 .cproject
 .settings
 .buildpath
-vendors/premake
+third-parties/premake
 
 #Visual Studio
 bin/
