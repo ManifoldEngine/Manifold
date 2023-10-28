@@ -1,6 +1,7 @@
 workspace "ECSEngine"
     outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
     moduledir = "Modules"
+    thirdpartiesdir = "third-parties"
 
     configurations { "Debug", "Test", "Release" }
     startproject "Sandbox"
@@ -11,6 +12,8 @@ workspace "ECSEngine"
     targetdir ("bin/" .. outputdir)
     objdir ("bin-int/" .. outputdir)
     
+
+
     filter "configurations:Debug"
         defines { "ECSE_DEBUG" }
         symbols "On"
@@ -18,7 +21,7 @@ workspace "ECSEngine"
     filter "configurations:Test"
         defines { "ECSE_DEBUG", "ECSE_TEST" }
         symbols "On"
-        includedirs { "third-parties/SimpleTests" }
+        includedirs { thirdpartiesdir .. "/SimpleTests" }
     
     filter "configurations:Release"
         defines { "ECSE_RELEASE" }
@@ -43,9 +46,34 @@ project "ECS"
 
     files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
 
-    includedirs { moduledir .. "/%{prj.name}" }
+    includedirs { moduledir, moduledir .. "/%{prj.name}" }
 
     defines { "%{prj.name}_EXPORTS" }
+
+project "OpenGL"
+    kind "SharedLib"
+    location (moduledir .. "/%{prj.name}")
+
+    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
+
+    links { "Core" }
+
+    includedirs { moduledir, moduledir .. "/%{prj.name}" }
+
+    defines { "%{prj.name}_EXPORTS", "GLEW_STATIC" }
+
+    -- glew
+    includedirs { thirdpartiesdir .. "/glew-2.2.0/include" }
+    libdirs { thirdpartiesdir .. "/glew-2.2.0/lib/Release/x64/" }
+    links { "glew32s" }
+
+    -- glfw
+    includedirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/include" }
+    libdirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/lib-vc2022/" }
+    links { "glfw3" }
+
+    -- openGL
+    links { "OpenGL32" }
 
 -- Executables
 project "Sandbox"
@@ -54,11 +82,9 @@ project "Sandbox"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
 
-    links { "Core" }
+    links { "Core", "OpenGL" }
 
     includedirs { moduledir }
-
-    defines { "%{prj.name}_EXPORTS" }
 
 project "Tests"
     kind "ConsoleApp"
