@@ -3,30 +3,30 @@ workspace "ECSEngine"
     moduledir = "Modules"
     thirdpartiesdir = "third-parties"
 
-    configurations { "Debug", "Test", "Release" }
+    configurations { "Debug", "Release" }
+    platforms { "Win64" }
     startproject "Sandbox"
-    architecture "x64"
     language "C++"
     cppdialect "C++20"
     flags { "MultiProcessorCompile" }
     targetdir ("bin/" .. outputdir)
     objdir ("bin-int/" .. outputdir)
     
-
-
     filter "configurations:Debug"
         defines { "ECSE_DEBUG" }
         symbols "On"
-
-    filter "configurations:Test"
-        defines { "ECSE_DEBUG", "ECSE_TEST" }
-        symbols "On"
-        includedirs { thirdpartiesdir .. "/SimpleTests" }
     
     filter "configurations:Release"
         defines { "ECSE_RELEASE" }
         optimize "On"
+
+    filter "platforms:Win64"
+        architecture "x64"
+        system "windows"
     
+    filter "system:windows"
+        defines { "ESCE_WINDOWS" }
+
 -- Modules
 project "Core"
     kind "SharedLib"
@@ -86,11 +86,15 @@ project "Sandbox"
 
     includedirs { moduledir }
 
+    filter { "platforms:Win64" }
+        entrypoint "mainCRTStartup"
+
 project "Tests"
     kind "ConsoleApp"
     location "%{prj.name}"
 
-    filter "configurations:Test"
-        files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
-        links { "Core", "ECS" }
-        includedirs {  moduledir }
+    files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
+    
+    links { "Core", "ECS" }
+    
+    includedirs { thirdpartiesdir .. "/SimpleTests", moduledir }

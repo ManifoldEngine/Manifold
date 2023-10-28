@@ -1,5 +1,3 @@
-#ifdef ECSE_TEST
-
 #include "simpleTests.h"
 #include "ECS/EntityRegistry.h"
 #include "ECS/RegistryView.h"
@@ -266,4 +264,3 @@ ST_TEST(ComponentIdAssignation, "ComponentIds should be consecutive")
 
 	EntityRegistry::resetComponentIds();
 }
-#endif

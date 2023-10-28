@@ -1,5 +1,3 @@
-#ifdef ECSE_TEST
-
 #include "simpleTests.h"
 #include <Core/World.h>
 #include <Core/System/SystemContainer.h>
@@ -116,4 +114,36 @@ ST_TEST(InitializationOrder, "Should respect the flow of initialization when cre
 	ST_ASSERT(bOnDeinitializeCalled, "System should have been deinitialized, since it was initialized.");
 }
 
-#endif
+ST_TEST(HandleSystemInheritance, "Should handle inheritance")
+{
+	using namespace ECSEngine_Test;
+
+	class SomeExtendedSystem : public SomeSystem 
+	{
+	public:
+		virtual std::string_view getName() const override { return "SomeExtendedSystem"; }
+	};
+
+	World world;
+	SystemContainer& systemContainer = world.getSystemContainer();
+	if (!systemContainer.createSystem<SomeExtendedSystem>())
+	{
+		ST_ASSERT(false, "did not create the system, should have created the system");
+		return;
+	}
+
+	auto* pSomeSystem = systemContainer.getSystem<SomeSystem>();
+	ST_ASSERT(pSomeSystem != nullptr, "should retrieve the base system");
+	if (pSomeSystem == nullptr)
+	{
+		return;
+	}
+
+	ST_ASSERT(pSomeSystem->getName() == "SomeExtendedSystem", "Should return the extended name");
+
+	if (systemContainer.createSystem<SomeSystem>())
+	{
+		ST_ASSERT(false, "should not have allowed creating a system of type SomeSystem");
+		return;
+	}
+}
