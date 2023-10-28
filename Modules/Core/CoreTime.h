@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Core/Core.h>
+#include <string_view>
 
 namespace ECSEngine
 {
@@ -10,10 +11,12 @@ namespace ECSEngine
 		friend class Application;
 
 		// returns time since start in milliseconds
-		static float getTime();
+		static float getTimeSinceStart();
 
 		// returns time since last frame in milliseconds
 		static float getDeltaTime();
+
+		static std::string getTimeFormatted();
 	
 	private:
 

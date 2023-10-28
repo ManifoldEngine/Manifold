@@ -1,19 +1,34 @@
+#pragma once
+
 #include "Application.h"
 #include <Core/System/SystemContainer.h>
 #include <Core/CoreTime.h>
-
-#include <iostream>
+#include <Core/Assert.h>
+#include <Core/Log/LogSystem.h>
 
 using namespace ECSEngine;
 
+Application* Application::sm_pApplication = nullptr;
+
 Application::Application()
 {
+	// there should be only one application instance.
+	ESCE_ASSERT(sm_pApplication == nullptr);
+	sm_pApplication = this;
+
 	m_pSystemContainer = new SystemContainer();
+
+	m_pSystemContainer->createSystem<LogSystem>();
 }
 
 Application::~Application()
 {
 	delete m_pSystemContainer;
+}
+
+Application& ECSEngine::Application::get()
+{
+	return *sm_pApplication;
 }
 
 SystemContainer& Application::getSystemContainer()

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Core/Core.h>
 #include <functional>
 
 namespace ECSEngine
@@ -14,7 +13,7 @@ namespace ECSEngine
 		};
 
 		Handle subscribe(const std::function<void(TArgs ...)>& f);
-		void unsubsribe(const Handle& handle);
+		void unsubscribe(const Handle& handle);
 		void broadcast(TArgs ... args) const;
 		void clear();
 
@@ -35,7 +34,7 @@ namespace ECSEngine
 	}
 
 	template<typename ...TArgs>
-	inline void Event<TArgs...>::unsubsribe(const Handle& handle)
+	inline void Event<TArgs...>::unsubscribe(const Handle& handle)
 	{
 		if (isValidHandle(handle))
 		{

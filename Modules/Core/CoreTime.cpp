@@ -1,5 +1,6 @@
 #include "CoreTime.h"
 #include <chrono>
+#include <format>
 
 using namespace ECSEngine;
 
@@ -14,7 +15,7 @@ auto getNow()
 	return std::chrono::high_resolution_clock::now();
 }
 
-float Time::getTime()
+float Time::getTimeSinceStart()
 {
 	auto now = getNow();
 	std::chrono::duration<float> delta = now - sm_applicationStartTime;
@@ -24,6 +25,12 @@ float Time::getTime()
 float Time::getDeltaTime()
 {
 	return sm_deltaTime;
+}
+
+std::string Time::getTimeFormatted()
+{
+	auto const now = std::chrono::current_zone()->to_local(std::chrono::system_clock::now());
+	return std::format("{:%T}", now);;
 }
 
 void Time::onApplicationStart()

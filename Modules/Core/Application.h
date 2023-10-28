@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Core.h"
-#include "World.h"
-#include "Interfaces/ITickable.h"
+#include <Core/Core.h>
+#include <Core/World.h>
+#include <Core/Interfaces/ITickable.h>
 
 namespace ECSEngine
 {
@@ -12,6 +12,8 @@ namespace ECSEngine
 		Application();
 		~Application();
 
+		static Application& get();
+
 		void run();
 		void stop();
 
@@ -19,7 +21,11 @@ namespace ECSEngine
 		virtual void tick(float deltaTime) override;
 	
 		SystemContainer& getSystemContainer();
+		bool isRunning() const { return m_bIsRunning; }
+
 	private:
+		static Application* sm_pApplication;
+
 		bool m_bIsRunning = true;
 		World m_world;
 

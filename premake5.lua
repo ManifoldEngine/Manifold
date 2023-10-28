@@ -25,7 +25,7 @@ workspace "ECSEngine"
         system "windows"
     
     filter "system:windows"
-        defines { "ESCE_WINDOWS" }
+        defines { "ECSE_WINDOWS" }
 
 -- Modules
 project "Core"
@@ -50,13 +50,21 @@ project "ECS"
 
     defines { "%{prj.name}_EXPORTS" }
 
+project "Events"
+    kind "StaticLib"
+    location (moduledir .. "/%{prj.name}")
+
+    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
+
+    includedirs { moduledir, moduledir .. "/%{prj.name}" }
+
 project "OpenGL"
     kind "SharedLib"
     location (moduledir .. "/%{prj.name}")
 
     files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
 
-    links { "Core" }
+    links { "Core", "Events" }
 
     includedirs { moduledir, moduledir .. "/%{prj.name}" }
 

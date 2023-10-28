@@ -2,14 +2,18 @@
 
 #include "OpenGL.h"
 #include <Core/System/System.h>
-#include <memory>
+#include <Events/Event.h>
 
 struct GLFWwindow;
 
 namespace ECSEngine
 {
+	// manages the opengl implementation using glfw and glew.
 	class OpenGL_API OpenGLSystem : public SystemBase
 	{
+	public:
+		Event<> onWindowClosed;
+
 		virtual std::string_view getName() const override;
 		virtual bool shouldTick(EntityRegistry& registry) const override;
 

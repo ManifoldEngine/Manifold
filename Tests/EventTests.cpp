@@ -1,5 +1,5 @@
 #include "simpleTests.h"
-#include "Core/Event.h"
+#include "Events/Event.h"
 
 using namespace ECSEngine;
 
@@ -16,7 +16,7 @@ ST_TEST(SubscribeAndUnsubscribe, "Should be able to call back the delegate it re
 	ST_ASSERT(bWasCalled, "delegate should have been called");
 
 	bWasCalled = false;
-	someEvent.unsubsribe(handle);
+	someEvent.unsubscribe(handle);
 
 	someEvent.broadcast(4);
 
@@ -50,7 +50,7 @@ ST_TEST(SubscribeAndUnsubscribeFromFuncRef, "Should be able to call back the del
 	ST_ASSERT(someObject.bWasCalled, "delegate should have been called");
 
 	someObject.bWasCalled = false;
-	someEvent.unsubsribe(handle);
+	someEvent.unsubscribe(handle);
 
 	someEvent.broadcast(4);
 
@@ -100,6 +100,6 @@ ST_TEST(SubscribeAndUnsubscribeMultipleTimes, "Should be able to call back the a
 
 	for (const auto& handle : handles)
 	{
-		someEvent.unsubsribe(handle);
+		someEvent.unsubscribe(handle);
 	}
 }
