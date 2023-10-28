@@ -13,16 +13,16 @@ namespace ECSEngine
 	public:
 		virtual std::string_view getName() const;
 		virtual float getFrameTime() const;
-		virtual bool shouldTick(EntityRegistry& entityRegistry) const;
+		virtual bool shouldTick(EntityRegistry& registry) const;
 
-		void initialize(EntityRegistry& entityRegistry, SystemContainer& systemContainer);
-		void deinitialize(EntityRegistry& entityRegistry);
+		void initialize(EntityRegistry& registry, SystemContainer& systemContainer);
+		void deinitialize(EntityRegistry& registry);
 
-		virtual void tick(float deltaTime, EntityRegistry& entityRegistry);
+		virtual void tick(float deltaTime, EntityRegistry& registry);
 	
 	protected:
-		virtual void onInitialize(EntityRegistry& entityRegistry, SystemContainer& systemContainer);
-		virtual void onDeinitialize(EntityRegistry& entityRegistry);
+		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer);
+		virtual void onDeinitialize(EntityRegistry& registry);
 
 	private:
 		bool m_bIsInitialized = false;

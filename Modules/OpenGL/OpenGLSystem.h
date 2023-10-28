@@ -11,12 +11,12 @@ namespace ECSEngine
 	class OpenGL_API OpenGLSystem : public SystemBase
 	{
 		virtual std::string_view getName() const override;
-		virtual bool shouldTick(EntityRegistry& entityRegistry) const override;
+		virtual bool shouldTick(EntityRegistry& registry) const override;
 
-		virtual void tick(float deltaTime, EntityRegistry& entityRegistry) override;
+		virtual void tick(float deltaTime, EntityRegistry& registry) override;
 	protected:
-		virtual void onInitialize(EntityRegistry& entityRegistry, SystemContainer& systemContainer);
-		virtual void onDeinitialize(EntityRegistry& entityRegistry);
+		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer);
+		virtual void onDeinitialize(EntityRegistry& registry);
 
 	private:
 		GLFWwindow* m_pWindow = nullptr;

@@ -10,14 +10,14 @@ std::string_view OpenGLSystem::getName() const
     return "OpenGLSystem";
 }
 
-bool OpenGLSystem::shouldTick(EntityRegistry& entityRegistry) const
+bool OpenGLSystem::shouldTick(EntityRegistry& registry) const
 {
     return true;
 }
 
-void OpenGLSystem::onInitialize(EntityRegistry& entityRegistry, SystemContainer& systemContainer)
+void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
-    SystemBase::onInitialize(entityRegistry, systemContainer);
+    SystemBase::onInitialize(registry, systemContainer);
 
     if (!glfwInit())
     {
