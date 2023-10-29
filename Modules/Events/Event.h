@@ -36,14 +36,14 @@ namespace ECSEngine
 	};
 
 	template<typename ...TArgs>
-	Event<TArgs...>::Handle Event<TArgs...>::subscribe(const std::function<void(TArgs ...)>& f)
+	inline Event<TArgs...>::Handle Event<TArgs...>::subscribe(const std::function<void(TArgs ...)>& f)
 	{
 		m_pCallbacks->push_back(f);
 		return Handle{ m_pCallbacks->size() - 1 };
 	};
 
 	template<typename ...TArgs>
-	void Event<TArgs...>::unsubscribe(const Handle& handle)
+	inline void Event<TArgs...>::unsubscribe(const Handle& handle)
 	{
 		if (isValidHandle(handle))
 		{
@@ -52,7 +52,7 @@ namespace ECSEngine
 	};
 
 	template<typename ...TArgs>
-	void Event<TArgs...>::broadcast(TArgs ... args) const
+	inline void Event<TArgs...>::broadcast(TArgs ... args) const
 	{
 		for (const auto& f : *m_pCallbacks)
 		{
@@ -61,13 +61,13 @@ namespace ECSEngine
 	};
 
 	template<typename ...TArgs>
-	void Event<TArgs...>::clear()
+	inline void Event<TArgs...>::clear()
 	{
 		m_pCallbacks->clear();
 	};
 
 	template<typename ...TArgs>
-	bool Event<TArgs...>::isValidHandle(const Handle& handle)
+	inline bool Event<TArgs...>::isValidHandle(const Handle& handle)
 	{
 		return handle.id < m_pCallbacks->size();
 	};
