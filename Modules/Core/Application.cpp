@@ -13,7 +13,7 @@ Application* Application::sm_pApplication = nullptr;
 Application::Application()
 {
 	// there should be only one application instance.
-	ESCE_ASSERT(sm_pApplication == nullptr);
+	ECSE_ASSERT(sm_pApplication == nullptr, "an Application instance already exists.");
 	sm_pApplication = this;
 
 	m_pSystemContainer = new SystemContainer();
