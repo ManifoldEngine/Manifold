@@ -10,7 +10,9 @@ using namespace ECSEngine;
 int main(int argc, char** argv)
 {
 	Application app;
-	app.getSystemContainer().createSystem<OpenGLSystem>();
+	SystemContainer& systemContainer = app.getSystemContainer();
+	systemContainer.createSystem<OpenGLSystem>();
 	app.run();
+	systemContainer.destroySystem<OpenGLSystem>();
 	return 0;
 }

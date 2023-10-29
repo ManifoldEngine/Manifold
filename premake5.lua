@@ -4,7 +4,7 @@ workspace "ECSEngine"
     thirdpartiesdir = "third-parties"
 
     configurations { "Debug", "Release" }
-    platforms { "Win64" }
+    platforms { "Win64", "MacOSX" }
     startproject "Sandbox"
     language "C++"
     cppdialect "C++20"
@@ -23,9 +23,16 @@ workspace "ECSEngine"
     filter "platforms:Win64"
         architecture "x64"
         system "windows"
+
+    filter "platforms:MacOS"
+        architecture "x64"
+        system "macosx"
     
     filter "system:windows"
         defines { "ECSE_WINDOWS" }
+
+    filter "system:macosx"
+        defines { "ECSE_MACOSX" }
 
 -- Modules
 project "Core"

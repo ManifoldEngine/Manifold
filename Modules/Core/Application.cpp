@@ -17,12 +17,12 @@ Application::Application()
 	sm_pApplication = this;
 
 	m_pSystemContainer = new SystemContainer();
-
 	m_pSystemContainer->createSystem<LogSystem>();
 }
 
 Application::~Application()
 {
+	m_pSystemContainer->destroySystem<LogSystem>();
 	delete m_pSystemContainer;
 }
 

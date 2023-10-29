@@ -8,4 +8,7 @@
 #define OpenGL_API __declspec(dllimport)
 #endif
 
-const std::string_view LogOpenGL = "LogOpenGL";
+namespace ECSEngine
+{
+	const std::string_view LogOpenGL = "LogOpenGL";
+}
