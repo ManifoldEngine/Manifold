@@ -24,7 +24,8 @@ using namespace ECSEngine;
 #define BOLDCYAN    "\033[1m\033[36m"	/* Bold Cyan */
 #define BOLDWHITE   "\033[1m\033[37m"	/* Bold White */
 
-std::unordered_map<ELogLevel, std::string_view> LEVEL_TO_COLOR_MAP = {
+std::unordered_map<ELogLevel, std::string_view> LEVEL_TO_COLOR_MAP = 
+{
 	{ ELogLevel::Verbose, BLUE },
 	{ ELogLevel::Log, WHITE },
 	{ ELogLevel::Warning, YELLOW },

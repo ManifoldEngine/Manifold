@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include <process.h>
+
 #ifdef Core_EXPORTS
 #define Core_API __declspec(dllexport)
 #else
@@ -9,7 +11,7 @@
 // Debug utilities
 #ifdef ECSE_DEBUG
 	#ifdef ECSE_WINDOWS
-		#define ECSE_DEBUGBREAK() __debugbreak()
+		#define ECSE_DEBUGBREAK() std::abort()
 	#else	
 		#define ECSE_DEBUGBREAK()
 	#endif
