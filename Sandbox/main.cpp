@@ -3,6 +3,7 @@
 #include <Core/Application.h>
 #include <Core/System/SystemContainer.h>
 #include <OpenGL/OpenGLSystem.h>
+#include <Core/Log.h>
 
 using namespace ECSEngine;
 

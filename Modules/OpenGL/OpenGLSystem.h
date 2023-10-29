@@ -8,11 +8,13 @@ struct GLFWwindow;
 
 namespace ECSEngine
 {
+	DECLARE_EVENT(OnWindowClosedEvent, )
+
 	// manages the opengl implementation using glfw and glew.
 	class OpenGL_API OpenGLSystem : public SystemBase
 	{
 	public:
-		Event<> onWindowClosed;
+		OnWindowClosedEvent onWindowClosed;
 
 		virtual std::string_view getName() const override;
 		virtual bool shouldTick(EntityRegistry& registry) const override;

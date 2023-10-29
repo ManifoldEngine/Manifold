@@ -2,6 +2,7 @@
 #include <Core/CoreTime.h>
 #include <iostream>
 #include <sstream>
+#include <unordered_map>
 
 using namespace ECSEngine;
 
@@ -30,24 +31,50 @@ std::unordered_map<ELogLevel, std::string_view> LEVEL_TO_COLOR_MAP = {
 	{ ELogLevel::Error, RED },
 };
 
-void LogSystem::log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
+struct LogSystem::Impl 
 {
-	if (!channels.contains(channel))
+	void log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
 	{
-		channels[channel] = ELogLevel::Log;
+		if (!channels.contains(channel))
+		{
+			channels[channel] = ELogLevel::Log;
+		}
+
+		if (level > ELogLevel::Disabled && level >= channels[channel])
+		{
+			std::stringstream ss;
+			ss << LEVEL_TO_COLOR_MAP[level];
+			ss << "[" << Time::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
+			ss << RESET;
+			std::cout << ss.str() << std::endl;
+		}
 	}
 
-	if (level > ELogLevel::Disabled && level >= channels[channel])
+	void setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
 	{
-		std::stringstream ss;
-		ss << LEVEL_TO_COLOR_MAP[level];
-		ss << "[" << Time::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
-		ss << RESET;
-		std::cout << ss.str() << std::endl;
+		channels[channel] = logLevel;
 	}
+
+private:
+	std::unordered_map<std::string_view, ELogLevel> channels;
+};
+
+LogSystem::LogSystem()
+{
+	m_pImpl = new Impl();
+}
+
+LogSystem::~LogSystem()
+{
+	delete m_pImpl;
+}
+
+void LogSystem::log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
+{
+	m_pImpl->log(channel, level, log);
 }
 
 void LogSystem::setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
 {
-	channels[channel] = logLevel;
+	m_pImpl->setChannelLogLevel(channel, logLevel);
 }

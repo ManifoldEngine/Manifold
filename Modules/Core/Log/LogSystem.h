@@ -3,7 +3,6 @@
 #include <Core/Core.h>
 #include <Core/System/System.h>
 #include <string_view>
-#include <unordered_map>
 
 namespace ECSEngine
 {
@@ -19,10 +18,14 @@ namespace ECSEngine
 	class Core_API LogSystem : public SystemBase
 	{
 	public:
+		LogSystem();
+		~LogSystem();
+
 		void log(const std::string_view& channel, ELogLevel level, const std::string_view& log);
-		void setChannelLogLevel(const std::string_view& channel, ELogLevel defaultLogLevel);
+		void setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel);
 
 	private:
-		std::unordered_map<std::string_view, ELogLevel> channels;
+		struct Impl;
+		Impl* m_pImpl = nullptr;
 	};
 }
