@@ -10,7 +10,8 @@
 namespace ECSEngine
 {
 	class OpenGLVertexArray;
-	class OpenGLBuffer;
+	class OpenGLVertexBuffer;
+	class OpenGLIndexBuffer;
 
 	class OpenGLLayer : public ITickable
 	{
@@ -42,7 +43,6 @@ namespace ECSEngine
 		RendererContext rendererContext;
 
 		std::unique_ptr<OpenGLVertexArray> m_pVertexArray;
-		std::vector<std::shared_ptr<OpenGLBuffer>> m_pVertexBuffers;
 
 		static bool initializeRenderConfig(RendererContext& context);
 	};

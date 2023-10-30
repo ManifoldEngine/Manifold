@@ -4,22 +4,43 @@
 
 namespace ECSEngine
 {
-	class OpenGLBuffer
+	class OpenGLVertexBuffer
 	{
 	public:
-		OpenGLBuffer(const float* pData, int count);
-		~OpenGLBuffer();
+		OpenGLVertexBuffer(float* pData, int count);
+		~OpenGLVertexBuffer();
 		
 		// buffers can't be copied implicitely.
-		OpenGLBuffer(const OpenGLBuffer&) = delete;
+		OpenGLVertexBuffer(const OpenGLVertexBuffer&) = delete;
 
 		void bind() const;
-		int getSize() const;
-		int getElementCount() const;
-		int getElementSize() const;
+		int getComponentCount() const;
+		int getStrideCount() const;
+		int getStrideSize() const;
 		
 	private:
-		int m_count;
-		unsigned int m_bufferObjectId;
+		// for now hardcoded to vec3
+		const int m_componentCount = 3;
+
+		int m_size;
+		unsigned int m_vertexBufferObjectId;
+	};
+
+	class OpenGLIndexBuffer
+	{
+	public:
+		OpenGLIndexBuffer(unsigned int* indices, int size);
+		~OpenGLIndexBuffer();
+
+		// buffers can't be copied implicitely.
+		OpenGLIndexBuffer(const OpenGLVertexBuffer&) = delete;
+
+		void bind() const;
+		int getStrideCount() const;
+		int getStrideSize() const;
+
+	private:
+		int m_size;
+		unsigned int m_indexBufferObjectId;
 	};
 }

@@ -1,6 +1,7 @@
 #include "OpenGLLayer.h"
 #include <Core/Log.h>
 #include <GL/glew.h>
+#include <Core/Assert.h>
 
 using namespace ECSEngine;
 
@@ -14,22 +15,29 @@ void OpenGLLayer::initialize()
     
     m_pVertexArray = std::make_unique<OpenGLVertexArray>();
 
-    // triangle vertices data
-    float vertices1[3*3] =
+    float squareVertices[] =
     {
-        -0.5f,  0.5f, 0.0f,
-         0.5f, -0.5f, 0.0f,
-        -0.5f, -0.5f, 0.0f,
+         0.5f,  0.5f, 0.0f, // top right
+         0.5f, -0.5f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f // top left
     };
 
-    m_pVertexBuffers.push_back(std::make_shared<OpenGLBuffer>(vertices1, 3*3));
-    m_pVertexArray->addVertexBuffer(m_pVertexBuffers.back());
+    unsigned int squareIndices[] = {
+        0, 1, 3, // first triangle
+        1, 2, 3 // second triangle
+    };
+
+    std::shared_ptr<OpenGLVertexBuffer> pVertexBuffer = std::make_shared<OpenGLVertexBuffer>(squareVertices, (int)sizeof(squareVertices));
+    m_pVertexArray->addVertexBuffer(pVertexBuffer);
+
+    std::shared_ptr<OpenGLIndexBuffer> pIndexBuffer = std::make_shared<OpenGLIndexBuffer>(squareIndices, (int)sizeof(squareIndices));
+    m_pVertexArray->setIndexBuffer(pIndexBuffer);
 }
 
 void OpenGLLayer::deinitialize()
 {
-	m_pVertexArray.release();
-    m_pVertexBuffers.clear();
+	m_pVertexArray.reset();
 }
 
 void OpenGLLayer::tick(float deltaTime)
@@ -44,7 +52,14 @@ void OpenGLLayer::tick(float deltaTime)
     glUseProgram(rendererContext.shaderProgramId);
 
     m_pVertexArray->bind();
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    if (const auto& pIndexBuffer = m_pVertexArray->getIndexBuffer())
+    {
+        glDrawElements(GL_TRIANGLES, pIndexBuffer->getStrideCount(), GL_UNSIGNED_INT, nullptr);
+    }
+    else
+    {
+        ECSE_ASSERT(false, "no index buffer provided with the vertices");
+    }
 }
 
 bool OpenGLLayer::initializeRenderConfig(RendererContext& context)
