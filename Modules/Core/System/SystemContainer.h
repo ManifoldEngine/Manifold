@@ -4,6 +4,7 @@
 #include <ECS/EntityRegistry.h>
 #include <Core/Interfaces/ITickable.h>
 #include <vector>
+#include <memory>
 
 namespace ECSEngine
 {
@@ -23,14 +24,14 @@ namespace ECSEngine
 		bool createSystem();
 
 		template<Derived<SystemBase> TSystem>
-		TSystem* getSystem() const;
+		std::shared_ptr<TSystem> getSystem() const;
 
 		template<Derived<SystemBase> TSystem>
 		bool destroySystem();
 
 	private:
 		EntityRegistry m_registry;
-		std::vector<SystemBase*> m_systems;
+		std::vector<std::shared_ptr<SystemBase>> m_systems;
 		bool m_bIsInitialized = false;
 	};
 
@@ -38,33 +39,32 @@ namespace ECSEngine
 	inline bool SystemContainer::createSystem()
 	{
 		// check if a system of this type exists already.
-		for (const auto* pSystem : m_systems)
+		for (const auto& pSystem : m_systems)
 		{
-			if (dynamic_cast<const TSystem*>(pSystem) != nullptr)
+			if (std::dynamic_pointer_cast<const TSystem>(pSystem) != nullptr)
 			{
 				return false;
 			}
 		}
 
-		m_systems.push_back(new TSystem());
-
+		auto pSystem = std::make_shared<TSystem>();
 		if (m_bIsInitialized)
 		{
-			SystemBase* system = m_systems.back();
-			system->initialize(m_registry, *this);
+			pSystem->initialize(m_registry, *this);
 		}
+		m_systems.push_back(pSystem);
 
 		return true;
 	}
 
 	template<Derived<SystemBase> TSystem>
-	inline TSystem* SystemContainer::getSystem() const
+	inline std::shared_ptr<TSystem> SystemContainer::getSystem() const
 	{
-		for (auto* pSystem : m_systems)
+		for (auto& pSystem : m_systems)
 		{
-			if (dynamic_cast<const TSystem*>(pSystem) != nullptr)
+			if (std::dynamic_pointer_cast<TSystem>(pSystem) != nullptr)
 			{
-				return static_cast<TSystem*>(pSystem);
+				return std::static_pointer_cast<TSystem>(pSystem);
 			}
 		}
 		return nullptr;
@@ -75,15 +75,15 @@ namespace ECSEngine
 	{
 		for (auto it = m_systems.begin(); it != m_systems.end(); it++)
 		{
-			SystemBase* pSystem = *it;
-			if (dynamic_cast<const TSystem*>(pSystem) != nullptr)
+			std::shared_ptr<SystemBase> pSystem = *it;
+			if (std::dynamic_pointer_cast<TSystem>(pSystem) != nullptr)
 			{
 				if (m_bIsInitialized)
 				{
 					pSystem->deinitialize(m_registry);
 				}
 
-				delete pSystem;
+				pSystem.reset();
 				m_systems.erase(it);
 				return true;
 			}

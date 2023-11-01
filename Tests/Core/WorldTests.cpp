@@ -54,7 +54,7 @@ ST_TEST(CreateAndInitializeAWorld, "should create and initialize a world with a 
 	bDidCreateSystem = world.getSystemContainer().createSystem<SomeSystem>();
 	ST_ASSERT(!bDidCreateSystem, "Should not return true when creating a system of a type that already exists.");
 
-	auto* pSomeSystem = world.getSystemContainer().getSystem<SomeSystem>();
+	std::shared_ptr<SomeSystem> pSomeSystem = world.getSystemContainer().getSystem<SomeSystem>();
 	ST_ASSERT(pSomeSystem != nullptr, "Should get a non nullptr system");
 	if (pSomeSystem == nullptr)
 	{
@@ -86,7 +86,7 @@ ST_TEST(InitializationOrder, "Should respect the flow of initialization when cre
 	bool bDidCreateSystem = systemContainer.createSystem<SomeSystem>();
 	ST_ASSERT(bDidCreateSystem, "Should return true when creating a system.");
 
-	SomeSystem* pSomeSystem = systemContainer.getSystem<SomeSystem>();
+	std::shared_ptr<SomeSystem> pSomeSystem = systemContainer.getSystem<SomeSystem>();
 	ST_ASSERT(pSomeSystem != nullptr, "SomeSystem should not be null");
 	if (pSomeSystem == nullptr)
 	{
@@ -132,7 +132,7 @@ ST_TEST(HandleSystemInheritance, "Should handle inheritance")
 		return;
 	}
 
-	auto* pSomeSystem = systemContainer.getSystem<SomeSystem>();
+	std::shared_ptr<SomeSystem> pSomeSystem = systemContainer.getSystem<SomeSystem>();
 	ST_ASSERT(pSomeSystem != nullptr, "should retrieve the base system");
 	if (pSomeSystem == nullptr)
 	{
