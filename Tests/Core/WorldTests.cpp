@@ -54,7 +54,7 @@ ST_TEST(CreateAndInitializeAWorld, "should create and initialize a world with a 
 	bDidCreateSystem = world.getSystemContainer().createSystem<SomeSystem>();
 	ST_ASSERT(!bDidCreateSystem, "Should not return true when creating a system of a type that already exists.");
 
-	std::shared_ptr<SomeSystem> pSomeSystem = world.getSystemContainer().getSystem<SomeSystem>();
+	std::shared_ptr<SomeSystem> pSomeSystem = world.getSystemContainer().getSystem<SomeSystem>().lock();
 	ST_ASSERT(pSomeSystem != nullptr, "Should get a non nullptr system");
 	if (pSomeSystem == nullptr)
 	{
@@ -86,7 +86,7 @@ ST_TEST(InitializationOrder, "Should respect the flow of initialization when cre
 	bool bDidCreateSystem = systemContainer.createSystem<SomeSystem>();
 	ST_ASSERT(bDidCreateSystem, "Should return true when creating a system.");
 
-	std::shared_ptr<SomeSystem> pSomeSystem = systemContainer.getSystem<SomeSystem>();
+	std::shared_ptr<SomeSystem> pSomeSystem = systemContainer.getSystem<SomeSystem>().lock();
 	ST_ASSERT(pSomeSystem != nullptr, "SomeSystem should not be null");
 	if (pSomeSystem == nullptr)
 	{
@@ -132,7 +132,7 @@ ST_TEST(HandleSystemInheritance, "Should handle inheritance")
 		return;
 	}
 
-	std::shared_ptr<SomeSystem> pSomeSystem = systemContainer.getSystem<SomeSystem>();
+	std::shared_ptr<SomeSystem> pSomeSystem = systemContainer.getSystem<SomeSystem>().lock();
 	ST_ASSERT(pSomeSystem != nullptr, "should retrieve the base system");
 	if (pSomeSystem == nullptr)
 	{
@@ -146,4 +146,69 @@ ST_TEST(HandleSystemInheritance, "Should handle inheritance")
 		ST_ASSERT(false, "should not have allowed creating a system of type SomeSystem");
 		return;
 	}
+}
+
+ST_TEST(SystemDependencyFlow, "Should create 2 systems with a dependency relationship")
+{
+	class SomeSystem : public SystemBase
+	{
+	public:
+		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
+		{
+			bOnInitializeCalled = true;
+		}
+
+		bool bOnInitializeCalled = false;
+	};
+
+	class SomeOtherSystem : public SystemBase
+	{
+	public:
+		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
+		{
+			bOnInitializeCalled = true;
+			dependency = systemContainer.initializeDependency<SomeSystem>();
+			
+			ST_ASSERT(!dependency.expired(), "SomeSystem should have been initialized.");
+			if (dependency.expired())
+			{
+				return;
+			}
+
+			ST_ASSERT(dependency.lock()->bOnInitializeCalled, "SomeSystem should have been initialized.");
+		}
+
+		bool bOnInitializeCalled = false;
+		std::weak_ptr<SomeSystem> dependency;
+	};
+
+	World world;
+	SystemContainer& systemContainer = world.getSystemContainer();
+	systemContainer.initialize();
+	if (!systemContainer.createSystem<SomeOtherSystem>())
+	{
+		ST_ASSERT(false, "did not create the system, should have created the system");
+		return;
+	}
+
+	std::shared_ptr<SomeOtherSystem> pSomeOtherSystem = systemContainer.getSystem<SomeOtherSystem>().lock();
+	if (pSomeOtherSystem == nullptr)
+	{
+		ST_ASSERT(false, "did not create the system, should have created the system");
+		return;
+	}
+
+	ST_ASSERT(pSomeOtherSystem->bOnInitializeCalled, "SomeOtherSystem should have been initialized.");
+
+	std::weak_ptr<SomeSystem> pSomeSystem = systemContainer.getSystem<SomeSystem>();
+	if (pSomeSystem.expired())
+	{
+		ST_ASSERT(false, "did not create the system, should have created the system");
+		return;
+	}
+
+	ST_ASSERT(pSomeSystem.lock()->bOnInitializeCalled, "pSomeSystem should have been initialized.");
+
+	systemContainer.destroySystem<SomeSystem>();
+	ST_ASSERT(pSomeOtherSystem->dependency.expired(), "SomeSystem should have been destroyed and its shared_ptr reset.");
 }

@@ -12,20 +12,38 @@ namespace ECSEngine
 	template<class T, class U>
 	concept Derived = std::is_base_of<U, T>::value;
 
+	// System container class. It manages unique systems. It also owns an EntityRegistry and is in charge
+	// of distributing the registry to systems.
 	class SystemContainer : public ITickable
 	{
 	public:
+		// Initializes all created systems. once this is called, will initialize newly created systems
 		virtual void initialize();
+		// Deinitiailize all systems
 		virtual void deinitialize();
 
 		virtual void tick(float deltaTime);
 
+		// creates a new TSystem : public SystemBase
+		// if the container is initialized, the system will be initialized as well
+		// if a system of type TSystem already exists, a new system will not be created.
+		// after this is called, a TSystem is guarranteed to live in the container.
+		// returns true if a system was created.
 		template<Derived<SystemBase> TSystem>
 		bool createSystem();
 
 		template<Derived<SystemBase> TSystem>
-		std::shared_ptr<TSystem> getSystem() const;
+		std::weak_ptr<TSystem> getSystem() const;
 
+		// creates, initializes then return a shared pointer to the TSystem
+		// this is most notably useful to allow a system to initialize a dependency and receive a pointer to it
+		// returns a pointer to a TSystem
+		template<Derived<SystemBase> TSystem>
+		std::weak_ptr<TSystem> initializeDependency();
+
+		// destroys a system of type TSystem.
+		// after this is called, no TSystem remains in the container.
+		// returns true if a system was destroyed
 		template<Derived<SystemBase> TSystem>
 		bool destroySystem();
 
@@ -58,7 +76,7 @@ namespace ECSEngine
 	}
 
 	template<Derived<SystemBase> TSystem>
-	inline std::shared_ptr<TSystem> SystemContainer::getSystem() const
+	inline std::weak_ptr<TSystem> SystemContainer::getSystem() const
 	{
 		for (auto& pSystem : m_systems)
 		{
@@ -67,7 +85,19 @@ namespace ECSEngine
 				return std::static_pointer_cast<TSystem>(pSystem);
 			}
 		}
-		return nullptr;
+		return std::weak_ptr<TSystem>();
+	}
+
+	template<Derived<SystemBase> TSystem>
+	inline std::weak_ptr<TSystem> SystemContainer::initializeDependency()
+	{
+		createSystem<TSystem>();
+		std::weak_ptr<TSystem> pSystem = getSystem<TSystem>();
+		if (!pSystem.expired())
+		{
+			pSystem.lock()->initialize(m_registry, *this);
+		}
+		return pSystem;
 	}
 
 	template<Derived<SystemBase> TSystem>

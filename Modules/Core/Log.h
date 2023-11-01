@@ -9,7 +9,7 @@ namespace ECSEngine
 	const std::string_view Log = "Log";
 }
 
-#define _ECSE_GET_LOG_SYSTEM ECSEngine::Application::get().getSystemContainer().getSystem<ECSEngine::LogSystem>()
+#define _ECSE_GET_LOG_SYSTEM ECSEngine::Application::get().getSystemContainer().getSystem<ECSEngine::LogSystem>().lock()
 
 #define ECSE_LOG_VERBOSE(CHANNELNAME, LOGMESSAGE, ...) _ECSE_GET_LOG_SYSTEM->log(CHANNELNAME, ELogLevel::Verbose, std::format(LOGMESSAGE, __VA_ARGS__))
 #define ECSE_LOG(CHANNELNAME, LOGMESSAGE, ...) _ECSE_GET_LOG_SYSTEM->log(CHANNELNAME, ELogLevel::Log, std::format(LOGMESSAGE, __VA_ARGS__))
