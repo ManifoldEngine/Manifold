@@ -1,7 +1,8 @@
 workspace "ECSEngine"
     outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-    moduledir = "Modules"
-    thirdpartiesdir = "third-parties"
+    enginedir = "Engine"
+    moduledir = enginedir .. "/Modules"
+    thirdpartiesdir = enginedir .. "/ThirdParties"
 
     configurations { "Debug", "Release" }
     platforms { "Win64", "MacOSX" }
@@ -20,19 +21,19 @@ workspace "ECSEngine"
         defines { "ECSE_RELEASE" }
         optimize "On"
 
-    filter "platforms:Win64"
-        architecture "x64"
-        system "windows"
-
     filter "platforms:MacOS"
         architecture "x64"
         system "macosx"
-    
-    filter "system:windows"
-        defines { "ECSE_WINDOWS" }
 
+    filter "platforms:Win64"
+        architecture "x64"
+        system "windows"
+    
     filter "system:macosx"
         defines { "ECSE_MACOSX" }
+            
+    filter "system:windows"
+        defines { "ECSE_WINDOWS" }
 
 -- Modules
 project "Core"
@@ -109,14 +110,11 @@ project "Sandbox"
 
     includedirs { moduledir }
 
-    filter { "platforms:Win64" }
-        entrypoint "mainCRTStartup"
-
 project "Tests"
     kind "ConsoleApp"
-    location "%{prj.name}"
+    location (enginedir .. "/%{prj.name}")
 
-    files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
+    files { enginedir .. "/%{prj.name}/**.h", enginedir .. "/%{prj.name}/**.cpp" }
     
     links { "Core", "ECS", "OpenGL" }
     
