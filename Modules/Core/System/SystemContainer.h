@@ -3,15 +3,12 @@
 #include "System.h"
 #include <ECS/EntityRegistry.h>
 #include <Core/Interfaces/ITickable.h>
+#include <Utils/TemplateUtils.h>
 #include <vector>
 #include <memory>
 
 namespace ECSEngine
 {
-	// todo: this should probably go into a utils module.
-	template<class T, class U>
-	concept Derived = std::is_base_of<U, T>::value;
-
 	// System container class. It manages unique systems. It also owns an EntityRegistry and is in charge
 	// of distributing the registry to systems.
 	class SystemContainer : public ITickable
@@ -37,7 +34,7 @@ namespace ECSEngine
 
 		// creates, initializes then return a shared pointer to the TSystem
 		// this is most notably useful to allow a system to initialize a dependency and receive a pointer to it
-		// returns a pointer to a TSystem
+		// returns a weak pointer to a TSystem
 		template<Derived<SystemBase> TSystem>
 		std::weak_ptr<TSystem> initializeDependency();
 

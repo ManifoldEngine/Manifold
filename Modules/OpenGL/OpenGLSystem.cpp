@@ -6,6 +6,7 @@
 #include <Core/Application.h>
 #include <Core/Log.h>
 #include <Core/Assert.h>
+#include <Shader/OpenGLShaderSystem.h>
 
 #include <iostream>
 #include <format>
@@ -120,6 +121,8 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
 
     // set the view port to the window's size.
     glViewport(0, 0, window.width, window.height);
+
+    systemContainer.initializeDependency<OpenGLShaderSystem>();
 
     m_pLayer->initialize();
 }

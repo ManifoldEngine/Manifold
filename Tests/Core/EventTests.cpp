@@ -103,3 +103,25 @@ ST_TEST(SubscribeAndUnsubscribeMultipleTimes, "Should be able to call back the a
 		someEvent.unsubscribe(handle);
 	}
 }
+
+ST_TEST(SubscribeWithBoundObject, "Should subscribe with a bound object")
+{
+	class SomeClass
+	{
+	public:
+		bool bWasCalled = false;
+
+		void onSomeEvent(int i)
+		{
+			ST_ASSERT(i == 4, "argument should be equal to what was passed.");
+			bWasCalled = true;
+		};
+	};
+
+	SomeClass someObject;
+	Event<int> someEvent;
+	// this is an example of how you can bind an object to the function. It's not pretty, but it works.
+	someEvent.subscribe(std::bind(&SomeClass::onSomeEvent, &someObject, std::placeholders::_1));
+	someEvent.broadcast(4);
+	ST_ASSERT(someObject.bWasCalled, "someObject should have been called");
+}

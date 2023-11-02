@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <process.h>
+#include <string_view>
 
 #ifdef Core_EXPORTS
 #define Core_API __declspec(dllexport)
@@ -17,3 +18,8 @@
 	#endif
 	#define ECSE_ASSERT_ENABLED
 #endif
+
+namespace ECSEngine
+{
+	const std::string_view LogCore = "LogCore";
+}

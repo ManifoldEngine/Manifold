@@ -7,13 +7,19 @@ using namespace ECSEngine;
 
 void OpenGLLayer::initialize()
 {
-    if (!initializeRenderConfig(rendererContext))
+    if (!initializeShaderProgram(orangeShaderProgram))
     {
         ECSE_LOG_ERROR(LogOpenGL, "failed to initialize the render config.");
         return;
     }
     
-    m_pVertexArray = std::make_unique<OpenGLVertexArray>();
+    float halfScreenSquareVertices[] =
+    {
+         0.0f,  1.0f, 0.0f, // top right
+         0.0f, -1.0f, 0.0f, // bottom right
+        -1.0f, -1.0f, 0.0f, // bottom left
+        -1.0f,  1.0f, 0.0f // top left
+    };
 
     float squareVertices[] =
     {
@@ -28,16 +34,24 @@ void OpenGLLayer::initialize()
         1, 2, 3 // second triangle
     };
 
-    std::shared_ptr<OpenGLVertexBuffer> pVertexBuffer = std::make_shared<OpenGLVertexBuffer>(squareVertices, (int)sizeof(squareVertices));
-    m_pVertexArray->addVertexBuffer(pVertexBuffer);
+    m_pHalfScreenSquareVertexArray = std::make_unique<OpenGLVertexArray>();
+    std::shared_ptr<OpenGLVertexBuffer> pHalfscreenSquareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(halfScreenSquareVertices, (int)sizeof(squareVertices));
+    m_pHalfScreenSquareVertexArray->addVertexBuffer(pHalfscreenSquareVertexBuffer);
 
     std::shared_ptr<OpenGLIndexBuffer> pIndexBuffer = std::make_shared<OpenGLIndexBuffer>(squareIndices, (int)sizeof(squareIndices));
-    m_pVertexArray->setIndexBuffer(pIndexBuffer);
+    m_pHalfScreenSquareVertexArray->setIndexBuffer(pIndexBuffer);
+
+    m_pSquareVertexArray = std::make_unique<OpenGLVertexArray>();
+    std::shared_ptr<OpenGLVertexBuffer> pSquareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(squareVertices, (int)sizeof(squareVertices));
+    m_pSquareVertexArray->addVertexBuffer(pSquareVertexBuffer);
+
+    m_pSquareVertexArray->setIndexBuffer(pIndexBuffer);
 }
 
 void OpenGLLayer::deinitialize()
 {
-	m_pVertexArray.reset();
+    m_pHalfScreenSquareVertexArray.reset();
+    m_pSquareVertexArray.reset();
 }
 
 void OpenGLLayer::tick(float deltaTime)
@@ -49,10 +63,10 @@ void OpenGLLayer::tick(float deltaTime)
     glClear(GL_COLOR_BUFFER_BIT);
 
     // set the shader program to be used.
-    glUseProgram(rendererContext.shaderProgramId);
+    glUseProgram(orangeShaderProgram.shaderProgramId);
 
-    m_pVertexArray->bind();
-    if (const auto& pIndexBuffer = m_pVertexArray->getIndexBuffer())
+    m_pHalfScreenSquareVertexArray->bind();
+    if (const auto& pIndexBuffer = m_pHalfScreenSquareVertexArray->getIndexBuffer())
     {
         glDrawElements(GL_TRIANGLES, pIndexBuffer->getStrideCount(), GL_UNSIGNED_INT, nullptr);
     }
@@ -62,68 +76,64 @@ void OpenGLLayer::tick(float deltaTime)
     }
 }
 
-bool OpenGLLayer::initializeRenderConfig(RendererContext& context)
+bool OpenGLLayer::initializeShaderProgram(ShaderProgram& program)
 {
-    // create a shader instance
-    unsigned int vertexShaderId = glCreateShader(GL_VERTEX_SHADER);
-    // attach the source code to the shader instance
-    glShaderSource(vertexShaderId, 1, &context.vertexShaderSource, NULL);
-    // compile the shader
-    glCompileShader(vertexShaderId);
-
-    // check if the compilation was successful
+    const uint32_t vertexShaderId = compileShader(program.vertexShaderSource, GL_VERTEX_SHADER);
+    if (vertexShaderId == UINT32_MAX)
     {
-        int bIsSuccess = 0;
-        glGetShaderiv(vertexShaderId, GL_COMPILE_STATUS, &bIsSuccess);
-        if (!bIsSuccess)
-        {
-            char infoLog[512];
-            glGetShaderInfoLog(vertexShaderId, 512, NULL, infoLog);
-            ECSE_LOG_ERROR(LogOpenGL, "Vertex shader compilation failed: {}", infoLog);
-            return false;
-        }
+        return false;
     }
 
-    // create a shader instance
-    unsigned int fragmentShaderId = glCreateShader(GL_FRAGMENT_SHADER);
-    // attach the source code to the shader instance
-    glShaderSource(fragmentShaderId, 1, &context.fragmentShaderSource, NULL);
-    // compile the shader
-    glCompileShader(fragmentShaderId);
-
-    // check if the compilation was successful
+    const uint32_t fragmentShaderId = compileShader(program.fragmentShaderSource, GL_FRAGMENT_SHADER);
+    if (fragmentShaderId == UINT32_MAX)
     {
-        int bIsSuccess = 0;
-        glGetShaderiv(fragmentShaderId, GL_COMPILE_STATUS, &bIsSuccess);
-        if (!bIsSuccess)
-        {
-            char infoLog[512];
-            glGetShaderInfoLog(fragmentShaderId, 512, NULL, infoLog);
-            ECSE_LOG_ERROR(LogOpenGL, "Fragment shader compilation failed: {}", infoLog);
-            return false;
-        }
+        return false;
     }
 
-    // we now need to link the vertex shader and the fragment shader into a shader program
-    // linking means that the output of a link will be the input of the next.
-    context.shaderProgramId = glCreateProgram();
-    glAttachShader(context.shaderProgramId, vertexShaderId);
-    glAttachShader(context.shaderProgramId, fragmentShaderId);
-    glLinkProgram(context.shaderProgramId);
+    program.shaderProgramId = linkShaderProgram(vertexShaderId, fragmentShaderId);
+    return program.shaderProgramId != UINT32_MAX;
+}
+
+uint32_t OpenGLLayer::compileShader(const std::string_view& source, int shaderType)
+{
+    const uint32_t shaderId = glCreateShader(shaderType);
+    const char* const pSource = source.data();
+    glShaderSource(shaderId, 1, &pSource, NULL);
+    glCompileShader(shaderId);
+
+    int bIsSuccess = 0;
+    glGetShaderiv(shaderId, GL_COMPILE_STATUS, &bIsSuccess);
+    if (!bIsSuccess)
+    {
+        char infoLog[512];
+        glGetShaderInfoLog(shaderId, 512, NULL, infoLog);
+        ECSE_LOG_ERROR(LogOpenGL, "Vertex shader compilation failed: {}", infoLog);
+        return UINT32_MAX;
+    }
+
+    return shaderId;
+}
+
+uint32_t OpenGLLayer::linkShaderProgram(uint32_t vertexShaderId, uint32_t fragmentShaderId)
+{
+    const uint32_t shaderProgramId = glCreateProgram();
+    glAttachShader(shaderProgramId, vertexShaderId);
+    glAttachShader(shaderProgramId, fragmentShaderId);
+    glLinkProgram(shaderProgramId);
 
     {
         int bIsSuccess = 0;
-        glGetProgramiv(context.shaderProgramId, GL_LINK_STATUS, &bIsSuccess);
+        glGetProgramiv(shaderProgramId, GL_LINK_STATUS, &bIsSuccess);
         if (!bIsSuccess)
         {
             char infoLog[512];
-            glGetProgramInfoLog(context.shaderProgramId, 512, NULL, infoLog);
+            glGetProgramInfoLog(shaderProgramId, 512, NULL, infoLog);
             ECSE_LOG_ERROR(LogOpenGL, "program link failed: {}", infoLog);
-            return false;
+            return UINT32_MAX;
         }
     }
 
     glDeleteShader(vertexShaderId);
     glDeleteShader(fragmentShaderId);
-    return true;
+    return shaderProgramId;
 }

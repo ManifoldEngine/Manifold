@@ -41,7 +41,7 @@ project "Core"
 
     files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
 
-    links { "ECS" }
+    links { "ECS", "Utils" }
 
     includedirs { moduledir, moduledir .. "/%{prj.name}" }
 
@@ -65,13 +65,21 @@ project "Events"
 
     includedirs { moduledir, moduledir .. "/%{prj.name}" }
 
+project "Utils"
+    kind "StaticLib"
+    location (moduledir .. "/%{prj.name}")
+
+    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
+
+    includedirs { moduledir, moduledir .. "/%{prj.name}" }
+
 project "OpenGL"
     kind "SharedLib"
     location (moduledir .. "/%{prj.name}")
 
     files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
 
-    links { "Core", "Events" }
+    links { "Core", "Events", "Utils" }
 
     includedirs { moduledir, moduledir .. "/%{prj.name}" }
 
@@ -110,6 +118,6 @@ project "Tests"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
     
-    links { "Core", "ECS" }
+    links { "Core", "ECS", "OpenGL" }
     
     includedirs { thirdpartiesdir .. "/SimpleTests", moduledir }

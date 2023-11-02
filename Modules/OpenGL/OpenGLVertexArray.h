@@ -26,7 +26,7 @@ namespace ECSEngine
 		std::shared_ptr<OpenGLIndexBuffer> getIndexBuffer() const;
 	private:
 		unsigned int m_vertexArrayObjectId;
-		int m_vertexArrayLastIndex = 0;
+		int m_attributeCount = 0;
 
 		std::vector<std::shared_ptr<OpenGLVertexBuffer>> m_vertexBuffers;
 		std::shared_ptr<OpenGLIndexBuffer> m_pIndexBuffer;

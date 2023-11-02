@@ -20,9 +20,9 @@ void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> pBuf
 	bind();
 	// we purposefully don't null check pBuffer. if this is null, then we did something terribly wrong and it should not fail silently.
 	pBuffer->bind();
-	glEnableVertexAttribArray(m_vertexArrayLastIndex);
-	glVertexAttribPointer(m_vertexArrayLastIndex, pBuffer->getComponentCount(), GL_FLOAT, GL_FALSE, pBuffer->getStrideSize(), (void*)0);
-	m_vertexArrayLastIndex++;
+	glEnableVertexAttribArray(m_attributeCount);
+	glVertexAttribPointer(m_attributeCount, pBuffer->getComponentCount(), GL_FLOAT, GL_FALSE, pBuffer->getStrideSize(), (void*)0);
+	m_attributeCount++;
 	m_vertexBuffers.push_back(pBuffer);
 }
 
