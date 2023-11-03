@@ -118,4 +118,4 @@ project "Tests"
     
     links { "Core", "ECS", "OpenGL" }
     
-    includedirs { thirdpartiesdir .. "/SimpleTests", moduledir }
+    includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir }
