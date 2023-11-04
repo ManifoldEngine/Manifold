@@ -1,5 +1,4 @@
 #include "OpenGLSystem.h"
-#include "OpenGLLayer.h"
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -51,16 +50,6 @@ void OpenGLSystem::glfwCallback_onWindowResized(GLFWwindow* window, int newWidth
     glViewport(0, 0, newWidth, newHeight);
 }
 // glfw callbacks begin
-
-OpenGLSystem::OpenGLSystem()
-{
-    m_pLayer = new OpenGLLayer();
-}
-
-OpenGLSystem::~OpenGLSystem()
-{
-    delete m_pLayer;
-}
 
 std::string_view OpenGLSystem::getName() const
 {
@@ -123,15 +112,12 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     glViewport(0, 0, window.width, window.height);
 
     systemContainer.initializeDependency<OpenGLShaderSystem>();
-
-    m_pLayer->initialize(systemContainer);
 }
 
 void OpenGLSystem::onDeinitialize(EntityRegistry& entityRegistry)
 {
     SystemBase::onDeinitialize(entityRegistry);
 
-    m_pLayer->deinitialize();
     terminate();
 }
 
@@ -141,14 +127,6 @@ void OpenGLSystem::tick(float deltaTime, EntityRegistry& entityRegistry)
     {
         return;
     }
-   
-    // render pipeline:
-    // vertex shader -> geometry shader -> fragment shader -> rasterization
-    // vertex shader: translate vertices coordinate to open gl's screen space coordinate.
-    //  coordinates that are not -1 >= c >= 1 will be clipped out
-    // fragment shader: determine the color of a pixel.
-    // vertex shader & fragment shader are required
-    m_pLayer->tick(deltaTime);
 
     glfwSwapBuffers(window.pWindow);
     glfwPollEvents();

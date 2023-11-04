@@ -9,7 +9,7 @@ namespace ECSEngine
 	class OpenGLVertexBuffer;
 	class OpenGLIndexBuffer;
 
-	class OpenGLVertexArray
+	class OpenGL_API OpenGLVertexArray
 	{
 	public:
 		OpenGLVertexArray();

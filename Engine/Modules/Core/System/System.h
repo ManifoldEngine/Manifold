@@ -20,6 +20,7 @@ namespace ECSEngine
 
 		virtual void tick(float deltaTime, EntityRegistry& registry);
 	
+		virtual bool isInitialized() const;
 	protected:
 		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer);
 		virtual void onDeinitialize(EntityRegistry& registry);

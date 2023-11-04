@@ -1,16 +1,13 @@
-#include "OpenGLLayer.h"
+#include "SandboxSystem.h"
+#include <Core/Application.h>
+#include <OpenGL/Shader/OpenGLShaderSystem.h>
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <Core/Log.h>
-#include <Core/Assert.h>
-#include <Shader/OpenGLShaderSystem.h>
-#include <Shader/OpenGLShader.h>
 
 using namespace ECSEngine;
 
-void OpenGLLayer::initialize(SystemContainer& systemContainer)
+void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
-    const auto pShaderSystem = systemContainer.initializeDependency<OpenGLShaderSystem>();
+    std::weak_ptr<OpenGLShaderSystem> pShaderSystem = Application::get().getSystemContainer().initializeDependency<OpenGLShaderSystem>();
     if (pShaderSystem.expired())
     {
         ECSE_LOG_ERROR(LogOpenGL, "failed to initialize the layer.");
@@ -26,13 +23,13 @@ void OpenGLLayer::initialize(SystemContainer& systemContainer)
          0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f // top
     };
 
-    unsigned int triangleIndices[] = 
+    unsigned int triangleIndices[] =
     {
         0, 1, 2, // first triangle
     };
 
     std::shared_ptr<OpenGLVertexBuffer> pSquareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(triangleVertices, (int)sizeof(triangleVertices));
-    pSquareVertexBuffer->layout = { 
+    pSquareVertexBuffer->layout = {
         { ShaderDataType::Float3, false },
         { ShaderDataType::Float3, false }
     };
@@ -44,12 +41,12 @@ void OpenGLLayer::initialize(SystemContainer& systemContainer)
     m_pSquareVertexArray->setIndexBuffer(pIndexBuffer);
 }
 
-void OpenGLLayer::deinitialize()
+void SandboxSystem::onDeinitialize(EntityRegistry& registry)
 {
     m_pSquareVertexArray.reset();
 }
 
-void OpenGLLayer::tick(float deltaTime)
+void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
 {
     // setting color state.
     glClearColor(.2f, .3f, .3f, 1.f);

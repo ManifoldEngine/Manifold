@@ -46,6 +46,11 @@ void SystemBase::tick(float deltaTime, EntityRegistry& registry)
 {
 }
 
+bool SystemBase::isInitialized() const
+{
+    return m_bIsInitialized;
+}
+
 void SystemBase::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
 }

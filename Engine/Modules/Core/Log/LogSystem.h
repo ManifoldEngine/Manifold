@@ -26,8 +26,13 @@ namespace ECSEngine
 		void log(const std::string_view& channel, ELogLevel level, const std::string_view& log);
 		void setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel);
 
+		static void s_log(const std::string_view& channel, ELogLevel level, const std::string_view& log);
+		static void s_setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel);
 	private:
 		struct Impl;
 		Impl* m_pImpl = nullptr;
+
+		static LogSystem* sm_pLogSystem;
+
 	};
 }

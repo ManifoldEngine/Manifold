@@ -1,5 +1,5 @@
 #include "simpleTests.h"
-#include <Core/World.h>
+#include <Core/World/World.h>
 #include <Core/System/SystemContainer.h>
 
 using namespace ECSEngine;
@@ -16,7 +16,10 @@ namespace ECSEngine_Test
 
 		virtual void onDeinitialize(EntityRegistry& registry) override
 		{
-			onDeinitializeCalled();
+			if (onDeinitializeCalled)
+			{
+				onDeinitializeCalled();
+			}
 		}
 
 		virtual bool shouldTick(EntityRegistry& registry) const override
@@ -45,10 +48,9 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 	ST_TEST(CreateAndInitializeAWorld, "should create and initialize a world with a single system.")
 	{	
 		using namespace ECSEngine_Test;
-
+		
 		World world;
-
-		world.getSystemContainer().initialize();
+		world.initialize();
 
 		bool bDidCreateSystem = world.getSystemContainer().createSystem<SomeSystem>();
 		ST_ASSERT(bDidCreateSystem, "Should return true when creating a system.");
@@ -77,11 +79,15 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		bool bDidDestroySystem = world.getSystemContainer().destroySystem<SomeSystem>();
 		ST_ASSERT(bDidDestroySystem, "Should return true when destroying a system.");
 		ST_ASSERT(bOnDeinitializeCalled, "onDeinitialize should have been called.");
+
+		world.getSystemContainer().destroySystem<SomeSystem>();
+		world.deinitialize();
 	}
 
 	ST_TEST(InitializationOrder, "Should respect the flow of initialization when creating a world and its systems")
 	{
 		using namespace ECSEngine_Test;
+
 		World world;
 		SystemContainer& systemContainer = world.getSystemContainer();
 
@@ -114,6 +120,9 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		ST_ASSERT(pSomeSystem->bTickCalled, "System tick have been called, since the system is now initialized");
 		systemContainer.deinitialize();
 		ST_ASSERT(bOnDeinitializeCalled, "System should have been deinitialized, since it was initialized.");
+
+		world.getSystemContainer().destroySystem<SomeSystem>();
+		world.deinitialize();
 	}
 
 	ST_TEST(HandleSystemInheritance, "Should handle inheritance")
@@ -148,6 +157,9 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 			ST_ASSERT(false, "should not have allowed creating a system of type SomeSystem");
 			return;
 		}
+
+		world.getSystemContainer().destroySystem<SomeExtendedSystem>();
+		world.deinitialize();
 	}
 
 	ST_TEST(SystemDependencyFlow, "Should create 2 systems with a dependency relationship")
@@ -213,6 +225,9 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 
 		systemContainer.destroySystem<SomeSystem>();
 		ST_ASSERT(pSomeOtherSystem->dependency.expired(), "SomeSystem should have been destroyed and its shared_ptr reset.");
+
+		world.getSystemContainer().destroySystem<SomeOtherSystem>();
+		world.deinitialize();
 	}
 }
 ST_SECTION_END(Core_World)

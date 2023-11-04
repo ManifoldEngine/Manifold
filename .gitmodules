@@ -1,3 +1,6 @@
 [submodule "Engine/ThirdParties/SimpleTests"]
 	path = Engine/ThirdParties/SimpleTests
 	url = https://github.com/nox282/SimpleTests
+[submodule "Engine/ThirdParties/stb"]
+	path = Engine/ThirdParties/stb
+	url = https://github.com/nothings/stb

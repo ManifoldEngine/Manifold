@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core.h"
-#include "Interfaces/ITickable.h"
+#include <Core/Core.h>
+#include <Core/Interfaces/ITickable.h>
 #include <ECS/EntityRegistry.h>
 
 namespace ECSEngine
@@ -16,6 +16,8 @@ namespace ECSEngine
 
 		void initialize();
 		void deinitialize();
+		bool isInitialized() const { return m_bIsInitialized; }
+
 		virtual void tick(float deltaTime) override;
 		SystemContainer& getSystemContainer();
 

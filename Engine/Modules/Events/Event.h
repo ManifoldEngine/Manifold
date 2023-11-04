@@ -56,7 +56,10 @@ namespace ECSEngine
 	{
 		for (const auto& f : *m_pCallbacks)
 		{
-			f(args ...);
+			if (f)
+			{
+				f(args ...);
+			}
 		}
 	};
 

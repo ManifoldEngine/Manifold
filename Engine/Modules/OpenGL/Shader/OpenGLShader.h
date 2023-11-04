@@ -3,7 +3,7 @@
 
 namespace ECSEngine
 {
-	struct OpenGLShader
+	struct OpenGL_API OpenGLShader
 	{
 		OpenGLShader(const std::string_view& inName, const std::string_view& inVertexSource, const std::string_view& inFragmentSource);
 		~OpenGLShader();

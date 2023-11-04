@@ -27,9 +27,6 @@ namespace ECSEngine
 
 		OnWindowClosedEvent onWindowClosed;
 
-		OpenGLSystem();
-		~OpenGLSystem();
-
 		virtual std::string_view getName() const override;
 		virtual bool shouldTick(EntityRegistry& registry) const override;
 

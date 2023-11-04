@@ -1,11 +1,12 @@
 #pragma once
 
 #include <Core/Core.h>
-#include <Core/World.h>
 #include <Core/Interfaces/ITickable.h>
 
 namespace ECSEngine
 {
+	class SystemContainer;
+
 	class Core_API Application : public ITickable
 	{
 	public:
@@ -26,9 +27,8 @@ namespace ECSEngine
 	private:
 		static Application* sm_pApplication;
 
-		bool m_bIsRunning = true;
-		World m_world;
-
+		bool m_bIsRunning = false;
+		
 		SystemContainer* m_pSystemContainer = nullptr;
 	};
 }

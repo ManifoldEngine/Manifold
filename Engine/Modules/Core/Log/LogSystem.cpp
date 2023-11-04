@@ -43,13 +43,17 @@ struct LogSystem::Impl
 
 		if (level > ELogLevel::Disabled && level >= channels[channel])
 		{
-			std::stringstream ss;
-			ss << LEVEL_TO_COLOR_MAP[level];
-			ss << "[" << Time::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
-			ss << RESET;
-			std::cout << ss.str() << std::endl;
+			logImpl(channel, level, log);
 		}
 	}
+
+	static void s_log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
+	{
+		std::string modifiedLog = "[static] ";
+		modifiedLog += log;
+		logImpl(channel, level, modifiedLog);
+	}
+
 
 	void setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
 	{
@@ -57,12 +61,24 @@ struct LogSystem::Impl
 	}
 
 private:
+	static void logImpl(const std::string_view& channel, ELogLevel level, const std::string_view& log)
+	{
+		std::stringstream ss;
+		ss << LEVEL_TO_COLOR_MAP[level];
+		ss << "[" << Time::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
+		ss << RESET;
+		std::cout << ss.str() << std::endl;
+	}
+
 	std::unordered_map<std::string_view, ELogLevel> channels;
 };
 
+LogSystem* LogSystem::sm_pLogSystem = nullptr;
+
 LogSystem::LogSystem()
 {
-	m_pImpl = new Impl();
+	m_pImpl = new LogSystem::Impl();
+	sm_pLogSystem = this;
 }
 
 LogSystem::~LogSystem()
@@ -78,4 +94,28 @@ void LogSystem::log(const std::string_view& channel, ELogLevel level, const std:
 void LogSystem::setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
 {
 	m_pImpl->setChannelLogLevel(channel, logLevel);
+}
+
+void LogSystem::s_log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
+{
+	if (sm_pLogSystem != nullptr)
+	{
+		sm_pLogSystem->log(channel, level, log);
+	}
+	else
+	{
+		Impl::s_log(channel, level, log);
+	}
+}
+
+void ECSEngine::LogSystem::s_setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
+{
+	if (sm_pLogSystem != nullptr)
+	{
+		sm_pLogSystem->setChannelLogLevel(channel, logLevel);
+	}
+	else
+	{
+		ECSE_LOG_WARNING(LogCore, "LogSystem::setChannelLogLevel called without an application context. {}'s log level won't change.", channel);
+	}
 }

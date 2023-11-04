@@ -1,3 +1,5 @@
+#pragma once
+
 #include <OpenGL/OpenGL.h>
 #include <Core/System/System.h>
 #include <unordered_map>
@@ -8,7 +10,7 @@ namespace ECSEngine
 {
 	struct OpenGLShader;
 
-	class OpenGLShaderSystem : public SystemBase
+	class OpenGL_API OpenGLShaderSystem : public SystemBase
 	{
 	public:
 		// todo #3: this will do for now, but we need a way to input configuration to the engine.

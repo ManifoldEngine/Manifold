@@ -2,6 +2,7 @@
 
 #include "Application.h"
 #include <Core/System/SystemContainer.h>
+#include <Core/World/WorldSystem.h>
 #include <Core/CoreTime.h>
 #include <Core/Assert.h>
 #include <Core/Log/LogSystem.h>
@@ -17,14 +18,18 @@ Application::Application()
 	sm_pApplication = this;
 
 	m_pSystemContainer = new SystemContainer();
+	m_pSystemContainer->initialize();
 	m_pSystemContainer->createSystem<LogSystem>();
+	m_pSystemContainer->createSystem<WorldSystem>();
 }
 
 Application::~Application()
 {
 	m_pSystemContainer->deinitialize();
 	m_pSystemContainer->destroySystem<LogSystem>();
+	m_pSystemContainer->destroySystem<WorldSystem>();
 	delete m_pSystemContainer;
+	sm_pApplication = nullptr;
 }
 
 Application& ECSEngine::Application::get()
@@ -41,13 +46,12 @@ void Application::run()
 {
 	Time::onApplicationStart();
 	m_pSystemContainer->initialize();
-	m_world.initialize();
+	m_bIsRunning = true;
 	while (m_bIsRunning)
 	{
 		Time::onNewFrame();
 		tick(Time::getDeltaTime());
 	}
-	m_world.deinitialize();
 	m_pSystemContainer->deinitialize();
 }
 
@@ -59,5 +63,4 @@ void Application::stop()
 void Application::tick(float deltaTime)
 {
 	m_pSystemContainer->tick(deltaTime);
-	m_world.tick(deltaTime);
 }

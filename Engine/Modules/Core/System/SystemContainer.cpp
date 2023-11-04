@@ -3,11 +3,6 @@
 
 using namespace ECSEngine;
 
-SystemContainer::~SystemContainer()
-{
-	ECSE_ASSERT(!m_bIsInitialized, "SystemContainer was destroyed before all systems where deinitialized");
-}
-
 void SystemContainer::initialize()
 {
 	if (m_bIsInitialized)
