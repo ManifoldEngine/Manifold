@@ -1,6 +1,7 @@
 #include "simpleTests.h"
 #include <Core/World/World.h>
 #include <Core/System/SystemContainer.h>
+#include <Events/Event.h>
 
 using namespace ECSEngine;
 
@@ -72,7 +73,8 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		ST_ASSERT(pSomeSystem->bTickCalled, "tick should have been called.");
 
 		bool bOnDeinitializeCalled = false;
-		pSomeSystem->assignOnDeinitializeCalled([&bOnDeinitializeCalled]() {
+		pSomeSystem->assignOnDeinitializeCalled([&bOnDeinitializeCalled]() 
+		{
 			bOnDeinitializeCalled = true;
 		});
 
@@ -106,7 +108,8 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		ST_ASSERT(!pSomeSystem->bTickCalled, "system tick should not have been called yet, since the system isn't initialized");
 
 		bool bOnDeinitializeCalled = false;
-		pSomeSystem->assignOnDeinitializeCalled([&bOnDeinitializeCalled]() {
+		pSomeSystem->assignOnDeinitializeCalled([&bOnDeinitializeCalled]() 
+		{
 			bOnDeinitializeCalled = true;
 		});
 
@@ -123,6 +126,92 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 
 		world.getSystemContainer().destroySystem<SomeSystem>();
 		world.deinitialize();
+	}
+
+	ST_TEST(DeinitializationOrder, "Should deinitialize systems in the reversed order they were intialized")
+	{
+		class InitHandle
+		{
+		public:
+			int id;
+			InitHandle()
+			{
+				static int s_count = 0;
+				id = s_count++;
+			};
+		};
+		
+		DECLARE_EVENT(OnDeinitializedEvent, );
+		
+		class SomeSystem1 : public SystemBase
+		{
+		public:
+			virtual std::string_view getName() const override { return "SomeSystem1"; }
+			virtual void onDeinitialize(EntityRegistry& registry) override { onDeinitialized.broadcast(); }
+			InitHandle initHandle;
+			OnDeinitializedEvent onDeinitialized;
+		};
+
+		class SomeSystem2 : public SystemBase
+		{
+		public:
+			virtual std::string_view getName() const override { return "SomeSystem2"; }
+			virtual void onDeinitialize(EntityRegistry& registry) override { onDeinitialized.broadcast(); }
+			InitHandle initHandle;
+			OnDeinitializedEvent onDeinitialized;
+		};
+
+		class SomeSystem3 : public SystemBase
+		{
+		public:
+			virtual std::string_view getName() const override { return "SomeSystem3"; }
+			virtual void onDeinitialize(EntityRegistry& registry) override { onDeinitialized.broadcast(); }
+			InitHandle initHandle;
+			OnDeinitializedEvent onDeinitialized;
+		};
+
+		World world;
+		SystemContainer& systemContainer = world.getSystemContainer();
+
+		systemContainer.createSystem<SomeSystem1>();
+		systemContainer.createSystem<SomeSystem2>();
+		systemContainer.createSystem<SomeSystem3>();
+
+		std::shared_ptr<SomeSystem1> someSystem1 = systemContainer.getSystem<SomeSystem1>().lock();
+		std::shared_ptr<SomeSystem2> someSystem2 = systemContainer.getSystem<SomeSystem2>().lock();
+		std::shared_ptr<SomeSystem3> someSystem3 = systemContainer.getSystem<SomeSystem3>().lock();
+
+		world.initialize();
+
+		ST_ASSERT(someSystem1->initHandle.id == 0, "Should be the first one to be initialized");
+		ST_ASSERT(someSystem2->initHandle.id == 1, "Should be the second one to be initialized");
+		ST_ASSERT(someSystem3->initHandle.id == 2, "Should be the third one to be initialized");
+
+		bool bWasOnDeinitCalled = false;
+		int onDeinitCounter = 0;
+		someSystem1->onDeinitialized.subscribe([&bWasOnDeinitCalled, &onDeinitCounter]()
+		{
+			bWasOnDeinitCalled = true;
+			ST_ASSERT(onDeinitCounter == 2, "Should be the third one to be deinitialized");
+			onDeinitCounter++;
+		});
+		
+		someSystem2->onDeinitialized.subscribe([&bWasOnDeinitCalled, &onDeinitCounter]()
+		{
+			bWasOnDeinitCalled = true;
+			ST_ASSERT(onDeinitCounter == 1, "Should be the second one to be deinitialized");
+			onDeinitCounter++;
+		});
+		
+		someSystem3->onDeinitialized.subscribe([&bWasOnDeinitCalled, &onDeinitCounter]()
+		{
+			bWasOnDeinitCalled = true;
+			ST_ASSERT(onDeinitCounter == 0, "Should be the first one to be deinitialized");
+			onDeinitCounter++;
+		});
+
+		world.deinitialize();
+		ST_ASSERT(bWasOnDeinitCalled, "OnDeinit should have been called")
 	}
 
 	ST_TEST(HandleSystemInheritance, "Should handle inheritance")

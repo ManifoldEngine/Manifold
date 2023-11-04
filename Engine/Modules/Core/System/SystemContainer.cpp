@@ -25,9 +25,9 @@ void SystemContainer::deinitialize()
 		return;
 	}
 
-	for (auto& system : m_systems)
+	for (auto it = m_systems.rbegin(); it != m_systems.rend(); it++)
 	{
-		system->deinitialize(m_registry);
+		(*it)->deinitialize(m_registry);
 	}
 
 	m_bIsInitialized = false;

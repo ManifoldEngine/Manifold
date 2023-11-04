@@ -1,5 +1,5 @@
 #include "simpleTests.h"
-#include <Core/World.h>
+#include <Core/World/World.h>
 #include <OpenGL/Shader/ShaderUtils.h>
 #include <filesystem>
 #include <Core/Application.h>
