@@ -1,56 +1,51 @@
 #include "OpenGLLayer.h"
-#include <Core/Log.h>
 #include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <Core/Log.h>
 #include <Core/Assert.h>
+#include <Shader/OpenGLShaderSystem.h>
+#include <Shader/OpenGLShader.h>
 
 using namespace ECSEngine;
 
-void OpenGLLayer::initialize()
+void OpenGLLayer::initialize(SystemContainer& systemContainer)
 {
-    if (!initializeShaderProgram(orangeShaderProgram))
+    const auto pShaderSystem = systemContainer.initializeDependency<OpenGLShaderSystem>();
+    if (pShaderSystem.expired())
     {
-        ECSE_LOG_ERROR(LogOpenGL, "failed to initialize the render config.");
+        ECSE_LOG_ERROR(LogOpenGL, "failed to initialize the layer.");
         return;
     }
-    
-    float halfScreenSquareVertices[] =
+
+    m_pShader = pShaderSystem.lock()->getShader("coloredVertex.glsl");
+
+    float triangleVertices[] =
     {
-         0.0f,  1.0f, 0.0f, // top right
-         0.0f, -1.0f, 0.0f, // bottom right
-        -1.0f, -1.0f, 0.0f, // bottom left
-        -1.0f,  1.0f, 0.0f // top left
+         0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
+         0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f // top
     };
 
-    float squareVertices[] =
+    unsigned int triangleIndices[] = 
     {
-         0.5f,  0.5f, 0.0f, // top right
-         0.5f, -0.5f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f // top left
+        0, 1, 2, // first triangle
     };
 
-    unsigned int squareIndices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3 // second triangle
+    std::shared_ptr<OpenGLVertexBuffer> pSquareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(triangleVertices, (int)sizeof(triangleVertices));
+    pSquareVertexBuffer->layout = { 
+        { ShaderDataType::Float3, false },
+        { ShaderDataType::Float3, false }
     };
 
-    m_pHalfScreenSquareVertexArray = std::make_unique<OpenGLVertexArray>();
-    std::shared_ptr<OpenGLVertexBuffer> pHalfscreenSquareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(halfScreenSquareVertices, (int)sizeof(squareVertices));
-    m_pHalfScreenSquareVertexArray->addVertexBuffer(pHalfscreenSquareVertexBuffer);
-
-    std::shared_ptr<OpenGLIndexBuffer> pIndexBuffer = std::make_shared<OpenGLIndexBuffer>(squareIndices, (int)sizeof(squareIndices));
-    m_pHalfScreenSquareVertexArray->setIndexBuffer(pIndexBuffer);
+    std::shared_ptr<OpenGLIndexBuffer> pIndexBuffer = std::make_shared<OpenGLIndexBuffer>(triangleIndices, (int)sizeof(triangleIndices));
 
     m_pSquareVertexArray = std::make_unique<OpenGLVertexArray>();
-    std::shared_ptr<OpenGLVertexBuffer> pSquareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(squareVertices, (int)sizeof(squareVertices));
     m_pSquareVertexArray->addVertexBuffer(pSquareVertexBuffer);
-
     m_pSquareVertexArray->setIndexBuffer(pIndexBuffer);
 }
 
 void OpenGLLayer::deinitialize()
 {
-    m_pHalfScreenSquareVertexArray.reset();
     m_pSquareVertexArray.reset();
 }
 
@@ -62,11 +57,17 @@ void OpenGLLayer::tick(float deltaTime)
     // consuming color state.
     glClear(GL_COLOR_BUFFER_BIT);
 
-    // set the shader program to be used.
-    glUseProgram(orangeShaderProgram.shaderProgramId);
+    if (m_pShader == nullptr)
+    {
+        ECSE_LOG_ERROR(LogOpenGL, "No shader available.");
+        return;
+    }
 
-    m_pHalfScreenSquareVertexArray->bind();
-    if (const auto& pIndexBuffer = m_pHalfScreenSquareVertexArray->getIndexBuffer())
+    // set the shader program to be used.
+    m_pShader->use();
+
+    m_pSquareVertexArray->bind();
+    if (const auto& pIndexBuffer = m_pSquareVertexArray->getIndexBuffer())
     {
         glDrawElements(GL_TRIANGLES, pIndexBuffer->getStrideCount(), GL_UNSIGNED_INT, nullptr);
     }
@@ -74,66 +75,4 @@ void OpenGLLayer::tick(float deltaTime)
     {
         ECSE_ASSERT(false, "no index buffer provided with the vertices");
     }
-}
-
-bool OpenGLLayer::initializeShaderProgram(ShaderProgram& program)
-{
-    const uint32_t vertexShaderId = compileShader(program.vertexShaderSource, GL_VERTEX_SHADER);
-    if (vertexShaderId == UINT32_MAX)
-    {
-        return false;
-    }
-
-    const uint32_t fragmentShaderId = compileShader(program.fragmentShaderSource, GL_FRAGMENT_SHADER);
-    if (fragmentShaderId == UINT32_MAX)
-    {
-        return false;
-    }
-
-    program.shaderProgramId = linkShaderProgram(vertexShaderId, fragmentShaderId);
-    return program.shaderProgramId != UINT32_MAX;
-}
-
-uint32_t OpenGLLayer::compileShader(const std::string_view& source, int shaderType)
-{
-    const uint32_t shaderId = glCreateShader(shaderType);
-    const char* const pSource = source.data();
-    glShaderSource(shaderId, 1, &pSource, NULL);
-    glCompileShader(shaderId);
-
-    int bIsSuccess = 0;
-    glGetShaderiv(shaderId, GL_COMPILE_STATUS, &bIsSuccess);
-    if (!bIsSuccess)
-    {
-        char infoLog[512];
-        glGetShaderInfoLog(shaderId, 512, NULL, infoLog);
-        ECSE_LOG_ERROR(LogOpenGL, "Vertex shader compilation failed: {}", infoLog);
-        return UINT32_MAX;
-    }
-
-    return shaderId;
-}
-
-uint32_t OpenGLLayer::linkShaderProgram(uint32_t vertexShaderId, uint32_t fragmentShaderId)
-{
-    const uint32_t shaderProgramId = glCreateProgram();
-    glAttachShader(shaderProgramId, vertexShaderId);
-    glAttachShader(shaderProgramId, fragmentShaderId);
-    glLinkProgram(shaderProgramId);
-
-    {
-        int bIsSuccess = 0;
-        glGetProgramiv(shaderProgramId, GL_LINK_STATUS, &bIsSuccess);
-        if (!bIsSuccess)
-        {
-            char infoLog[512];
-            glGetProgramInfoLog(shaderProgramId, 512, NULL, infoLog);
-            ECSE_LOG_ERROR(LogOpenGL, "program link failed: {}", infoLog);
-            return UINT32_MAX;
-        }
-    }
-
-    glDeleteShader(vertexShaderId);
-    glDeleteShader(fragmentShaderId);
-    return shaderProgramId;
 }

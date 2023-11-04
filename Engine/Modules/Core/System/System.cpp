@@ -1,4 +1,5 @@
 #include "System.h"
+#include <Log.h>
 
 using namespace ECSEngine;
 
@@ -26,6 +27,7 @@ void SystemBase::initialize(EntityRegistry& registry, SystemContainer& systemCon
 
     onInitialize(registry, systemContainer);
     m_bIsInitialized = true;
+    ECSE_LOG(LogCore, "Initialized {}", getName());
 }
 
 void SystemBase::deinitialize(EntityRegistry& registry)
@@ -37,6 +39,7 @@ void SystemBase::deinitialize(EntityRegistry& registry)
 
     onDeinitialize(registry);
     m_bIsInitialized = false;
+    ECSE_LOG(LogCore, "Deinitialized {}", getName());
 }
 
 void SystemBase::tick(float deltaTime, EntityRegistry& registry)

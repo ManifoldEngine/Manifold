@@ -31,7 +31,7 @@ namespace ECSEngine
 
 		EntityId id = UINT64_MAX;
 
-		// TODO: this is kinda messed up. This means that when an entity is reused it will have the same id as in its previous life.
+		// todo #2: this is kinda messed up. This means that when an entity is reused it will have the same id as in its previous life.
 		bool bisAlive = false;
 
 		bool hasComponent(ComponentId componentId) const;

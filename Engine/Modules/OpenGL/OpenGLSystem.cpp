@@ -124,7 +124,7 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
 
     systemContainer.initializeDependency<OpenGLShaderSystem>();
 
-    m_pLayer->initialize();
+    m_pLayer->initialize(systemContainer);
 }
 
 void OpenGLSystem::onDeinitialize(EntityRegistry& entityRegistry)

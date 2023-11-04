@@ -1,6 +1,12 @@
 #include "SystemContainer.h"
+#include <Assert.h>
 
 using namespace ECSEngine;
+
+SystemContainer::~SystemContainer()
+{
+	ECSE_ASSERT(!m_bIsInitialized, "SystemContainer was destroyed before all systems where deinitialized");
+}
 
 void SystemContainer::initialize()
 {

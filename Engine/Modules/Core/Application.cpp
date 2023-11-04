@@ -22,6 +22,7 @@ Application::Application()
 
 Application::~Application()
 {
+	m_pSystemContainer->deinitialize();
 	m_pSystemContainer->destroySystem<LogSystem>();
 	delete m_pSystemContainer;
 }
@@ -46,6 +47,8 @@ void Application::run()
 		Time::onNewFrame();
 		tick(Time::getDeltaTime());
 	}
+	m_world.deinitialize();
+	m_pSystemContainer->deinitialize();
 }
 
 void Application::stop()

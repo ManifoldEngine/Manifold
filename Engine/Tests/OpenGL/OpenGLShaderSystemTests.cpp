@@ -14,7 +14,7 @@ ST_SECTION_BEGIN(OpenGL, "OpenGL")
         Application app;
         auto path = std::filesystem::path(std::filesystem::current_path().string() + "/OpenGL/shader.glsl");
         std::string fileName, vertexSource, fragmentSource;
-        const bool bResult = parseShaderSourceFileFromPath(path.string(), fileName, vertexSource, fragmentSource);
+        const bool bResult = parseShaderSourceFileFromPath(path, fileName, vertexSource, fragmentSource);
 
         ST_ASSERT(bResult, "Should have succeeded");
         ST_ASSERT(fileName == "shader.glsl", "Filename should be equal");

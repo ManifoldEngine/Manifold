@@ -21,6 +21,8 @@ namespace ECSEngine
 		LogSystem();
 		~LogSystem();
 
+		std::string_view getName() const override { return "LogSystem"; }
+
 		void log(const std::string_view& channel, ELogLevel level, const std::string_view& log);
 		void setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel);
 

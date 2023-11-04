@@ -15,6 +15,7 @@ namespace ECSEngine
 		~World();
 
 		void initialize();
+		void deinitialize();
 		virtual void tick(float deltaTime) override;
 		SystemContainer& getSystemContainer();
 

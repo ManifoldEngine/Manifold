@@ -6,12 +6,12 @@
 
 using namespace ECSEngine;
 
-OpenGL_API bool ECSEngine::parseShaderSourceFileFromPath(const std::string & path, std::string & outFileName, std::string & outVertexSource, std::string & outFragmentSource)
+OpenGL_API bool ECSEngine::parseShaderSourceFileFromPath(const std::filesystem::path& path, std::string & outFileName, std::string & outVertexSource, std::string & outFragmentSource)
 {
 	std::string source;
 	if (!FileSystem::tryReadFile(path, source))
 	{
-		ECSE_LOG_ERROR(LogOpenGL, "Could not read source from {}", path);
+		ECSE_LOG_ERROR(LogOpenGL, "Could not read source from {}", path.string());
 		return false;
 	}
 
@@ -68,7 +68,7 @@ OpenGL_API bool ECSEngine::parseShaderSourceFileFromPath(const std::string & pat
 		}
 		else
 		{
-			ECSE_LOG_ERROR(LogOpenGL, "Incorrect shader type token format for file [{}]", path);
+			ECSE_LOG_ERROR(LogOpenGL, "Incorrect shader type token format for file [{}]", path.string());
 			return false;
 		}
 	}

@@ -14,6 +14,8 @@ namespace ECSEngine
 	class SystemContainer : public ITickable
 	{
 	public:
+		~SystemContainer();
+
 		// Initializes all created systems. once this is called, will initialize newly created systems
 		virtual void initialize();
 		// Deinitiailize all systems

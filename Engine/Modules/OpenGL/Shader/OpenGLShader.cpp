@@ -66,7 +66,12 @@ bool OpenGLShader::isCompiled() const
     return shaderProgramId != UINT32_MAX;
 }
 
-uint32_t ECSEngine::OpenGLShader::compile(const std::string_view& source, int shaderType)
+void OpenGLShader::use() const
+{
+    glUseProgram(shaderProgramId);
+}
+
+uint32_t OpenGLShader::compile(const std::string_view& source, int shaderType)
 {
     uint32_t id = glCreateShader(shaderType);
     const char* const pSource = source.data();
@@ -84,4 +89,57 @@ uint32_t ECSEngine::OpenGLShader::compile(const std::string_view& source, int sh
         return id;
     }
     return id;
+}
+
+void OpenGLShader::setFloat(const char* name, float value)
+{
+    const int location = glGetUniformLocation(shaderProgramId, name);
+    glUniform1f(location, value);
+}
+
+void OpenGLShader::setFloat2(const char* name, float x, float y)
+{
+    const int location = glGetUniformLocation(shaderProgramId, name);
+    glUniform2f(location, x, y);
+}
+
+void OpenGLShader::setFloat3(const char* name, float x, float y, float z)
+{
+    const int location = glGetUniformLocation(shaderProgramId, name);
+    glUniform3f(location, x, y, z);
+}
+
+void OpenGLShader::setFloat4(const char* name, float x, float y, float z, float w)
+{
+    const int location = glGetUniformLocation(shaderProgramId, name);
+    glUniform4f(location, x, y, z, w);
+}
+
+void OpenGLShader::setInt(const char* name, int value)
+{
+    const int location = glGetUniformLocation(shaderProgramId, name);
+    glUniform1i(location, value);
+}
+
+void OpenGLShader::setInt2(const char* name, int x, int y)
+{
+    const int location = glGetUniformLocation(shaderProgramId, name);
+    glUniform2i(location, x, y);
+}
+
+void OpenGLShader::setInt3(const char* name, int x, int y, int z)
+{
+    const int location = glGetUniformLocation(shaderProgramId, name);
+    glUniform3i(location, x, y, z);
+}
+
+void OpenGLShader::setInt4(const char* name, int x, int y, int z, int w)
+{
+    const int location = glGetUniformLocation(shaderProgramId, name);
+    glUniform4i(location, x, y, z, w);
+}
+
+void OpenGLShader::setBool(const char* name, bool value)
+{
+    setInt(name, value);
 }

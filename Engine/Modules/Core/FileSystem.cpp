@@ -32,3 +32,50 @@ bool FileSystem::tryReadFile(const std::string& filePath, std::string& outResult
 
 	return false;
 }
+
+bool FileSystem::tryReadFile(const std::filesystem::path& filePath, std::string& outResult)
+{
+	return tryReadFile(filePath.string(), outResult);
+}
+
+bool FileSystem::tryGetRootPath(std::filesystem::path& outPath)
+{
+	std::error_code errorCode;
+	auto path = std::filesystem::current_path(errorCode);
+	if (errorCode.value() != 0)
+	{
+		return false;
+	}
+
+	outPath = path.parent_path().string();
+	return true;
+}
+
+bool FileSystem::tryGetEnginePath(std::filesystem::path& outPath)
+{
+	if (tryGetRootPath(outPath))
+	{
+		// todo #1: we probably need to expose a config for this
+		outPath += "/Engine";
+		return true;
+	}
+	return false;
+}
+
+std::vector<std::filesystem::path> FileSystem::getAllFilesWithExtension(const std::filesystem::path& directoryPath, const std::string& extension)
+{
+	namespace fs = std::filesystem;
+
+	std::vector<fs::path> paths;
+	if (fs::exists(directoryPath) && fs::is_directory(directoryPath))
+	{
+		for (const auto& entry : fs::directory_iterator(directoryPath))
+		{
+			if (fs::is_regular_file(entry) && entry.path().extension() == extension)
+			{
+				paths.push_back(entry.path());
+			}
+		}
+	}
+	return paths;
+}

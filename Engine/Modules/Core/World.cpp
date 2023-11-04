@@ -10,6 +10,7 @@ World::World()
 
 World::~World()
 {
+	deinitialize();
 	delete m_pSystemContainer;
 }
 
@@ -21,6 +22,18 @@ void World::initialize()
 	}
 
 	m_pSystemContainer->initialize();
+	m_bIsInitialized = true;
+}
+
+void World::deinitialize()
+{
+	if (!m_bIsInitialized)
+	{
+		return;
+	}
+
+	m_pSystemContainer->deinitialize();
+	m_bIsInitialized = false;
 }
 
 void World::tick(float deltaTime)
