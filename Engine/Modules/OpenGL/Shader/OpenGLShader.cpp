@@ -43,17 +43,15 @@ bool OpenGLShader::compile()
     glAttachShader(shaderProgramId, fragmentShaderId);
     glLinkProgram(shaderProgramId);
 
+    int isSuccess = 0;
+    glGetProgramiv(shaderProgramId, GL_LINK_STATUS, &isSuccess);
+    if (!isSuccess)
     {
-        int isSuccess = 0;
-        glGetProgramiv(shaderProgramId, GL_LINK_STATUS, &isSuccess);
-        if (!isSuccess)
-        {
-            char infoLog[512];
-            glGetProgramInfoLog(shaderProgramId, 512, NULL, infoLog);
-            ECSE_LOG_ERROR(LogOpenGL, "program link failed: {}", infoLog);
-            shaderProgramId = UINT32_MAX;
-            return false;
-        }
+        char infoLog[512];
+        glGetProgramInfoLog(shaderProgramId, 512, NULL, infoLog);
+        ECSE_LOG_ERROR(LogOpenGL, "program link failed: {}", infoLog);
+        shaderProgramId = UINT32_MAX;
+        return false;
     }
 
     glDeleteShader(vertexShaderId);
