@@ -66,14 +66,6 @@ project "Events"
 
     includedirs { moduledir, moduledir .. "/%{prj.name}" }
 
-project "Maths"
-    kind "StaticLib"
-    location (moduledir .. "/%{prj.name}")
-
-    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
-
-    includedirs { moduledir, moduledir .. "/%{prj.name}" }
-
 project "Utils"
     kind "StaticLib"
     location (moduledir .. "/%{prj.name}")
