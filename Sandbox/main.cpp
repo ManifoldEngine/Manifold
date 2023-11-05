@@ -15,9 +15,9 @@ int main(int argc, char** argv)
 	SystemContainer& systemContainer = app.getSystemContainer();
 	systemContainer.createSystem<OpenGLSystem>();
 
-	std::shared_ptr<WorldSystem> pWorldSystem = systemContainer.getSystem<WorldSystem>().lock();
-	std::shared_ptr<World> pWorld = pWorldSystem->createWorld();
-	pWorld->getSystemContainer().createSystem<SandboxSystem>();
+	std::shared_ptr<WorldSystem> worldSystem = systemContainer.getSystem<WorldSystem>().lock();
+	std::shared_ptr<World> world = worldSystem->createWorld();
+	world->getSystemContainer().createSystem<SandboxSystem>();
 	
 	app.run();
 

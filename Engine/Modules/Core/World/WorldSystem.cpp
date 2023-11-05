@@ -8,54 +8,54 @@ struct WorldSystem::Impl
 {
 	void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 	{
-		for (auto& pWorld : m_pWorlds)
+		for (auto& world : m_worlds)
 		{
-			pWorld->initialize();
+			world->initialize();
 		}
 	}
 
 	void onDeinitialize(EntityRegistry& registry)
 	{
-		for (auto& pWorld : m_pWorlds)
+		for (auto& world : m_worlds)
 		{
-			pWorld->deinitialize();
+			world->deinitialize();
 		}
 	}
 
 	std::shared_ptr<World> createWorld()
 	{
-		std::shared_ptr<World> pWorld = std::make_shared<World>();
-		m_pWorlds.push_back(pWorld);
-		pWorld->initialize();
-		return pWorld;
+		std::shared_ptr<World> world = std::make_shared<World>();
+		m_worlds.push_back(world);
+		world->initialize();
+		return world;
 	}
 
-	bool destroyWorld(const std::shared_ptr<World>& pWorld)
+	bool destroyWorld(const std::shared_ptr<World>& world)
 	{
-		auto it = m_pWorlds.erase(std::find(m_pWorlds.begin(), m_pWorlds.end(), pWorld));
-		return it != m_pWorlds.end();
+		auto it = m_worlds.erase(std::find(m_worlds.begin(), m_worlds.end(), world));
+		return it != m_worlds.end();
 	}
 
-	void setRelevantWorld(const std::shared_ptr<World>& pWorld)
+	void setRelevantWorld(const std::shared_ptr<World>& world)
 	{
-		m_pRelevantWorld = pWorld;
+		m_relevantWorld = world;
 	}
 
 	std::shared_ptr<World> getRelevantWorld() const
 	{
-		return m_pRelevantWorld;
+		return m_relevantWorld;
 	}
 
 	void tick(float deltaTime, EntityRegistry& registry)
 	{
-		for (auto& pWorld : m_pWorlds)
+		for (auto& world : m_worlds)
 		{
-			pWorld->tick(deltaTime);
+			world->tick(deltaTime);
 		}
 	}
 private:
-	std::vector<std::shared_ptr<World>> m_pWorlds;
-	std::shared_ptr<World> m_pRelevantWorld = nullptr;
+	std::vector<std::shared_ptr<World>> m_worlds;
+	std::shared_ptr<World> m_relevantWorld = nullptr;
 };
 
 WorldSystem::WorldSystem()
@@ -91,14 +91,14 @@ std::shared_ptr<World> WorldSystem::createWorld()
 	return m_pImpl->createWorld();
 }
 
-bool WorldSystem::destroyWorld(const std::shared_ptr<World>& pWorld)
+bool WorldSystem::destroyWorld(const std::shared_ptr<World>& world)
 {
-	return m_pImpl->destroyWorld(pWorld);
+	return m_pImpl->destroyWorld(world);
 }
 
-void WorldSystem::setRelevantWorld(const std::shared_ptr<World>& pWorld)
+void WorldSystem::setRelevantWorld(const std::shared_ptr<World>& world)
 {
-	m_pImpl->setRelevantWorld(pWorld);
+	m_pImpl->setRelevantWorld(world);
 }
 
 std::shared_ptr<World> WorldSystem::getRelevantWorld() const

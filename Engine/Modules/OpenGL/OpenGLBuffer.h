@@ -31,7 +31,7 @@ namespace ECSEngine
 	{
 	public:
 
-		OpenGLVertexBuffer(float* pData, int count);
+		OpenGLVertexBuffer(float* data, int count);
 		~OpenGLVertexBuffer();
 		
 		// buffers can't be copied implicitely.

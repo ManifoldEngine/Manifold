@@ -49,10 +49,10 @@ bool OpenGLShaderSystem::loadShaderFromSource(const std::string& name, const std
 		return false;
 	}
 
-	std::shared_ptr<OpenGLShader> pShader = std::make_shared<OpenGLShader>(name, vertexSource, fragmentSource);
-	if (pShader->compile())
+	std::shared_ptr<OpenGLShader> shader = std::make_shared<OpenGLShader>(name, vertexSource, fragmentSource);
+	if (shader->compile())
 	{
-		m_shaders[pShader->name] = pShader;
+		m_shaders[shader->name] = shader;
 		return true;
 	}
 	return false;

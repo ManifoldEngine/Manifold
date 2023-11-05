@@ -18,7 +18,7 @@ namespace ECSEngine
         RegistryView() = default;
 
         RegistryView(const EntityRegistry& registry)
-            : m_pRegistry(&registry)
+            : m_registry(&registry)
         {
             if (sizeof...(TComponents) == 0)
             {
@@ -40,7 +40,7 @@ namespace ECSEngine
             Iterator() = default;
 
             Iterator(
-                const EntityRegistry* pInRegistry,
+                const EntityRegistry* inRegistry,
                 EntityId inCurrentEntityId,
                 std::bitset<ECSEngine::MAX_COMPONENTS> inComponentMask,
                 bool bInIsAll
@@ -53,9 +53,9 @@ namespace ECSEngine
 
         private:
             EntityId m_currentEntityId;
-            const EntityRegistry* m_pRegistry;
+            const EntityRegistry* m_registry;
             std::bitset<ECSEngine::MAX_COMPONENTS> m_componentMask;
-            bool m_bIsAll = false;
+            bool m_isAll = false;
 
             bool isValidIndex() const;
         };
@@ -64,33 +64,33 @@ namespace ECSEngine
         {
             if (m_bisAll)
             {
-                return Iterator(m_pRegistry, 0, m_componentMask, m_bisAll);
+                return Iterator(m_registry, 0, m_componentMask, m_bisAll);
             }
 
             EntityId entityId = 0;
-            for (; entityId < m_pRegistry->size(); ++entityId)
+            for (; entityId < m_registry->size(); ++entityId)
             {
-                if (!m_pRegistry->isValid(entityId))
+                if (!m_registry->isValid(entityId))
                 {
                     continue;
                 }
 
-                if (m_pRegistry->getEntity(entityId)->hasComponents(m_componentMask))
+                if (m_registry->getEntity(entityId)->hasComponents(m_componentMask))
                 {
                     break;
                 }
             }
 
-            return Iterator(m_pRegistry, entityId, m_componentMask, m_bisAll);
+            return Iterator(m_registry, entityId, m_componentMask, m_bisAll);
         }
 
         const Iterator end() const
         {
-            return Iterator(m_pRegistry, m_pRegistry->size(), m_componentMask, m_bisAll);
+            return Iterator(m_registry, m_registry->size(), m_componentMask, m_bisAll);
         }
 
     private:
-        const EntityRegistry* m_pRegistry = nullptr;
+        const EntityRegistry* m_registry = nullptr;
         std::bitset<ECSEngine::MAX_COMPONENTS> m_componentMask;
         bool m_bisAll = false;
     };
@@ -98,15 +98,15 @@ namespace ECSEngine
     // ITERATOR BEGIN
     template<typename ...TComponents>
     inline RegistryView<TComponents...>::Iterator::Iterator(
-        const EntityRegistry* pInRegistry,
+        const EntityRegistry* inRegistry,
         ECSEngine::EntityId inCurrentEntityId,
         std::bitset<ECSEngine::MAX_COMPONENTS> inComponentMask,
-        bool InIsAll
+        bool inIsAll
     ) :
         m_currentEntityId(inCurrentEntityId),
-        m_pRegistry(pInRegistry),
+        m_registry(inRegistry),
         m_componentMask(inComponentMask),
-        m_bIsAll(InIsAll)
+        m_isAll(inIsAll)
     {}
 
     template<typename ...TComponents>
@@ -133,20 +133,20 @@ namespace ECSEngine
         do
         {
             m_currentEntityId++;
-        } while (m_currentEntityId < m_pRegistry->size() && !isValidIndex());
+        } while (m_currentEntityId < m_registry->size() && !isValidIndex());
         return *this;
     }
 
     template<typename ...TComponents>
     inline bool RegistryView<TComponents...>::Iterator::isValidIndex() const
     {
-        if (!m_pRegistry->isValid(m_currentEntityId))
+        if (!m_registry->isValid(m_currentEntityId))
         {
             return false;
         }
 
-        const Entity* entity = m_pRegistry->getEntity(m_currentEntityId);
-        return m_bIsAll || entity->hasComponents(m_componentMask);
+        const Entity* entity = m_registry->getEntity(m_currentEntityId);
+        return m_isAll || entity->hasComponents(m_componentMask);
     }
     // ITERATOR END
 }

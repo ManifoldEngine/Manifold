@@ -71,11 +71,11 @@ void OpenGLShader::use() const
     glUseProgram(shaderProgramId);
 }
 
-uint32_t OpenGLShader::compile(const std::string_view& source, int shaderType)
+uint32_t OpenGLShader::compile(const std::string_view& inSource, int shaderType)
 {
     uint32_t id = glCreateShader(shaderType);
-    const char* const pSource = source.data();
-    glShaderSource(id, 1, &pSource, NULL);
+    const char* const source = inSource.data();
+    glShaderSource(id, 1, &source, NULL);
     glCompileShader(id);
 
     int bIsSuccess = 0;

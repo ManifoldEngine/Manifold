@@ -20,8 +20,8 @@ namespace ECSEngine
 
 		void bind() const;
 
-		void addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> pBuffer);
-		void setIndexBuffer(std::shared_ptr<OpenGLIndexBuffer> pBuffer);
+		void addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buffer);
+		void setIndexBuffer(std::shared_ptr<OpenGLIndexBuffer> buffer);
 	
 		std::shared_ptr<OpenGLIndexBuffer> getIndexBuffer() const;
 	private:
@@ -29,6 +29,6 @@ namespace ECSEngine
 		int m_attributeCount = 0;
 
 		std::vector<std::shared_ptr<OpenGLVertexBuffer>> m_vertexBuffers;
-		std::shared_ptr<OpenGLIndexBuffer> m_pIndexBuffer;
+		std::shared_ptr<OpenGLIndexBuffer> m_indexBuffer;
 	};
 }

@@ -54,20 +54,20 @@ namespace ECSEngine
 	inline bool SystemContainer::createSystem()
 	{
 		// check if a system of this type exists already.
-		for (const auto& pSystem : m_systems)
+		for (const auto& system : m_systems)
 		{
-			if (std::dynamic_pointer_cast<const TSystem>(pSystem) != nullptr)
+			if (std::dynamic_pointer_cast<const TSystem>(system) != nullptr)
 			{
 				return false;
 			}
 		}
 
-		auto pSystem = std::make_shared<TSystem>();
+		auto system = std::make_shared<TSystem>();
 		if (m_bIsInitialized)
 		{
-			pSystem->initialize(m_registry, *this);
+			system->initialize(m_registry, *this);
 		}
-		m_systems.push_back(pSystem);
+		m_systems.push_back(system);
 
 		return true;
 	}
@@ -75,11 +75,11 @@ namespace ECSEngine
 	template<Derived<SystemBase> TSystem>
 	inline std::weak_ptr<TSystem> SystemContainer::getSystem() const
 	{
-		for (auto& pSystem : m_systems)
+		for (auto& system : m_systems)
 		{
-			if (std::dynamic_pointer_cast<TSystem>(pSystem) != nullptr)
+			if (std::dynamic_pointer_cast<TSystem>(system) != nullptr)
 			{
-				return std::static_pointer_cast<TSystem>(pSystem);
+				return std::static_pointer_cast<TSystem>(system);
 			}
 		}
 		return std::weak_ptr<TSystem>();
@@ -89,12 +89,12 @@ namespace ECSEngine
 	inline std::weak_ptr<TSystem> SystemContainer::initializeDependency()
 	{
 		createSystem<TSystem>();
-		std::weak_ptr<TSystem> pSystem = getSystem<TSystem>();
-		if (!pSystem.expired())
+		std::weak_ptr<TSystem> system = getSystem<TSystem>();
+		if (!system.expired())
 		{
-			pSystem.lock()->initialize(m_registry, *this);
+			system.lock()->initialize(m_registry, *this);
 		}
-		return pSystem;
+		return system;
 	}
 
 	template<Derived<SystemBase> TSystem>
@@ -102,15 +102,15 @@ namespace ECSEngine
 	{
 		for (auto it = m_systems.begin(); it != m_systems.end(); it++)
 		{
-			std::shared_ptr<SystemBase> pSystem = *it;
-			if (std::dynamic_pointer_cast<TSystem>(pSystem) != nullptr)
+			std::shared_ptr<SystemBase> system = *it;
+			if (std::dynamic_pointer_cast<TSystem>(system) != nullptr)
 			{
 				if (m_bIsInitialized)
 				{
-					pSystem->deinitialize(m_registry);
+					system->deinitialize(m_registry);
 				}
 
-				pSystem.reset();
+				system.reset();
 				m_systems.erase(it);
 				return true;
 			}

@@ -16,7 +16,7 @@ namespace ECSEngine
 	public:
 		struct WindowContext
 		{
-			GLFWwindow* pWindow = nullptr;
+			GLFWwindow* window = nullptr;
 			
 			int width = 800;
 			int height = 800;

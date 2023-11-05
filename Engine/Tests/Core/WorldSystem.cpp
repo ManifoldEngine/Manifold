@@ -10,7 +10,7 @@ ST_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 {
 	ST_TEST(WorldSystemCreate, "Should create an Application and setup a world")
 	{
-		bool bHasTicked = false;
+		bool hasTicked = false;
 		class SomeWorldSystem : public SystemBase
 		{
 		public:
@@ -28,25 +28,25 @@ ST_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 
 		Application app;
 		app.getSystemContainer().initialize();
-		std::shared_ptr<WorldSystem> pWorldSystem = app.getSystemContainer().getSystem<WorldSystem>().lock();
-		std::shared_ptr<World> pWorld = pWorldSystem->createWorld();
+		std::shared_ptr<WorldSystem> worldSystem = app.getSystemContainer().getSystem<WorldSystem>().lock();
+		std::shared_ptr<World> world = worldSystem->createWorld();
 		
-		if (pWorld == nullptr)
+		if (world == nullptr)
 		{
 			ST_ASSERT(false, "World should not be null");
 			return;
 		}
 
-		ST_ASSERT(pWorld->isInitialized(), "World shoudl be initialized");
+		ST_ASSERT(world->isInitialized(), "World shoudl be initialized");
 		
-		std::shared_ptr<SomeWorldSystem> pSomeWorlSystem = pWorld->getSystemContainer().initializeDependency<SomeWorldSystem>().lock();
-		pSomeWorlSystem->onTick.subscribe([&bHasTicked](float deltaTime) 
+		std::shared_ptr<SomeWorldSystem> someWorlSystem = world->getSystemContainer().initializeDependency<SomeWorldSystem>().lock();
+		someWorlSystem->onTick.subscribe([&hasTicked](float deltaTime) 
 		{ 
 			ST_ASSERT(deltaTime < FLT_EPSILON, "Should have ticked with the same delta time than the application's tick");
-			bHasTicked = true;
+			hasTicked = true;
 		});
 
 		app.tick(0.f);
-		ST_ASSERT(bHasTicked, "World should have ticked.");
+		ST_ASSERT(hasTicked, "World should have ticked.");
 	}
 }

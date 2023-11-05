@@ -23,9 +23,9 @@ namespace ECSEngine
 		virtual void onDeinitialize(EntityRegistry& registry) override;
 
 		std::shared_ptr<World> createWorld();
-		bool destroyWorld(const std::shared_ptr<World>& pWorld);
+		bool destroyWorld(const std::shared_ptr<World>& world);
 
-		void setRelevantWorld(const std::shared_ptr<World>& pWorld);
+		void setRelevantWorld(const std::shared_ptr<World>& world);
 		std::shared_ptr<World> getRelevantWorld() const;
 
 		virtual void tick(float deltaTime, EntityRegistry& registry) override;

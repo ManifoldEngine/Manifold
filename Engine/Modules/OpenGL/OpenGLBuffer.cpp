@@ -4,13 +4,13 @@
 using namespace ECSEngine;
 
 // OpenGLVertexBuffer Begin
-OpenGLVertexBuffer::OpenGLVertexBuffer(float* pData, int size)
+OpenGLVertexBuffer::OpenGLVertexBuffer(float* data, int size)
 	: m_size(size), m_vertexBufferObjectId(UINT32_MAX)
 {
 	glCreateBuffers(1, &m_vertexBufferObjectId);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferObjectId);
-	glBufferData(GL_ARRAY_BUFFER, m_size, pData, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, m_size, data, GL_STATIC_DRAW);
 }
 
 OpenGLVertexBuffer::~OpenGLVertexBuffer()

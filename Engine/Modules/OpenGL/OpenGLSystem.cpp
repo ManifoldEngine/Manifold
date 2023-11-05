@@ -16,16 +16,16 @@ using namespace ECSEngine;
 
 void OpenGLSystem::destroyWindow(WindowContext& context)
 {
-    if (context.pWindow != nullptr)
+    if (context.window != nullptr)
     {
-        glfwDestroyWindow(context.pWindow);
-        context.pWindow = nullptr;
+        glfwDestroyWindow(context.window);
+        context.window = nullptr;
     }
 }
 
 void OpenGLSystem::terminate()
 {
-    destroyWindow(window);
+    destroyWindow(context);
     glfwTerminate();
 }
 
@@ -34,7 +34,7 @@ void OpenGLSystem::glfwCallback_onWindowClosed(GLFWwindow* window)
 {
     if (auto* openGlSystem = (OpenGLSystem*)glfwGetWindowUserPointer(window))
     {
-        openGlSystem->onWindowClosed.broadcast(openGlSystem->window);
+        openGlSystem->onWindowClosed.broadcast(openGlSystem->context);
         Application::get().stop();
     }
 }
@@ -43,8 +43,8 @@ void OpenGLSystem::glfwCallback_onWindowResized(GLFWwindow* window, int newWidth
 {
     if (auto* openGlSystem = (OpenGLSystem*)glfwGetWindowUserPointer(window))
     {
-        openGlSystem->window.width = newWidth;
-        openGlSystem->window.height = newHeight;
+        openGlSystem->context.width = newWidth;
+        openGlSystem->context.height = newHeight;
     }
 
     glViewport(0, 0, newWidth, newHeight);
@@ -81,23 +81,23 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
 #endif
 
     // create the window
-    window.pWindow = glfwCreateWindow(window.width, window.height, window.name.data(), NULL, NULL);
-    if (window.pWindow == nullptr)
+    context.window = glfwCreateWindow(context.width, context.height, context.name.data(), NULL, NULL);
+    if (context.window == nullptr)
     {
         ECSE_LOG_ERROR(LogOpenGL, "failed to create glfwwindow");
         terminate();
         return;
     }
 
-    glfwGetWindowSize(window.pWindow, &window.width, &window.height);
+    glfwGetWindowSize(context.window, &context.width, &context.height);
     
     // set this as the window's user pointer. This allows us to retrieve this pointer from the window pointer provided in glfw's callbacks.
-    glfwSetWindowUserPointer(window.pWindow, this);
-    glfwMakeContextCurrent(window.pWindow);
+    glfwSetWindowUserPointer(context.window, this);
+    glfwMakeContextCurrent(context.window);
 
     // set glfw callbacks
-    glfwSetWindowCloseCallback(window.pWindow, &OpenGLSystem::glfwCallback_onWindowClosed);
-    glfwSetFramebufferSizeCallback(window.pWindow, &OpenGLSystem::glfwCallback_onWindowResized);
+    glfwSetWindowCloseCallback(context.window, &OpenGLSystem::glfwCallback_onWindowClosed);
+    glfwSetFramebufferSizeCallback(context.window, &OpenGLSystem::glfwCallback_onWindowResized);
 
     // init glew to load the correct opengl runtime
     GLenum result = glewInit();
@@ -109,7 +109,7 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     }
 
     // set the view port to the window's size.
-    glViewport(0, 0, window.width, window.height);
+    glViewport(0, 0, context.width, context.height);
 
     systemContainer.initializeDependency<OpenGLShaderSystem>();
 
@@ -128,11 +128,11 @@ void OpenGLSystem::onDeinitialize(EntityRegistry& entityRegistry)
 
 void OpenGLSystem::tick(float deltaTime, EntityRegistry& entityRegistry)
 {
-    if (window.pWindow == nullptr)
+    if (context.window == nullptr)
     {
         return;
     }
 
-    glfwSwapBuffers(window.pWindow);
+    glfwSwapBuffers(context.window);
     glfwPollEvents();
 }

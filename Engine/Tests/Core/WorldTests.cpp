@@ -59,21 +59,21 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		bDidCreateSystem = world.getSystemContainer().createSystem<SomeSystem>();
 		ST_ASSERT(!bDidCreateSystem, "Should not return true when creating a system of a type that already exists.");
 
-		std::shared_ptr<SomeSystem> pSomeSystem = world.getSystemContainer().getSystem<SomeSystem>().lock();
-		ST_ASSERT(pSomeSystem != nullptr, "Should get a non nullptr system");
-		if (pSomeSystem == nullptr)
+		std::shared_ptr<SomeSystem> someSystem = world.getSystemContainer().getSystem<SomeSystem>().lock();
+		ST_ASSERT(someSystem != nullptr, "Should get a non nullptr system");
+		if (someSystem == nullptr)
 		{
 			return;
 		}
 
-		ST_ASSERT(pSomeSystem->bOnInitializeCalled, "onInitialize should have been called.");
+		ST_ASSERT(someSystem->bOnInitializeCalled, "onInitialize should have been called.");
 
 		world.tick(.16f);
 	
-		ST_ASSERT(pSomeSystem->bTickCalled, "tick should have been called.");
+		ST_ASSERT(someSystem->bTickCalled, "tick should have been called.");
 
 		bool bOnDeinitializeCalled = false;
-		pSomeSystem->assignOnDeinitializeCalled([&bOnDeinitializeCalled]() 
+		someSystem->assignOnDeinitializeCalled([&bOnDeinitializeCalled]() 
 		{
 			bOnDeinitializeCalled = true;
 		});
@@ -96,19 +96,19 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		bool bDidCreateSystem = systemContainer.createSystem<SomeSystem>();
 		ST_ASSERT(bDidCreateSystem, "Should return true when creating a system.");
 
-		std::shared_ptr<SomeSystem> pSomeSystem = systemContainer.getSystem<SomeSystem>().lock();
-		ST_ASSERT(pSomeSystem != nullptr, "SomeSystem should not be null");
-		if (pSomeSystem == nullptr)
+		std::shared_ptr<SomeSystem> someSystem = systemContainer.getSystem<SomeSystem>().lock();
+		ST_ASSERT(someSystem != nullptr, "SomeSystem should not be null");
+		if (someSystem == nullptr)
 		{
 			return;
 		}
 
-		ST_ASSERT(!pSomeSystem->bOnInitializeCalled, "System initialize should not have been called yet");
+		ST_ASSERT(!someSystem->bOnInitializeCalled, "System initialize should not have been called yet");
 		systemContainer.tick(.16f);
-		ST_ASSERT(!pSomeSystem->bTickCalled, "system tick should not have been called yet, since the system isn't initialized");
+		ST_ASSERT(!someSystem->bTickCalled, "system tick should not have been called yet, since the system isn't initialized");
 
 		bool bOnDeinitializeCalled = false;
-		pSomeSystem->assignOnDeinitializeCalled([&bOnDeinitializeCalled]() 
+		someSystem->assignOnDeinitializeCalled([&bOnDeinitializeCalled]() 
 		{
 			bOnDeinitializeCalled = true;
 		});
@@ -118,9 +118,9 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 
 		systemContainer.initialize();
 	
-		ST_ASSERT(pSomeSystem->bOnInitializeCalled, "System initialize should have been called");
+		ST_ASSERT(someSystem->bOnInitializeCalled, "System initialize should have been called");
 		systemContainer.tick(.16f);
-		ST_ASSERT(pSomeSystem->bTickCalled, "System tick have been called, since the system is now initialized");
+		ST_ASSERT(someSystem->bTickCalled, "System tick have been called, since the system is now initialized");
 		systemContainer.deinitialize();
 		ST_ASSERT(bOnDeinitializeCalled, "System should have been deinitialized, since it was initialized.");
 
@@ -232,14 +232,14 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 			return;
 		}
 
-		std::shared_ptr<SomeSystem> pSomeSystem = systemContainer.getSystem<SomeSystem>().lock();
-		ST_ASSERT(pSomeSystem != nullptr, "should retrieve the base system");
-		if (pSomeSystem == nullptr)
+		std::shared_ptr<SomeSystem> someSystem = systemContainer.getSystem<SomeSystem>().lock();
+		ST_ASSERT(someSystem != nullptr, "should retrieve the base system");
+		if (someSystem == nullptr)
 		{
 			return;
 		}
 
-		ST_ASSERT(pSomeSystem->getName() == "SomeExtendedSystem", "Should return the extended name");
+		ST_ASSERT(someSystem->getName() == "SomeExtendedSystem", "Should return the extended name");
 
 		if (systemContainer.createSystem<SomeSystem>())
 		{
@@ -294,26 +294,26 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 			return;
 		}
 
-		std::shared_ptr<SomeOtherSystem> pSomeOtherSystem = systemContainer.getSystem<SomeOtherSystem>().lock();
-		if (pSomeOtherSystem == nullptr)
+		std::shared_ptr<SomeOtherSystem> someOtherSystem = systemContainer.getSystem<SomeOtherSystem>().lock();
+		if (someOtherSystem == nullptr)
 		{
 			ST_ASSERT(false, "did not create the system, should have created the system");
 			return;
 		}
 
-		ST_ASSERT(pSomeOtherSystem->bOnInitializeCalled, "SomeOtherSystem should have been initialized.");
+		ST_ASSERT(someOtherSystem->bOnInitializeCalled, "SomeOtherSystem should have been initialized.");
 
-		std::weak_ptr<SomeSystem> pSomeSystem = systemContainer.getSystem<SomeSystem>();
-		if (pSomeSystem.expired())
+		std::weak_ptr<SomeSystem> someSystem = systemContainer.getSystem<SomeSystem>();
+		if (someSystem.expired())
 		{
 			ST_ASSERT(false, "did not create the system, should have created the system");
 			return;
 		}
 
-		ST_ASSERT(pSomeSystem.lock()->bOnInitializeCalled, "pSomeSystem should have been initialized.");
+		ST_ASSERT(someSystem.lock()->bOnInitializeCalled, "someSystem should have been initialized.");
 
 		systemContainer.destroySystem<SomeSystem>();
-		ST_ASSERT(pSomeOtherSystem->dependency.expired(), "SomeSystem should have been destroyed and its shared_ptr reset.");
+		ST_ASSERT(someOtherSystem->dependency.expired(), "SomeSystem should have been destroyed and its shared_ptr reset.");
 
 		world.getSystemContainer().destroySystem<SomeOtherSystem>();
 		world.deinitialize();

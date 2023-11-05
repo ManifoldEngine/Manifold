@@ -28,35 +28,35 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		ST_ASSERT(registry.isValid(entityId), "Entity should be valid.");
 	
 		// add a DataComponent
-		auto* pComponent = registry.addComponent<DataComponent>(entityId);
+		auto* component = registry.addComponent<DataComponent>(entityId);
 	
-		ST_ASSERT(pComponent != nullptr, "Component should not be a nullptr.");
-		if (pComponent == nullptr)
+		ST_ASSERT(component != nullptr, "Component should not be a nullptr.");
+		if (component == nullptr)
 		{
 			return;
 		}
 
 		// edit the data
-		pComponent->someData += 10;
+		component->someData += 10;
 
 		// get the component again to verify the pointer points to the correct location.
-		auto* pComponentFromRegistry = registry.getComponent<DataComponent>(entityId);
+		auto* componentFromRegistry = registry.getComponent<DataComponent>(entityId);
 	
-		ST_ASSERT(pComponentFromRegistry != nullptr, "Component should not be a nullptr.");
-		if (pComponentFromRegistry == nullptr)
+		ST_ASSERT(componentFromRegistry != nullptr, "Component should not be a nullptr.");
+		if (componentFromRegistry == nullptr)
 		{
 			return;
 		}
 
-		ST_ASSERT(pComponent->someData == pComponentFromRegistry->someData, "We should be able to retrieve our component data");
+		ST_ASSERT(component->someData == componentFromRegistry->someData, "We should be able to retrieve our component data");
 	
 		// destroy the entity, should destroy the component too.
 		ST_ASSERT(registry.destroy(entityId), "The Entity should have been destroyed");
 	
 		ST_ASSERT(!registry.isValid(entityId), "Entity should not be valid anymore");
 
-		auto* pComponentFromRegistryAfterDelete = registry.getComponent<DataComponent>(entityId);
-		ST_ASSERT(pComponentFromRegistryAfterDelete == nullptr, "Entity's component should be nullptr after delete.");
+		auto* componentFromRegistryAfterDelete = registry.getComponent<DataComponent>(entityId);
+		ST_ASSERT(componentFromRegistryAfterDelete == nullptr, "Entity's component should be nullptr after delete.");
 	}
 
 	ST_TEST(AddAndRemoveComponents, "Should create a registry and an entity, then add and remove a component")
@@ -75,18 +75,18 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		ST_ASSERT(entityId == 0, "Should be the first entity addded.");
 
 		// add a DataComponent
-		DataComponent* pDataComponent = registry.addComponent<DataComponent>(entityId);
-		ST_ASSERT(pDataComponent != nullptr, "Component should not be a nullptr.");
-		if (pDataComponent == nullptr)
+		DataComponent* dataComponent = registry.addComponent<DataComponent>(entityId);
+		ST_ASSERT(dataComponent != nullptr, "Component should not be a nullptr.");
+		if (dataComponent == nullptr)
 		{
 			return;
 		}
 
-		const bool bDidRemoveDataComponent = registry.removeComponent<DataComponent>(entityId);
-		ST_ASSERT(bDidRemoveDataComponent, "Should have removed the Data component");
+		const bool didRemoveDataComponent = registry.removeComponent<DataComponent>(entityId);
+		ST_ASSERT(didRemoveDataComponent, "Should have removed the Data component");
 
-		pDataComponent = registry.getComponent<DataComponent>(entityId);
-		ST_ASSERT(pDataComponent == nullptr, "Component should be a nullptr.");
+		dataComponent = registry.getComponent<DataComponent>(entityId);
+		ST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
 	}
 
 	ST_TEST(RecycleEntities, "Should create a registry and an entity, then properly recycle the entity and its components")
@@ -109,45 +109,45 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		ST_ASSERT(entityId == 0, "Should be the first entity addded.");
 
 		// add a DataComponent
-		DataComponent* pDataComponent = registry.addComponent<DataComponent>(entityId);
-		ST_ASSERT(pDataComponent != nullptr, "Component should not be a nullptr.");
-		if (pDataComponent == nullptr)
+		DataComponent* dataComponent = registry.addComponent<DataComponent>(entityId);
+		ST_ASSERT(dataComponent != nullptr, "Component should not be a nullptr.");
+		if (dataComponent == nullptr)
 		{
 			return;
 		}
 
 		// destroy the entity, which should be added to the entity pool
-		const bool bDidDestroy = registry.destroy(entityId);
-		ST_ASSERT(bDidDestroy, "Should have detroyed entity");
+		const bool didDestroy = registry.destroy(entityId);
+		ST_ASSERT(didDestroy, "Should have detroyed entity");
 
-		pDataComponent = registry.getComponent<DataComponent>(entityId);
-		ST_ASSERT(pDataComponent == nullptr, "Component should be a nullptr.");
+		dataComponent = registry.getComponent<DataComponent>(entityId);
+		ST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
 
 		// we expect the entity to be recycled
 		entityId = registry.create();
 		ST_ASSERT(entityId == 0, "Should be the first entity addded.");
 
 		// Entity should not have a DataComponent
-		pDataComponent = registry.getComponent<DataComponent>(entityId);
-		ST_ASSERT(pDataComponent == nullptr, "Component should be a nullptr.");
+		dataComponent = registry.getComponent<DataComponent>(entityId);
+		ST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
 
-		OtherDataComponent* pOtherDataComponent = registry.addComponent<OtherDataComponent>(entityId);
-		ST_ASSERT(pOtherDataComponent != nullptr, "Component should not be a nullptr.");
-		if (pOtherDataComponent == nullptr)
+		OtherDataComponent* otherDataComponent = registry.addComponent<OtherDataComponent>(entityId);
+		ST_ASSERT(otherDataComponent != nullptr, "Component should not be a nullptr.");
+		if (otherDataComponent == nullptr)
 		{
 			return;
 		}
 
-		pOtherDataComponent->someOtherData += 10;
+		otherDataComponent->someOtherData += 10;
 
-		OtherDataComponent* pOtherOtherDataComponent = registry.getComponent<OtherDataComponent>(entityId);
-		ST_ASSERT(pOtherOtherDataComponent != nullptr, "Other Component should not be a nullptr.");
-		if (pOtherOtherDataComponent == nullptr)
+		OtherDataComponent* otherOtherDataComponent = registry.getComponent<OtherDataComponent>(entityId);
+		ST_ASSERT(otherOtherDataComponent != nullptr, "Other Component should not be a nullptr.");
+		if (otherOtherDataComponent == nullptr)
 		{
 			return;
 		}
 
-		ST_ASSERT(pOtherOtherDataComponent->someOtherData == pOtherDataComponent->someOtherData, "we should be able to mutate a component of a recycled entity.");
+		ST_ASSERT(otherOtherDataComponent->someOtherData == otherDataComponent->someOtherData, "we should be able to mutate a component of a recycled entity.");
 	}
 
 	ST_TEST(CreateRegistryView, "Should create a registry view and iterate through it")
@@ -182,8 +182,8 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		for (EntityId entityId : RegistryView<DataComponent>(registry))
 		{
 			entityCounter++;
-			auto* pComponent = registry.getComponent<DataComponent>(entityId);
-			ST_ASSERT(pComponent != nullptr, "should have a DataComponent");
+			auto* component = registry.getComponent<DataComponent>(entityId);
+			ST_ASSERT(component != nullptr, "should have a DataComponent");
 		}
 		ST_ASSERT(entityCounter == entityCount, "There should be 10 entities with DataComponent in the registry view");
 
@@ -191,8 +191,8 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		for (EntityId entityId : RegistryView<OtherDataComponent>(registry))
 		{
 			entityCounter++;
-			auto* pOtherComponent = registry.getComponent<OtherDataComponent>(entityId);
-			ST_ASSERT(pOtherComponent != nullptr, "should have a OtherDataComponent");
+			auto* otherComponent = registry.getComponent<OtherDataComponent>(entityId);
+			ST_ASSERT(otherComponent != nullptr, "should have a OtherDataComponent");
 		}
 		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with OtherDataComponent in the registry view");
 
@@ -201,11 +201,11 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		{
 			entityCounter++;
 
-			auto* pComponent = registry.getComponent<DataComponent>(entityId);
-			ST_ASSERT(pComponent != nullptr, "should have a DataComponent");
+			auto* component = registry.getComponent<DataComponent>(entityId);
+			ST_ASSERT(component != nullptr, "should have a DataComponent");
 
-			auto* pOtherComponent = registry.getComponent<OtherDataComponent>(entityId);
-			ST_ASSERT(pOtherComponent != nullptr, "should have a OtherDataComponent");
+			auto* otherComponent = registry.getComponent<OtherDataComponent>(entityId);
+			ST_ASSERT(otherComponent != nullptr, "should have a OtherDataComponent");
 		}
 		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent and OtherDataComponent in the registry view");
 
@@ -244,8 +244,8 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		for (EntityId entityId : RegistryView<DataComponent>(registry))
 		{
 			entityCounter++;
-			auto* pComponent = registry.getComponent<DataComponent>(entityId);
-			ST_ASSERT(pComponent != nullptr, "should have a DataComponent");
+			auto* component = registry.getComponent<DataComponent>(entityId);
+			ST_ASSERT(component != nullptr, "should have a DataComponent");
 		}
 		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent in the registry view");
 	}

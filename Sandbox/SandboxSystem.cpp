@@ -7,14 +7,14 @@ using namespace ECSEngine;
 
 void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
-    std::weak_ptr<OpenGLShaderSystem> pShaderSystem = Application::get().getSystemContainer().initializeDependency<OpenGLShaderSystem>();
-    if (pShaderSystem.expired())
+    std::weak_ptr<OpenGLShaderSystem> shaderSystem = Application::get().getSystemContainer().initializeDependency<OpenGLShaderSystem>();
+    if (shaderSystem.expired())
     {
         ECSE_LOG_ERROR(LogOpenGL, "failed to initialize the layer.");
         return;
     }
 
-    m_shader = pShaderSystem.lock()->getShader("coloredVertex.glsl");
+    m_shader = shaderSystem.lock()->getShader("coloredVertex.glsl");
 
     float triangleVertices[] =
     {     
@@ -30,18 +30,18 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
         0, 1, 2, 0, 2, 3 // first triangle
     };
 
-    std::shared_ptr<OpenGLVertexBuffer> pSquareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(triangleVertices, (int)sizeof(triangleVertices));
-    pSquareVertexBuffer->layout = {
+    std::shared_ptr<OpenGLVertexBuffer> squareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(triangleVertices, (int)sizeof(triangleVertices));
+    squareVertexBuffer->layout = {
         { ShaderDataType::Float3, false },
         { ShaderDataType::Float3, false },
         { ShaderDataType::Float2, false }
     };
 
-    std::shared_ptr<OpenGLIndexBuffer> pIndexBuffer = std::make_shared<OpenGLIndexBuffer>(triangleIndices, (int)sizeof(triangleIndices));
+    std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(triangleIndices, (int)sizeof(triangleIndices));
 
     m_squareVertexArray = std::make_unique<OpenGLVertexArray>();
-    m_squareVertexArray->addVertexBuffer(pSquareVertexBuffer);
-    m_squareVertexArray->setIndexBuffer(pIndexBuffer);
+    m_squareVertexArray->addVertexBuffer(squareVertexBuffer);
+    m_squareVertexArray->setIndexBuffer(indexBuffer);
 
     m_woodenBoxTexture2D = std::make_unique<OpenGLTexture2D>("Assets/Images/container.jpg");
     m_awesomeFaceTexture2D = std::make_unique<OpenGLTexture2D>("Assets/Images/awesomeface.png");
@@ -73,9 +73,9 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
     m_shader->setTextureSlot("inputTexture1", 0);
     m_shader->setTextureSlot("inputTexture2", 1);
     m_squareVertexArray->bind();
-    if (const auto& pIndexBuffer = m_squareVertexArray->getIndexBuffer())
+    if (const auto& indexBuffer = m_squareVertexArray->getIndexBuffer())
     {
-        glDrawElements(GL_TRIANGLES, pIndexBuffer->getStrideCount(), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, indexBuffer->getStrideCount(), GL_UNSIGNED_INT, nullptr);
     }
     else
     {
