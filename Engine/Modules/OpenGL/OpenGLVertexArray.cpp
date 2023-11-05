@@ -59,7 +59,7 @@ void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buff
 					m_attributeCount, // GLuint index, 
 					OpenGLVertexBuffer::getComponentCount(layoutElement.shaderType), // GLint size,
 					toOpenGLType(layoutElement.shaderType), // GLenum type, 
-					layoutElement.bIsNormalized, // GLboolean normalized,
+					layoutElement.isNormalized, // GLboolean normalized,
 					buffer->getStrideSize(), // GLsizei stride,
 					(void*)accumulatedOffset // const void* pointer
 				);
@@ -99,7 +99,7 @@ void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buff
 			//			m_attributeCount, // GLuint index, 
 			//			componentCount, // GLint size,
 			//			toOpenGLType(layoutElement.shaderType), // GLenum type, 
-			//			layoutElement.bIsNormalized, // GLboolean normalized,
+			//			layoutElement.isNormalized, // GLboolean normalized,
 			//			buffer->getStrideSize(), // GLsizei stride,
 			//			(const void*)(accumulatedOffset + sizeof(float) * i) // const void* pointer
 			//		);

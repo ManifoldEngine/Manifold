@@ -12,7 +12,7 @@ namespace ECSEngine_Test
 	public:
 		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
 		{
-			bOnInitializeCalled = true;
+			onInitializeCalled = true;
 		}
 
 		virtual void onDeinitialize(EntityRegistry& registry) override
@@ -30,7 +30,7 @@ namespace ECSEngine_Test
 
 		virtual void tick(float deltaTime, EntityRegistry& registry) override
 		{
-			bTickCalled = true;
+			tickCalled = true;
 		}
 
 		void assignOnDeinitializeCalled(std::function<void()> f)
@@ -38,8 +38,8 @@ namespace ECSEngine_Test
 			onDeinitializeCalled = f;
 		}
 
-		bool bOnInitializeCalled = false;
-		bool bTickCalled = false;
+		bool onInitializeCalled = false;
+		bool tickCalled = false;
 		std::function<void()> onDeinitializeCalled;
 	};
 }
@@ -53,11 +53,11 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		World world;
 		world.initialize();
 
-		bool bDidCreateSystem = world.getSystemContainer().createSystem<SomeSystem>();
-		ST_ASSERT(bDidCreateSystem, "Should return true when creating a system.");
+		bool didCreateSystem = world.getSystemContainer().createSystem<SomeSystem>();
+		ST_ASSERT(didCreateSystem, "Should return true when creating a system.");
 
-		bDidCreateSystem = world.getSystemContainer().createSystem<SomeSystem>();
-		ST_ASSERT(!bDidCreateSystem, "Should not return true when creating a system of a type that already exists.");
+		didCreateSystem = world.getSystemContainer().createSystem<SomeSystem>();
+		ST_ASSERT(!didCreateSystem, "Should not return true when creating a system of a type that already exists.");
 
 		std::shared_ptr<SomeSystem> someSystem = world.getSystemContainer().getSystem<SomeSystem>().lock();
 		ST_ASSERT(someSystem != nullptr, "Should get a non nullptr system");
@@ -66,21 +66,21 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 			return;
 		}
 
-		ST_ASSERT(someSystem->bOnInitializeCalled, "onInitialize should have been called.");
+		ST_ASSERT(someSystem->onInitializeCalled, "onInitialize should have been called.");
 
 		world.tick(.16f);
 	
-		ST_ASSERT(someSystem->bTickCalled, "tick should have been called.");
+		ST_ASSERT(someSystem->tickCalled, "tick should have been called.");
 
-		bool bOnDeinitializeCalled = false;
-		someSystem->assignOnDeinitializeCalled([&bOnDeinitializeCalled]() 
+		bool onDeinitializeCalled = false;
+		someSystem->assignOnDeinitializeCalled([&onDeinitializeCalled]() 
 		{
-			bOnDeinitializeCalled = true;
+			onDeinitializeCalled = true;
 		});
 
-		bool bDidDestroySystem = world.getSystemContainer().destroySystem<SomeSystem>();
-		ST_ASSERT(bDidDestroySystem, "Should return true when destroying a system.");
-		ST_ASSERT(bOnDeinitializeCalled, "onDeinitialize should have been called.");
+		bool didDestroySystem = world.getSystemContainer().destroySystem<SomeSystem>();
+		ST_ASSERT(didDestroySystem, "Should return true when destroying a system.");
+		ST_ASSERT(onDeinitializeCalled, "onDeinitialize should have been called.");
 
 		world.getSystemContainer().destroySystem<SomeSystem>();
 		world.deinitialize();
@@ -93,8 +93,8 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		World world;
 		SystemContainer& systemContainer = world.getSystemContainer();
 
-		bool bDidCreateSystem = systemContainer.createSystem<SomeSystem>();
-		ST_ASSERT(bDidCreateSystem, "Should return true when creating a system.");
+		bool didCreateSystem = systemContainer.createSystem<SomeSystem>();
+		ST_ASSERT(didCreateSystem, "Should return true when creating a system.");
 
 		std::shared_ptr<SomeSystem> someSystem = systemContainer.getSystem<SomeSystem>().lock();
 		ST_ASSERT(someSystem != nullptr, "SomeSystem should not be null");
@@ -103,26 +103,26 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 			return;
 		}
 
-		ST_ASSERT(!someSystem->bOnInitializeCalled, "System initialize should not have been called yet");
+		ST_ASSERT(!someSystem->onInitializeCalled, "System initialize should not have been called yet");
 		systemContainer.tick(.16f);
-		ST_ASSERT(!someSystem->bTickCalled, "system tick should not have been called yet, since the system isn't initialized");
+		ST_ASSERT(!someSystem->tickCalled, "system tick should not have been called yet, since the system isn't initialized");
 
-		bool bOnDeinitializeCalled = false;
-		someSystem->assignOnDeinitializeCalled([&bOnDeinitializeCalled]() 
+		bool onDeinitializeCalled = false;
+		someSystem->assignOnDeinitializeCalled([&onDeinitializeCalled]() 
 		{
-			bOnDeinitializeCalled = true;
+			onDeinitializeCalled = true;
 		});
 
 		systemContainer.deinitialize();
-		ST_ASSERT(!bOnDeinitializeCalled, "System should not have been deinitialized, since it was not initialized in the first place.");
+		ST_ASSERT(!onDeinitializeCalled, "System should not have been deinitialized, since it was not initialized in the first place.");
 
 		systemContainer.initialize();
 	
-		ST_ASSERT(someSystem->bOnInitializeCalled, "System initialize should have been called");
+		ST_ASSERT(someSystem->onInitializeCalled, "System initialize should have been called");
 		systemContainer.tick(.16f);
-		ST_ASSERT(someSystem->bTickCalled, "System tick have been called, since the system is now initialized");
+		ST_ASSERT(someSystem->tickCalled, "System tick have been called, since the system is now initialized");
 		systemContainer.deinitialize();
-		ST_ASSERT(bOnDeinitializeCalled, "System should have been deinitialized, since it was initialized.");
+		ST_ASSERT(onDeinitializeCalled, "System should have been deinitialized, since it was initialized.");
 
 		world.getSystemContainer().destroySystem<SomeSystem>();
 		world.deinitialize();
@@ -187,31 +187,31 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		ST_ASSERT(someSystem2->initHandle.id == 1, "Should be the second one to be initialized");
 		ST_ASSERT(someSystem3->initHandle.id == 2, "Should be the third one to be initialized");
 
-		bool bWasOnDeinitCalled = false;
+		bool wasOnDeinitCalled = false;
 		int onDeinitCounter = 0;
-		someSystem1->onDeinitialized.subscribe([&bWasOnDeinitCalled, &onDeinitCounter]()
+		someSystem1->onDeinitialized.subscribe([&wasOnDeinitCalled, &onDeinitCounter]()
 		{
-			bWasOnDeinitCalled = true;
+			wasOnDeinitCalled = true;
 			ST_ASSERT(onDeinitCounter == 2, "Should be the third one to be deinitialized");
 			onDeinitCounter++;
 		});
 		
-		someSystem2->onDeinitialized.subscribe([&bWasOnDeinitCalled, &onDeinitCounter]()
+		someSystem2->onDeinitialized.subscribe([&wasOnDeinitCalled, &onDeinitCounter]()
 		{
-			bWasOnDeinitCalled = true;
+			wasOnDeinitCalled = true;
 			ST_ASSERT(onDeinitCounter == 1, "Should be the second one to be deinitialized");
 			onDeinitCounter++;
 		});
 		
-		someSystem3->onDeinitialized.subscribe([&bWasOnDeinitCalled, &onDeinitCounter]()
+		someSystem3->onDeinitialized.subscribe([&wasOnDeinitCalled, &onDeinitCounter]()
 		{
-			bWasOnDeinitCalled = true;
+			wasOnDeinitCalled = true;
 			ST_ASSERT(onDeinitCounter == 0, "Should be the first one to be deinitialized");
 			onDeinitCounter++;
 		});
 
 		world.deinitialize();
-		ST_ASSERT(bWasOnDeinitCalled, "OnDeinit should have been called")
+		ST_ASSERT(wasOnDeinitCalled, "OnDeinit should have been called")
 	}
 
 	ST_TEST(HandleSystemInheritance, "Should handle inheritance")
@@ -258,10 +258,10 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		public:
 			virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
 			{
-				bOnInitializeCalled = true;
+				onInitializeCalled = true;
 			}
 
-			bool bOnInitializeCalled = false;
+			bool onInitializeCalled = false;
 		};
 
 		class SomeOtherSystem : public SystemBase
@@ -269,7 +269,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		public:
 			virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
 			{
-				bOnInitializeCalled = true;
+				onInitializeCalled = true;
 				dependency = systemContainer.initializeDependency<SomeSystem>();
 			
 				ST_ASSERT(!dependency.expired(), "SomeSystem should have been initialized.");
@@ -278,10 +278,10 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 					return;
 				}
 
-				ST_ASSERT(dependency.lock()->bOnInitializeCalled, "SomeSystem should have been initialized.");
+				ST_ASSERT(dependency.lock()->onInitializeCalled, "SomeSystem should have been initialized.");
 			}
 
-			bool bOnInitializeCalled = false;
+			bool onInitializeCalled = false;
 			std::weak_ptr<SomeSystem> dependency;
 		};
 
@@ -301,7 +301,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 			return;
 		}
 
-		ST_ASSERT(someOtherSystem->bOnInitializeCalled, "SomeOtherSystem should have been initialized.");
+		ST_ASSERT(someOtherSystem->onInitializeCalled, "SomeOtherSystem should have been initialized.");
 
 		std::weak_ptr<SomeSystem> someSystem = systemContainer.getSystem<SomeSystem>();
 		if (someSystem.expired())
@@ -310,7 +310,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 			return;
 		}
 
-		ST_ASSERT(someSystem.lock()->bOnInitializeCalled, "someSystem should have been initialized.");
+		ST_ASSERT(someSystem.lock()->onInitializeCalled, "someSystem should have been initialized.");
 
 		systemContainer.destroySystem<SomeSystem>();
 		ST_ASSERT(someOtherSystem->dependency.expired(), "SomeSystem should have been destroyed and its shared_ptr reset.");

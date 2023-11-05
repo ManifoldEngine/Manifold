@@ -43,7 +43,7 @@ namespace ECSEngine
                 const EntityRegistry* inRegistry,
                 EntityId inCurrentEntityId,
                 std::bitset<ECSEngine::MAX_COMPONENTS> inComponentMask,
-                bool bInIsAll
+                bool inIsAll
             );
 
             EntityId operator*() const;

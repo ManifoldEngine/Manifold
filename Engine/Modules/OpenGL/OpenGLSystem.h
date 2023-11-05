@@ -8,8 +8,6 @@ struct GLFWwindow;
 
 namespace ECSEngine
 {
-	class OpenGLLayer;
-
 	// manages the opengl implementation using glfw and glew.
 	class OpenGL_API OpenGLSystem : public SystemBase
 	{
@@ -36,9 +34,7 @@ namespace ECSEngine
 		virtual void onDeinitialize(EntityRegistry& registry);
 
 	private:
-		WindowContext window;
-
-		OpenGLLayer* m_pLayer = nullptr;
+		WindowContext context;
 
 		void terminate();
 

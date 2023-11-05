@@ -24,7 +24,7 @@ namespace ECSEngine
 	struct BufferLayoutElement
 	{
 		ShaderDataType shaderType = ShaderDataType::None;
-		bool bIsNormalized = false;
+		bool isNormalized = false;
 	};
 
 	class OpenGL_API OpenGLVertexBuffer

@@ -44,9 +44,9 @@ bool OpenGLShader::compile()
     glLinkProgram(shaderProgramId);
 
     {
-        int bIsSuccess = 0;
-        glGetProgramiv(shaderProgramId, GL_LINK_STATUS, &bIsSuccess);
-        if (!bIsSuccess)
+        int isSuccess = 0;
+        glGetProgramiv(shaderProgramId, GL_LINK_STATUS, &isSuccess);
+        if (!isSuccess)
         {
             char infoLog[512];
             glGetProgramInfoLog(shaderProgramId, 512, NULL, infoLog);
@@ -78,9 +78,9 @@ uint32_t OpenGLShader::compile(const std::string_view& inSource, int shaderType)
     glShaderSource(id, 1, &source, NULL);
     glCompileShader(id);
 
-    int bIsSuccess = 0;
-    glGetShaderiv(id, GL_COMPILE_STATUS, &bIsSuccess);
-    if (!bIsSuccess)
+    int isSuccess = 0;
+    glGetShaderiv(id, GL_COMPILE_STATUS, &isSuccess);
+    if (!isSuccess)
     {
         char infoLog[512];
         glGetShaderInfoLog(id, 512, NULL, infoLog);

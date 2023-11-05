@@ -8,21 +8,21 @@ ST_SECTION_BEGIN(Core_Events, "Core Events")
 	ST_TEST(SubscribeAndUnsubscribe, "Should be able to call back the delegate it receives")
 	{
 		Event<int> someEvent;
-		bool bWasCalled = false;
-		Event<int>::Handle handle = someEvent.subscribe([&bWasCalled](int i) {
+		bool wasCalled = false;
+		Event<int>::Handle handle = someEvent.subscribe([&wasCalled](int i) {
 			ST_ASSERT(i == 4, "argument should be equal to what was passed.");
-			bWasCalled = true;
+			wasCalled = true;
 		});
 
 		someEvent.broadcast(4);
-		ST_ASSERT(bWasCalled, "delegate should have been called");
+		ST_ASSERT(wasCalled, "delegate should have been called");
 
-		bWasCalled = false;
+		wasCalled = false;
 		someEvent.unsubscribe(handle);
 
 		someEvent.broadcast(4);
 
-		ST_ASSERT(!bWasCalled, "delegate should have been called.");
+		ST_ASSERT(!wasCalled, "delegate should have been called.");
 	}
 
 	ST_TEST(SubscribeAndUnsubscribeFromFuncRef, "Should be able to call back the delegate it receives, the delegate being a function ref")
@@ -30,12 +30,12 @@ ST_SECTION_BEGIN(Core_Events, "Core Events")
 		class SomeClass
 		{
 		public:
-			bool bWasCalled = false;
+			bool wasCalled = false;
 
 			void onSomeEvent(int i)
 			{
 				ST_ASSERT(i == 4, "argument should be equal to what was passed.");
-				bWasCalled = true;
+				wasCalled = true;
 			};
 		};
 
@@ -49,14 +49,14 @@ ST_SECTION_BEGIN(Core_Events, "Core Events")
 		});
 
 		someEvent.broadcast(4);
-		ST_ASSERT(someObject.bWasCalled, "delegate should have been called");
+		ST_ASSERT(someObject.wasCalled, "delegate should have been called");
 
-		someObject.bWasCalled = false;
+		someObject.wasCalled = false;
 		someEvent.unsubscribe(handle);
 
 		someEvent.broadcast(4);
 
-		ST_ASSERT(!someObject.bWasCalled, "delegate should have been called.");
+		ST_ASSERT(!someObject.wasCalled, "delegate should have been called.");
 	}
 
 	ST_TEST(SubscribeAndUnsubscribeMultipleTimes, "Should be able to call back the all delegates it receives")
@@ -64,12 +64,12 @@ ST_SECTION_BEGIN(Core_Events, "Core Events")
 		class SomeClass
 		{
 		public:
-			bool bWasCalled = false;
+			bool wasCalled = false;
 
 			void onSomeEvent(int i)
 			{
 				ST_ASSERT(i == 4, "argument should be equal to what was passed.");
-				bWasCalled = true;
+				wasCalled = true;
 			};
 		};
 
@@ -92,13 +92,13 @@ ST_SECTION_BEGIN(Core_Events, "Core Events")
 
 		someEvent.broadcast(4);
 
-		bool bWasCalled = true;
+		bool wasCalled = true;
 		for (const auto& someObject : listeners)
 		{
-			bWasCalled &= someObject.bWasCalled;
+			wasCalled &= someObject.wasCalled;
 		}
 
-		ST_ASSERT(bWasCalled, "all delegates should have been called");
+		ST_ASSERT(wasCalled, "all delegates should have been called");
 
 		for (const auto& handle : handles)
 		{
@@ -111,12 +111,12 @@ ST_SECTION_BEGIN(Core_Events, "Core Events")
 		class SomeClass
 		{
 		public:
-			bool bWasCalled = false;
+			bool wasCalled = false;
 
 			void onSomeEvent(int i)
 			{
 				ST_ASSERT(i == 4, "argument should be equal to what was passed.");
-				bWasCalled = true;
+				wasCalled = true;
 			};
 		};
 
@@ -125,7 +125,7 @@ ST_SECTION_BEGIN(Core_Events, "Core Events")
 		// this is an example of how you can bind an object to the function. It's not pretty, but it works.
 		someEvent.subscribe(std::bind(&SomeClass::onSomeEvent, &someObject, std::placeholders::_1));
 		someEvent.broadcast(4);
-		ST_ASSERT(someObject.bWasCalled, "someObject should have been called");
+		ST_ASSERT(someObject.wasCalled, "someObject should have been called");
 	}
 }
 ST_SECTION_END(Core_Events)
