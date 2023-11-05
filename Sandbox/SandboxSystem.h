@@ -5,6 +5,7 @@
 #include <OpenGL/OpenGLBuffer.h>
 #include <OpenGL/Shader/OpenGLShader.h>
 #include <memory>
+#include <OpenGL/OpenGLTexture.h>
 
 namespace ECSEngine
 {
@@ -24,8 +25,10 @@ protected:
 	virtual void onDeinitialize(ECSEngine::EntityRegistry& registry) override;
 
 private:
-	std::unique_ptr<ECSEngine::OpenGLVertexArray> m_pSquareVertexArray;
-	std::unique_ptr<ECSEngine::OpenGLIndexBuffer> m_pIndexBuffer;
-	std::shared_ptr<ECSEngine::OpenGLShader> m_pShader;
+	std::unique_ptr<ECSEngine::OpenGLVertexArray> m_squareVertexArray;
+	std::unique_ptr<ECSEngine::OpenGLIndexBuffer> m_indexBuffer;
+	std::shared_ptr<ECSEngine::OpenGLShader> m_shader;
+	std::unique_ptr<ECSEngine::OpenGLTexture2D> m_woodenBoxTexture2D;
+	std::unique_ptr<ECSEngine::OpenGLTexture2D> m_awesomeFaceTexture2D;
 };
 

@@ -40,7 +40,8 @@ ST_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 		ST_ASSERT(pWorld->isInitialized(), "World shoudl be initialized");
 		
 		std::shared_ptr<SomeWorldSystem> pSomeWorlSystem = pWorld->getSystemContainer().initializeDependency<SomeWorldSystem>().lock();
-		pSomeWorlSystem->onTick.subscribe([&bHasTicked](float deltaTime) { 
+		pSomeWorlSystem->onTick.subscribe([&bHasTicked](float deltaTime) 
+		{ 
 			ST_ASSERT(deltaTime < FLT_EPSILON, "Should have ticked with the same delta time than the application's tick");
 			bHasTicked = true;
 		});

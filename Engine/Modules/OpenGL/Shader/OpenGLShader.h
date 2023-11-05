@@ -24,6 +24,8 @@ namespace ECSEngine
 		
 		void setBool(const char* name, bool value);
 
+		void setTextureSlot(const char* name, uint32_t slot);
+
 		std::string name = "";
 		std::string vertexSource = "";
 		std::string fragmentSource = "";

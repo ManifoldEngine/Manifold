@@ -143,3 +143,8 @@ void OpenGLShader::setBool(const char* name, bool value)
 {
     setInt(name, value);
 }
+
+void OpenGLShader::setTextureSlot(const char* name, uint32_t slot)
+{
+    setInt(name, slot);
+}

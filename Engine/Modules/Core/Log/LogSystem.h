@@ -33,6 +33,5 @@ namespace ECSEngine
 		Impl* m_pImpl = nullptr;
 
 		static LogSystem* sm_pLogSystem;
-
 	};
 }

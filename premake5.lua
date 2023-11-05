@@ -101,6 +101,9 @@ project "OpenGL"
 
     -- stb (image)
     includedirs { thirdpartiesdir .. "/stb"}
+    
+    filter("configurations:Debug")
+        defines { "ECSE_OPENGL_DEBUG" }
 
 -- Executables
 project "Sandbox"

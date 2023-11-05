@@ -6,15 +6,15 @@
 #include <Core/Log.h>
 #include <Core/Assert.h>
 #include <Shader/OpenGLShaderSystem.h>
+#include <OpenGLDebug.h>
 
 #include <iostream>
-#include <format>
 #include <vector>
 #include <memory>
 
 using namespace ECSEngine;
 
-void ECSEngine::OpenGLSystem::destroyWindow(WindowContext& context)
+void OpenGLSystem::destroyWindow(WindowContext& context)
 {
     if (context.pWindow != nullptr)
     {
@@ -112,6 +112,11 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     glViewport(0, 0, window.width, window.height);
 
     systemContainer.initializeDependency<OpenGLShaderSystem>();
+
+#if ECSE_OPENGL_DEBUG
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(OpenGLMessageCallback, nullptr);
+#endif
 }
 
 void OpenGLSystem::onDeinitialize(EntityRegistry& entityRegistry)
