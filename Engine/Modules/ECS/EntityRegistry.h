@@ -49,7 +49,7 @@ namespace ECSEngine
 	private:
 		static ComponentId s_componentCounter;
 
-		IEntityContainer* m_pEntityContainer;
+		IEntityContainer* m_entityContainer;
 	};
 
 	template<typename TComponent>
@@ -57,7 +57,7 @@ namespace ECSEngine
 	{
 		ComponentId componentId = getComponentId<TComponent>();
 
-		void* buffer = m_pEntityContainer->addComponent(entityId, componentId, sizeof(TComponent));
+		void* buffer = m_entityContainer->addComponent(entityId, componentId, sizeof(TComponent));
 		if (buffer == nullptr)
 		{
 			return nullptr;
@@ -72,21 +72,21 @@ namespace ECSEngine
 	inline TComponent* EntityRegistry::getComponent(EntityId entityId)
 	{
 		ComponentId componentId = getComponentId<TComponent>();
-		return static_cast<TComponent*>(m_pEntityContainer->getComponent(entityId, componentId));
+		return static_cast<TComponent*>(m_entityContainer->getComponent(entityId, componentId));
 	}
 
 	template<typename TComponent>
 	inline bool EntityRegistry::removeComponent(EntityId entityId)
 	{
 		ComponentId componentId = getComponentId<TComponent>();
-		return m_pEntityContainer->removeComponent(entityId, componentId);
+		return m_entityContainer->removeComponent(entityId, componentId);
 	}
 
 	template<typename TComponent>
 	inline bool EntityRegistry::hasComponent(EntityId entityId)
 	{
 		ComponentId componentId = getComponentId<TComponent>();
-		return m_pEntityContainer->hasComponent<TComponent>(entityId, componentId);
+		return m_entityContainer->hasComponent<TComponent>(entityId, componentId);
 	}
 
 	template<typename TComponent>

@@ -26,6 +26,6 @@ namespace ECSEngine
 		virtual void onDeinitialize(EntityRegistry& registry);
 
 	private:
-		bool m_bIsInitialized = false;
+		bool m_isInitialized = false;
 	};
 }

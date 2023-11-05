@@ -32,7 +32,7 @@ namespace ECSEngine
 		EntityId id = UINT64_MAX;
 
 		// todo #2: this is kinda messed up. This means that when an entity is reused it will have the same id as in its previous life.
-		bool bisAlive = false;
+		bool isAlive = false;
 
 		bool hasComponent(ComponentId componentId) const;
 		bool hasComponents(const std::bitset<MAX_COMPONENTS>& componentMask) const;
@@ -41,6 +41,6 @@ namespace ECSEngine
 		void resetComponentBits();
 
 	private:
-		std::bitset<MAX_COMPONENTS>* m_pComponents = nullptr;
+		std::bitset<MAX_COMPONENTS>* m_components = nullptr;
 	};
 }

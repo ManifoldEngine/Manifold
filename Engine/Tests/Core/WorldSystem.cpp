@@ -50,3 +50,4 @@ ST_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 		ST_ASSERT(hasTicked, "World should have ticked.");
 	}
 }
+ST_SECTION_END(WorldSystemSection)

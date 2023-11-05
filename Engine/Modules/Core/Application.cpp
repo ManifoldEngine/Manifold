@@ -9,58 +9,58 @@
 
 using namespace ECSEngine;
 
-Application* Application::sm_pApplication = nullptr;
+Application* Application::sm_application = nullptr;
 
 Application::Application()
 {
 	// there should be only one application instance.
-	ECSE_ASSERT(sm_pApplication == nullptr, "an Application instance already exists.");
-	sm_pApplication = this;
+	ECSE_ASSERT(sm_application == nullptr, "an Application instance already exists.");
+	sm_application = this;
 
-	m_pSystemContainer = new SystemContainer();
-	m_pSystemContainer->initialize();
-	m_pSystemContainer->createSystem<LogSystem>();
-	m_pSystemContainer->createSystem<WorldSystem>();
+	m_systemContainer = new SystemContainer();
+	m_systemContainer->initialize();
+	m_systemContainer->createSystem<LogSystem>();
+	m_systemContainer->createSystem<WorldSystem>();
 }
 
 Application::~Application()
 {
-	m_pSystemContainer->deinitialize();
-	m_pSystemContainer->destroySystem<LogSystem>();
-	m_pSystemContainer->destroySystem<WorldSystem>();
-	delete m_pSystemContainer;
-	sm_pApplication = nullptr;
+	m_systemContainer->deinitialize();
+	m_systemContainer->destroySystem<LogSystem>();
+	m_systemContainer->destroySystem<WorldSystem>();
+	delete m_systemContainer;
+	sm_application = nullptr;
 }
 
 Application& ECSEngine::Application::get()
 {
-	return *sm_pApplication;
+	return *sm_application;
 }
 
 SystemContainer& Application::getSystemContainer()
 {
-	return *m_pSystemContainer;
+	return *m_systemContainer;
 }
 
 void Application::run()
 {
 	Time::onApplicationStart();
-	m_pSystemContainer->initialize();
-	m_bIsRunning = true;
-	while (m_bIsRunning)
+	m_systemContainer->initialize();
+	m_isRunning = true;
+	while (m_isRunning)
 	{
 		Time::onNewFrame();
 		tick(Time::getDeltaTime());
 	}
-	m_pSystemContainer->deinitialize();
+	m_systemContainer->deinitialize();
 }
 
 void Application::stop()
 {
-	m_bIsRunning = false;
+	m_isRunning = false;
 }
 
 void Application::tick(float deltaTime)
 {
-	m_pSystemContainer->tick(deltaTime);
+	m_systemContainer->tick(deltaTime);
 }

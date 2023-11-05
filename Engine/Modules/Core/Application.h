@@ -21,13 +21,13 @@ namespace ECSEngine
 		void tick(float deltaTime);
 	
 		SystemContainer& getSystemContainer();
-		bool isRunning() const { return m_bIsRunning; }
+		bool isRunning() const { return m_isRunning; }
 
 	private:
-		static Application* sm_pApplication;
+		static Application* sm_application;
 
-		bool m_bIsRunning = false;
+		bool m_isRunning = false;
 		
-		SystemContainer* m_pSystemContainer = nullptr;
+		SystemContainer* m_systemContainer = nullptr;
 	};
 }

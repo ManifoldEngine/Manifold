@@ -15,13 +15,13 @@ namespace ECSEngine
 
 		void initialize();
 		void deinitialize();
-		bool isInitialized() const { return m_bIsInitialized; }
+		bool isInitialized() const { return m_isInitialized; }
 
 		virtual void tick(float deltaTime);
 		SystemContainer& getSystemContainer();
 
 	private:
-		SystemContainer* m_pSystemContainer = nullptr;
-		bool m_bIsInitialized = false;
+		SystemContainer* m_systemContainer = nullptr;
+		bool m_isInitialized = false;
 	};
 }

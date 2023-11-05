@@ -40,13 +40,13 @@ EntityId EntityContainer_Implementation::create()
 	{
 		EntityId id = m_entityPool.back();
 		m_entityPool.pop_back();
-		m_entities[id].bisAlive = true;
+		m_entities[id].isAlive = true;
 		return id;
 	}
 
 	m_entities.push_back(Entity());
 	m_entities.back().id = m_entities.size() - 1;
-	m_entities.back().bisAlive = true;
+	m_entities.back().isAlive = true;
 	return m_entities.back().id;
 }
 
@@ -58,7 +58,7 @@ bool EntityContainer_Implementation::destroy(EntityId entityId)
 	}
 
 	Entity& entity = m_entities[entityId];
-	entity.bisAlive = false;
+	entity.isAlive = false;
 	entity.resetComponentBits();
 
 	m_entityPool.push_back(entity.id);
@@ -87,7 +87,7 @@ bool EntityContainer_Implementation::isValid(EntityId entityId) const
 		return false;
 	}
 
-	return m_entities[entityId].bisAlive;
+	return m_entities[entityId].isAlive;
 }
 
 void* ECSEngine::EntityContainer_Implementation::addComponent(EntityId entityId, ComponentId componentId, size_t componentSize)

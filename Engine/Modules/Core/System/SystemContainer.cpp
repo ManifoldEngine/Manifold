@@ -5,7 +5,7 @@ using namespace ECSEngine;
 
 void SystemContainer::initialize()
 {
-	if (m_bIsInitialized)
+	if (m_isInitialized)
 	{
 		return;
 	}
@@ -15,12 +15,12 @@ void SystemContainer::initialize()
 		system->initialize(m_registry, *this);
 	}
 
-	m_bIsInitialized = true;
+	m_isInitialized = true;
 }
 
 void SystemContainer::deinitialize()
 {
-	if (!m_bIsInitialized)
+	if (!m_isInitialized)
 	{
 		return;
 	}
@@ -30,12 +30,12 @@ void SystemContainer::deinitialize()
 		(*it)->deinitialize(m_registry);
 	}
 
-	m_bIsInitialized = false;
+	m_isInitialized = false;
 }
 
 void SystemContainer::tick(float deltaTime)
 {
-	if (!m_bIsInitialized)
+	if (!m_isInitialized)
 	{
 		return;
 	}

@@ -5,43 +5,43 @@ using namespace ECSEngine;
 
 Entity::Entity()
 {
-	m_pComponents = new std::bitset<MAX_COMPONENTS>();
+	m_components = new std::bitset<MAX_COMPONENTS>();
 }
 
 Entity::Entity(const Entity& other)
 	: Entity()
 {
 	id = other.id;
-	bisAlive = other.bisAlive;
-	*m_pComponents = *other.m_pComponents;
+	isAlive = other.isAlive;
+	*m_components = *other.m_components;
 }
 
 Entity::~Entity()
 {
-	delete m_pComponents;
+	delete m_components;
 }
 
 bool Entity::hasComponent(ComponentId componentId) const
 {
-	return m_pComponents->test(componentId);
+	return m_components->test(componentId);
 }
 
 bool Entity::hasComponents(const std::bitset<MAX_COMPONENTS>& componentMask) const
 {
-	return componentMask == (componentMask & *m_pComponents);
+	return componentMask == (componentMask & *m_components);
 }
 
 void Entity::setComponentBit(ComponentId componentId)
 {
-	m_pComponents->set(componentId, true);
+	m_components->set(componentId, true);
 }
 
 void Entity::resetComponentBit(ComponentId componentId)
 {
-	m_pComponents->set(componentId, false);
+	m_components->set(componentId, false);
 }
 
 void Entity::resetComponentBits()
 {
-	m_pComponents->reset();
+	m_components->reset();
 }

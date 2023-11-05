@@ -16,12 +16,12 @@ namespace ECSEngine
 
 		Event()
 		{
-			m_pCallbacks = new std::vector<std::function<void(TArgs ...)>>();
+			m_callbacks = new std::vector<std::function<void(TArgs ...)>>();
 		}
 
 		~Event()
 		{
-			delete m_pCallbacks;
+			delete m_callbacks;
 		}
 
 		Handle subscribe(const std::function<void(TArgs ...)>& f);
@@ -32,14 +32,14 @@ namespace ECSEngine
 		bool isValidHandle(const Handle& handle);
 
 	private:
-		std::vector<std::function<void(TArgs ...)>>* m_pCallbacks = nullptr;
+		std::vector<std::function<void(TArgs ...)>>* m_callbacks = nullptr;
 	};
 
 	template<typename ...TArgs>
 	inline Event<TArgs...>::Handle Event<TArgs...>::subscribe(const std::function<void(TArgs ...)>& f)
 	{
-		m_pCallbacks->push_back(f);
-		return Handle{ m_pCallbacks->size() - 1 };
+		m_callbacks->push_back(f);
+		return Handle{ m_callbacks->size() - 1 };
 	};
 
 	template<typename ...TArgs>
@@ -47,14 +47,14 @@ namespace ECSEngine
 	{
 		if (isValidHandle(handle))
 		{
-			m_pCallbacks->erase(m_pCallbacks->begin() + handle.id);
+			m_callbacks->erase(m_callbacks->begin() + handle.id);
 		}
 	};
 
 	template<typename ...TArgs>
 	inline void Event<TArgs...>::broadcast(TArgs ... args) const
 	{
-		for (const auto& f : *m_pCallbacks)
+		for (const auto& f : *m_callbacks)
 		{
 			if (f)
 			{
@@ -66,13 +66,13 @@ namespace ECSEngine
 	template<typename ...TArgs>
 	inline void Event<TArgs...>::clear()
 	{
-		m_pCallbacks->clear();
+		m_callbacks->clear();
 	};
 
 	template<typename ...TArgs>
 	inline bool Event<TArgs...>::isValidHandle(const Handle& handle)
 	{
-		return handle.id < m_pCallbacks->size();
+		return handle.id < m_callbacks->size();
 	};
 }
 

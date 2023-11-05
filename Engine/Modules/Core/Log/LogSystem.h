@@ -32,6 +32,6 @@ namespace ECSEngine
 		struct Impl;
 		Impl* m_pImpl = nullptr;
 
-		static LogSystem* sm_pLogSystem;
+		static LogSystem* sm_logSystem;
 	};
 }

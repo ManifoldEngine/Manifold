@@ -46,7 +46,7 @@ namespace ECSEngine
 	private:
 		EntityRegistry m_registry;
 		std::vector<std::shared_ptr<SystemBase>> m_systems;
-		bool m_bIsInitialized = false;
+		bool m_isInitialized = false;
 	};
 
 	template<Derived<SystemBase> TSystem>
@@ -62,7 +62,7 @@ namespace ECSEngine
 		}
 
 		auto system = std::make_shared<TSystem>();
-		if (m_bIsInitialized)
+		if (m_isInitialized)
 		{
 			system->initialize(m_registry, *this);
 		}
@@ -104,7 +104,7 @@ namespace ECSEngine
 			std::shared_ptr<SystemBase> system = *it;
 			if (std::dynamic_pointer_cast<TSystem>(system) != nullptr)
 			{
-				if (m_bIsInitialized)
+				if (m_isInitialized)
 				{
 					system->deinitialize(m_registry);
 				}

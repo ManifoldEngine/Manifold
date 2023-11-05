@@ -73,18 +73,18 @@ private:
 	std::unordered_map<std::string_view, ELogLevel> channels;
 };
 
-LogSystem* LogSystem::sm_pLogSystem = nullptr;
+LogSystem* LogSystem::sm_logSystem = nullptr;
 
 LogSystem::LogSystem()
 {
 	m_pImpl = new LogSystem::Impl();
-	sm_pLogSystem = this;
+	sm_logSystem = this;
 }
 
 LogSystem::~LogSystem()
 {
 	delete m_pImpl;
-	sm_pLogSystem = nullptr;
+	sm_logSystem = nullptr;
 }
 
 void LogSystem::log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
@@ -99,9 +99,9 @@ void LogSystem::setChannelLogLevel(const std::string_view& channel, ELogLevel lo
 
 void LogSystem::s_log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
 {
-	if (sm_pLogSystem != nullptr)
+	if (sm_logSystem != nullptr)
 	{
-		sm_pLogSystem->log(channel, level, log);
+		sm_logSystem->log(channel, level, log);
 	}
 	else
 	{
@@ -111,9 +111,9 @@ void LogSystem::s_log(const std::string_view& channel, ELogLevel level, const st
 
 void ECSEngine::LogSystem::s_setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
 {
-	if (sm_pLogSystem != nullptr)
+	if (sm_logSystem != nullptr)
 	{
-		sm_pLogSystem->setChannelLogLevel(channel, logLevel);
+		sm_logSystem->setChannelLogLevel(channel, logLevel);
 	}
 	else
 	{
