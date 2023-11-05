@@ -66,6 +66,14 @@ project "Events"
 
     includedirs { moduledir, moduledir .. "/%{prj.name}" }
 
+project "Maths"
+    kind "StaticLib"
+    location (moduledir .. "/%{prj.name}")
+
+    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
+
+    includedirs { moduledir, moduledir .. "/%{prj.name}" }
+
 project "Utils"
     kind "StaticLib"
     location (moduledir .. "/%{prj.name}")
@@ -137,6 +145,6 @@ project "Tests"
 
     files { enginedir .. "/%{prj.name}/**.h", enginedir .. "/%{prj.name}/**.cpp" }
     
-    links { "Core", "ECS", "OpenGL" }
+    links { "Core", "ECS", "OpenGL", "Maths"}
     
     includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir }

@@ -27,7 +27,8 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
 
     unsigned int triangleIndices[] =
     {
-        0, 1, 2, 0, 2, 3 // first triangle
+        0, 1, 2, 
+        0, 2, 3 
     };
 
     std::shared_ptr<OpenGLVertexBuffer> squareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(triangleVertices, (int)sizeof(triangleVertices));
