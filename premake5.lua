@@ -137,6 +137,6 @@ project "Tests"
 
     files { enginedir .. "/%{prj.name}/**.h", enginedir .. "/%{prj.name}/**.cpp" }
     
-    links { "Core", "ECS", "OpenGL", "Maths"}
+    links { "Core", "ECS", "OpenGL" }
     
     includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir }
