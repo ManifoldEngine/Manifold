@@ -84,6 +84,7 @@ LogSystem::LogSystem()
 LogSystem::~LogSystem()
 {
 	delete m_pImpl;
+	sm_pLogSystem = nullptr;
 }
 
 void LogSystem::log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
