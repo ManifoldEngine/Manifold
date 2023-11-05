@@ -21,6 +21,9 @@ namespace ECSEngine
 		void setInt2(const char* name, int x, int y);
 		void setInt3(const char* name, int x, int y, int z);
 		void setInt4(const char* name, int x, int y, int z, int w);
+
+		void setFloatMatrix3(const char* name, float* value);
+		void setFloatMatrix4(const char* name, float* value);
 		
 		void setBool(const char* name, bool value);
 

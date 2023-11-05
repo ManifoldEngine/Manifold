@@ -137,6 +137,18 @@ void OpenGLShader::setInt4(const char* name, int x, int y, int z, int w)
     glUniform4i(location, x, y, z, w);
 }
 
+void OpenGLShader::setFloatMatrix3(const char* name, float* value)
+{
+    const int location = glGetUniformLocation(shaderProgramId, name);
+    glUniformMatrix3fv(location, 1, GL_FALSE, value);
+}
+
+void OpenGLShader::setFloatMatrix4(const char* name, float* value)
+{
+    const int location = glGetUniformLocation(shaderProgramId, name);
+    glUniformMatrix4fv(location, 1, GL_FALSE, value);
+}
+
 void OpenGLShader::setBool(const char* name, bool value)
 {
     setInt(name, value);

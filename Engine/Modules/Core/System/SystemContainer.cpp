@@ -1,5 +1,5 @@
 #include "SystemContainer.h"
-#include <Assert.h>
+#include <CoreAssert.h>
 
 using namespace ECSEngine;
 

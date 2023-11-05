@@ -12,6 +12,9 @@ workspace "ECSEngine"
     flags { "MultiProcessorCompile" }
     targetdir ("bin/" .. outputdir)
     objdir ("bin-int/" .. outputdir)
+
+    --glm
+    includedirs { thirdpartiesdir .. "/glm" }
     
     filter "configurations:Debug"
         defines { "ECSE_DEBUG" }
@@ -112,7 +115,7 @@ project "Sandbox"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
 
-    links { "Core", "OpenGL" }
+    links { "Core", "OpenGL", "ECS" }
 
     includedirs { moduledir, "/%{prj.name}" }
 

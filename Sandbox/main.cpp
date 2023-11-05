@@ -20,6 +20,8 @@ int main(int argc, char** argv)
 	world->getSystemContainer().createSystem<SandboxSystem>();
 	
 	app.run();
+	
+	world->getSystemContainer().destroySystem<SandboxSystem>();
 
 	systemContainer.destroySystem<OpenGLSystem>();
 	return 0;

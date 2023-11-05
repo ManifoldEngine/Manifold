@@ -1,7 +1,7 @@
 #pragma once
 
 #include "OpenGL.h"
-#include <Core/Assert.h>
+#include <Core/CoreAssert.h>
 
 namespace ECSEngine
 {

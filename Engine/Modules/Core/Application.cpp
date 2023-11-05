@@ -4,7 +4,7 @@
 #include <Core/System/SystemContainer.h>
 #include <Core/World/WorldSystem.h>
 #include <Core/CoreTime.h>
-#include <Core/Assert.h>
+#include <Core/CoreAssert.h>
 #include <Core/Log/LogSystem.h>
 
 using namespace ECSEngine;

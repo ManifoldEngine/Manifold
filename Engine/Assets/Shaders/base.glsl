@@ -1,21 +1,35 @@
 #type vertex 
 #version 330 core
 
-layout(location = 0) in vec3 aPos;
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec2 aTextureCoordinate;
+
+uniform mat4 transform;
+
+out vec2 textureCoordinate;
 
 void main()
 {
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+    gl_Position = transform * vec4(aPosition, 1.0);
+    textureCoordinate = aTextureCoordinate;
 }
 
 #type fragment
 #version 330 core
 
+in vec2 textureCoordinate;
+
 uniform vec4 color;
+uniform sampler2D inputTexture1;
+uniform sampler2D inputTexture2;
 
 out vec4 FragColor;
 
 void main()
 {
-    FragColor = color;
+    FragColor = mix(
+        texture(inputTexture1, textureCoordinate),
+        texture(inputTexture2, textureCoordinate),
+        0.2f
+    );
 }

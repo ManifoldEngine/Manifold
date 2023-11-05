@@ -3,6 +3,12 @@
 #include <OpenGL/Shader/OpenGLShaderSystem.h>
 #include <GL/glew.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <Core/Components/Transform.h>
+#include <ECS/RegistryView.h>
+
 using namespace ECSEngine;
 
 void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
@@ -14,31 +20,30 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
         return;
     }
 
-    m_shader = shaderSystem.lock()->getShader("coloredVertex.glsl");
+    m_shader = shaderSystem.lock()->getShader("base.glsl");
 
-    float triangleVertices[] =
+    float squareVertices[] =
     {     
-        // positions                // colors       // texture coords
-         0.5f,  0.5f, 0.0f,     1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,     0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,     0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,     1.0f, 1.0f, 0.0f,   0.0f, 1.0f // top left
+        // positions            // texture coords
+         0.5f,  0.5f, 0.0f,     1.0f, 1.0f, // top right
+         0.5f, -0.5f, 0.0f,     1.0f, 0.0f, // bottom right
+        -0.5f, -0.5f, 0.0f,     0.0f, 0.0f, // bottom left
+        -0.5f,  0.5f, 0.0f,     0.0f, 1.0f // top left
     };
 
-    unsigned int triangleIndices[] =
+    unsigned int squareIndices[] =
     {
         0, 1, 2, 
         0, 2, 3 
     };
 
-    std::shared_ptr<OpenGLVertexBuffer> squareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(triangleVertices, (int)sizeof(triangleVertices));
+    std::shared_ptr<OpenGLVertexBuffer> squareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(squareVertices, (int)sizeof(squareVertices));
     squareVertexBuffer->layout = {
-        { ShaderDataType::Float3, false },
         { ShaderDataType::Float3, false },
         { ShaderDataType::Float2, false }
     };
 
-    std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(triangleIndices, (int)sizeof(triangleIndices));
+    std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(squareIndices, (int)sizeof(squareIndices));
 
     m_squareVertexArray = std::make_unique<OpenGLVertexArray>();
     m_squareVertexArray->addVertexBuffer(squareVertexBuffer);
@@ -46,6 +51,12 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
 
     m_woodenBoxTexture2D = std::make_unique<OpenGLTexture2D>("Assets/Images/container.jpg");
     m_awesomeFaceTexture2D = std::make_unique<OpenGLTexture2D>("Assets/Images/awesomeface.png");
+
+    EntityId entityId = registry.create();
+    Transform* transform = registry.addComponent<Transform>(entityId);
+    transform->position = glm::vec3(.5f, -.5f, .0f);
+    transform->rotation = glm::vec3(0.0f, 0.0f, 90.0f);
+    transform->scale = glm::vec3(.5f, .5f, .5f);
 }
 
 void SandboxSystem::onDeinitialize(EntityRegistry& registry)
@@ -66,20 +77,39 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
         ECSE_LOG_ERROR(LogOpenGL, "No shader available.");
         return;
     }
-
+  
     m_woodenBoxTexture2D->bind(0);
     m_awesomeFaceTexture2D->bind(1);
+
     // set the shader program to be used.
     m_shader->use();
     m_shader->setTextureSlot("inputTexture1", 0);
     m_shader->setTextureSlot("inputTexture2", 1);
-    m_squareVertexArray->bind();
-    if (const auto& indexBuffer = m_squareVertexArray->getIndexBuffer())
+
+    ECSE_LOG(Log, "{}", 1.f/ deltaTime);
+
+    RegistryView<Transform> view(registry);
+    for (const auto& entityId : view)
     {
-        glDrawElements(GL_TRIANGLES, indexBuffer->getStrideCount(), GL_UNSIGNED_INT, nullptr);
-    }
-    else
-    {
-        ECSE_ASSERT(false, "no index buffer provided with the vertices");
+        if (Transform* transform = registry.getComponent<Transform>(entityId))
+        {
+            transform->position += glm::vec3(1.f, 0.f, 0.f) * deltaTime;
+            if (transform->position.x > 1.5f)
+            {
+                transform->position = glm::vec3(-1.5f, -.5f, .0f);;
+            }
+
+            glm::mat4 transformMatrix = transform->calculate();
+            m_shader->setFloatMatrix4("transform", glm::value_ptr(transformMatrix));
+            m_squareVertexArray->bind();
+            if (const auto& indexBuffer = m_squareVertexArray->getIndexBuffer())
+            {
+                glDrawElements(GL_TRIANGLES, indexBuffer->getStrideCount(), GL_UNSIGNED_INT, nullptr);
+            }
+            else
+            {
+                ECSE_ASSERT(false, "no index buffer provided with the vertices");
+            }
+        }
     }
 }

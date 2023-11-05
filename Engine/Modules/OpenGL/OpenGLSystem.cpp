@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <Core/Application.h>
 #include <Core/Log.h>
-#include <Core/Assert.h>
+#include <Core/CoreAssert.h>
 #include <Shader/OpenGLShaderSystem.h>
 #include <OpenGLDebug.h>
 
