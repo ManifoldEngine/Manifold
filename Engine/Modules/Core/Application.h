@@ -1,13 +1,12 @@
 #pragma once
 
 #include <Core/Core.h>
-#include <Core/Interfaces/ITickable.h>
 
 namespace ECSEngine
 {
 	class SystemContainer;
 
-	class Core_API Application : public ITickable
+	class Core_API Application
 	{
 	public:
 		Application();
@@ -19,7 +18,7 @@ namespace ECSEngine
 		void stop();
 
 		// Inherited via ITickable
-		virtual void tick(float deltaTime) override;
+		void tick(float deltaTime);
 	
 		SystemContainer& getSystemContainer();
 		bool isRunning() const { return m_bIsRunning; }

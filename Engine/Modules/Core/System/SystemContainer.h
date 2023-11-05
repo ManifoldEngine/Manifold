@@ -2,7 +2,6 @@
 
 #include "System.h"
 #include <ECS/EntityRegistry.h>
-#include <Core/Interfaces/ITickable.h>
 #include <Utils/TemplateUtils.h>
 #include <vector>
 #include <memory>
@@ -11,7 +10,7 @@ namespace ECSEngine
 {
 	// System container class. It manages unique systems. It also owns an EntityRegistry and is in charge
 	// of distributing the registry to systems.
-	class SystemContainer : public ITickable
+	class SystemContainer
 	{
 	public:
 		// Initializes all created systems. once this is called, will initialize newly created systems

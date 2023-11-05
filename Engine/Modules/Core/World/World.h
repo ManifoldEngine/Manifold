@@ -1,14 +1,13 @@
 #pragma once
 
 #include <Core/Core.h>
-#include <Core/Interfaces/ITickable.h>
 #include <ECS/EntityRegistry.h>
 
 namespace ECSEngine
 {
 	class SystemContainer;
 
-	class Core_API World : public ITickable
+	class Core_API World
 	{
 	public:
 		World();
@@ -18,7 +17,7 @@ namespace ECSEngine
 		void deinitialize();
 		bool isInitialized() const { return m_bIsInitialized; }
 
-		virtual void tick(float deltaTime) override;
+		virtual void tick(float deltaTime);
 		SystemContainer& getSystemContainer();
 
 	private:
