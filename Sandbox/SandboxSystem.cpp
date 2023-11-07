@@ -52,11 +52,18 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
     m_woodenBoxTexture2D = std::make_unique<OpenGLTexture2D>("Assets/Images/container.jpg");
     m_awesomeFaceTexture2D = std::make_unique<OpenGLTexture2D>("Assets/Images/awesomeface.png");
 
-    EntityId entityId = registry.create();
-    Transform* transform = registry.addComponent<Transform>(entityId);
-    transform->position = glm::vec3(.5f, -.5f, .0f);
-    transform->rotation = glm::vec3(0.0f, 0.0f, 90.0f);
-    transform->scale = glm::vec3(.5f, .5f, .5f);
+    std::srand(std::time(nullptr));
+    for (int i = 0; i < 10'000; i++)
+    {
+        EntityId entityId = registry.create();
+        Transform* transform = registry.addComponent<Transform>(entityId);
+        double rx = (static_cast<double>(std::rand()) / RAND_MAX) * 3.f;
+        double ry = (static_cast<double>(std::rand()) / RAND_MAX) * 3.f;
+        double rr = (static_cast<double>(std::rand()) / RAND_MAX) * 359.f;
+        transform->position = glm::vec3(rx - 1.5f, ry - 1.5f, .0f);
+        transform->rotation = glm::vec3(0.0f, 0.0f, rr);
+        transform->scale = glm::vec3(.5f, .5f, .5f);
+    }
 }
 
 void SandboxSystem::onDeinitialize(EntityRegistry& registry)
@@ -96,7 +103,7 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
             transform->position += glm::vec3(1.f, 0.f, 0.f) * deltaTime;
             if (transform->position.x > 1.5f)
             {
-                transform->position = glm::vec3(-1.5f, -.5f, .0f);;
+                transform->position += glm::vec3(-3.f, 0.f, .0f);;
             }
 
             glm::mat4 transformMatrix = transform->calculate();

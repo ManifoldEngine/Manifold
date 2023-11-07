@@ -259,5 +259,35 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		ST_ASSERT(componentId1 - componentId0 == 1, "The second componentid should follow the first one");
 		ST_ASSERT(componentId2 - componentId1 == 1, "The third componentid should follow the second one");
 	}
+
+	ST_TEST(Spawn1000000Entities, "Should spawn 1'000'000 entities with a transform")
+	{
+		struct Transform
+		{
+			float position[3];
+			float rotation[3];
+			float scale[3];
+		};
+
+		EntityRegistry registry;
+		for (int i = 0; i < 1'000'000; ++i)
+		{
+			const EntityId entityId = registry.create();
+			Transform* transform = registry.addComponent<Transform>(entityId);
+			transform->position[0] = 1.f;
+			transform->position[1] = 1.f;
+			transform->position[2] = 1.f;
+
+			transform->rotation[0] = 1.f;
+			transform->rotation[1] = 1.f;
+			transform->rotation[2] = 1.f;
+
+			transform->scale[0] = 1.f;
+			transform->scale[1] = 1.f;
+			transform->scale[2] = 1.f;
+		}
+
+		ST_ASSERT(registry.size() == 1'000'000, "Should have spawned 1'000'000 entities.");
+	}
 }
 ST_SECTION_END(ECS)

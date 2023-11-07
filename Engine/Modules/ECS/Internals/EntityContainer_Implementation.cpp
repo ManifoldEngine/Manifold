@@ -16,7 +16,7 @@ void* EntityContainer_Implementation::ComponentPool::Get(size_t index)
 	if (index >= capacity)
 	{
 		// We don't have enough room. double the capacity until we do.
-		while (capacity < index)
+		while (index >= capacity)
 		{
 			capacity *= 2;
 		}
