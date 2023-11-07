@@ -6,14 +6,15 @@
 
 namespace ECSEngine
 {
+	struct EventHandle
+	{
+		size_t id = UINT64_MAX;
+	};
+
 	template<typename ...TArgs>
 	class Event
 	{
 	public:
-		struct Handle {
-			size_t id = UINT64_MAX;
-		};
-
 		Event()
 		{
 			m_callbacks = new std::vector<std::function<void(TArgs ...)>>();
@@ -24,26 +25,26 @@ namespace ECSEngine
 			delete m_callbacks;
 		}
 
-		Handle subscribe(const std::function<void(TArgs ...)>& f);
-		void unsubscribe(const Handle& handle);
+		EventHandle subscribe(const std::function<void(TArgs ...)>& f);
+		void unsubscribe(const EventHandle& handle);
 		void broadcast(TArgs ... args) const;
 		void clear();
 
-		bool isValidHandle(const Handle& handle);
+		bool isValidHandle(const EventHandle& handle);
 
 	private:
 		std::vector<std::function<void(TArgs ...)>>* m_callbacks = nullptr;
 	};
 
 	template<typename ...TArgs>
-	inline Event<TArgs...>::Handle Event<TArgs...>::subscribe(const std::function<void(TArgs ...)>& f)
+	inline EventHandle Event<TArgs...>::subscribe(const std::function<void(TArgs ...)>& f)
 	{
 		m_callbacks->push_back(f);
-		return Handle{ m_callbacks->size() - 1 };
+		return EventHandle{ m_callbacks->size() - 1 };
 	};
 
 	template<typename ...TArgs>
-	inline void Event<TArgs...>::unsubscribe(const Handle& handle)
+	inline void Event<TArgs...>::unsubscribe(const EventHandle& handle)
 	{
 		if (isValidHandle(handle))
 		{
@@ -70,7 +71,7 @@ namespace ECSEngine
 	};
 
 	template<typename ...TArgs>
-	inline bool Event<TArgs...>::isValidHandle(const Handle& handle)
+	inline bool Event<TArgs...>::isValidHandle(const EventHandle& handle)
 	{
 		return handle.id < m_callbacks->size();
 	};

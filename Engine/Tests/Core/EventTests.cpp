@@ -9,7 +9,7 @@ ST_SECTION_BEGIN(Core_Events, "Core Events")
 	{
 		Event<int> someEvent;
 		bool wasCalled = false;
-		Event<int>::Handle handle = someEvent.subscribe([&wasCalled](int i) {
+		EventHandle handle = someEvent.subscribe([&wasCalled](int i) {
 			ST_ASSERT(i == 4, "argument should be equal to what was passed.");
 			wasCalled = true;
 		});
@@ -43,7 +43,7 @@ ST_SECTION_BEGIN(Core_Events, "Core Events")
 
 		SomeClass someObject;
 
-		Event<int>::Handle handle = someEvent.subscribe([&someObject](int i) {
+		EventHandle handle = someEvent.subscribe([&someObject](int i) {
 			ST_ASSERT(i == 4, "argument should be equal to what was passed.");
 			someObject.onSomeEvent(i);
 		});
@@ -80,7 +80,7 @@ ST_SECTION_BEGIN(Core_Events, "Core Events")
 		}
 
 		Event<int> someEvent;
-		std::vector<Event<int>::Handle> handles;
+		std::vector<EventHandle> handles;
 		for (auto& someObject : listeners)
 		{
 			auto callback = [&someObject](int i) {
