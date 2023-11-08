@@ -3,6 +3,7 @@
 #include "OpenGL.h"
 #include <Core/System/System.h>
 #include <Events/Event.h>
+#include <glm/glm.hpp>
 
 struct GLFWwindow;
 
@@ -29,12 +30,22 @@ namespace ECSEngine
 		virtual bool shouldTick(EntityRegistry& registry) const override;
 
 		virtual void tick(float deltaTime, EntityRegistry& registry) override;
+
+		const WindowContext& getWindowContext() const;
+		const glm::vec3& getWASDinput() const;
+		const glm::vec2& getMouseDelta() const;
+
 	protected:
 		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer);
 		virtual void onDeinitialize(EntityRegistry& registry);
 
 	private:
 		WindowContext context;
+		glm::vec3 wasdInput = glm::vec3(0.0f, 0.0f, 0.0f);
+		glm::vec2 mouseDelta = glm::vec2(0.0f, 0.0f);
+		glm::vec2 mouseLastPosition = glm::vec2(0.0f, 0.0f);
+		const float mouseSensitivity = .1f;
+
 
 		void terminate();
 
@@ -42,5 +53,6 @@ namespace ECSEngine
 
 		static void glfwCallback_onWindowClosed(GLFWwindow* window);
 		static void glfwCallback_onWindowResized(GLFWwindow* window, int newWidth, int newHeight);
+		static void glfwCallback_onMouseMoved(GLFWwindow* window, double x, double y);
 	};
 }

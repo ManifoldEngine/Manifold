@@ -8,8 +8,12 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <Core/Components/Transform.h>
 #include <ECS/RegistryView.h>
+#include <Camera/CameraSystem.h>
+#include <random>
 
 using namespace ECSEngine;
+
+struct Cube {};
 
 void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
@@ -20,30 +24,68 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
         return;
     }
 
+    
     m_shader = shaderSystem.lock()->getShader("base.glsl");
 
-    float squareVertices[] =
-    {     
+    float vertices[] = {
         // positions            // texture coords
-         0.5f,  0.5f, 0.0f,     1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,     1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,     0.0f, 0.0f, // bottom left
-        -0.5f,  0.5f, 0.0f,     0.0f, 1.0f // top left
+        -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,    1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,    0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,    1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,    0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+        
+        -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+        
+         0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+        
+        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,    1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,    1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,    0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,    0.0f, 1.0f,
+        
+        -0.5f,  0.5f, -0.5f,    0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,    1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,    1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,    0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,    0.0f, 1.0f
     };
 
-    unsigned int squareIndices[] =
+    const size_t verticesSize = std::size(vertices);
+    unsigned int indices[verticesSize];
+    for (int i = 0; i < verticesSize; ++i)
     {
-        0, 1, 2, 
-        0, 2, 3 
-    };
+        indices[i] = i;
+    }
 
-    std::shared_ptr<OpenGLVertexBuffer> squareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(squareVertices, (int)sizeof(squareVertices));
+    std::shared_ptr<OpenGLVertexBuffer> squareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(vertices, (int)sizeof(vertices));
     squareVertexBuffer->layout = {
         { ShaderDataType::Float3, false },
         { ShaderDataType::Float2, false }
     };
 
-    std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(squareIndices, (int)sizeof(squareIndices));
+    std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(indices, (int)sizeof(indices));
 
     m_squareVertexArray = std::make_unique<OpenGLVertexArray>();
     m_squareVertexArray->addVertexBuffer(squareVertexBuffer);
@@ -52,17 +94,41 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
     m_woodenBoxTexture2D = std::make_unique<OpenGLTexture2D>("Assets/Images/container.jpg");
     m_awesomeFaceTexture2D = std::make_unique<OpenGLTexture2D>("Assets/Images/awesomeface.png");
 
-    std::srand(std::time(nullptr));
-    for (int i = 0; i < 10'000; i++)
+    
+    glm::vec3 cubePositions[] = {
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(2.0f, 5.0f, -15.0f),
+        glm::vec3(-1.5f, -2.2f, -2.5f),
+        glm::vec3(-3.8f, -2.0f, -12.3f),
+        glm::vec3(2.4f, -0.4f, -3.5f),
+        glm::vec3(-1.7f, 3.0f, -7.5f),
+        glm::vec3(1.3f, -2.0f, -2.5f),
+        glm::vec3(1.5f, 2.0f, -2.5f),
+        glm::vec3(1.5f, 0.2f, -1.5f),
+        glm::vec3(-1.3f, 1.0f, -1.5f)
+    };
+
+    glm::vec3 lowerBound = glm::vec3(-20.f, -20.f, -20.f);
+    glm::vec3 upperBound = glm::vec3( 20.f,  20.f,  20.f);
+    std::mt19937 gen(std::time(nullptr));
+    std::uniform_real_distribution<float> randomX(lowerBound.x, upperBound.x);
+    std::uniform_real_distribution<float> randomY(lowerBound.y, upperBound.y);
+    std::uniform_real_distribution<float> randomZ(lowerBound.z, upperBound.z);
+
+    for (int i = 0; i < 1'000; i++)
     {
         EntityId entityId = registry.create();
+        registry.addComponent<Cube>(entityId);
         Transform* transform = registry.addComponent<Transform>(entityId);
-        double rx = (static_cast<double>(std::rand()) / RAND_MAX) * 3.f;
-        double ry = (static_cast<double>(std::rand()) / RAND_MAX) * 3.f;
-        double rr = (static_cast<double>(std::rand()) / RAND_MAX) * 359.f;
-        transform->position = glm::vec3(rx - 1.5f, ry - 1.5f, .0f);
-        transform->rotation = glm::vec3(0.0f, 0.0f, rr);
-        transform->scale = glm::vec3(.5f, .5f, .5f);
+        const glm::vec3 position = glm::vec3(
+            randomX(gen),
+            randomY(gen),
+            randomZ(gen)
+        );
+        
+        transform->position = position;
+        transform->rotation = glm::vec3(-55.f, 0.0f, 0.0f);
+        transform->scale = glm::vec3(1.0f, 1.0f, 1.0f);
     }
 }
 
@@ -73,41 +139,58 @@ void SandboxSystem::onDeinitialize(EntityRegistry& registry)
 
 void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
 {
+    glEnable(GL_DEPTH_TEST);
+
     // setting color state.
     glClearColor(.2f, .3f, .3f, 1.f);
-
     // consuming color state.
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     if (m_shader == nullptr)
     {
         ECSE_LOG_ERROR(LogOpenGL, "No shader available.");
         return;
     }
-  
+
+    glm::mat4 view;
+    glm::mat4 projection;
+
+    RegistryView<CameraComponent> cameraRegistryView(registry);
+    for (const EntityId& entityId : cameraRegistryView)
+    {
+        if (const CameraComponent* cameraComponent = registry.getComponent<CameraComponent>(entityId))
+        {
+            view = cameraComponent->view;
+            projection = cameraComponent->projection;
+        }
+    }
+
     m_woodenBoxTexture2D->bind(0);
     m_awesomeFaceTexture2D->bind(1);
 
     // set the shader program to be used.
     m_shader->use();
+    // set vertex uniforms
+    m_shader->setFloatMatrix4("view", glm::value_ptr(view));
+    m_shader->setFloatMatrix4("projection", glm::value_ptr(projection));
+
+    // set fragment uniforms
     m_shader->setTextureSlot("inputTexture1", 0);
     m_shader->setTextureSlot("inputTexture2", 1);
 
     ECSE_LOG(Log, "{}", 1.f/ deltaTime);
 
-    RegistryView<Transform> view(registry);
-    for (const auto& entityId : view)
+    int index = 1;
+    RegistryView<Transform, Cube> registryView(registry);
+    for (const auto& entityId : registryView)
     {
         if (Transform* transform = registry.getComponent<Transform>(entityId))
         {
-            transform->position += glm::vec3(1.f, 0.f, 0.f) * deltaTime;
-            if (transform->position.x > 1.5f)
-            {
-                transform->position += glm::vec3(-3.f, 0.f, .0f);;
-            }
-
+            const float angle = 20.f * (index % 12);
+            transform->rotation += glm::vec3(angle * .5f, angle, 0.0f) * deltaTime;
+            
             glm::mat4 transformMatrix = transform->calculate();
-            m_shader->setFloatMatrix4("transform", glm::value_ptr(transformMatrix));
+            m_shader->setFloatMatrix4("model", glm::value_ptr(transformMatrix));
             m_squareVertexArray->bind();
             if (const auto& indexBuffer = m_squareVertexArray->getIndexBuffer())
             {
@@ -118,5 +201,6 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
                 ECSE_ASSERT(false, "no index buffer provided with the vertices");
             }
         }
+        index++;
     }
 }

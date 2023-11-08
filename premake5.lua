@@ -83,7 +83,7 @@ project "OpenGL"
 
     files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
 
-    links { "Core", "Events", "Utils" }
+    links { "Core", "Events", "Utils", "Camera" }
 
     includedirs { moduledir, moduledir .. "/%{prj.name}" }
 
@@ -108,6 +108,18 @@ project "OpenGL"
     filter("configurations:Debug")
         defines { "ECSE_OPENGL_DEBUG" }
 
+project "Camera"
+    kind "SharedLib"
+    location (moduledir .. "/%{prj.name}")
+
+    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
+
+    links { "Core", "ECS" }
+
+    includedirs { moduledir, moduledir .. "/%{prj.name}" }
+
+    defines { "%{prj.name}_EXPORTS" }
+
 -- Executables
 project "Sandbox"
     kind "ConsoleApp"
@@ -115,7 +127,7 @@ project "Sandbox"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
 
-    links { "Core", "OpenGL", "ECS" }
+    links { "Core", "OpenGL", "ECS", "Camera" }
 
     includedirs { moduledir, "/%{prj.name}" }
 

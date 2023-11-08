@@ -83,10 +83,11 @@ ST_SECTION_BEGIN(Core_Events, "Core Events")
 		std::vector<EventHandle> handles;
 		for (auto& someObject : listeners)
 		{
-			auto callback = [&someObject](int i) {
-				ST_ASSERT(i == 4, "argument should be equal to what was passed.");
-				someObject.onSomeEvent(i);
-			};
+			auto callback = [&someObject](int i) 
+							{
+								ST_ASSERT(i == 4, "argument should be equal to what was passed.");
+								someObject.onSomeEvent(i);
+							};
 			handles.push_back(someEvent.subscribe(callback));
 		}
 

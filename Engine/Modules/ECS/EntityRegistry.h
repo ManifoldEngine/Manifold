@@ -30,6 +30,9 @@ namespace ECSEngine
 		TComponent* getComponent(EntityId entityId);
 		
 		template<typename TComponent>
+		const TComponent* getComponent(EntityId entityId) const;
+		
+		template<typename TComponent>
 		bool removeComponent(EntityId entityId);
 
 		template<typename TComponent>
@@ -41,7 +44,7 @@ namespace ECSEngine
 
 		// Converts a TComponent type into a numerical identifier.
 		template<typename TComponent>
-		static ComponentId getComponentId();
+		ComponentId getComponentId() const;
 
 		// Resets the component id counter. This is mainly for easier testing.
 		static void resetComponentIds();
@@ -55,7 +58,7 @@ namespace ECSEngine
 	template<typename TComponent>
 	inline TComponent* EntityRegistry::addComponent(EntityId entityId)
 	{
-		ComponentId componentId = getComponentId<TComponent>();
+		ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
 
 		void* buffer = m_entityContainer->addComponent(entityId, componentId, sizeof(TComponent));
 		if (buffer == nullptr)
@@ -71,28 +74,34 @@ namespace ECSEngine
 	template<typename TComponent>
 	inline TComponent* EntityRegistry::getComponent(EntityId entityId)
 	{
-		ComponentId componentId = getComponentId<TComponent>();
+		ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
 		return static_cast<TComponent*>(m_entityContainer->getComponent(entityId, componentId));
+	}
+
+	template<typename TComponent>
+	inline const TComponent* EntityRegistry::getComponent(EntityId entityId) const
+	{
+		ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
+		return static_cast<const TComponent*>(m_entityContainer->getComponent(entityId, componentId));;
 	}
 
 	template<typename TComponent>
 	inline bool EntityRegistry::removeComponent(EntityId entityId)
 	{
-		ComponentId componentId = getComponentId<TComponent>();
+		ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
 		return m_entityContainer->removeComponent(entityId, componentId);
 	}
 
 	template<typename TComponent>
 	inline bool EntityRegistry::hasComponent(EntityId entityId)
 	{
-		ComponentId componentId = getComponentId<TComponent>();
+		ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
 		return m_entityContainer->hasComponent<TComponent>(entityId, componentId);
 	}
 
 	template<typename TComponent>
-	inline ComponentId EntityRegistry::getComponentId()
+	inline ComponentId EntityRegistry::getComponentId() const
 	{
-		static ComponentId s_componentId = s_componentCounter++;
-		return s_componentId;
+		return m_entityContainer->getComponentId(typeid(TComponent));
 	}
 }

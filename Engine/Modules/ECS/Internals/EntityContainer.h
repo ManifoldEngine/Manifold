@@ -1,8 +1,9 @@
 #pragma once
 
-#include "ECS.h"
-#include "Entity.h"
+#include <ECS/ECS.h>
+#include <ECS/Entity.h>
 #include <cstdint>
+#include <typeindex>
 
 namespace ECSEngine
 {
@@ -32,6 +33,8 @@ namespace ECSEngine
 
 		// gets the memory block associated with componentId for entityId
 		virtual void* getComponent(EntityId entityId, ComponentId componentId) const = 0;
+
+		virtual ComponentId getComponentId(const std::type_index& typeIndex) = 0;
 
 		// removes the component for entityId
 		virtual bool removeComponent(EntityId entityId, ComponentId componentId) = 0;

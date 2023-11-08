@@ -45,9 +45,22 @@ void OpenGLSystem::glfwCallback_onWindowResized(GLFWwindow* window, int newWidth
     {
         openGlSystem->context.width = newWidth;
         openGlSystem->context.height = newHeight;
+        openGlSystem->mouseLastPosition = glm::vec2(newWidth * .5f, newHeight * .5f);
     }
 
     glViewport(0, 0, newWidth, newHeight);
+}
+
+void OpenGLSystem::glfwCallback_onMouseMoved(GLFWwindow* window, double x, double y)
+{
+    if (auto* openGLSystem = (OpenGLSystem*)glfwGetWindowUserPointer(window))
+    {
+        const float deltaX = openGLSystem->mouseLastPosition.x - x;
+        const float deltaY = openGLSystem->mouseLastPosition.y - y;
+        
+        openGLSystem->mouseDelta = glm::vec2(deltaX, deltaY) * openGLSystem->mouseSensitivity;
+        openGLSystem->mouseLastPosition = glm::vec2(x, y);
+    }
 }
 // glfw callbacks begin
 
@@ -59,6 +72,21 @@ std::string_view OpenGLSystem::getName() const
 bool OpenGLSystem::shouldTick(EntityRegistry& registry) const
 {
     return true;
+}
+
+const OpenGLSystem::WindowContext& OpenGLSystem::getWindowContext() const
+{
+    return context;
+}
+
+const glm::vec3& OpenGLSystem::getWASDinput() const
+{
+    return wasdInput;
+}
+
+const glm::vec2& OpenGLSystem::getMouseDelta() const
+{
+    return mouseDelta;
 }
 
 void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
@@ -90,7 +118,8 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     }
 
     glfwGetWindowSize(context.window, &context.width, &context.height);
-    
+    glfwSetInputMode(context.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
     // set this as the window's user pointer. This allows us to retrieve this pointer from the window pointer provided in glfw's callbacks.
     glfwSetWindowUserPointer(context.window, this);
     glfwMakeContextCurrent(context.window);
@@ -98,6 +127,7 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     // set glfw callbacks
     glfwSetWindowCloseCallback(context.window, &OpenGLSystem::glfwCallback_onWindowClosed);
     glfwSetFramebufferSizeCallback(context.window, &OpenGLSystem::glfwCallback_onWindowResized);
+    glfwSetCursorPosCallback(context.window, &OpenGLSystem::glfwCallback_onMouseMoved);
 
     // init glew to load the correct opengl runtime
     GLenum result = glewInit();
@@ -110,6 +140,7 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
 
     // set the view port to the window's size.
     glViewport(0, 0, context.width, context.height);
+    mouseLastPosition = glm::vec2(context.width * .5f, context.height * .5f);
 
     systemContainer.initializeDependency<OpenGLShaderSystem>();
 
@@ -131,6 +162,38 @@ void OpenGLSystem::tick(float deltaTime, EntityRegistry& entityRegistry)
     if (context.window == nullptr)
     {
         return;
+    }
+
+    wasdInput = glm::vec3(0.0f, 0.0f, 0.0f);
+
+    if (glfwGetKey(context.window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        wasdInput += glm::vec3(0.0f, 0.0f, 1.0f);
+    }
+
+    if (glfwGetKey(context.window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        wasdInput += glm::vec3(0.0f, 0.0f, -1.0f);
+    }
+
+    if (glfwGetKey(context.window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        wasdInput += glm::vec3(1.0f, 0.0f, 0.0f);
+    }
+
+    if (glfwGetKey(context.window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        wasdInput += glm::vec3(-1.0f, 0.0f, 0.0f);
+    }
+
+    if (glfwGetKey(context.window, GLFW_KEY_E) == GLFW_PRESS)
+    {
+        wasdInput += glm::vec3(0.0f, 1.0f, 0.0f);
+    }
+
+    if (glfwGetKey(context.window, GLFW_KEY_Q) == GLFW_PRESS)
+    {
+        wasdInput += glm::vec3(0.0f, -1.0f, 0.0f);
     }
 
     glfwSwapBuffers(context.window);

@@ -25,9 +25,9 @@ void SystemBase::initialize(EntityRegistry& registry, SystemContainer& systemCon
         return;
     }
 
+    ECSE_LOG(LogCore, "Initialized {}", getName());
     onInitialize(registry, systemContainer);
     m_isInitialized = true;
-    ECSE_LOG(LogCore, "Initialized {}", getName());
 }
 
 void SystemBase::deinitialize(EntityRegistry& registry)

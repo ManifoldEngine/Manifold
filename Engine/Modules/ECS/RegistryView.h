@@ -27,7 +27,7 @@ namespace ECSEngine
             else
             {
                 // The compiler complains if we allocate an array of size 0. So, we start the array with 0.
-               const ComponentId componentIds[] = { 0, EntityRegistry::getComponentId<TComponents>() ... };
+               const ComponentId componentIds[] = { 0, registry.getComponentId<TComponents>() ... };
                 for (size_t i = 1; i < (sizeof...(TComponents) + 1); ++i)
                 {
                     m_componentMask.set(componentIds[i]);

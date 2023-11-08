@@ -65,7 +65,7 @@ bool EntityContainer_Implementation::destroy(EntityId entityId)
 	return true;
 }
 
-const Entity* ECSEngine::EntityContainer_Implementation::getEntity(EntityId entityId) const
+const Entity* EntityContainer_Implementation::getEntity(EntityId entityId) const
 {
 	if (!isValid(entityId))
 	{
@@ -90,7 +90,7 @@ bool EntityContainer_Implementation::isValid(EntityId entityId) const
 	return m_entities[entityId].isAlive;
 }
 
-void* ECSEngine::EntityContainer_Implementation::addComponent(EntityId entityId, ComponentId componentId, size_t componentSize)
+void* EntityContainer_Implementation::addComponent(EntityId entityId, ComponentId componentId, size_t componentSize)
 {
 	if (!isValid(entityId))
 	{
@@ -139,7 +139,7 @@ void* EntityContainer_Implementation::getComponent(EntityId entityId, ComponentI
 	return m_componentPools[componentId]->Get(entityId);
 }
 
-bool ECSEngine::EntityContainer_Implementation::removeComponent(EntityId entityId, ComponentId componentId)
+bool EntityContainer_Implementation::removeComponent(EntityId entityId, ComponentId componentId)
 {
 	if (!isValid(entityId))
 	{
@@ -157,7 +157,7 @@ bool ECSEngine::EntityContainer_Implementation::removeComponent(EntityId entityI
 	return true;
 }
 
-bool ECSEngine::EntityContainer_Implementation::hasComponent(EntityId entityId, ComponentId componentId) const
+bool EntityContainer_Implementation::hasComponent(EntityId entityId, ComponentId componentId) const
 {
 	if (!isValid(entityId))
 	{
@@ -165,4 +165,18 @@ bool ECSEngine::EntityContainer_Implementation::hasComponent(EntityId entityId, 
 	}
 
 	return m_entities[entityId].hasComponent(componentId);
+}
+
+ComponentId EntityContainer_Implementation::getComponentId(const std::type_index& typeIndex)
+{
+	if (auto it = m_componentIds.find(typeIndex); it != m_componentIds.end())
+	{
+		return it->second;
+	}
+	else
+	{
+		ComponentId componentId = m_componentIds.size();
+		m_componentIds[typeIndex] = componentId;
+		return componentId;
+	}
 }

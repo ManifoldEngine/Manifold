@@ -177,8 +177,21 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		ST_ASSERT(registry.size() == entityCount, "should have created 10 entities");
 
-		// iterate over the entities with DataComponent
 		int entityCounter = 0;
+		for (EntityId entityId : RegistryView<DataComponent, OtherDataComponent>(registry))
+		{
+			entityCounter++;
+
+			auto* component = registry.getComponent<DataComponent>(entityId);
+			ST_ASSERT(component != nullptr, "should have a DataComponent");
+
+			auto* otherComponent = registry.getComponent<OtherDataComponent>(entityId);
+			ST_ASSERT(otherComponent != nullptr, "should have a OtherDataComponent");
+		}
+		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent and OtherDataComponent in the registry view");
+
+		// iterate over the entities with DataComponent
+		entityCounter = 0;
 		for (EntityId entityId : RegistryView<DataComponent>(registry))
 		{
 			entityCounter++;
@@ -196,18 +209,6 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		}
 		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with OtherDataComponent in the registry view");
 
-		entityCounter = 0;
-		for (EntityId entityId : RegistryView<DataComponent, OtherDataComponent>(registry))
-		{
-			entityCounter++;
-
-			auto* component = registry.getComponent<DataComponent>(entityId);
-			ST_ASSERT(component != nullptr, "should have a DataComponent");
-
-			auto* otherComponent = registry.getComponent<OtherDataComponent>(entityId);
-			ST_ASSERT(otherComponent != nullptr, "should have a OtherDataComponent");
-		}
-		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent and OtherDataComponent in the registry view");
 
 		entityCounter = 0;
 		for (EntityId entityId : RegistryView<>(registry))
@@ -252,9 +253,14 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 	ST_TEST(ComponentIdAssignation, "ComponentIds should be consecutive")
 	{	
-		const ComponentId componentId0 = EntityRegistry::getComponentId<struct Component0>();
-		const ComponentId componentId1 = EntityRegistry::getComponentId<struct Component1>();
-		const ComponentId componentId2 = EntityRegistry::getComponentId<struct Component2>();
+		struct Component0 {};
+		struct Component1 {};
+		struct Component2 {};
+
+		EntityRegistry registry;
+		const ComponentId componentId0 = registry.getComponentId<Component0>();
+		const ComponentId componentId1 = registry.getComponentId<Component1>();
+		const ComponentId componentId2 = registry.getComponentId<Component2>();
 		
 		ST_ASSERT(componentId1 - componentId0 == 1, "The second componentid should follow the first one");
 		ST_ASSERT(componentId2 - componentId1 == 1, "The third componentid should follow the second one");
