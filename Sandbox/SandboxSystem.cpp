@@ -110,7 +110,7 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
 
     glm::vec3 lowerBound = glm::vec3(-20.f, -20.f, -20.f);
     glm::vec3 upperBound = glm::vec3( 20.f,  20.f,  20.f);
-    std::mt19937 gen(std::time(nullptr));
+    std::mt19937 gen(UINT32_MAX);
     std::uniform_real_distribution<float> randomX(lowerBound.x, upperBound.x);
     std::uniform_real_distribution<float> randomY(lowerBound.y, upperBound.y);
     std::uniform_real_distribution<float> randomZ(lowerBound.z, upperBound.z);

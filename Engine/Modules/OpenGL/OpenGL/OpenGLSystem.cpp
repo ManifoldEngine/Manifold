@@ -55,8 +55,8 @@ void OpenGLSystem::glfwCallback_onMouseMoved(GLFWwindow* window, double x, doubl
 {
     if (auto* openGLSystem = (OpenGLSystem*)glfwGetWindowUserPointer(window))
     {
-        const float deltaX = openGLSystem->mouseLastPosition.x - x;
-        const float deltaY = openGLSystem->mouseLastPosition.y - y;
+        const double deltaX = openGLSystem->mouseLastPosition.x - x;
+        const double deltaY = openGLSystem->mouseLastPosition.y - y;
         
         openGLSystem->mouseDelta = glm::vec2(deltaX, deltaY) * openGLSystem->mouseSensitivity;
         openGLSystem->mouseLastPosition = glm::vec2(x, y);

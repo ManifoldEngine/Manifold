@@ -3,6 +3,11 @@
 
 using namespace ECSEngine;
 
+extern "C" __declspec(dllexport) void runTests()
+{
+	SimpleTests::SimpleTestsRunner::runTests();
+}
+
 ST_SECTION_BEGIN(Core_Events, "Core Events")
 {
 	ST_TEST(SubscribeAndUnsubscribe, "Should be able to call back the delegate it receives")

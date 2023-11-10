@@ -5,6 +5,11 @@
 #include <Core/Application.h>
 #include <Utils/StringUtils.h>
 
+extern "C" __declspec(dllexport) void runTests()
+{
+    SimpleTests::SimpleTestsRunner::runTests();
+}
+
 using namespace ECSEngine;
 
 ST_SECTION_BEGIN(OpenGL, "OpenGL")
@@ -12,7 +17,7 @@ ST_SECTION_BEGIN(OpenGL, "OpenGL")
     ST_TEST(ParseShaderFile, "Should parse a shader file")
     {
         Application app;
-        auto path = std::filesystem::path(std::filesystem::current_path().string() + "/OpenGL/shader.glsl");
+        auto path = std::filesystem::path(std::filesystem::current_path().string() + "/Assets/shader.glsl");
         std::string fileName, vertexSource, fragmentSource;
         const bool result = parseShaderSourceFileFromPath(path, fileName, vertexSource, fragmentSource);
 

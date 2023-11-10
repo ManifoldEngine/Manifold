@@ -2,6 +2,11 @@
 #include "ECS/EntityRegistry.h"
 #include "ECS/RegistryView.h"
 
+extern "C" __declspec(dllexport) void runTests()
+{
+	SimpleTests::SimpleTestsRunner::runTests();
+}
+
 using namespace ECSEngine;
 
 ST_SECTION_BEGIN(ECS, "ECS")

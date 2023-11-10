@@ -1,10 +1,8 @@
-workspace "ECSEngine"
-    outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
-    enginedir = "Engine"
-    moduledir = enginedir .. "/Modules"
-    thirdpartiesdir = enginedir .. "/ThirdParties"
+include "locations.lua"
 
-    configurations { "Debug", "Release" }
+workspace "ECSEngine"
+
+configurations { "Debug", "Release" }
     platforms { "Win64", "MacOSX" }
     startproject "Sandbox"
     language "C++"
@@ -17,6 +15,7 @@ workspace "ECSEngine"
     includedirs { thirdpartiesdir .. "/glm" }
     
     filter "configurations:Debug"
+        includedirs { thirdpartiesdir .. "/SimpleTests/include" }
         defines { "ECSE_DEBUG" }
         symbols "On"
     
@@ -38,82 +37,10 @@ workspace "ECSEngine"
     filter "system:windows"
         defines { "ECSE_WINDOWS" }
 
--- Modules
-project "Core"
-    kind "StaticLib"
-    location (moduledir .. "/%{prj.name}")
+group "Engine"
+    include "Engine"
 
-    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
-
-    links { "ECS", "Utils" }
-
-    includedirs { moduledir, moduledir .. "/%{prj.name}" }
-
-project "ECS"
-    kind "StaticLib"
-    location (moduledir .. "/%{prj.name}")
-
-    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
-
-    includedirs { moduledir, moduledir .. "/%{prj.name}" }
-
-project "Events"
-    kind "StaticLib"
-    location (moduledir .. "/%{prj.name}")
-
-    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
-
-    includedirs { moduledir, moduledir .. "/%{prj.name}" }
-
-project "Utils"
-    kind "StaticLib"
-    location (moduledir .. "/%{prj.name}")
-
-    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
-
-    includedirs { moduledir, moduledir .. "/%{prj.name}" }
-
-project "OpenGL"
-    kind "StaticLib"
-    location (moduledir .. "/%{prj.name}")
-
-    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
-
-    links { "Core", "Events", "Utils", "Camera" }
-
-    includedirs { moduledir, moduledir .. "/%{prj.name}" }
-
-    defines { "GLEW_STATIC" }
-
-    -- glew
-    includedirs { thirdpartiesdir .. "/glew-2.2.0/include" }
-    libdirs { thirdpartiesdir .. "/glew-2.2.0/lib/Release/x64/" }
-    links { "glew32s" }
-
-    -- glfw
-    includedirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/include" }
-    libdirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/lib-vc2022/" }
-    links { "glfw3" }
-
-    -- openGL
-    links { "OpenGL32" }
-
-    -- stb (image)
-    includedirs { thirdpartiesdir .. "/stb"}
-    
-    filter("configurations:Debug")
-        defines { "ECSE_OPENGL_DEBUG" }
-
-project "Camera"
-    kind "StaticLib"
-    location (moduledir .. "/%{prj.name}")
-
-    files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
-
-    links { "Core", "ECS" }
-
-    includedirs { moduledir, moduledir .. "/%{prj.name}" }
-
+group ""
 -- Executables
 project "Sandbox"
     kind "ConsoleApp"
@@ -123,14 +50,14 @@ project "Sandbox"
 
     links { "Core", "OpenGL", "ECS", "Camera" }
 
-    includedirs { moduledir, "/%{prj.name}" }
+    includedirs { moduledir .. "/**", "/%{prj.name}" }
 
     -- glew
     includedirs { thirdpartiesdir .. "/glew-2.2.0/include" }
     libdirs { thirdpartiesdir .. "/glew-2.2.0/lib/Release/x64/" }
     links { "glew32s" }
 
-    -- glfw
+    ---- glfw
     includedirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/include" }
     libdirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/lib-vc2022/" }
     links { "glfw3" }
@@ -141,12 +68,3 @@ project "Sandbox"
     -- stb (image)
     includedirs { thirdpartiesdir .. "/stb"}
 
-project "Tests"
-    kind "ConsoleApp"
-    location (enginedir .. "/%{prj.name}")
-
-    files { enginedir .. "/%{prj.name}/**.h", enginedir .. "/%{prj.name}/**.cpp" }
-    
-    links { "Core", "ECS", "OpenGL" }
-    
-    includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir }
