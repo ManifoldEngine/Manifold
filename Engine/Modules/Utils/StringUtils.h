@@ -5,48 +5,52 @@
 
 namespace ECSEngine
 {
-	char asciiToLower(char c)
+	class StringUtils
 	{
-		if (c <= 'Z' && c >= 'A')
+	public:
+		static char asciiToLower(char c)
 		{
-			return c - ('Z' - 'z');
-		}
-		return c;
-	};
-
-	std::string toLower(const std::string& s)
-	{
-		std::string result = s;
-		std::transform(result.begin(), result.end(), result.begin(), asciiToLower);
-		return result;
-	}
-
-	char asciiToUpper(char c)
-	{
-		if (c >= 'a' && c <= 'z')
-		{
-			return c + ('A' - 'a');
-		}
-		return c;
-	}
-
-	std::string toUpper(const std::string& s)
-	{
-		std::string result = s;
-		std::transform(result.begin(), result.end(), result.begin(), asciiToUpper);
-		return result;
-	}
-
-	std::string removeWhiteSpace(std::string s)
-	{
-		std::string result;
-		for (const char c : s)
-		{
-			if (!isspace(c))
+			if (c <= 'Z' && c >= 'A')
 			{
-				result += c;
+				return c - ('Z' - 'z');
 			}
+			return c;
+		};
+
+		static std::string toLower(const std::string& s)
+		{
+			std::string result = s;
+			std::transform(result.begin(), result.end(), result.begin(), asciiToLower);
+			return result;
 		}
-		return result;
-	}
+
+		static char asciiToUpper(char c)
+		{
+			if (c >= 'a' && c <= 'z')
+			{
+				return c + ('A' - 'a');
+			}
+			return c;
+		}
+
+		static std::string toUpper(const std::string& s)
+		{
+			std::string result = s;
+			std::transform(result.begin(), result.end(), result.begin(), asciiToUpper);
+			return result;
+		}
+
+		static std::string removeWhiteSpace(std::string s)
+		{
+			std::string result;
+			for (const char c : s)
+			{
+				if (!isspace(c))
+				{
+					result += c;
+				}
+			}
+			return result;
+		}
+	};
 }

@@ -15,7 +15,7 @@ namespace ECSEngine
 		Error,
 	};
 
-	class Core_API LogSystem : public SystemBase
+	class LogSystem : public SystemBase
 	{
 	public:
 		LogSystem();

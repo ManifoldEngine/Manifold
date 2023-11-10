@@ -10,7 +10,7 @@ namespace ECSEngine
 	/*
 	 * Holds a collection of entity and manage their component's memory.
 	 */
-	class ECS_API IEntityContainer
+	class IEntityContainer
 	{
 	public:
 		// creates a new Entity and returns its id.

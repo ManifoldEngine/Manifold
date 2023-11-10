@@ -8,7 +8,7 @@ namespace ECSEngine
 	class EntityRegistry;
 	class SystemContainer;
 	
-	class Core_API SystemBase
+	class SystemBase
 	{
 	public:
 		virtual std::string_view getName() const;

@@ -10,7 +10,7 @@ namespace ECSEngine
 	class EntityRegistry;
 	class SystemContainre;
 
-	struct Camera_API CameraConfig
+	struct CameraConfig
 	{
 		float fov = 45.f;
 		float width = 800.f;
@@ -19,7 +19,7 @@ namespace ECSEngine
 		float farClipPlane = 100.f;
 	};
 
-	struct Camera_API CameraComponent
+	struct CameraComponent
 	{
 		CameraConfig config;
 
@@ -27,7 +27,7 @@ namespace ECSEngine
 		glm::mat4 view;
 	};
 
-	class Camera_API CameraSystem : public SystemBase
+	class CameraSystem : public SystemBase
 	{
 	public:
 		virtual std::string_view getName() const override;

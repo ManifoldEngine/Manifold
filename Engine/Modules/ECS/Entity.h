@@ -22,7 +22,7 @@ namespace ECSEngine
 	/*
 	 * An entity. It knows about its id and the components it has.
 	 */
-	class ECS_API Entity
+	class Entity
 	{
 	public:
 		Entity();

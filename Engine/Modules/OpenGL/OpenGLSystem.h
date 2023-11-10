@@ -10,7 +10,7 @@ struct GLFWwindow;
 namespace ECSEngine
 {
 	// manages the opengl implementation using glfw and glew.
-	class OpenGL_API OpenGLSystem : public SystemBase
+	class OpenGLSystem : public SystemBase
 	{
 	public:
 		struct WindowContext

@@ -16,5 +16,5 @@ namespace ECSEngine
 	 *
 	 * returns true if the parse was successful.
 	 */
-	OpenGL_API bool parseShaderSourceFileFromPath(const std::filesystem::path& path, std::string& outFileName, std::string& outVertexSource, std::string& outFragmentSource);
+	bool parseShaderSourceFileFromPath(const std::filesystem::path& path, std::string& outFileName, std::string& outVertexSource, std::string& outFragmentSource);
 }

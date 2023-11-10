@@ -40,7 +40,7 @@ workspace "ECSEngine"
 
 -- Modules
 project "Core"
-    kind "SharedLib"
+    kind "StaticLib"
     location (moduledir .. "/%{prj.name}")
 
     files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
@@ -49,17 +49,13 @@ project "Core"
 
     includedirs { moduledir, moduledir .. "/%{prj.name}" }
 
-    defines { "%{prj.name}_EXPORTS" }
-
 project "ECS"
-    kind "SharedLib"
+    kind "StaticLib"
     location (moduledir .. "/%{prj.name}")
 
     files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
 
     includedirs { moduledir, moduledir .. "/%{prj.name}" }
-
-    defines { "%{prj.name}_EXPORTS" }
 
 project "Events"
     kind "StaticLib"
@@ -78,7 +74,7 @@ project "Utils"
     includedirs { moduledir, moduledir .. "/%{prj.name}" }
 
 project "OpenGL"
-    kind "SharedLib"
+    kind "StaticLib"
     location (moduledir .. "/%{prj.name}")
 
     files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
@@ -87,7 +83,7 @@ project "OpenGL"
 
     includedirs { moduledir, moduledir .. "/%{prj.name}" }
 
-    defines { "%{prj.name}_EXPORTS", "GLEW_STATIC" }
+    defines { "GLEW_STATIC" }
 
     -- glew
     includedirs { thirdpartiesdir .. "/glew-2.2.0/include" }
@@ -109,7 +105,7 @@ project "OpenGL"
         defines { "ECSE_OPENGL_DEBUG" }
 
 project "Camera"
-    kind "SharedLib"
+    kind "StaticLib"
     location (moduledir .. "/%{prj.name}")
 
     files { moduledir .. "/%{prj.name}/**.h", moduledir .. "/%{prj.name}/**.cpp" }
@@ -117,8 +113,6 @@ project "Camera"
     links { "Core", "ECS" }
 
     includedirs { moduledir, moduledir .. "/%{prj.name}" }
-
-    defines { "%{prj.name}_EXPORTS" }
 
 -- Executables
 project "Sandbox"
@@ -146,6 +140,7 @@ project "Sandbox"
 
     -- stb (image)
     includedirs { thirdpartiesdir .. "/stb"}
+
 project "Tests"
     kind "ConsoleApp"
     location (enginedir .. "/%{prj.name}")

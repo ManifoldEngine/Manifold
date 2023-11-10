@@ -6,7 +6,7 @@
 
 using namespace ECSEngine;
 
-OpenGL_API bool ECSEngine::parseShaderSourceFileFromPath(const std::filesystem::path& path, std::string & outFileName, std::string & outVertexSource, std::string & outFragmentSource)
+bool ECSEngine::parseShaderSourceFileFromPath(const std::filesystem::path& path, std::string & outFileName, std::string & outVertexSource, std::string & outFragmentSource)
 {
 	std::string source;
 	if (!FileSystem::tryReadFile(path, source))
@@ -34,8 +34,8 @@ OpenGL_API bool ECSEngine::parseShaderSourceFileFromPath(const std::filesystem::
 		const size_t typeNameBeginIndex = typeTokenIndex + typeToken.size();
 
 		// extract the type name
-		const std::string typeName = removeWhiteSpace(
-			toLower(
+		const std::string typeName = StringUtils::removeWhiteSpace(
+			StringUtils::toLower(
 				source.substr(typeNameBeginIndex, endOfLineIndex - typeNameBeginIndex)
 			));
 

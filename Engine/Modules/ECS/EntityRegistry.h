@@ -9,7 +9,7 @@ namespace ECSEngine
 	/*
 	 * Holds a collection of entity and manage their component's memory.
 	 */
-	class ECS_API EntityRegistry
+	class EntityRegistry
 	{
 #define INITIAL_COMPONENT_COUNT 1000
 	public:

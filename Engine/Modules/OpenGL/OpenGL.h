@@ -2,12 +2,6 @@
 
 #include <string_view>
 
-#ifdef OpenGL_EXPORTS
-#define OpenGL_API __declspec(dllexport)
-#else
-#define OpenGL_API __declspec(dllimport)
-#endif
-
 namespace ECSEngine
 {
 	const std::string_view LogOpenGL = "LogOpenGL";

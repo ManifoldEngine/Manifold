@@ -3,12 +3,6 @@
 #include <process.h>
 #include <string_view>
 
-#ifdef Core_EXPORTS
-#define Core_API __declspec(dllexport)
-#else
-#define Core_API __declspec(dllimport)
-#endif
-
 // Debug utilities
 #ifdef ECSE_DEBUG
 	#ifdef ECSE_WINDOWS

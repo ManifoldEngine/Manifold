@@ -10,7 +10,7 @@ namespace ECSEngine
 {
 	class World;
 
-	class Core_API WorldSystem : public SystemBase
+	class WorldSystem : public SystemBase
 	{
 	public:
 		WorldSystem();

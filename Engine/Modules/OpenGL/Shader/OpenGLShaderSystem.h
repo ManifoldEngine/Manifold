@@ -10,7 +10,7 @@ namespace ECSEngine
 {
 	struct OpenGLShader;
 
-	class OpenGL_API OpenGLShaderSystem : public SystemBase
+	class OpenGLShaderSystem : public SystemBase
 	{
 	public:
 		// todo #3: this will do for now, but we need a way to input configuration to the engine.

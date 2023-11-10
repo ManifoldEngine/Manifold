@@ -4,7 +4,7 @@
 
 namespace ECSEngine
 {
-	class Core_API FileSystem
+	class FileSystem
 	{
 	public:
 		// dumps a file to a string

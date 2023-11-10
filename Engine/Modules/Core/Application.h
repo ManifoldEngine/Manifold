@@ -6,7 +6,7 @@ namespace ECSEngine
 {
 	class SystemContainer;
 
-	class Core_API Application
+	class Application
 	{
 	public:
 		Application();

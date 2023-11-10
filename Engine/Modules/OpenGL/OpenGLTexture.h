@@ -4,7 +4,7 @@
 
 namespace ECSEngine
 {
-	class OpenGL_API OpenGLTexture2D
+	class OpenGLTexture2D
 	{
 	public:
 		OpenGLTexture2D(const std::string_view& path);

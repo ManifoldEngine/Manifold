@@ -7,7 +7,7 @@ namespace ECSEngine
 {
 	class SystemContainer;
 
-	class Core_API World
+	class World
 	{
 	public:
 		World();

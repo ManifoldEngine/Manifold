@@ -27,7 +27,7 @@ namespace ECSEngine
 		bool isNormalized = false;
 	};
 
-	class OpenGL_API OpenGLVertexBuffer
+	class OpenGLVertexBuffer
 	{
 	public:
 
@@ -50,7 +50,7 @@ namespace ECSEngine
 		unsigned int m_vertexBufferObjectId;
 	};
 
-	class OpenGL_API OpenGLIndexBuffer
+	class OpenGLIndexBuffer
 	{
 	public:
 		OpenGLIndexBuffer(unsigned int* indices, int size);

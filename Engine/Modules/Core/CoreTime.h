@@ -5,7 +5,7 @@
 
 namespace ECSEngine
 {
-	class Core_API Time
+	class Time
 	{
 	public:
 		friend class Application;
