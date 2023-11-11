@@ -1,0 +1,26 @@
+include "../../../locations.lua"
+
+group "Engine"
+    project "#ModuleName#"
+        kind "StaticLib"
+        location (moduledir .. "/%{prj.name}")
+        
+        files { 
+            moduledir .. "/%{prj.name}/**.h",
+            moduledir .. "/%{prj.name}/**.cpp" 
+        }
+
+        includedirs { moduledir .. "/**" }
+group ""
+
+group "_TestLibs"
+    project "#ModuleName#Tests"
+        kind "SharedLib"
+        location (moduledir .. "/Tests")
+
+        files { moduledir .. "/#ModuleName#/Tests/**.h", moduledir .. "/#ModuleName#/Tests/**.cpp" }
+        
+        links { "#ModuleName#" }
+        
+        includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir .. "/**" }
+group ""
