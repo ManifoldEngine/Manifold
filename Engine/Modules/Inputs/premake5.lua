@@ -1,28 +1,28 @@
 include "../../../locations.lua"
 
 group "Engine"
-    project "Core"
+    project "Inputs"
         kind "StaticLib"
         location (moduledir .. "/%{prj.name}")
-
+        
         files { 
             moduledir .. "/%{prj.name}/**.h",
             moduledir .. "/%{prj.name}/**.cpp" 
         }
 
-        links { "ECS", "ECSEUtils" }
+        links { "Core" }
 
         includedirs { moduledir .. "/**" }
 group ""
 
 group "_TestLibs"
-    project "CoreTests"
+    project "InputsTests"
         kind "SharedLib"
-        location (moduledir .. "/Core/Tests")
+        location (moduledir .. "/Inputs/Tests")
 
-        files { moduledir .. "/Core/Tests/**.h", moduledir .. "/Core/Tests/**.cpp" }
+        files { moduledir .. "/Inputs/Tests/**.h", moduledir .. "/Inputs/Tests/**.cpp" }
         
-        links { "Core" }
+        links { "Inputs", "Core" }
         
         includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir .. "/**" }
 group ""

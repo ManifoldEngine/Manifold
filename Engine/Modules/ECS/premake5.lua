@@ -16,7 +16,7 @@ group ""
 group "_TestLibs"
     project "ECSTests"
         kind "SharedLib"
-        location (moduledir .. "/Tests")
+        location (moduledir .. "/ECS/Tests")
 
         files { moduledir .. "/ECS/Tests/**.h", moduledir .. "/ECS/Tests/**.cpp" }
         

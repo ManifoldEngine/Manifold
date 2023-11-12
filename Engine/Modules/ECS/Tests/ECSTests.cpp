@@ -300,5 +300,28 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		ST_ASSERT(registry.size() == 1'000'000, "Should have spawned 1'000'000 entities.");
 	}
+
+	ST_TEST(PlayWithDynamicAllocation, "Should allow dynamic allocation")
+	{
+		struct DynamicComponent
+		{
+			std::vector<float> vector = { 1.f, 2.f, 3.f };
+		};
+
+		EntityRegistry registry;
+		const EntityId entity1 = registry.create();
+		const EntityId entity2 = registry.create();
+
+		DynamicComponent* component1 = registry.addComponent<DynamicComponent>(entity1);
+		DynamicComponent* component2 = registry.addComponent<DynamicComponent>(entity2);
+		for (int i = 0; i < 1000; ++i)
+		{
+			component1->vector.push_back(i + 1 * 1000.f);
+		}
+
+		ST_ASSERT(component2->vector[0] - 1.f <= FLT_EPSILON, "first vector element should be equal to the original value");
+		ST_ASSERT(component2->vector[1] - 2.f <= FLT_EPSILON, "second vector element should be equal to the original value");
+		ST_ASSERT(component2->vector[2] - 3.f <= FLT_EPSILON, "third vector element should be equal to the original value");
+	}
 }
 ST_SECTION_END(ECS)

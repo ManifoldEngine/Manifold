@@ -16,7 +16,7 @@ group ""
 group "_TestLibs"
     project "#ModuleName#Tests"
         kind "SharedLib"
-        location (moduledir .. "/Tests")
+        location (moduledir .. "/#ModuleName#/Tests")
 
         files { moduledir .. "/#ModuleName#/Tests/**.h", moduledir .. "/#ModuleName#/Tests/**.cpp" }
         

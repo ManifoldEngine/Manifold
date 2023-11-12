@@ -39,7 +39,7 @@ group ""
 group "_TestLibs"
     project "OpenGLTests"
         kind "SharedLib"
-        location (moduledir .. "/Tests")
+        location (moduledir .. "/OpenGL/Tests")
 
         files { moduledir .. "/OpenGL/Tests/**.h", moduledir .. "/OpenGL/Tests/**.cpp" }
         
