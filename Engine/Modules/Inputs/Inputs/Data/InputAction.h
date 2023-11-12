@@ -6,7 +6,7 @@ namespace ECSEngine
 {
 	struct InputAction
 	{
-		std::string name = "NONE";
+		std::string name = "";
 		
 		float x = 0.f;
 		float y = 0.f;

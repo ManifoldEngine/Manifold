@@ -6,10 +6,9 @@
 #include <Core/Application.h>
 #include <Core/System/SystemContainer.h>
 #include <Core/Log.h>
-#include <OpenGL/OpenGLSystem.h>
+#include <Inputs/InputSystem.h>
 
 #include <memory>
-#include <glm/gtc/quaternion.hpp>
 
 using namespace ECSEngine;
 
@@ -25,13 +24,13 @@ bool DebugCameraControllerSystem::shouldTick(ECSEngine::EntityRegistry& registry
 
 void DebugCameraControllerSystem::tick(float deltaTime, ECSEngine::EntityRegistry& registry)
 {
-	std::weak_ptr<const OpenGLSystem> weakOpenGLSystem = Application::get().getSystemContainer().getSystem<OpenGLSystem>();
-	if (weakOpenGLSystem.expired())
+	std::weak_ptr<const InputSystem> weakInputSystem = Application::get().getSystemContainer().getSystem<InputSystem>();
+	if (weakInputSystem.expired())
 	{
 		return;
 	}
 
-	std::shared_ptr<const OpenGLSystem> openGLSystem = weakOpenGLSystem.lock();
+	std::shared_ptr<const InputSystem> openGLSystem = weakInputSystem.lock();
 	GLFWwindow* window = openGLSystem->getWindowContext().window;
 
 	RegistryView<Transform, CameraComponent> view(registry);

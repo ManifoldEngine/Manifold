@@ -50,18 +50,6 @@ void OpenGLSystem::glfwCallback_onWindowResized(GLFWwindow* window, int newWidth
 
     glViewport(0, 0, newWidth, newHeight);
 }
-
-void OpenGLSystem::glfwCallback_onMouseMoved(GLFWwindow* window, double x, double y)
-{
-    if (auto* openGLSystem = (OpenGLSystem*)glfwGetWindowUserPointer(window))
-    {
-        const double deltaX = openGLSystem->mouseLastPosition.x - x;
-        const double deltaY = openGLSystem->mouseLastPosition.y - y;
-        
-        openGLSystem->mouseDelta = glm::vec2(deltaX, deltaY) * openGLSystem->mouseSensitivity;
-        openGLSystem->mouseLastPosition = glm::vec2(x, y);
-    }
-}
 // glfw callbacks begin
 
 std::string_view OpenGLSystem::getName() const
@@ -79,14 +67,9 @@ const OpenGLSystem::WindowContext& OpenGLSystem::getWindowContext() const
     return context;
 }
 
-const glm::vec3& OpenGLSystem::getWASDinput() const
+std::shared_ptr<OpenGLInput> ECSEngine::OpenGLSystem::getInputGenerator() const
 {
-    return wasdInput;
-}
-
-const glm::vec2& OpenGLSystem::getMouseDelta() const
-{
-    return mouseDelta;
+    return m_openGLInputGenerator;
 }
 
 void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
@@ -127,7 +110,6 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     // set glfw callbacks
     glfwSetWindowCloseCallback(context.window, &OpenGLSystem::glfwCallback_onWindowClosed);
     glfwSetFramebufferSizeCallback(context.window, &OpenGLSystem::glfwCallback_onWindowResized);
-    glfwSetCursorPosCallback(context.window, &OpenGLSystem::glfwCallback_onMouseMoved);
 
     // init glew to load the correct opengl runtime
     GLenum result = glewInit();
@@ -148,11 +130,17 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(OpenGLMessageCallback, nullptr);
 #endif
+
+    m_openGLInputGenerator = std::make_shared<OpenGLInput>();
+    m_openGLInputGenerator->initialize(std::shared_ptr<OpenGLSystem>(this));
 }
 
 void OpenGLSystem::onDeinitialize(EntityRegistry& entityRegistry)
 {
     SystemBase::onDeinitialize(entityRegistry);
+
+    m_openGLInputGenerator->deinitialize();
+    m_openGLInputGenerator.reset();
 
     terminate();
 }

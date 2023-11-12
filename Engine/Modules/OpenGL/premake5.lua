@@ -10,7 +10,7 @@ group "Engine"
             moduledir .. "/%{prj.name}/**.cpp" 
         }
 
-        links { "Core", "Events", "ECSEUtils", "Camera" }
+        links { "Core", "Events", "ECSEUtils", "Camera", "Inputs" }
 
         includedirs { moduledir .. "/**" }
 

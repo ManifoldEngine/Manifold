@@ -35,6 +35,10 @@ public:
 		return true;
 	}
 
+	virtual void onInputSystemTick(float deltaTime, EntityRegistry& registry) override 
+	{
+	}
+
 	void setLeftStick(float x, float y)
 	{
 		m_leftStick.x = x;
@@ -57,6 +61,11 @@ public:
 	{
 		m_bButton.isPressed = isPressed;
 		buffer.push_back(m_bButton);
+	}
+
+	void setLeftBumper(float x)
+	{
+		m_leftBumper.x = x;
 	}
 
 	void setRightBumper(float x)
@@ -105,64 +114,56 @@ private:
 	};
 };
 
-std::unordered_map<std::string, InputAction> actionTemplate = {
+std::vector<InputAction> actionTemplate = 
+{
+	InputAction
 	{
 		"Jump",
-			InputAction
-		{
-			"Jump",
-			0.f,
-			0.f,
-			0.f,
-			false,
-			true,
-		},
+		0.f,
+		0.f,
+		0.f,
+		false,
+		true,
 	},
+
+	InputAction
 	{
 		"Dodge",
-		InputAction
-		{
-			"Dodge",
-			0.f,
-			0.f,
-			0.f,
-			false,
-			true,
-		},
+		0.f,
+		0.f,
+		0.f,
+		false,
+		true,
 	},
+
+	InputAction
 	{
 		"Move",
-		InputAction
-		{
-			"Move",
-			0.f,
-			0.f,
-			0.f,
-			false,
-			true,
-		},
+		0.f,
+		0.f,
+		0.f,
+		false,
+		true,
 	},
+
+	InputAction
 	{
 		"Shoot",
-		InputAction
-		{
-			"Shoot",
-			0.f,
-			0.f,
-			0.f,
-			false,
-			true,
-		},
+		0.f,
+		0.f,
+		0.f,
+		false,
+		true,
 	},
 };
 
-std::unordered_map<std::string, std::string> inputBindingsTemplate =
+std::unordered_map<std::string, std::vector<std::string>> inputBindingsTemplate =
 {
-	{ "LeftStick", "Move" },
-	{ "RightStick", "Move" },
-	{ "AButton", "Jump" },
-	{ "BButton", "Dodge" },
-	{ "RightBumper", "Shoot" },
+	{ "LeftStick", { "Move" }},
+	{ "RightStick", { "Move" }},
+	{ "AButton", { "Jump" }},
+	{ "BButton", { "Dodge" }},
+	{ "RightBumper", { "Shoot" }},
 };
 
 ST_SECTION_BEGIN(Inputs, "Inputs")
@@ -175,7 +176,8 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		std::vector<InputAction> registeredActions;
 		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
 
-		EventHandle handle = inputSystem->onActionChanged.subscribe([&registeredActions](uint32_t userId, const InputAction& action) {
+		EventHandle handle = inputSystem->onActionEvent.subscribe([&registeredActions](uint32_t userId, const InputAction& action) 
+		{
 			registeredActions.push_back(action);
 		});
 
@@ -189,11 +191,8 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		ST_ASSERT(registeredActions.size() == 0, "Should not have registered an input.");
 
 		// create a user and assign them the virtual controller.
-		const uint32_t userId = inputSystem->createInputUser();
-		std::shared_ptr<InputUser> user = inputSystem->getInputUser(userId);
-		user->actions = actionTemplate;
-		user->inputBindings = inputBindingsTemplate;
-
+		const uint32_t userId = inputSystem->createInputUser(actionTemplate, inputBindingsTemplate);
+		
 		// assign virtual controller to user
 		inputSystem->assignInputGenerator(userId, controller);
 
@@ -220,7 +219,7 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		InputAction lastAction = registeredActions.back();
 		ST_ASSERT(lastAction.name == "Dodge" && lastAction.isPressed == true, "Last action should be Dodge true");
 
-		inputSystem->onActionChanged.unsubscribe(handle);
+		inputSystem->onActionEvent.unsubscribe(handle);
 		systemContainer.deinitialize();
 	}
 
@@ -229,35 +228,31 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		SystemContainer systemContainer;
 		systemContainer.initialize();
 
-		std::vector<InputAction> registeredActions;
 		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
 
 		std::shared_ptr<VirtualController> controller = std::make_shared<VirtualController>();
 
 		// create a user and assign them the virtual controller.
-		const uint32_t userId = inputSystem->createInputUser();
-		std::shared_ptr<InputUser> user = inputSystem->getInputUser(userId);
-		user->actions =
+		std::vector<InputAction> actions =
 		{
+			InputAction
 			{
 				"Move",
-				InputAction
-				{
-					"Move",
-					0.f,
-					0.f,
-					0.f,
-					false,
-					true,
-				}
+				0.f,
+				0.f,
+				0.f,
+				false,
+				true,
 			}
 		};
-
-		user->inputBindings =
+		
+		std::unordered_map<std::string, std::vector<std::string>> bindings =
 		{
-			{ "LeftStick", "Move" },
-			{ "RightStick", "Move" }
+			{ "LeftStick", { "Move" }},
+			{ "RightStick", { "Move" }}
 		};
+
+		const uint32_t userId = inputSystem->createInputUser(actions, bindings);
 
 		// assign virtual controller to user
 		inputSystem->assignInputGenerator(userId, controller);
@@ -273,7 +268,113 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		// tick the system, consumes input buffers
 		systemContainer.tick(.0f);
 
+		std::shared_ptr<InputUser> user = inputSystem->getInputUser(userId);
 		ST_ASSERT(user->actions["Move"].x <= FLT_EPSILON, "Move X axis should be zero");
+
+		systemContainer.deinitialize();
+	}
+
+	ST_TEST(PressUnassignedButton, "Should press an unassigned button without side effects")
+	{
+		SystemContainer systemContainer;
+		systemContainer.initialize();
+
+		bool bHasActionBeenTriggered = false;
+
+		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
+		EventHandle handle = inputSystem->onActionEvent.subscribe([&bHasActionBeenTriggered](uint32_t userId, const InputAction& inputAction) 
+		{
+			bHasActionBeenTriggered = true;
+		});
+
+		std::shared_ptr<VirtualController> controller = std::make_shared<VirtualController>();
+
+		// create a user and assign them the virtual controller.
+		const uint32_t userId = inputSystem->createInputUser({}, {});
+		std::shared_ptr<InputUser> user = inputSystem->getInputUser(userId);
+		user->actions = {};
+		user->bindings = {};
+
+		// assign virtual controller to user
+		inputSystem->assignInputGenerator(userId, controller);
+
+		controller->setAButton(true);
+		controller->setBButton(true);
+		controller->setLeftStick(-1.f, 1.f);
+		controller->setRightStick(1.f, -1.f);
+		controller->setLeftBumper(1.f);
+		controller->setRightBumper(1.f);
+
+		// this should not crash.
+		systemContainer.tick(0.f);
+		
+		ST_ASSERT(bHasActionBeenTriggered == false, "Action should not have been triggered.");
+
+		inputSystem->onActionEvent.unsubscribe(handle);
+		
+		systemContainer.deinitialize();
+	}
+
+	ST_TEST(AssignControlToMultipleAction, "Should press receive multiple actions for a single control")
+	{
+		SystemContainer systemContainer;
+		systemContainer.initialize();
+
+		std::vector<InputAction> actionEvents;
+
+		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
+		EventHandle handle = inputSystem->onActionEvent.subscribe([&actionEvents](uint32_t userId, const InputAction& inputAction)
+			{
+				actionEvents.push_back(inputAction);
+			});
+
+		std::shared_ptr<VirtualController> controller = std::make_shared<VirtualController>();
+
+		// create a user and assign them the virtual controller.
+		const uint32_t userId = inputSystem->createInputUser(
+			{
+				InputAction
+				{
+					"Jump",
+					0.f,
+					0.f,
+					0.f,
+					false,
+					true,
+				},
+				InputAction
+				{
+					"Dodge",
+					0.f,
+					0.f,
+					0.f,
+					false,
+					true,
+				}
+			}, 
+			{
+				{
+					"AButton",
+					{
+						"Jump",
+						"Dodge",
+					}
+				}
+			});
+
+		// assign virtual controller to user
+		inputSystem->assignInputGenerator(userId, controller);
+
+		controller->setAButton(true);
+		
+		// this should not crash.
+		systemContainer.tick(0.f);
+
+		ST_ASSERT(actionEvents.size() == 2, "Should have registered 2 actions");
+		ST_ASSERT(actionEvents[0].name == "Jump", "First action should have been jump");
+		ST_ASSERT(actionEvents[1].name == "Dodge", "Second action should have been jump");
+
+		inputSystem->onActionEvent.unsubscribe(handle);
 
 		systemContainer.deinitialize();
 	}

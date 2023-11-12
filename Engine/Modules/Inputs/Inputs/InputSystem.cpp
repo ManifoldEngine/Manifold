@@ -24,18 +24,22 @@ void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 			continue;
 		}
 
+		user->generator->onInputSystemTick(deltaTime, registry);
+
 		std::vector<ButtonControl> buffer;
 		if (user->generator->consumeInputBuffer(buffer))
 		{
 			for (const ButtonControl& buttonEvent : buffer)
 			{
-				const std::string boundActionName = user->inputBindings[buttonEvent.name];
-				InputAction& action = user->actions[boundActionName];
-
-				if (action.isPressed != buttonEvent.isPressed)
+				const std::vector<std::string>& boundActionNames = user->bindings[buttonEvent.name];
+				for (const std::string& actionName : boundActionNames)
 				{
-					action.isPressed = buttonEvent.isPressed;
-					onActionChanged.broadcast(user->userId, action);
+					InputAction& action = user->actions[actionName];
+					if (action.isPressed != buttonEvent.isPressed)
+					{
+						action.isPressed = buttonEvent.isPressed;
+						onActionEvent.broadcast(user->userId, action);
+					}
 				}
 			}
 		}
@@ -57,12 +61,15 @@ void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 
 			for (const AxisControl& axisControl : axis)
 			{
-				const std::string boundActionName = user->inputBindings[axisControl.name];
-				InputAction& action = user->actions[boundActionName];
+				const std::vector<std::string>& boundActionNames = user->bindings[axisControl.name];
+				for (const std::string& actionName : boundActionNames)
+				{
+					InputAction& action = user->actions[actionName];
 
-				action.x += axisControl.x;
-				action.y += axisControl.y;
-				action.z += axisControl.z;
+					action.x += axisControl.x;
+					action.y += axisControl.y;
+					action.z += axisControl.z;
+				}	
 			}
 		}
 		else
@@ -72,9 +79,35 @@ void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 	}
 }
 
-uint32_t InputSystem::createInputUser()
+const InputAction* InputSystem::getAction(uint32_t userId, const std::string& name)
+{
+	std::shared_ptr<InputUser> user = getInputUser(userId);
+	if (user == nullptr)
+	{
+		return nullptr;
+	}
+
+	const InputAction& action = user->actions[name];
+	if (action.name.empty())
+	{
+		return nullptr;
+	}
+
+	return &action;
+}
+
+uint32_t InputSystem::createInputUser(const std::vector<InputAction>& actions, const std::unordered_map<std::string, std::vector<std::string>>& bindings)
 {
 	std::shared_ptr<InputUser> user = std::make_shared<InputUser>();
+	
+	// iterate by copy
+	for (const InputAction action : actions)
+	{
+		user->actions[action.name] = action;
+	}
+
+	user->bindings = bindings;
+
 	user->userId = userCounter++;
 	m_users.push_back(user);
 	return 0;
