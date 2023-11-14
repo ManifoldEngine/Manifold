@@ -71,66 +71,66 @@ void OpenGLInput::onInputSystemTick(float deltaTime, EntityRegistry& registry)
     const OpenGLSystem::WindowContext& context = m_openGLSystem->getWindowContext();
     if (glfwGetKey(context.window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        inputBuffer.push_back(ButtonControl{ "W", true });
+        m_inputBuffer.push_back(ButtonControl{ "W", true });
         wasd.z += 1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_W) == GLFW_RELEASE)
     {
-        inputBuffer.push_back(ButtonControl{ "W", false });
+        m_inputBuffer.push_back(ButtonControl{ "W", false });
     }
 
     // S
     if (glfwGetKey(context.window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        inputBuffer.push_back(ButtonControl{ "S", true });
+        m_inputBuffer.push_back(ButtonControl{ "S", true });
         wasd.z += -1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_S) == GLFW_RELEASE)
     {
-        inputBuffer.push_back(ButtonControl{ "S", false });
+        m_inputBuffer.push_back(ButtonControl{ "S", false });
     }
 
     // A
     if (glfwGetKey(context.window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        inputBuffer.push_back(ButtonControl{ "A", true });
+        m_inputBuffer.push_back(ButtonControl{ "A", true });
         wasd.x += 1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_A) == GLFW_RELEASE)
     {
-        inputBuffer.push_back(ButtonControl{ "A", false });
+        m_inputBuffer.push_back(ButtonControl{ "A", false });
     }
 
     // D
     if (glfwGetKey(context.window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        inputBuffer.push_back(ButtonControl{ "D", true });
+        m_inputBuffer.push_back(ButtonControl{ "D", true });
         wasd.x += -1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_D) == GLFW_RELEASE)
     {
-        inputBuffer.push_back(ButtonControl{ "D", false });
+        m_inputBuffer.push_back(ButtonControl{ "D", false });
     }
 
     // E
     if (glfwGetKey(context.window, GLFW_KEY_E) == GLFW_PRESS)
     {
-        inputBuffer.push_back(ButtonControl{ "E", true });
+        m_inputBuffer.push_back(ButtonControl{ "E", true });
         wasd.y += 1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_E) == GLFW_RELEASE)
     {
-        inputBuffer.push_back(ButtonControl{ "E", false });
+        m_inputBuffer.push_back(ButtonControl{ "E", false });
     }
 
     // Q
     if (glfwGetKey(context.window, GLFW_KEY_Q) == GLFW_PRESS)
     {
-        inputBuffer.push_back(ButtonControl{ "Q", true });
+        m_inputBuffer.push_back(ButtonControl{ "Q", true });
         wasd.y += -1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_Q) == GLFW_RELEASE)
     {
-        inputBuffer.push_back(ButtonControl{ "Q", false });
+        m_inputBuffer.push_back(ButtonControl{ "Q", false });
     }
 }

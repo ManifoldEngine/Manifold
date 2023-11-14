@@ -28,7 +28,7 @@ namespace ECSEngine
 
 	private:
 		std::shared_ptr<OpenGLSystem> m_openGLSystem = nullptr;
-		std::vector<ButtonControl> inputBuffer;
+		std::vector<ButtonControl> m_inputBuffer;
 
 		static void glfwCallback_onMouseMoved(GLFWwindow* window, double x, double y);
 	};
