@@ -38,8 +38,6 @@ void DebugCameraControllerSystem::onInitialize(EntityRegistry& registry, SystemC
 		inputSystem->addBinding(LOCAL_USERID, MOVE_ACTION, "WASD");
 		inputSystem->addBinding(LOCAL_USERID, AIM_ACTION, "Mouse");
 	}
-
-
 }
 
 void DebugCameraControllerSystem::tick(float deltaTime, ECSEngine::EntityRegistry& registry)
