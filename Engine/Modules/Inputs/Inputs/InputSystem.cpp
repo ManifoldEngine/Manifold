@@ -15,19 +15,26 @@ bool InputSystem::shouldTick(EntityRegistry& registry) const
 	return true;
 }
 
+void InputSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+{
+	createInputUser({}, {});
+}
+
 void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 {
 	for (const auto& user : m_users)
 	{
-		if (user->generator == nullptr)
+		if (user->generator.expired())
 		{
 			continue;
 		}
 
-		user->generator->onInputSystemTick(deltaTime, registry);
+		std::shared_ptr<IInputGenerator> generator = user->generator.lock();
+
+		generator->onInputSystemTick(deltaTime, registry);
 
 		std::vector<ButtonControl> buffer;
-		if (user->generator->consumeInputBuffer(buffer))
+		if (generator->consumeInputBuffer(buffer))
 		{
 			for (const ButtonControl& buttonEvent : buffer)
 			{
@@ -37,6 +44,7 @@ void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 					InputAction& action = user->actions[actionName];
 					if (action.isPressed != buttonEvent.isPressed)
 					{
+						ECSE_LOG_VERBOSE(LogInputs, "Action {} state changed to {}", action.name, action.isPressed);
 						action.isPressed = buttonEvent.isPressed;
 						onActionEvent.broadcast(user->userId, action);
 					}
@@ -45,11 +53,11 @@ void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 		}
 		else
 		{
-			ECSE_LOG_WARNING(LogInputs, "Could not get input buffer from generator {}", user->generator->getName());
+			ECSE_LOG_WARNING(LogInputs, "Could not get input buffer from generator {}", generator->getName());
 		}
 		
 		std::vector<AxisControl> axis;
-		if (user->generator->getAxis(axis))
+		if (generator->getAxis(axis))
 		{
 			// axis are reset each tick.
 			for (auto& [name, action] : user->actions)
@@ -69,17 +77,26 @@ void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 					action.x += axisControl.x;
 					action.y += axisControl.y;
 					action.z += axisControl.z;
+
 				}	
 			}
+
+#if ECSE_DEBUG
+			for (auto& [name, action] : user->actions)
+			{
+				// log action state
+				ECSE_LOG_VERBOSE(LogInputs, "Action {} axis changed to ({}, {}, {})", action.name, action.x, action.y, action.z);
+			}
+#endif
 		}
 		else
 		{
-			ECSE_LOG_WARNING(LogInputs, "Could not get axis from generator {}", user->generator->getName());
+			ECSE_LOG_WARNING(LogInputs, "Could not get axis from generator {}", generator->getName());
 		}
 	}
 }
 
-const InputAction* InputSystem::getAction(uint32_t userId, const std::string& name)
+const InputAction* InputSystem::getAction(uint32_t userId, const std::string& name) const
 {
 	std::shared_ptr<InputUser> user = getInputUser(userId);
 	if (user == nullptr)
@@ -113,7 +130,7 @@ uint32_t InputSystem::createInputUser(const std::vector<InputAction>& actions, c
 	return 0;
 }
 
-std::shared_ptr<InputUser> InputSystem::getInputUser(uint32_t userId)
+std::shared_ptr<InputUser> InputSystem::getInputUser(uint32_t userId) const
 {
 	const auto it = std::find_if(m_users.begin(), m_users.end(), [&userId](const std::shared_ptr<InputUser>& inputUser) {
 		return userId == inputUser->userId;
@@ -139,7 +156,7 @@ void InputSystem::destroyInputUser(uint32_t userId)
 	}
 }
 
-void InputSystem::assignInputGenerator(uint32_t userId, std::shared_ptr<IInputGenerator> generator)
+void InputSystem::assignInputGenerator(uint32_t userId, const std::weak_ptr<IInputGenerator>& generator)
 {
 	std::shared_ptr<InputUser> inputUser = getInputUser(userId);
 	if (inputUser == nullptr)
@@ -148,4 +165,60 @@ void InputSystem::assignInputGenerator(uint32_t userId, std::shared_ptr<IInputGe
 	}
 
 	inputUser->generator = generator;
+}
+
+bool InputSystem::addAction(uint32_t userId, const std::string& name) 
+{
+	std::shared_ptr<InputUser> user = getInputUser(userId);
+	if (user == nullptr)
+	{
+		return false;
+	}
+
+	user->actions[name] = InputAction{ name };
+	return true;
+}
+
+bool InputSystem::removeAction(uint32_t userId, const std::string& name) 
+{
+	std::shared_ptr<InputUser> user = getInputUser(userId);
+	if (user == nullptr)
+	{
+		return false;
+	}
+
+	return user->actions.erase(name) > 0;
+}
+
+bool InputSystem::addBinding(uint32_t userId, const std::string& action, const std::string control)
+{
+	std::shared_ptr<InputUser> user = getInputUser(userId);
+	if (user == nullptr)
+	{
+		return false;
+	}
+
+	std::vector<std::string>& actions = user->bindings[control];
+	actions.push_back(action);
+	return true;
+}
+
+bool InputSystem::removeBinding(uint32_t userId, const std::string& action, const std::string control) 
+{
+	std::shared_ptr<InputUser> user = getInputUser(userId);
+	if (user == nullptr)
+	{
+		return false;
+	}
+
+	std::vector<std::string>& actions = user->bindings[control];
+	auto it = std::find(actions.begin(), actions.end(), action);
+	
+	if (it != actions.end())
+	{
+		actions.erase(it);
+		return true;
+	}
+	
+	return false;
 }

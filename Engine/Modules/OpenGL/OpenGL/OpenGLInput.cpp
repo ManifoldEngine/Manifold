@@ -1,7 +1,7 @@
 #include "OpenGLInput.h"
 #include <GLFW/glfw3.h>
 #include <OpenGLSystem.h>
-
+#include <algorithm>
 
 using namespace ECSEngine;
 
@@ -16,8 +16,8 @@ void OpenGLInput::glfwCallback_onMouseMoved(GLFWwindow* window, double x, double
             return;
         }
 
-        openGLInput->mouse.x = static_cast<float>(x);
-        openGLInput->mouse.x = static_cast<float>(y);
+        openGLInput->mouse.x = x;
+        openGLInput->mouse.y = y;
     }
 }
 // OpenGL callbacks END

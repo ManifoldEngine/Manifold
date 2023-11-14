@@ -13,8 +13,8 @@ namespace ECSEngine
 	struct AxisControl
 	{
 		std::string name = "NONE";
-		float x = 0.f;
-		float y = 0.f;
-		float z = 0.f;
+		double x = 0.f;
+		double y = 0.f;
+		double z = 0.f;
 	};
 }

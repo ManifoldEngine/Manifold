@@ -14,6 +14,8 @@ namespace ECSEngine
 
 	class IInputGenerator;
 
+	constexpr uint32_t LOCAL_USERID = 0;
+
 	struct InputUser
 	{
 		friend class InputSystem;
@@ -25,7 +27,7 @@ namespace ECSEngine
 	
 	private:
 		uint32_t userId = 0;
-		std::shared_ptr<IInputGenerator> generator = nullptr;
+		std::weak_ptr<IInputGenerator> generator;
 	};
 
 	/*
@@ -44,16 +46,24 @@ namespace ECSEngine
 		std::string_view getName() const override;
 		bool shouldTick(EntityRegistry& registry) const override;
 
+		void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override;
+		
 		void tick(float deltaTime, EntityRegistry& registry) override;
 
 		uint32_t createInputUser(const std::vector<InputAction>& actions, const std::unordered_map<std::string, std::vector<std::string>>& bindings);		void destroyInputUser(uint32_t userId);
-		void assignInputGenerator(uint32_t userId, std::shared_ptr<IInputGenerator> generator);
+		void assignInputGenerator(uint32_t userId, const std::weak_ptr<IInputGenerator>& generator);
 
-		const InputAction* getAction(uint32_t userId, const std::string& name);
-		std::shared_ptr<InputUser> getInputUser(uint32_t userId);
+		const InputAction* getAction(uint32_t userId, const std::string& name) const;
+
+		bool addAction(uint32_t userId, const std::string& name);
+		bool removeAction(uint32_t userId, const std::string& name);
+
+		bool addBinding(uint32_t userId, const std::string& action, const std::string control);
+		bool removeBinding(uint32_t userId, const std::string& action, const std::string control);
 
 		ActionEvent onActionEvent;
 	private:
+		std::shared_ptr<InputUser> getInputUser(uint32_t userId) const;
 		std::vector<std::shared_ptr<InputUser>> m_users;
 		uint32_t userCounter = 0;
 	};

@@ -75,86 +75,21 @@ public:
 
 	std::vector<ButtonControl> buffer;
 private:
-	AxisControl m_leftStick = {
-		"LeftStick",
-		0.f,
-		0.f,
-		0.f,
-	};
+	ButtonControl m_aButton = { "AButton" };
+	ButtonControl m_bButton = { "BButton" };
 
-	AxisControl m_rightStick = {
-		"LeftStick",
-		0.f,
-		0.f,
-		0.f,
-	};
-
-	ButtonControl m_aButton = {
-		"AButton",
-		false
-	};
-
-	ButtonControl m_bButton = {
-		"BButton",
-		false
-	};
-
-	AxisControl m_rightBumper = {
-		"RightBumper",
-		0.f,
-		0.f,
-		0.f,
-	};
-
-	AxisControl m_leftBumper = {
-		"LeftBumper",
-		0.f,
-		0.f,
-		0.f,
-	};
+	AxisControl m_leftStick = { "LeftStick" };
+	AxisControl m_rightStick = { "LeftStick" };
+	AxisControl m_rightBumper = { "RightBumper" };
+	AxisControl m_leftBumper = { "LeftBumper" };
 };
 
 std::vector<InputAction> actionTemplate = 
 {
-	InputAction
-	{
-		"Jump",
-		0.f,
-		0.f,
-		0.f,
-		false,
-		true,
-	},
-
-	InputAction
-	{
-		"Dodge",
-		0.f,
-		0.f,
-		0.f,
-		false,
-		true,
-	},
-
-	InputAction
-	{
-		"Move",
-		0.f,
-		0.f,
-		0.f,
-		false,
-		true,
-	},
-
-	InputAction
-	{
-		"Shoot",
-		0.f,
-		0.f,
-		0.f,
-		false,
-		true,
-	},
+	{ "Jump" },
+	{ "Dodge" },
+	{ "Move" },
+	{ "Shoot" },
 };
 
 std::unordered_map<std::string, std::vector<std::string>> inputBindingsTemplate =
@@ -235,15 +170,7 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		// create a user and assign them the virtual controller.
 		std::vector<InputAction> actions =
 		{
-			InputAction
-			{
-				"Move",
-				0.f,
-				0.f,
-				0.f,
-				false,
-				true,
-			}
+			InputAction { "Move" }
 		};
 		
 		std::unordered_map<std::string, std::vector<std::string>> bindings =
@@ -268,8 +195,8 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		// tick the system, consumes input buffers
 		systemContainer.tick(.0f);
 
-		std::shared_ptr<InputUser> user = inputSystem->getInputUser(userId);
-		ST_ASSERT(user->actions["Move"].x <= FLT_EPSILON, "Move X axis should be zero");
+		const InputAction* moveAction = inputSystem->getAction(userId, "Move");
+		ST_ASSERT(moveAction->x <= FLT_EPSILON, "Move X axis should be zero");
 
 		systemContainer.deinitialize();
 	}
@@ -291,9 +218,6 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 
 		// create a user and assign them the virtual controller.
 		const uint32_t userId = inputSystem->createInputUser({}, {});
-		std::shared_ptr<InputUser> user = inputSystem->getInputUser(userId);
-		user->actions = {};
-		user->bindings = {};
 
 		// assign virtual controller to user
 		inputSystem->assignInputGenerator(userId, controller);
@@ -333,24 +257,8 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		// create a user and assign them the virtual controller.
 		const uint32_t userId = inputSystem->createInputUser(
 			{
-				InputAction
-				{
-					"Jump",
-					0.f,
-					0.f,
-					0.f,
-					false,
-					true,
-				},
-				InputAction
-				{
-					"Dodge",
-					0.f,
-					0.f,
-					0.f,
-					false,
-					true,
-				}
+				{ "Jump" },
+				{ "Dodge" }
 			}, 
 			{
 				{

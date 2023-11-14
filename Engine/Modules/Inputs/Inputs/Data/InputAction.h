@@ -6,11 +6,14 @@ namespace ECSEngine
 {
 	struct InputAction
 	{
+		InputAction() = default;
+		InputAction(const std::string& inName) : name(inName) {};
+
 		std::string name = "";
 		
-		float x = 0.f;
-		float y = 0.f;
-		float z = 0.f;
+		double x = 0.f;
+		double y = 0.f;
+		double z = 0.f;
 		
 		bool isPressed = false;
 		bool isEnabled = true;

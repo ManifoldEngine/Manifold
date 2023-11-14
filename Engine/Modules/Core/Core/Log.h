@@ -14,4 +14,4 @@ namespace ECSEngine
 #define ECSE_LOG_WARNING(CHANNELNAME, LOGMESSAGE, ...) LogSystem::s_log(CHANNELNAME, ELogLevel::Warning, std::format(LOGMESSAGE, __VA_ARGS__))
 #define ECSE_LOG_ERROR(CHANNELNAME, LOGMESSAGE, ...) LogSystem::s_log(CHANNELNAME, ELogLevel::Error, std::format(LOGMESSAGE, __VA_ARGS__))
 
-#define SET_CHANNEL_LOG_LEVEL(CHANNELNAME, LOGLEVEL) LogSystem::s_setChannelLogLevel(CHANNELNAME, LOGLEVEL)
+#define ECSE_SET_CHANNEL_LOG_LEVEL(CHANNELNAME, LOGLEVEL) LogSystem::s_setChannelLogLevel(CHANNELNAME, LOGLEVEL)

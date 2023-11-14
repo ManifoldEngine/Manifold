@@ -23,8 +23,8 @@ namespace ECSEngine
 
 		virtual void onInputSystemTick(float deltaTime, EntityRegistry& registry) override;
 		
-		AxisControl wasd = { "WASD", 0.f, 0.f, 0.f };
-		AxisControl mouse = { "Mouse", 0.f, 0.f, 0.f };
+		AxisControl wasd = { "WASD" };
+		AxisControl mouse = { "Mouse" };
 
 	private:
 		std::shared_ptr<OpenGLSystem> m_openGLSystem = nullptr;
