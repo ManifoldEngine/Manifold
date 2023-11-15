@@ -27,6 +27,7 @@ private:
 
 	float m_yaw = 0.f;
 	float m_pitch = 0.f;
+	float m_sensitivity = 0.1f;
 
 	std::weak_ptr<ECSEngine::InputSystem> m_inputSystem;
 

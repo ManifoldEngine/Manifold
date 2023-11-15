@@ -178,16 +178,23 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
     m_shader->setTextureSlot("inputTexture1", 0);
     m_shader->setTextureSlot("inputTexture2", 1);
 
-    ECSE_LOG(Log, "{}", 1.f/ deltaTime);
+    //ECSE_LOG(Log, "{}", 1.f/ deltaTime);
 
-    int index = 1;
+    int index = 0;
     RegistryView<Transform, Cube> registryView(registry);
     for (const auto& entityId : registryView)
     {
         if (Transform* transform = registry.getComponent<Transform>(entityId))
         {
-            const float angle = 20.f * (index % 12);
-            transform->rotation += glm::vec3(angle * .5f, angle, 0.0f) * deltaTime;
+            const float angle = 20.f * (index % 12) + 1;
+
+            glm::quat qPitch = glm::angleAxis(glm::radians(angle * .5f * deltaTime), glm::vec3(1.f, 0.f, 0.f));
+            glm::quat qYaw = glm::angleAxis(glm::radians(angle * deltaTime), glm::vec3(0.f, 1.f, 0.f));
+            glm::quat qRoll = glm::angleAxis(glm::radians(angle * deltaTime), glm::vec3(0.f, 0.f, 1.f));
+            
+            transform->rotation *= qRoll;
+            transform->rotation *= qYaw;
+            transform->rotation *= qPitch;
             
             glm::mat4 transformMatrix = transform->calculate();
             m_shader->setFloatMatrix4("model", glm::value_ptr(transformMatrix));

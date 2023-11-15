@@ -31,8 +31,6 @@ int main(int argc, char** argv)
 		inputSystem->assignInputGenerator(LOCAL_USERID, openGLSystem->getInputGenerator());
 	}
 
-	ECSE_SET_CHANNEL_LOG_LEVEL(LogInputs, ELogLevel::Verbose);
-
 	world->getSystemContainer().createSystem<CameraSystem>();
 	world->getSystemContainer().createSystem<DebugCameraControllerSystem>();
 	world->getSystemContainer().createSystem<SandboxSystem>();

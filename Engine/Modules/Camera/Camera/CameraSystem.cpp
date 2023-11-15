@@ -5,6 +5,7 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <Core/CoreAssert.h>
 #include <algorithm>
+#include <glm/ext/matrix_transform.hpp>
 
 using namespace ECSEngine;
 
@@ -48,7 +49,7 @@ void CameraSystem::tick(float deltaTime, EntityRegistry& registry)
             continue;
         }
 
-        cameraComponent->view = transform->calculate();
+        cameraComponent->view = glm::lookAt(transform->position, transform->position + transform->forward(), transform->up());
         
         const CameraConfig& config = cameraComponent->config;
         ECSE_ASSERT(std::abs(config.height) > FLT_EPSILON, "Height of a camera cannot be 0.");

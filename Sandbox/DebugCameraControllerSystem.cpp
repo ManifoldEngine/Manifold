@@ -66,24 +66,27 @@ void DebugCameraControllerSystem::tick(float deltaTime, ECSEngine::EntityRegistr
 			continue;
 		}
 
-		transform->position += glm::vec3(moveAction->x, moveAction->y, moveAction->z)  * deltaTime * CAMERA_SPEED;
+		transform->position +=	(transform->right() * static_cast<float>(moveAction->x) + 
+								transform->up() * static_cast<float>(moveAction->y) +
+								transform->forward() * static_cast<float>(moveAction->z))  * 
+								deltaTime * CAMERA_SPEED;
 
-		const float deltaX = m_previousCameraX - aimAction->x;
-		const float deltaY = m_previousCameraY - aimAction->y;
+		const float aimX = static_cast<float>(aimAction->x);
+		const float aimY = static_cast<float>(aimAction->y);
 
-		m_yaw += deltaX;
-		m_pitch += deltaY;
+		const float deltaX = m_previousCameraX - aimX;
+		const float deltaY = m_previousCameraY - aimY;
 
-		glm::vec3 forward;
-		forward.x = cos(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-		forward.y = sin(glm::radians(m_pitch));
-		forward.z = sin(glm::radians(m_yaw)) * cos(glm::radians(m_pitch));
-		forward = glm::normalize(forward);
+		m_yaw += deltaX * m_sensitivity;
+		m_pitch += deltaY * m_sensitivity;
 
-		transform->rotation = glm::degrees(glm::eulerAngles(glm::quatLookAt(forward, glm::vec3(0.f, 1.f, 0.f))));
+		glm::quat qPitch = glm::angleAxis(glm::radians(-m_pitch), glm::vec3(1.f, 0.f, 0.f));
+		glm::quat qYaw = glm::angleAxis(glm::radians(m_yaw), glm::vec3(0.f, 1.f, 0.f));
+		
+		transform->rotation = qYaw * qPitch;
 
-		m_previousCameraX = aimAction->x;
-		m_previousCameraY = aimAction->y;
+		m_previousCameraX = aimX;
+		m_previousCameraY = aimY;
 
 		// todo #13: there's no reason for us ton control multiple cameras, we should figure out how to handle a single camera.
 		break;
