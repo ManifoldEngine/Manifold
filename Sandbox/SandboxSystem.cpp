@@ -154,7 +154,7 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
         }
     }
 
-    //ECSE_LOG(Log, "{}", 1.f/ deltaTime);
+    ECSE_LOG(Log, "{}", 1.f/ deltaTime);
 
     int index = 0;
     RegistryView<Transform, RenderComponent> registryView(registry);
