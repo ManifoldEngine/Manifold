@@ -13,7 +13,14 @@
 
 using namespace ECSEngine;
 
-struct Cube {};
+struct RenderComponent
+{
+    std::shared_ptr<OpenGLVertexArray> vao;
+    std::shared_ptr<OpenGLTexture2D> texture;
+    std::shared_ptr<OpenGLShader> shader;
+
+    glm::vec3 color;
+};
 
 void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
@@ -25,7 +32,7 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
     }
 
     
-    m_shader = shaderSystem.lock()->getShader("base.glsl");
+    std::shared_ptr<OpenGLShader> shader = shaderSystem.lock()->getShader("base.glsl");
 
     float vertices[] = {
         // positions            // texture coords
@@ -87,54 +94,42 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
 
     std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(indices, (int)sizeof(indices));
 
-    m_squareVertexArray = std::make_unique<OpenGLVertexArray>();
-    m_squareVertexArray->addVertexBuffer(squareVertexBuffer);
-    m_squareVertexArray->setIndexBuffer(indexBuffer);
+    std::shared_ptr<OpenGLVertexArray> squareVertexArray = std::make_shared<OpenGLVertexArray>();
+    squareVertexArray->addVertexBuffer(squareVertexBuffer);
+    squareVertexArray->setIndexBuffer(indexBuffer);
 
-    m_woodenBoxTexture2D = std::make_unique<OpenGLTexture2D>("Assets/Images/container.jpg");
-    m_awesomeFaceTexture2D = std::make_unique<OpenGLTexture2D>("Assets/Images/awesomeface.png");
+    std::shared_ptr<OpenGLTexture2D> woodenBoxTexture2D = std::make_shared<OpenGLTexture2D>("Assets/Images/container.jpg");
 
-    
-    glm::vec3 cubePositions[] = {
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(2.0f, 5.0f, -15.0f),
-        glm::vec3(-1.5f, -2.2f, -2.5f),
-        glm::vec3(-3.8f, -2.0f, -12.3f),
-        glm::vec3(2.4f, -0.4f, -3.5f),
-        glm::vec3(-1.7f, 3.0f, -7.5f),
-        glm::vec3(1.3f, -2.0f, -2.5f),
-        glm::vec3(1.5f, 2.0f, -2.5f),
-        glm::vec3(1.5f, 0.2f, -1.5f),
-        glm::vec3(-1.3f, 1.0f, -1.5f)
-    };
+    // cube
+    EntityId cubeEntityId = registry.create();
+    Transform* cubeTransform = registry.addComponent<Transform>(cubeEntityId);
+    RenderComponent* cubeRender = registry.addComponent<RenderComponent>(cubeEntityId);
+    cubeRender->vao = squareVertexArray;
+    cubeRender->texture = woodenBoxTexture2D;
+    cubeRender->shader = shader;
+    cubeRender->color = glm::vec3(1.0f, 0.5f, 0.31f);
 
-    glm::vec3 lowerBound = glm::vec3(-20.f, -20.f, -20.f);
-    glm::vec3 upperBound = glm::vec3( 20.f,  20.f,  20.f);
-    std::mt19937 gen(UINT32_MAX);
-    std::uniform_real_distribution<float> randomX(lowerBound.x, upperBound.x);
-    std::uniform_real_distribution<float> randomY(lowerBound.y, upperBound.y);
-    std::uniform_real_distribution<float> randomZ(lowerBound.z, upperBound.z);
+    // light
+    EntityId lightEntityId = registry.create();
+    Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
+    lightTransform->position = glm::vec3(-3.f, 0.f, -3.f);
+    RenderComponent* lightRender = registry.addComponent<RenderComponent>(lightEntityId);
+    lightRender->vao = squareVertexArray;
+    lightRender->shader = shader;
+    lightRender->color = glm::vec3(1.f, 1.f, 1.f);
 
-    for (int i = 0; i < 1'000; i++)
+    Transform* cameraTransform = systemContainer.initializeDependency<CameraSystem>().lock()->getCameraTransform(registry);
+    if (cameraTransform != nullptr && cubeTransform != nullptr)
     {
-        EntityId entityId = registry.create();
-        registry.addComponent<Cube>(entityId);
-        Transform* transform = registry.addComponent<Transform>(entityId);
-        const glm::vec3 position = glm::vec3(
-            randomX(gen),
-            randomY(gen),
-            randomZ(gen)
-        );
-        
-        transform->position = position;
-        transform->rotation = glm::vec3(-55.f, 0.0f, 0.0f);
-        transform->scale = glm::vec3(1.0f, 1.0f, 1.0f);
+        cameraTransform->position = glm::vec3(0.f, 0.f, 3.f);
+        const glm::vec3 direction = glm::normalize(cubeTransform->position - cameraTransform->position);
+        glm::quat rotation = glm::toQuat(glm::lookAt(cameraTransform->position, cameraTransform->position + direction, glm::vec3(0.f, 1.f, 0.f)));
+        cameraTransform->rotation = rotation;
     }
 }
 
 void SandboxSystem::onDeinitialize(EntityRegistry& registry)
 {
-    m_squareVertexArray.reset();
 }
 
 void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
@@ -145,12 +140,6 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
     glClearColor(.2f, .3f, .3f, 1.f);
     // consuming color state.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    if (m_shader == nullptr)
-    {
-        ECSE_LOG_ERROR(LogOpenGL, "No shader available.");
-        return;
-    }
 
     glm::mat4 view;
     glm::mat4 projection;
@@ -165,49 +154,42 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
         }
     }
 
-    m_woodenBoxTexture2D->bind(0);
-    m_awesomeFaceTexture2D->bind(1);
-
-    // set the shader program to be used.
-    m_shader->use();
-    // set vertex uniforms
-    m_shader->setFloatMatrix4("view", glm::value_ptr(view));
-    m_shader->setFloatMatrix4("projection", glm::value_ptr(projection));
-
-    // set fragment uniforms
-    m_shader->setTextureSlot("inputTexture1", 0);
-    m_shader->setTextureSlot("inputTexture2", 1);
-
     //ECSE_LOG(Log, "{}", 1.f/ deltaTime);
 
     int index = 0;
-    RegistryView<Transform, Cube> registryView(registry);
+    RegistryView<Transform, RenderComponent> registryView(registry);
     for (const auto& entityId : registryView)
     {
-        if (Transform* transform = registry.getComponent<Transform>(entityId))
+        Transform* transform = registry.getComponent<Transform>(entityId);
+        RenderComponent* render = registry.getComponent<RenderComponent>(entityId);
+       
+        // set the shader program to be used.
+        render->shader->use();
+        if (render->texture != nullptr)
         {
-            const float angle = 20.f * (index % 12) + 1;
-
-            glm::quat qPitch = glm::angleAxis(glm::radians(angle * .5f * deltaTime), glm::vec3(1.f, 0.f, 0.f));
-            glm::quat qYaw = glm::angleAxis(glm::radians(angle * deltaTime), glm::vec3(0.f, 1.f, 0.f));
-            glm::quat qRoll = glm::angleAxis(glm::radians(angle * deltaTime), glm::vec3(0.f, 0.f, 1.f));
-            
-            transform->rotation *= qRoll;
-            transform->rotation *= qYaw;
-            transform->rotation *= qPitch;
-            
-            glm::mat4 transformMatrix = transform->calculate();
-            m_shader->setFloatMatrix4("model", glm::value_ptr(transformMatrix));
-            m_squareVertexArray->bind();
-            if (const auto& indexBuffer = m_squareVertexArray->getIndexBuffer())
-            {
-                glDrawElements(GL_TRIANGLES, indexBuffer->getStrideCount(), GL_UNSIGNED_INT, nullptr);
-            }
-            else
-            {
-                ECSE_ASSERT(false, "no index buffer provided with the vertices");
-            }
+            render->texture->bind(0);
+            render->shader->setTextureSlot("inputTexture1", 0);
         }
-        index++;
+        
+        // set vertex uniforms
+        render->shader->setFloatMatrix4("view", glm::value_ptr(view));
+        render->shader->setFloatMatrix4("projection", glm::value_ptr(projection));
+
+        const glm::vec3& color = render->color;
+        // set fragment uniforms
+        render->shader->setFloat3("color", color.x, color.y, color.z);
+        render->shader->setFloat3("lightColor", 1.0f, 1.0f, 1.0f);
+
+        glm::mat4 transformMatrix = transform->calculate();
+        render->shader->setFloatMatrix4("model", glm::value_ptr(transformMatrix));
+        render->vao->bind();
+        if (const auto& indexBuffer = render->vao->getIndexBuffer())
+        {
+            glDrawElements(GL_TRIANGLES, indexBuffer->getStrideCount(), GL_UNSIGNED_INT, nullptr);
+        }
+        else
+        {
+            ECSE_ASSERT(false, "no index buffer provided with the vertices");
+        }
     }
 }

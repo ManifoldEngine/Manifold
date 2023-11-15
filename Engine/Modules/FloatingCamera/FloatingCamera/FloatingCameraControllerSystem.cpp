@@ -73,13 +73,19 @@ void FloatingCameraControllerSystem::tick(float deltaTime, ECSEngine::EntityRegi
 		const float deltaX = m_previousCameraX - aimX;
 		const float deltaY = m_previousCameraY - aimY;
 
-		m_yaw += deltaX * m_sensitivity;
-		m_pitch += deltaY * m_sensitivity;
+		if (std::abs(deltaX) <= FLT_EPSILON || std::abs(deltaX) <= FLT_EPSILON)
+		{
+			return;
+		}
 
-		glm::quat qPitch = glm::angleAxis(glm::radians(-m_pitch), glm::vec3(1.f, 0.f, 0.f));
-		glm::quat qYaw = glm::angleAxis(glm::radians(m_yaw), glm::vec3(0.f, 1.f, 0.f));
-		
-		transform->rotation = qYaw * qPitch;
+		const float yaw = deltaX * m_sensitivity;
+		const float pitch = deltaY * m_sensitivity;
+
+		glm::quat quatPitch =	glm::angleAxis(glm::radians(-pitch),	glm::vec3(1.f, 0.f, 0.f));
+		glm::quat quatYaw =		glm::angleAxis(glm::radians(yaw),		glm::vec3(0.f, 1.f, 0.f));
+
+		// it is crucial to respect this order of operation to avoid unintended roll.
+		transform->rotation = quatYaw * transform->rotation * quatPitch;
 
 		m_previousCameraX = aimX;
 		m_previousCameraY = aimY;

@@ -8,7 +8,8 @@
 namespace ECSEngine
 {
 	class EntityRegistry;
-	class SystemContainre;
+	class SystemContainer;
+	struct Transform;
 
 	struct CameraConfig
 	{
@@ -39,6 +40,8 @@ namespace ECSEngine
 		virtual void tick(float deltaTime, EntityRegistry& registry) override;
 	
 		const CameraComponent* getCameraComponent(const EntityRegistry& registry) const;
+		Transform* getCameraTransform(EntityRegistry& registry) const;
+
 		void setCameraConfig(EntityRegistry& registry, const CameraConfig& config);
 
 	private:

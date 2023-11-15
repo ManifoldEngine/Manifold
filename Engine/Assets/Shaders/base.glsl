@@ -21,9 +21,9 @@ void main()
 
 in vec2 textureCoordinate;
 
-uniform vec4 color;
+uniform vec3 color;
+uniform vec3 lightColor;
 uniform sampler2D inputTexture1;
-uniform sampler2D inputTexture2;
 
 out vec4 FragColor;
 
@@ -31,7 +31,7 @@ void main()
 {
     FragColor = mix(
         texture(inputTexture1, textureCoordinate),
-        texture(inputTexture2, textureCoordinate),
-        0.2f
+        vec4(color * lightColor, 1.f),
+        1.f
     );
 }

@@ -23,12 +23,5 @@ protected:
 
 	virtual void onInitialize(ECSEngine::EntityRegistry& registry, ECSEngine::SystemContainer& systemContainer) override;
 	virtual void onDeinitialize(ECSEngine::EntityRegistry& registry) override;
-
-private:
-	std::unique_ptr<ECSEngine::OpenGLVertexArray> m_squareVertexArray;
-	std::unique_ptr<ECSEngine::OpenGLIndexBuffer> m_indexBuffer;
-	std::shared_ptr<ECSEngine::OpenGLShader> m_shader;
-	std::unique_ptr<ECSEngine::OpenGLTexture2D> m_woodenBoxTexture2D;
-	std::unique_ptr<ECSEngine::OpenGLTexture2D> m_awesomeFaceTexture2D;
 };
 

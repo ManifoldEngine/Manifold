@@ -65,6 +65,11 @@ const CameraComponent* CameraSystem::getCameraComponent(const EntityRegistry& re
     return registry.getComponent<CameraComponent>(m_cameraId);
 }
 
+Transform* CameraSystem::getCameraTransform(EntityRegistry& registry) const
+{
+    return registry.getComponent<Transform>(m_cameraId);
+}
+
 void CameraSystem::setCameraConfig(EntityRegistry& registry, const CameraConfig& config)
 {
     if (auto* cameraComponent = registry.getComponent<CameraComponent>(m_cameraId))
