@@ -6,10 +6,10 @@
 #include <Core/Log.h>
 #include <Core/World/WorldSystem.h>
 #include <Camera/CameraSystem.h>
+#include <FloatingCamera/FloatingCameraControllerSystem.h>
 #include <Inputs/InputSystem.h>
 
 #include "SandboxSystem.h"
-#include "DebugCameraControllerSystem.h"
 
 using namespace ECSEngine;
 
@@ -32,13 +32,13 @@ int main(int argc, char** argv)
 	}
 
 	world->getSystemContainer().createSystem<CameraSystem>();
-	world->getSystemContainer().createSystem<DebugCameraControllerSystem>();
+	world->getSystemContainer().createSystem<FloatingCameraControllerSystem>();
 	world->getSystemContainer().createSystem<SandboxSystem>();
 
 	app.run();
 	
 	world->getSystemContainer().destroySystem<SandboxSystem>();
-	world->getSystemContainer().destroySystem<DebugCameraControllerSystem>();
+	world->getSystemContainer().destroySystem<FloatingCameraControllerSystem>();
 	world->getSystemContainer().destroySystem<CameraSystem>();
 	world->getSystemContainer().destroySystem<InputSystem>();
 

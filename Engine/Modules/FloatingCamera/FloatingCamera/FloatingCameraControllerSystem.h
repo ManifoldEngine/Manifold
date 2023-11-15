@@ -10,7 +10,7 @@ namespace ECSEngine
 	class InputSystem;
 }
 
-class DebugCameraControllerSystem : public ECSEngine::SystemBase
+class FloatingCameraControllerSystem : public ECSEngine::SystemBase
 {
 public:
 	virtual std::string_view getName() const override;
@@ -31,6 +31,6 @@ private:
 
 	std::weak_ptr<ECSEngine::InputSystem> m_inputSystem;
 
-	const std::string MOVE_ACTION = "DebugCameraMove";
-	const std::string AIM_ACTION = "DebugCameraAim";
+	const std::string MOVE_ACTION = "FloatingCameraMove";
+	const std::string AIM_ACTION = "FloatingCameraAim";
 };

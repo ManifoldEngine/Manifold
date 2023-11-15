@@ -1,4 +1,4 @@
-#include "DebugCameraControllerSystem.h"
+#include "FloatingCameraControllerSystem.h"
 
 #include <Camera/CameraSystem.h>
 #include <ECS/Entity.h>
@@ -9,24 +9,20 @@
 #include <Core/Log.h>
 #include <Inputs/InputSystem.h>
 
-#include <glm/geometric.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <memory>
-#include <glm/gtc/quaternion.hpp>
 
 using namespace ECSEngine;
 
-std::string_view DebugCameraControllerSystem::getName() const
+std::string_view FloatingCameraControllerSystem::getName() const
 {
-	return "DebugCameraControllerSystem";
+	return "FloatingCameraControllerSystem";
 }
 
-bool DebugCameraControllerSystem::shouldTick(EntityRegistry& registry) const
+bool FloatingCameraControllerSystem::shouldTick(EntityRegistry& registry) const
 {
 	return true;
 }
 
-void DebugCameraControllerSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+void FloatingCameraControllerSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
 	m_inputSystem = systemContainer.initializeDependency<InputSystem>();
 	if (!m_inputSystem.expired())
@@ -40,7 +36,7 @@ void DebugCameraControllerSystem::onInitialize(EntityRegistry& registry, SystemC
 	}
 }
 
-void DebugCameraControllerSystem::tick(float deltaTime, ECSEngine::EntityRegistry& registry)
+void FloatingCameraControllerSystem::tick(float deltaTime, ECSEngine::EntityRegistry& registry)
 {
 	if (m_inputSystem.expired())
 	{
