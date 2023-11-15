@@ -27,7 +27,6 @@ namespace ECSEngine
 	
 	private:
 		uint32_t userId = 0;
-		std::weak_ptr<IInputGenerator> generator;
 	};
 
 	/*
@@ -65,6 +64,7 @@ namespace ECSEngine
 	private:
 		std::shared_ptr<InputUser> getInputUser(uint32_t userId) const;
 		std::vector<std::shared_ptr<InputUser>> m_users;
+		std::unordered_map<uint32_t, std::weak_ptr<IInputGenerator>> m_generators;
 		uint32_t userCounter = 0;
 	};
 }

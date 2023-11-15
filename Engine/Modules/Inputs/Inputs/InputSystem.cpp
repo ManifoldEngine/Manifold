@@ -24,12 +24,13 @@ void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 {
 	for (const auto& user : m_users)
 	{
-		if (user->generator.expired())
+		std::weak_ptr weakGenerator = m_generators[user->userId];
+		if (weakGenerator.expired())
 		{
 			continue;
 		}
 
-		std::shared_ptr<IInputGenerator> generator = user->generator.lock();
+		std::shared_ptr<IInputGenerator> generator = weakGenerator.lock();
 
 		generator->onInputSystemTick(deltaTime, registry);
 
@@ -127,7 +128,7 @@ uint32_t InputSystem::createInputUser(const std::vector<InputAction>& actions, c
 
 	user->userId = userCounter++;
 	m_users.push_back(user);
-	return 0;
+	return user->userId;
 }
 
 std::shared_ptr<InputUser> InputSystem::getInputUser(uint32_t userId) const
@@ -158,13 +159,7 @@ void InputSystem::destroyInputUser(uint32_t userId)
 
 void InputSystem::assignInputGenerator(uint32_t userId, const std::weak_ptr<IInputGenerator>& generator)
 {
-	std::shared_ptr<InputUser> inputUser = getInputUser(userId);
-	if (inputUser == nullptr)
-	{
-		return;
-	}
-
-	inputUser->generator = generator;
+	m_generators[userId] = generator;
 }
 
 bool InputSystem::addAction(uint32_t userId, const std::string& name) 

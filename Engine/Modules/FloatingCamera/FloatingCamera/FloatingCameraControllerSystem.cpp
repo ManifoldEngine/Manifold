@@ -45,8 +45,8 @@ void FloatingCameraControllerSystem::tick(float deltaTime, ECSEngine::EntityRegi
 
 	std::shared_ptr<InputSystem> inputSystem = m_inputSystem.lock();
 
-	const InputAction* moveAction = inputSystem->getAction(0, MOVE_ACTION);
-	const InputAction* aimAction = inputSystem->getAction(0, AIM_ACTION);
+	const InputAction* moveAction = inputSystem->getAction(LOCAL_USERID, MOVE_ACTION);
+	const InputAction* aimAction = inputSystem->getAction(LOCAL_USERID, AIM_ACTION);
 
 	if (moveAction == nullptr || aimAction == nullptr)
 	{
