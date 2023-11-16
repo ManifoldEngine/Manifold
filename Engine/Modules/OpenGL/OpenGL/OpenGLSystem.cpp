@@ -131,15 +131,13 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     glDebugMessageCallback(OpenGLMessageCallback, nullptr);
 #endif
 
-    m_openGLInputGenerator = std::make_shared<OpenGLInput>();
-    m_openGLInputGenerator->initialize(std::shared_ptr<OpenGLSystem>(this));
+    m_openGLInputGenerator = std::make_shared<OpenGLInput>(shared_from_this());
 }
 
 void OpenGLSystem::onDeinitialize(EntityRegistry& entityRegistry)
 {
     SystemBase::onDeinitialize(entityRegistry);
 
-    m_openGLInputGenerator->deinitialize();
     m_openGLInputGenerator.reset();
 
     terminate();

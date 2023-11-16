@@ -11,7 +11,7 @@ struct GLFWwindow;
 namespace ECSEngine
 {
 	// manages the opengl implementation using glfw and glew.
-	class OpenGLSystem : public SystemBase
+	class OpenGLSystem : public SystemBase, public std::enable_shared_from_this<OpenGLSystem>
 	{
 	public:
 		struct WindowContext

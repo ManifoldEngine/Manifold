@@ -13,8 +13,8 @@ namespace ECSEngine
 	class OpenGLInput: public IInputGenerator
 	{
 	public:
-		void initialize(const std::shared_ptr<OpenGLSystem>& openGLSystem);
-		void deinitialize();
+		OpenGLInput(const std::weak_ptr<OpenGLSystem>& openGLSystem);
+		~OpenGLInput();
 
 		virtual std::string getName() const override;
 
@@ -27,7 +27,7 @@ namespace ECSEngine
 		AxisControl mouse = { "Mouse" };
 
 	private:
-		std::shared_ptr<OpenGLSystem> m_openGLSystem = nullptr;
+		std::weak_ptr<OpenGLSystem> m_openGLSystem;
 		std::vector<ButtonControl> m_inputBuffer;
 
 		static void glfwCallback_onMouseMoved(GLFWwindow* window, double x, double y);

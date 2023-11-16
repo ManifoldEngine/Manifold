@@ -22,19 +22,23 @@ void OpenGLInput::glfwCallback_onMouseMoved(GLFWwindow* window, double x, double
 }
 // OpenGL callbacks END
 
-void OpenGLInput::initialize(const std::shared_ptr<OpenGLSystem>& openGLSystem)
+OpenGLInput::OpenGLInput(const std::weak_ptr<OpenGLSystem>& openGLSystem)
+    : m_openGLSystem(openGLSystem)
 {
-    m_openGLSystem = openGLSystem;
-
-    const OpenGLSystem::WindowContext& context = m_openGLSystem->getWindowContext();
-    glfwSetCursorPosCallback(context.window, &OpenGLInput::glfwCallback_onMouseMoved);
+    if (!m_openGLSystem.expired())
+    {
+        std::shared_ptr<OpenGLSystem> openGLSystem = m_openGLSystem.lock();
+        const OpenGLSystem::WindowContext& context = openGLSystem->getWindowContext();
+        glfwSetCursorPosCallback(context.window, &OpenGLInput::glfwCallback_onMouseMoved);
+    }
 }
 
-void OpenGLInput::deinitialize()
+OpenGLInput::~OpenGLInput()
 {
-    if (m_openGLSystem != nullptr)
+    if (!m_openGLSystem.expired())
     {
-        const OpenGLSystem::WindowContext& context = m_openGLSystem->getWindowContext();
+        std::shared_ptr<OpenGLSystem> openGLSystem = m_openGLSystem.lock();
+        const OpenGLSystem::WindowContext& context = openGLSystem->getWindowContext();
         glfwSetCursorPosCallback(context.window, NULL);
     }
 }
@@ -58,17 +62,19 @@ bool OpenGLInput::getAxis(std::vector<AxisControl>& outAxis)
 
 void OpenGLInput::onInputSystemTick(float deltaTime, EntityRegistry& registry)
 {
-    if (m_openGLSystem == nullptr)
+    if (m_openGLSystem.expired())
     {
         return;
     }
+
+    std::shared_ptr<OpenGLSystem> openGLSystem = m_openGLSystem.lock();
 
     wasd.x = 0.f;
     wasd.y = 0.f;
     wasd.z = 0.f;
 
     // W
-    const OpenGLSystem::WindowContext& context = m_openGLSystem->getWindowContext();
+    const OpenGLSystem::WindowContext& context = openGLSystem->getWindowContext();
     if (glfwGetKey(context.window, GLFW_KEY_W) == GLFW_PRESS)
     {
         m_inputBuffer.push_back(ButtonControl{ "W", true });

@@ -15,7 +15,7 @@ namespace ECSEngine
 	{
 		float fov = 45.f;
 		float width = 800.f;
-		float height = 600.f;
+		float height = 800.f;
 		float nearClipPlane = .1f;
 		float farClipPlane = 100.f;
 	};

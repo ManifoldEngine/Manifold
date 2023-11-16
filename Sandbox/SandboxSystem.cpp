@@ -118,13 +118,21 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
     lightRender->shader = shader;
     lightRender->color = glm::vec3(1.f, 1.f, 1.f);
 
+    // floor
+    EntityId floorEntityId = registry.create();
+    Transform* floorTransform = registry.addComponent<Transform>(floorEntityId);
+    floorTransform->position = glm::vec3(0.f, -0.55f, 0.f);
+    floorTransform->scale = glm::vec3(20.f, 0.1f, 20.f);
+    RenderComponent* floorRender = registry.addComponent<RenderComponent>(floorEntityId);
+    floorRender->vao = squareVertexArray;
+    floorRender->shader = shader;
+    floorRender->color = glm::vec3(.1f, .1f, .1f);
+
     Transform* cameraTransform = systemContainer.initializeDependency<CameraSystem>().lock()->getCameraTransform(registry);
-    if (cameraTransform != nullptr && cubeTransform != nullptr)
+    if (cameraTransform != nullptr && lightTransform != nullptr)
     {
-        cameraTransform->position = glm::vec3(0.f, 0.f, 3.f);
-        const glm::vec3 direction = glm::normalize(cubeTransform->position - cameraTransform->position);
-        glm::quat rotation = glm::toQuat(glm::lookAt(cameraTransform->position, cameraTransform->position + direction, glm::vec3(0.f, 1.f, 0.f)));
-        cameraTransform->rotation = rotation;
+        cameraTransform->position = glm::vec3(12.67f, 3.04f, -9.13f);
+        cameraTransform->rotation = glm::normalize(glm::quat(0.87f, 0.09f, -0.46f, 0.04f));
     }
 }
 
@@ -154,7 +162,7 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
         }
     }
 
-    ECSE_LOG(Log, "{}", 1.f/ deltaTime);
+    //ECSE_LOG(Log, "{}", 1.f/ deltaTime);
 
     int index = 0;
     RegistryView<Transform, RenderComponent> registryView(registry);
