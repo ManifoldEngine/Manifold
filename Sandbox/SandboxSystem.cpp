@@ -28,7 +28,10 @@ struct RenderComponent
 
 struct Cube {};
 
-struct LightComponent {};
+struct LightComponent 
+{
+    glm::vec3 color = glm::vec3(1.0f);
+};
 
 struct DirectionalLightComponent
 {
@@ -166,9 +169,6 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
         registry.addComponent<LightComponent>(lightEntityId);
         DirectionalLightComponent* lightComponent = registry.addComponent<DirectionalLightComponent>(lightEntityId);
         lightComponent->direction = glm::vec3(-0.2f, -1.0f, 0.1f);
-        lightComponent->ambient = glm::vec3(.1f, .1f, 0.f);
-        lightComponent->diffuse = glm::vec3(.2f, .2f, .1f);
-        lightComponent->specular = glm::vec3(1.0f, 1.0f, .9f);
 
         Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
         lightTransform->position = glm::vec3(0.f, 6.f, 0.f);
@@ -347,7 +347,13 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
         shader->setInt("directionalLightsCount", directionalLightIndex);
         shader->setInt("pointLightsCount", pointLightIndex);
 
+        if (const LightComponent* lightComponent = registry.getComponent<LightComponent>(entityId))
+        {
+            shader->setFloat3("color", lightComponent->color.x, lightComponent->color.y, lightComponent->color.z);
+        }
+
         render->vao->bind();
+
         if (const auto& indexBuffer = render->vao->getIndexBuffer())
         {
             glDrawElements(GL_TRIANGLES, indexBuffer->getStrideCount(), GL_UNSIGNED_INT, nullptr);
