@@ -14,15 +14,3 @@ group "Engine"
 
         includedirs { moduledir .. "/**" }
 group ""
-
-group "_TestLibs"
-    project "FloatingCameraTests"
-        kind "SharedLib"
-        location (moduledir .. "/FloatingCamera/Tests")
-
-        files { moduledir .. "/FloatingCamera/Tests/**.h", moduledir .. "/FloatingCamera/Tests/**.cpp" }
-        
-        links { "FloatingCamera" }
-        
-        includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir .. "/**" }
-group ""

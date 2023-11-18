@@ -28,7 +28,7 @@ namespace ECSEngine
 		template<Derived<SystemBase> TSystem>
 		bool createSystem();
 
-		template<Derived<SystemBase> TSystem>
+		template<typename TSystem>
 		std::weak_ptr<TSystem> getSystem() const;
 
 		// creates, initializes then return a shared pointer to the TSystem
@@ -71,14 +71,14 @@ namespace ECSEngine
 		return true;
 	}
 
-	template<Derived<SystemBase> TSystem>
+	template<typename TSystem>
 	inline std::weak_ptr<TSystem> SystemContainer::getSystem() const
 	{
 		for (auto& system : m_systems)
 		{
 			if (std::dynamic_pointer_cast<TSystem>(system) != nullptr)
 			{
-				return std::static_pointer_cast<TSystem>(system);
+				return std::dynamic_pointer_cast<TSystem>(system);
 			}
 		}
 		return std::weak_ptr<TSystem>();

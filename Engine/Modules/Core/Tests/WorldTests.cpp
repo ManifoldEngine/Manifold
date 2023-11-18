@@ -318,5 +318,32 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		world.getSystemContainer().destroySystem<SomeOtherSystem>();
 		world.deinitialize();
 	}
+
+	ST_TEST(DependencyInjection, "Should be able to refer to systems by interface")
+	{
+		class ISomeFunctionality
+		{
+		public:
+			virtual void DoFunctionality() = 0;
+		};
+
+		class SomeCustomSystem : public SystemBase, public ISomeFunctionality
+		{
+		public:
+			virtual void DoFunctionality() override
+			{
+				ST_ASSERT(true, "Nice functionality!");
+			}
+		};
+
+		World world;
+		SystemContainer& systemContainer = world.getSystemContainer();
+
+		systemContainer.createSystem<SomeCustomSystem>();
+		std::shared_ptr<ISomeFunctionality> someFunctionalitySystem = systemContainer.getSystem<ISomeFunctionality>().lock();
+		ST_ASSERT(someFunctionalitySystem != nullptr, "Should have been able to access SomeSystem");
+		
+		someFunctionalitySystem->DoFunctionality();
+	}
 }
 ST_SECTION_END(Core_World)
