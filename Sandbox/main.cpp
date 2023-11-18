@@ -31,16 +31,16 @@ int main(int argc, char** argv)
 		inputSystem->assignInputGenerator(LOCAL_USERID, openGLSystem->getInputGenerator());
 	}
 
-	world->getSystemContainer().createSystem<CameraSystem>();
-	world->getSystemContainer().createSystem<FloatingCameraControllerSystem>();
-	world->getSystemContainer().createSystem<SandboxSystem>();
+	world->getSystemContainer().createSystem<CameraSystem>()
+		.createSystem<FloatingCameraControllerSystem>()
+		.createSystem<SandboxSystem>();
 
 	app.run();
 	
-	world->getSystemContainer().destroySystem<SandboxSystem>();
-	world->getSystemContainer().destroySystem<FloatingCameraControllerSystem>();
-	world->getSystemContainer().destroySystem<CameraSystem>();
-	world->getSystemContainer().destroySystem<InputSystem>();
+	world->getSystemContainer().destroySystem<SandboxSystem>()
+		.destroySystem<FloatingCameraControllerSystem>()
+		.destroySystem<CameraSystem>()
+		.destroySystem<InputSystem>();
 
 	systemContainer.destroySystem<OpenGLSystem>();
 	return 0;

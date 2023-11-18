@@ -52,12 +52,10 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		
 		World world;
 		world.initialize();
+		SystemContainer& systemContainer = world.getSystemContainer();
 
-		bool didCreateSystem = world.getSystemContainer().createSystem<SomeSystem>();
-		ST_ASSERT(didCreateSystem, "Should return true when creating a system.");
-
-		didCreateSystem = world.getSystemContainer().createSystem<SomeSystem>();
-		ST_ASSERT(!didCreateSystem, "Should not return true when creating a system of a type that already exists.");
+		systemContainer.createSystem<SomeSystem>();
+		ST_ASSERT(!systemContainer.getSystem<SomeSystem>().expired(), "Should return true when creating a system.");
 
 		std::shared_ptr<SomeSystem> someSystem = world.getSystemContainer().getSystem<SomeSystem>().lock();
 		ST_ASSERT(someSystem != nullptr, "Should get a non nullptr system");
@@ -78,8 +76,8 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 			onDeinitializeCalled = true;
 		});
 
-		bool didDestroySystem = world.getSystemContainer().destroySystem<SomeSystem>();
-		ST_ASSERT(didDestroySystem, "Should return true when destroying a system.");
+		world.getSystemContainer().destroySystem<SomeSystem>();
+		ST_ASSERT(systemContainer.getSystem<SomeSystem>().expired(), "Should return true when destroying a system.");
 		ST_ASSERT(onDeinitializeCalled, "onDeinitialize should have been called.");
 
 		world.getSystemContainer().destroySystem<SomeSystem>();
@@ -93,9 +91,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		World world;
 		SystemContainer& systemContainer = world.getSystemContainer();
 
-		bool didCreateSystem = systemContainer.createSystem<SomeSystem>();
-		ST_ASSERT(didCreateSystem, "Should return true when creating a system.");
-
+		systemContainer.createSystem<SomeSystem>();
 		std::shared_ptr<SomeSystem> someSystem = systemContainer.getSystem<SomeSystem>().lock();
 		ST_ASSERT(someSystem != nullptr, "SomeSystem should not be null");
 		if (someSystem == nullptr)
@@ -226,7 +222,8 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 
 		World world;
 		SystemContainer& systemContainer = world.getSystemContainer();
-		if (!systemContainer.createSystem<SomeExtendedSystem>())
+		systemContainer.createSystem<SomeExtendedSystem>();
+		if (systemContainer.getSystem<SomeExtendedSystem>().expired())
 		{
 			ST_ASSERT(false, "did not create the system, should have created the system");
 			return;
@@ -239,13 +236,10 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 			return;
 		}
 
+		size_t sizeBefore = systemContainer.size();
 		ST_ASSERT(someSystem->getName() == "SomeExtendedSystem", "Should return the extended name");
-
-		if (systemContainer.createSystem<SomeSystem>())
-		{
-			ST_ASSERT(false, "should not have allowed creating a system of type SomeSystem");
-			return;
-		}
+		systemContainer.createSystem<SomeSystem>();
+		ST_ASSERT(sizeBefore == systemContainer.size(), "should not have allowed creating a system of type SomeSystem");
 
 		world.getSystemContainer().destroySystem<SomeExtendedSystem>();
 		world.deinitialize();
@@ -288,7 +282,8 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		World world;
 		SystemContainer& systemContainer = world.getSystemContainer();
 		systemContainer.initialize();
-		if (!systemContainer.createSystem<SomeOtherSystem>())
+		systemContainer.createSystem<SomeOtherSystem>();
+		if (systemContainer.getSystem<SomeOtherSystem>().expired())
 		{
 			ST_ASSERT(false, "did not create the system, should have created the system");
 			return;

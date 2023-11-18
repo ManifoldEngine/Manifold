@@ -282,7 +282,6 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
         }
     }
     
-    
     RegistryView<Transform, Cube> cubesView(registry);
     for (const EntityId& entityId : cubesView)
     {
@@ -290,7 +289,7 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
         transform->rotation *= glm::angleAxis(glm::radians(25.f * deltaTime), glm::vec3(1.f, 1.f, 0.f));
     }
     
-    ECSE_LOG(Log, "{}", 1.f/ deltaTime);
+    // ECSE_LOG(Log, "{}", 1.f/ deltaTime);
 
     int index = 0;
     RegistryView<Transform, RenderComponent> registryView(registry);

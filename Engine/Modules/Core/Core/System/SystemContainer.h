@@ -26,7 +26,7 @@ namespace ECSEngine
 		// after this is called, a TSystem is guarranteed to live in the container.
 		// returns true if a system was created.
 		template<Derived<SystemBase> TSystem>
-		bool createSystem();
+		SystemContainer& createSystem();
 
 		template<typename TSystem>
 		std::weak_ptr<TSystem> getSystem() const;
@@ -41,7 +41,10 @@ namespace ECSEngine
 		// after this is called, no TSystem remains in the container.
 		// returns true if a system was destroyed
 		template<Derived<SystemBase> TSystem>
-		bool destroySystem();
+		SystemContainer& destroySystem();
+
+		// returns the amount of systems
+		size_t size() const;
 
 	private:
 		EntityRegistry m_registry;
@@ -50,14 +53,14 @@ namespace ECSEngine
 	};
 
 	template<Derived<SystemBase> TSystem>
-	inline bool SystemContainer::createSystem()
+	inline SystemContainer& SystemContainer::createSystem()
 	{
 		// check if a system of this type exists already.
 		for (const auto& system : m_systems)
 		{
 			if (std::dynamic_pointer_cast<const TSystem>(system) != nullptr)
 			{
-				return false;
+				return *this;
 			}
 		}
 
@@ -68,7 +71,7 @@ namespace ECSEngine
 		}
 		m_systems.push_back(system);
 
-		return true;
+		return *this;
 	}
 
 	template<typename TSystem>
@@ -97,7 +100,7 @@ namespace ECSEngine
 	}
 
 	template<Derived<SystemBase> TSystem>
-	inline bool SystemContainer::destroySystem()
+	inline SystemContainer& SystemContainer::destroySystem()
 	{
 		for (auto it = m_systems.begin(); it != m_systems.end(); it++)
 		{
@@ -111,9 +114,9 @@ namespace ECSEngine
 
 				system.reset();
 				m_systems.erase(it);
-				return true;
+				return *this;
 			}
 		}
-		return false;
+		return *this;
 	}
 }

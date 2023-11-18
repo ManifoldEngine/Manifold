@@ -48,3 +48,8 @@ void SystemContainer::tick(float deltaTime)
 		}
 	}
 }
+
+size_t SystemContainer::size() const
+{
+	return m_systems.size();
+}
