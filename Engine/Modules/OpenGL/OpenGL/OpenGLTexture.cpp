@@ -12,7 +12,8 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string_view& path)
     m_isLoaded(false),
     m_width(0),
     m_height(0),
-    m_channels(0)
+    m_channels(0),
+    m_boundSlot(-1)
 {
     stbi_set_flip_vertically_on_load(1);
    
@@ -83,7 +84,17 @@ OpenGLTexture2D::~OpenGLTexture2D()
     glDeleteTextures(1, &m_textureId);
 }
 
-void OpenGLTexture2D::bind(uint32_t slot) const
+void OpenGLTexture2D::bind(uint32_t slot)
 {
-    glBindTextureUnit(slot, m_textureId);
+    m_boundSlot = slot;
+    glBindTextureUnit(m_boundSlot, m_textureId);
+}
+
+void ECSEngine::OpenGLTexture2D::unbind()
+{
+    if (m_boundSlot >= 0)
+    {
+        glBindTextureUnit(m_boundSlot, NULL);
+        m_boundSlot = -1;
+    }
 }

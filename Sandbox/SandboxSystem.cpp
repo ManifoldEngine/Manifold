@@ -11,27 +11,44 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <random>
 
 using namespace ECSEngine;
 
 struct RenderComponent
 {
     std::shared_ptr<OpenGLVertexArray> vao;
-    std::shared_ptr<OpenGLTexture2D> texture;
     std::shared_ptr<OpenGLShader> shader;
 
-    glm::vec3 color;
-
-    glm::vec3 materialAmbient = glm::vec3(0.1f, 0.1f, 0.1f);
-    glm::vec3 materialDiffuse = glm::vec3(1.0f, 0.5f, 0.31f);
-    glm::vec3 materialSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
+    std::shared_ptr<OpenGLTexture2D> materialDiffuseMap = nullptr;
+    std::shared_ptr<OpenGLTexture2D> materialSpecularMap = nullptr;
     
-    float shininess = 32.0f;
+    float shininess = 64.0f;
 };
 
 struct Cube {};
 
-struct LightSourceComponent {};
+struct LightComponent {};
+
+struct DirectionalLightComponent
+{
+    glm::vec3 direction = glm::vec3(-0.2f, -1.0f, -0.3f);
+
+    glm::vec3 ambient = glm::vec3(0.2f);
+    glm::vec3 diffuse = glm::vec3(0.5f);
+    glm::vec3 specular = glm::vec3(1.0f);
+};
+
+struct PointLightComponent
+{
+    glm::vec3 ambient = glm::vec3(0.2f);
+    glm::vec3 diffuse = glm::vec3(0.5f);
+    glm::vec3 specular = glm::vec3(1.0f);
+
+    float constant = 1.0f;
+    float linear = 0.09f;
+    float quadratic = 0.032f;
+};
 
 void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
@@ -42,10 +59,8 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
         return;
     }
 
-    
-    std::shared_ptr<OpenGLShader> baseShader = shaderSystem.lock()->getShader("base.glsl");
-    std::shared_ptr<OpenGLShader> lightShader = shaderSystem.lock()->getShader("light.glsl");
-
+    std::shared_ptr<OpenGLShader> baseShader = shaderSystem.lock()->getShader("baseLit.glsl");
+    std::shared_ptr<OpenGLShader> lightShader = shaderSystem.lock()->getShader("flatColor.glsl");
 
     float vertices[] = {
         // positions               // normals           // texture coords
@@ -100,7 +115,8 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
     }
 
     std::shared_ptr<OpenGLVertexBuffer> squareVertexBuffer = std::make_shared<OpenGLVertexBuffer>(vertices, (int)sizeof(vertices));
-    squareVertexBuffer->layout = {
+    squareVertexBuffer->layout = 
+    {
         { ShaderDataType::Float3, false },
         { ShaderDataType::Float3, true  },
         { ShaderDataType::Float2, false }
@@ -112,29 +128,80 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
     squareVertexArray->addVertexBuffer(squareVertexBuffer);
     squareVertexArray->setIndexBuffer(indexBuffer);
 
-    std::shared_ptr<OpenGLTexture2D> woodenBoxTexture2D = std::make_shared<OpenGLTexture2D>("Assets/Images/container.jpg");
+    std::shared_ptr<OpenGLTexture2D> woodenBoxTexture2D = std::make_shared<OpenGLTexture2D>("Assets/Images/container2.png");
+    std::shared_ptr<OpenGLTexture2D> woodenBoxSpecularTexture2D = std::make_shared<OpenGLTexture2D>("Assets/Images/container2_specular.png");
+    
 
-    // cube
-    EntityId cubeEntityId = registry.create();
-    registry.addComponent<Cube>(cubeEntityId);
-    Transform* cubeTransform = registry.addComponent<Transform>(cubeEntityId);
-    RenderComponent* cubeRender = registry.addComponent<RenderComponent>(cubeEntityId);
-    cubeRender->vao = squareVertexArray;
-    cubeRender->texture = woodenBoxTexture2D;
-    cubeRender->shader = baseShader;
-    cubeRender->color = glm::vec3(1.0f, 0.5f, 0.31f);
+    glm::vec3 lowerBound = glm::vec3(-4.f, 0.f, -5.f);
+    glm::vec3 upperBound = glm::vec3(4.f, 1.f, 4.f);
+    std::mt19937 gen(UINT32_MAX);
+    std::uniform_real_distribution<float> randomX(lowerBound.x, upperBound.x);
+    std::uniform_real_distribution<float> randomY(lowerBound.y, upperBound.y);
+    std::uniform_real_distribution<float> randomZ(lowerBound.z, upperBound.z);
+    for (int i = 0; i < 10; ++i)
+    {
+        // cube
+        EntityId cubeEntityId = registry.create();
+        registry.addComponent<Cube>(cubeEntityId);
+        Transform* cubeTransform = registry.addComponent<Transform>(cubeEntityId);
+        
+        const glm::vec3 position = glm::vec3(
+            randomX(gen),
+            randomY(gen),
+            randomZ(gen)
+        );
 
-    // light
-    EntityId lightEntityId = registry.create();
-    registry.addComponent<LightSourceComponent>(lightEntityId);
-    Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
-    lightTransform->position = glm::vec3(-5.f, 5.f, -5.f);
-    lightTransform->scale = glm::vec3(.1f, .1f, .1f);
+        cubeTransform->position = position;
 
-    RenderComponent* lightRender = registry.addComponent<RenderComponent>(lightEntityId);
-    lightRender->vao = squareVertexArray;
-    lightRender->shader = lightShader;
-    lightRender->color = glm::vec3(1.f, 1.f, 1.f);
+        RenderComponent* cubeRender = registry.addComponent<RenderComponent>(cubeEntityId);
+        cubeRender->vao = squareVertexArray;
+        cubeRender->shader = baseShader;
+        cubeRender->materialDiffuseMap = woodenBoxTexture2D;
+        cubeRender->materialSpecularMap = woodenBoxSpecularTexture2D;
+        cubeRender->shininess = 64.f;
+    }
+    {
+        // light
+        EntityId lightEntityId = registry.create();
+        registry.addComponent<LightComponent>(lightEntityId);
+        DirectionalLightComponent* lightComponent = registry.addComponent<DirectionalLightComponent>(lightEntityId);
+        lightComponent->direction = glm::vec3(-0.2f, -1.0f, 0.1f);
+        lightComponent->ambient = glm::vec3(.1f, .1f, 0.f);
+        lightComponent->diffuse = glm::vec3(.2f, .2f, .1f);
+        lightComponent->specular = glm::vec3(1.0f, 1.0f, .9f);
+
+        Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
+        lightTransform->position = glm::vec3(0.f, 6.f, 0.f);
+        lightTransform->scale = glm::vec3(.1f, .1f, .1f);
+        RenderComponent* lightRender = registry.addComponent<RenderComponent>(lightEntityId);
+        lightRender->vao = squareVertexArray;
+        lightRender->shader = lightShader;
+    }
+    {
+        // light
+        EntityId lightEntityId = registry.create();
+        registry.addComponent<LightComponent>(lightEntityId);
+        registry.addComponent<PointLightComponent>(lightEntityId);
+        Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
+        lightTransform->position = glm::vec3(-1.f, 1.f, -1.f);
+        lightTransform->scale = glm::vec3(.1f, .1f, .1f);
+        RenderComponent* lightRender = registry.addComponent<RenderComponent>(lightEntityId);
+        lightRender->vao = squareVertexArray;
+        lightRender->shader = lightShader;
+    }
+    {
+
+        // light
+        EntityId lightEntityId = registry.create();
+        registry.addComponent<LightComponent>(lightEntityId);
+        registry.addComponent<PointLightComponent>(lightEntityId);
+        Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
+        lightTransform->position = glm::vec3(-10.f, 1.f, -10.f);
+        lightTransform->scale = glm::vec3(.1f, .1f, .1f);
+        RenderComponent* lightRender = registry.addComponent<RenderComponent>(lightEntityId);
+        lightRender->vao = squareVertexArray;
+        lightRender->shader = lightShader;
+    }
 
     // floor
     EntityId floorEntityId = registry.create();
@@ -144,10 +211,9 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
     RenderComponent* floorRender = registry.addComponent<RenderComponent>(floorEntityId);
     floorRender->vao = squareVertexArray;
     floorRender->shader = baseShader;
-    floorRender->color = glm::vec3(.1f, .1f, .1f);
-
+    
     Transform* cameraTransform = systemContainer.initializeDependency<CameraSystem>().lock()->getCameraTransform(registry);
-    if (cameraTransform != nullptr && lightTransform != nullptr)
+    if (cameraTransform != nullptr)
     {
         cameraTransform->position = glm::vec3(12.67f, 3.04f, -9.13f);
         cameraTransform->rotation = glm::normalize(glm::quat(0.87f, 0.09f, -0.46f, 0.04f));
@@ -163,14 +229,14 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
     glEnable(GL_DEPTH_TEST);
 
     // setting color state.
-    glClearColor(.2f, .3f, .3f, 1.f);
+    glClearColor(.1f, .1f, .1f, 1.f);
     // consuming color state.
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glm::mat4 view;
     glm::mat4 projection;
     glm::vec3 cameraPosition = glm::vec3();
-
+    
     RegistryView<CameraComponent> cameraRegistryView(registry);
     for (const EntityId& entityId : cameraRegistryView)
     {
@@ -185,22 +251,15 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
             cameraPosition = transform->position;
         }
     }
-
-    std::vector<glm::vec3> lightSources;
-    RegistryView<Transform, LightSourceComponent> lightSourcesView(registry);
-    for (const EntityId& entityId : lightSourcesView)
-    {
-        Transform* transform = registry.getComponent<Transform>(entityId);
-        lightSources.push_back(transform->position);
-    }
-
+    
+    
     RegistryView<Transform, Cube> cubesView(registry);
     for (const EntityId& entityId : cubesView)
     {
         Transform* transform = registry.getComponent<Transform>(entityId);
         transform->rotation *= glm::angleAxis(glm::radians(25.f * deltaTime), glm::vec3(1.f, 1.f, 0.f));
     }
-
+    
     //ECSE_LOG(Log, "{}", 1.f/ deltaTime);
 
     int index = 0;
@@ -210,44 +269,83 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
         Transform* transform = registry.getComponent<Transform>(entityId);
         RenderComponent* render = registry.getComponent<RenderComponent>(entityId);
         std::shared_ptr<OpenGLShader> shader = render->shader;
-
+        
         // set the shader program to be used.
-        shader->use();
-        if (render->texture != nullptr)
+        if (shader == nullptr)
         {
-            render->texture->bind(0);
-            shader->setTextureSlot("inputTexture1", 0);
+            ECSE_LOG_ERROR(Log, "Shader was not loaded or compiled.");
+            return;
         }
+        
+        shader->use();
         
         glm::mat4 modelMatrix = transform->calculate();
         glm::mat3 normalMatrix = glm::inverseTranspose(glm::mat3(modelMatrix));
-
+        
         // set vertex uniforms
         shader->setFloatMatrix4("model", glm::value_ptr(modelMatrix));
         shader->setFloatMatrix3("normalMatrix", glm::value_ptr(normalMatrix));
         shader->setFloatMatrix4("view", glm::value_ptr(view));
         shader->setFloatMatrix4("projection", glm::value_ptr(projection));
 
-        const glm::vec3& color = render->color;
-
-        shader->setFloat3("color", color.x, color.y, color.z);
-        shader->setFloat3("viewPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
-
         // set fragment uniforms
-        shader->setFloat3("material.ambient", render->materialAmbient.x, render->materialAmbient.y, render->materialAmbient.z);
-        shader->setFloat3("material.diffuse", render->materialDiffuse.x, render->materialDiffuse.y, render->materialDiffuse.z);
-        shader->setFloat3("material.specular", render->materialSpecular.x, render->materialSpecular.y, render->materialSpecular.z);
+        shader->setFloat3("viewPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        
+        // set material
+        if (render->materialDiffuseMap != nullptr)
+        {
+            render->materialDiffuseMap->bind(1);
+            shader->setTextureSlot("material.diffuseMap", 1);
+        }
+
+        if (render->materialSpecularMap != nullptr)
+        {
+            render->materialSpecularMap->bind(2);
+            shader->setTextureSlot("material.specularMap", 2);
+        }
+
         shader->setFloat("material.shininess", render->shininess);
 
-        shader->setFloat3("light.ambient", 0.2f, 0.2f, 0.2f);
-        shader->setFloat3("light.diffuse", 0.5f, 0.5f, 0.5f);
-        shader->setFloat3("light.ambient", 1.0f, 1.0f, 1.0f);
-
-        if (lightSources.size() > 0)
+        // set lights
+        int directionalLightIndex = 0;
+        int pointLightIndex = 0;
+        RegistryView<Transform, LightComponent> lightSourcesView(registry);
+        for (const EntityId& entityId : lightSourcesView)
         {
-            const glm::vec3& lightSourcePosition = lightSources[0];
-            shader->setFloat3("light.position", lightSourcePosition.x, lightSourcePosition.y, lightSourcePosition.z);
+            if (registry.hasComponent<DirectionalLightComponent>(entityId))
+            {
+                DirectionalLightComponent* light = registry.getComponent<DirectionalLightComponent>(entityId);
+                
+                std::string directionalLightArray = std::format("directionalLights[{}]", directionalLightIndex);
+                shader->setFloat3(std::format("{}.direction", directionalLightArray).c_str(), light->direction.x, light->direction.y, light->direction.z);
+                shader->setFloat3(std::format("{}.ambient", directionalLightArray).c_str(), light->ambient.x, light->ambient.y, light->ambient.z);
+                shader->setFloat3(std::format("{}.diffuse", directionalLightArray).c_str(), light->diffuse.x, light->diffuse.y, light->diffuse.z);
+                shader->setFloat3(std::format("{}.specular", directionalLightArray).c_str(), light->specular.x, light->specular.x, light->specular.x);
+                directionalLightIndex++;
+            }
+
+            if (registry.hasComponent<PointLightComponent>(entityId) && registry.hasComponent<Transform>(entityId))
+            {
+                Transform* transform = registry.getComponent<Transform>(entityId);
+                PointLightComponent* light = registry.getComponent<PointLightComponent>(entityId);
+
+                std::string pointLightArray = std::format("pointLights[{}]", pointLightIndex);
+                shader->setFloat3(std::format("{}.position", pointLightArray).c_str(), transform->position.x, transform->position.y, transform->position.z);
+
+                shader->setFloat3(std::format("{}.ambient", pointLightArray).c_str(), light->ambient.x, light->ambient.y, light->ambient.z);
+                shader->setFloat3(std::format("{}.diffuse", pointLightArray).c_str(), light->diffuse.x, light->diffuse.y, light->diffuse.z);
+                shader->setFloat3(std::format("{}.specular", pointLightArray).c_str(), light->specular.x, light->specular.x, light->specular.x);
+
+                shader->setFloat(std::format("{}.constant", pointLightArray).c_str(), light->constant);
+                shader->setFloat(std::format("{}.linear", pointLightArray).c_str(), light->linear);
+                shader->setFloat(std::format("{}.quadratic", pointLightArray).c_str(), light->quadratic);
+
+                pointLightIndex++;
+            }
         }
+
+        shader->setInt("directionalLightsCount", directionalLightIndex);
+        shader->setInt("pointLightsCount", pointLightIndex);
 
         render->vao->bind();
         if (const auto& indexBuffer = render->vao->getIndexBuffer())
@@ -257,6 +355,16 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
         else
         {
             ECSE_ASSERT(false, "no index buffer provided with the vertices");
+        }
+
+        if (render->materialDiffuseMap != nullptr)
+        {
+            render->materialDiffuseMap->unbind();
+        }
+
+        if (render->materialSpecularMap != nullptr)
+        {
+            render->materialSpecularMap->unbind();
         }
     }
 }

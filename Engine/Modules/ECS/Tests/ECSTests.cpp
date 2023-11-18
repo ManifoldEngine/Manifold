@@ -323,5 +323,20 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		ST_ASSERT(component2->vector[1] - 2.f <= FLT_EPSILON, "second vector element should be equal to the original value");
 		ST_ASSERT(component2->vector[2] - 3.f <= FLT_EPSILON, "third vector element should be equal to the original value");
 	}
+
+	ST_TEST(EntityHasComponent, "Should return true if the entity has the component or not")
+	{
+		struct Component {};
+
+		EntityRegistry registry;
+
+		const EntityId entityId = registry.create();
+
+		ST_ASSERT(registry.hasComponent<Component>(entityId) == false, "Should not have the component yet");
+
+		registry.addComponent<Component>(entityId);
+
+		ST_ASSERT(registry.hasComponent<Component>(entityId) == true, "Should now have the component");
+	}
 }
 ST_SECTION_END(ECS)

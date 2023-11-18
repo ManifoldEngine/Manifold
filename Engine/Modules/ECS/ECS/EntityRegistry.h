@@ -28,15 +28,15 @@ namespace ECSEngine
 
 		template<typename TComponent>
 		TComponent* getComponent(EntityId entityId);
+
+		template<typename TComponent>
+		bool hasComponent(EntityId entityId) const;
 		
 		template<typename TComponent>
 		const TComponent* getComponent(EntityId entityId) const;
 		
 		template<typename TComponent>
 		bool removeComponent(EntityId entityId);
-
-		template<typename TComponent>
-		bool hasComponent(EntityId entityId);
 
 		size_t size() const;
 		
@@ -58,7 +58,7 @@ namespace ECSEngine
 	template<typename TComponent>
 	inline TComponent* EntityRegistry::addComponent(EntityId entityId)
 	{
-		ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
+		const ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
 
 		void* buffer = m_entityContainer->addComponent(entityId, componentId, sizeof(TComponent));
 		if (buffer == nullptr)
@@ -74,29 +74,29 @@ namespace ECSEngine
 	template<typename TComponent>
 	inline TComponent* EntityRegistry::getComponent(EntityId entityId)
 	{
-		ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
+		const ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
 		return static_cast<TComponent*>(m_entityContainer->getComponent(entityId, componentId));
+	}
+
+	template<typename TComponent>
+	inline bool EntityRegistry::hasComponent(EntityId entityId) const
+	{
+		const ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
+		return m_entityContainer->hasComponent(entityId, componentId);
 	}
 
 	template<typename TComponent>
 	inline const TComponent* EntityRegistry::getComponent(EntityId entityId) const
 	{
-		ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
+		const ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
 		return static_cast<const TComponent*>(m_entityContainer->getComponent(entityId, componentId));;
 	}
 
 	template<typename TComponent>
 	inline bool EntityRegistry::removeComponent(EntityId entityId)
 	{
-		ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
+		const ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
 		return m_entityContainer->removeComponent(entityId, componentId);
-	}
-
-	template<typename TComponent>
-	inline bool EntityRegistry::hasComponent(EntityId entityId)
-	{
-		ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
-		return m_entityContainer->hasComponent<TComponent>(entityId, componentId);
 	}
 
 	template<typename TComponent>
