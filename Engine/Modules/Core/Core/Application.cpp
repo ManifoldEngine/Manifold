@@ -19,15 +19,15 @@ Application::Application()
 
 	m_systemContainer = new SystemContainer();
 	m_systemContainer->initialize();
-	m_systemContainer->createSystem<LogSystem>();
-	m_systemContainer->createSystem<WorldSystem>();
+	m_systemContainer->createSystem<LogSystem>()
+		.createSystem<WorldSystem>();
 }
 
 Application::~Application()
 {
 	m_systemContainer->deinitialize();
-	m_systemContainer->destroySystem<LogSystem>();
-	m_systemContainer->destroySystem<WorldSystem>();
+	m_systemContainer->destroySystem<WorldSystem>()
+		.destroySystem<LogSystem>();
 	delete m_systemContainer;
 	sm_application = nullptr;
 }
