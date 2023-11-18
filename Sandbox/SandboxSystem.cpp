@@ -53,6 +53,17 @@ struct PointLightComponent
     float quadratic = 0.032f;
 };
 
+struct SpotlightComponent
+{
+    glm::vec3 direction = glm::vec3(-0.2f, -1.0f, -0.3f);
+    float cutOff = glm::cos(glm::radians(12.5f));
+    float outterCutOff = glm::cos(glm::radians(17.5f));
+
+    glm::vec3 ambient = glm::vec3(0.2f);
+    glm::vec3 diffuse = glm::vec3(0.5f);
+    glm::vec3 specular = glm::vec3(1.0f);
+};
+
 void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
     std::weak_ptr<OpenGLShaderSystem> shaderSystem = Application::get().getSystemContainer().initializeDependency<OpenGLShaderSystem>();
@@ -163,25 +174,28 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
         cubeRender->materialSpecularMap = woodenBoxSpecularTexture2D;
         cubeRender->shininess = 64.f;
     }
-    {
-        // light
-        EntityId lightEntityId = registry.create();
-        registry.addComponent<LightComponent>(lightEntityId);
-        DirectionalLightComponent* lightComponent = registry.addComponent<DirectionalLightComponent>(lightEntityId);
-        lightComponent->direction = glm::vec3(-0.2f, -1.0f, 0.1f);
+    //{
+    //    // light
+    //    EntityId lightEntityId = registry.create();
+    //    registry.addComponent<LightComponent>(lightEntityId);
+    //    DirectionalLightComponent* lightComponent = registry.addComponent<DirectionalLightComponent>(lightEntityId);
+    //    lightComponent->direction = glm::vec3(-0.2f, -1.0f, 0.1f);
 
-        Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
-        lightTransform->position = glm::vec3(0.f, 6.f, 0.f);
-        lightTransform->scale = glm::vec3(.1f, .1f, .1f);
-        RenderComponent* lightRender = registry.addComponent<RenderComponent>(lightEntityId);
-        lightRender->vao = squareVertexArray;
-        lightRender->shader = lightShader;
-    }
+    //    Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
+    //    lightTransform->position = glm::vec3(0.f, 6.f, 0.f);
+    //    lightTransform->scale = glm::vec3(.1f, .1f, .1f);
+    //    RenderComponent* lightRender = registry.addComponent<RenderComponent>(lightEntityId);
+    //    lightRender->vao = squareVertexArray;
+    //    lightRender->shader = lightShader;
+    //}
     {
         // light
         EntityId lightEntityId = registry.create();
         registry.addComponent<LightComponent>(lightEntityId);
-        registry.addComponent<PointLightComponent>(lightEntityId);
+        PointLightComponent* pointLigh = registry.addComponent<PointLightComponent>(lightEntityId);
+        pointLigh->ambient = glm::vec3(.01f, .01f, .01f);
+        pointLigh->diffuse = glm::vec3(.75f, .75f, .85f);
+
         Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
         lightTransform->position = glm::vec3(-1.f, 1.f, -1.f);
         lightTransform->scale = glm::vec3(.1f, .1f, .1f);
@@ -189,19 +203,19 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
         lightRender->vao = squareVertexArray;
         lightRender->shader = lightShader;
     }
-    {
-
-        // light
-        EntityId lightEntityId = registry.create();
-        registry.addComponent<LightComponent>(lightEntityId);
-        registry.addComponent<PointLightComponent>(lightEntityId);
-        Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
-        lightTransform->position = glm::vec3(-10.f, 1.f, -10.f);
-        lightTransform->scale = glm::vec3(.1f, .1f, .1f);
-        RenderComponent* lightRender = registry.addComponent<RenderComponent>(lightEntityId);
-        lightRender->vao = squareVertexArray;
-        lightRender->shader = lightShader;
-    }
+    //{
+    //    // light
+    //    EntityId lightEntityId = registry.create();
+    //    registry.addComponent<LightComponent>(lightEntityId);
+    //    registry.addComponent<PointLightComponent>(lightEntityId);
+    //    Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
+    //    lightTransform->position = glm::vec3(-10.f, 1.f, -10.f);
+    //    lightTransform->scale = glm::vec3(.1f, .1f, .1f);
+    //    RenderComponent* lightRender = registry.addComponent<RenderComponent>(lightEntityId);
+    //    lightRender->vao = squareVertexArray;
+    //    lightRender->shader = lightShader;
+    //}
+  
 
     // floor
     EntityId floorEntityId = registry.create();
@@ -218,6 +232,20 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
         cameraTransform->position = glm::vec3(12.67f, 3.04f, -9.13f);
         cameraTransform->rotation = glm::normalize(glm::quat(0.87f, 0.09f, -0.46f, 0.04f));
     }
+
+    //{
+    //    // light
+    //    EntityId lightEntityId = registry.create();
+    //    registry.addComponent<LightComponent>(lightEntityId);
+    //    SpotlightComponent* spotlight = registry.addComponent<SpotlightComponent>(lightEntityId);
+    //    spotlight->ambient = glm::vec3(.001f, .001f, .001f);
+    //    spotlight->diffuse = glm::vec3(.85f, .85f, .85f);
+    //    Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
+    //    if (cameraTransform != nullptr)
+    //    {
+    //        lightTransform->position = cameraTransform->position;
+    //    }
+    //}
 }
 
 void SandboxSystem::onDeinitialize(EntityRegistry& registry)
@@ -236,6 +264,7 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
     glm::mat4 view;
     glm::mat4 projection;
     glm::vec3 cameraPosition = glm::vec3();
+    glm::vec3 cameraForward = glm::vec3();
     
     RegistryView<CameraComponent> cameraRegistryView(registry);
     for (const EntityId& entityId : cameraRegistryView)
@@ -249,6 +278,7 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
         if (const Transform* transform = registry.getComponent<Transform>(entityId))
         {
             cameraPosition = transform->position;
+            cameraForward = transform->forward();
         }
     }
     
@@ -260,7 +290,7 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
         transform->rotation *= glm::angleAxis(glm::radians(25.f * deltaTime), glm::vec3(1.f, 1.f, 0.f));
     }
     
-    //ECSE_LOG(Log, "{}", 1.f/ deltaTime);
+    ECSE_LOG(Log, "{}", 1.f/ deltaTime);
 
     int index = 0;
     RegistryView<Transform, RenderComponent> registryView(registry);
@@ -309,6 +339,7 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
         // set lights
         int directionalLightIndex = 0;
         int pointLightIndex = 0;
+        int spotlightIndex = 0;
         RegistryView<Transform, LightComponent> lightSourcesView(registry);
         for (const EntityId& entityId : lightSourcesView)
         {
@@ -342,10 +373,29 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
 
                 pointLightIndex++;
             }
+
+            if (registry.hasComponent<SpotlightComponent>(entityId) && registry.hasComponent<Transform>(entityId))
+            {
+                Transform* transform = registry.getComponent<Transform>(entityId);
+                SpotlightComponent* light = registry.getComponent<SpotlightComponent>(entityId);
+
+                std::string spotlightsArray = std::format("spotlights[{}]", spotlightIndex);
+                shader->setFloat3(std::format("{}.position", spotlightsArray).c_str(), cameraPosition.x, cameraPosition.y, cameraPosition.z);
+                shader->setFloat3(std::format("{}.direction", spotlightsArray).c_str(), cameraForward.x, cameraForward.y, cameraForward.z);
+                shader->setFloat(std::format("{}.cutOff", spotlightsArray).c_str(), light->cutOff);
+                shader->setFloat(std::format("{}.outterCutOff", spotlightsArray).c_str(), light->outterCutOff);
+
+                shader->setFloat3(std::format("{}.ambient", spotlightsArray).c_str(), light->ambient.x, light->ambient.y, light->ambient.z);
+                shader->setFloat3(std::format("{}.diffuse", spotlightsArray).c_str(), light->diffuse.x, light->diffuse.y, light->diffuse.z);
+                shader->setFloat3(std::format("{}.specular", spotlightsArray).c_str(), light->specular.x, light->specular.x, light->specular.x);
+
+                spotlightIndex++;
+            }
         }
 
         shader->setInt("directionalLightsCount", directionalLightIndex);
         shader->setInt("pointLightsCount", pointLightIndex);
+        shader->setInt("spotlightsCount", spotlightIndex);
 
         if (const LightComponent* lightComponent = registry.getComponent<LightComponent>(entityId))
         {

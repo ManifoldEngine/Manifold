@@ -54,8 +54,21 @@ struct PointLight
     float quadratic;
 };
 
-#define MAX_DIRECTIONAL_LIGHTS 64
-#define MAX_POINT_LIGHTS 64
+struct Spotlight
+{
+    vec3 position;
+    vec3 direction;
+    float cutOff;
+    float outterCutOff;
+
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+
+#define MAX_DIRECTIONAL_LIGHTS 16
+#define MAX_POINT_LIGHTS 32
+#define MAX_SPOTLIGHTS 32
 
 in vec3 fragmentPosition;
 in vec3 normal;
@@ -63,10 +76,12 @@ in vec2 textureCoordinate;
 
 uniform int directionalLightsCount;
 uniform int pointLightsCount;
+uniform int spotlightsCount;
 
 uniform Material material;
 uniform DirectionLight directionalLights[MAX_DIRECTIONAL_LIGHTS];
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
+uniform Spotlight spotlights[MAX_SPOTLIGHTS];
 
 uniform vec3 viewPosition;
 
@@ -74,6 +89,7 @@ out vec4 FragColor;
 
 vec3 processDirectionLight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor);
 vec3 processPointLight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor);
+vec3 processSpotlight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor);
 
 void main()
 {
@@ -84,14 +100,22 @@ void main()
 
     vec3 outputColor = vec3(0.0);
 
+    // directional lights
     for (int i = 0; i < min(directionalLightsCount, MAX_DIRECTIONAL_LIGHTS); i++)
     {
         outputColor += processDirectionLight(i, normalizedNormal, viewDirection, diffuseColor, specularColor);
     }
 
+    // point lights
     for (int i = 0; i < min(pointLightsCount, MAX_POINT_LIGHTS); i++)
     {
         outputColor += processPointLight(i, normalizedNormal, viewDirection, diffuseColor, specularColor);
+    }
+
+    // spotlights
+    for (int i = 0; i < min(spotlightsCount, MAX_POINT_LIGHTS); i++)
+    {
+        outputColor += processSpotlight(i, normalizedNormal, viewDirection, diffuseColor, specularColor);
     }
     
     FragColor = vec4(outputColor, 1.0);
@@ -141,4 +165,36 @@ vec3 processPointLight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseC
     vec3 specular = light.specular * specularValue * specularColor * attenuation;
 
     return ambient + diffuse + specular;
+}
+
+vec3 processSpotlight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor)
+{
+
+    Spotlight light = spotlights[index];
+
+    vec3 lightDirection = normalize(light.position - fragmentPosition);
+    float theta = dot(lightDirection, normalize(-light.direction));
+    float outterDelta = max(light.cutOff - light.outterCutOff, 0.0001);
+    float intensity = clamp((theta - light.outterCutOff) / outterDelta, 0.0, 1.0);
+
+    // ambient
+    vec3 ambient = light.ambient * diffuseColor;
+
+    if (theta > light.outterCutOff)
+    {
+        // diffuse
+        float diffuseScalar = max(dot(normal, lightDirection), 0.0);
+        vec3 diffuse = light.diffuse * diffuseScalar * diffuseColor * intensity;
+
+        // specular
+        vec3 reflectDirection = reflect(-lightDirection, normal);
+        float specularValue = pow(max(dot(viewDirection, reflectDirection), 0.0), material.shininess);
+        vec3 specular = light.specular * specularValue * specularColor * intensity;
+
+        return ambient + diffuse + specular;
+    }
+    else
+    {
+        return ambient;
+    }
 }
