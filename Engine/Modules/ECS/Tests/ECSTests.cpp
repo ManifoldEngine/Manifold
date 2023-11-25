@@ -338,5 +338,45 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		ST_ASSERT(registry.hasComponent<Component>(entityId) == true, "Should now have the component");
 	}
+
+	ST_TEST(EntityRegistryEvents, "Should subscribe to all events and confirm that a callback was received")
+	{
+		struct Component {};
+
+		EntityRegistry registry;
+
+		std::vector<EntityId> entityIdCreated;
+		std::vector<EntityId> entityIdDestroyed;
+		std::vector<std::pair<EntityId, ComponentId>> componentIdCreated;
+		std::vector<std::pair<EntityId, ComponentId>> componentIdDestroyed;
+
+		registry.onEntityCreated.subscribe([&entityIdCreated](EntityRegistry& registry, EntityId entityId) {
+			entityIdCreated.push_back(entityId);
+		});
+
+		registry.onEntityDestroyed.subscribe([&entityIdDestroyed](EntityRegistry& registry, EntityId entityId) {
+			entityIdDestroyed.push_back(entityId);
+		});
+
+		registry.onComponentAdded.subscribe([&componentIdCreated](EntityRegistry& registry, EntityId entityId, ComponentId componentId) {
+			componentIdCreated.push_back({ entityId, componentId });
+		});
+
+		registry.onComponentRemoved.subscribe([&componentIdDestroyed](EntityRegistry& registry, EntityId entityId, ComponentId componentId) {
+			componentIdDestroyed.push_back({ entityId, componentId });
+		});
+
+		EntityId entityId = registry.create();
+		ComponentId componentId = registry.getComponentId<Component>();
+		registry.addComponent<Component>(entityId);
+		registry.removeComponent<Component>(entityId);
+		registry.destroy(entityId);
+
+		std::pair<EntityId, ComponentId> pair = { entityId, componentId };
+		ST_ASSERT(entityIdCreated.size() == 1 && entityIdCreated[0] == entityId, "EntityId should have been created");
+		ST_ASSERT((componentIdCreated.size() == 1 && componentIdCreated[0] == pair), "ComponentId should have been added to EntityId");
+		ST_ASSERT((componentIdDestroyed.size() == 1 && componentIdDestroyed[0] == pair), "ComponentId should have been removed from EntityId");
+		ST_ASSERT(entityIdDestroyed.size() == 1 && entityIdDestroyed[0] == entityId, "EntityId should have been destroyed");
+	}
 }
 ST_SECTION_END(ECS)

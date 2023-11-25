@@ -42,10 +42,6 @@ namespace ECSEngine
 
 	private:
 		WindowContext context;
-		glm::vec3 wasdInput = glm::vec3(0.0f, 0.0f, 0.0f);
-		glm::vec2 mouseDelta = glm::vec2(0.0f, 0.0f);
-		glm::vec2 mouseLastPosition = glm::vec2(0.0f, 0.0f);
-		const float mouseSensitivity = .1f;
 
 		std::shared_ptr<OpenGLInput> m_openGLInputGenerator = nullptr;
 

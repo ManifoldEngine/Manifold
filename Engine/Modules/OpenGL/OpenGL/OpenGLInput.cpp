@@ -50,6 +50,12 @@ std::string OpenGLInput::getName() const
 
 bool OpenGLInput::consumeInputBuffer(std::vector<ButtonControl>& outBuffer)
 {
+    for (const ButtonControl& buttonControl : m_inputBuffer)
+    {
+        outBuffer.push_back(ButtonControl(buttonControl));
+    }
+    
+    m_inputBuffer.clear();
     return true;
 }
 
@@ -138,5 +144,15 @@ void OpenGLInput::onInputSystemTick(float deltaTime, EntityRegistry& registry)
     if (glfwGetKey(context.window, GLFW_KEY_Q) == GLFW_RELEASE)
     {
         m_inputBuffer.push_back(ButtonControl{ "Q", false });
+    }
+
+    // F
+    if (glfwGetKey(context.window, GLFW_KEY_F) == GLFW_PRESS)
+    {
+        m_inputBuffer.push_back(ButtonControl{ "F", true });
+    }
+    if (glfwGetKey(context.window, GLFW_KEY_F) == GLFW_RELEASE)
+    {
+        m_inputBuffer.push_back(ButtonControl{ "F", false });
     }
 }

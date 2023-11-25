@@ -18,15 +18,22 @@ EntityRegistry::~EntityRegistry()
 
 EntityId EntityRegistry::create()
 {
-	return m_entityContainer->create();
+	const EntityId entityId = m_entityContainer->create();
+	onEntityCreated.broadcast(*this, entityId);
+	return entityId;
 }
 
 bool EntityRegistry::destroy(EntityId entityId)
 {
-	return m_entityContainer->destroy(entityId);
+	if (m_entityContainer->destroy(entityId))
+	{
+		onEntityDestroyed.broadcast(*this, entityId);
+		return true;
+	}
+	return false;
 }
 
-const Entity* ECSEngine::EntityRegistry::getEntity(EntityId entityId) const
+const Entity* EntityRegistry::getEntity(EntityId entityId) const
 {
 	return m_entityContainer->getEntity(entityId);
 }

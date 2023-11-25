@@ -12,7 +12,6 @@ namespace ECSEngine
 	{
 	public:
 		virtual std::string_view getName() const;
-		virtual float getFrameTime() const;
 		virtual bool shouldTick(EntityRegistry& registry) const;
 
 		void initialize(EntityRegistry& registry, SystemContainer& systemContainer);
@@ -20,7 +19,7 @@ namespace ECSEngine
 
 		virtual void tick(float deltaTime, EntityRegistry& registry);
 	
-		virtual bool isInitialized() const;
+		bool isInitialized() const;
 	protected:
 		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer);
 		virtual void onDeinitialize(EntityRegistry& registry);

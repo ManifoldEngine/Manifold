@@ -8,11 +8,6 @@ std::string_view SystemBase::getName() const
     return "NONE";
 }
 
-float SystemBase::getFrameTime() const
-{
-    return 0.0f;
-}
-
 bool SystemBase::shouldTick(EntityRegistry& registry) const
 {
     return false;

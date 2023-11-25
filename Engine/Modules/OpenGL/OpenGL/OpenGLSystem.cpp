@@ -5,7 +5,6 @@
 #include <Core/Application.h>
 #include <Core/Log.h>
 #include <Core/CoreAssert.h>
-#include <Shader/OpenGLShaderSystem.h>
 #include <OpenGLDebug.h>
 
 #include <iostream>
@@ -45,7 +44,6 @@ void OpenGLSystem::glfwCallback_onWindowResized(GLFWwindow* window, int newWidth
     {
         openGlSystem->context.width = newWidth;
         openGlSystem->context.height = newHeight;
-        openGlSystem->mouseLastPosition = glm::vec2(newWidth * .5f, newHeight * .5f);
     }
 
     glViewport(0, 0, newWidth, newHeight);
@@ -122,10 +120,7 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
 
     // set the view port to the window's size.
     glViewport(0, 0, context.width, context.height);
-    mouseLastPosition = glm::vec2(context.width * .5f, context.height * .5f);
-
-    systemContainer.initializeDependency<OpenGLShaderSystem>();
-
+    
 #if ECSE_OPENGL_DEBUG
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(OpenGLMessageCallback, nullptr);
@@ -145,43 +140,6 @@ void OpenGLSystem::onDeinitialize(EntityRegistry& entityRegistry)
 
 void OpenGLSystem::tick(float deltaTime, EntityRegistry& entityRegistry)
 {
-    if (context.window == nullptr)
-    {
-        return;
-    }
-
-    wasdInput = glm::vec3(0.0f, 0.0f, 0.0f);
-
-    if (glfwGetKey(context.window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        wasdInput += glm::vec3(0.0f, 0.0f, 1.0f);
-    }
-
-    if (glfwGetKey(context.window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        wasdInput += glm::vec3(0.0f, 0.0f, -1.0f);
-    }
-
-    if (glfwGetKey(context.window, GLFW_KEY_A) == GLFW_PRESS)
-    {
-        wasdInput += glm::vec3(1.0f, 0.0f, 0.0f);
-    }
-
-    if (glfwGetKey(context.window, GLFW_KEY_D) == GLFW_PRESS)
-    {
-        wasdInput += glm::vec3(-1.0f, 0.0f, 0.0f);
-    }
-
-    if (glfwGetKey(context.window, GLFW_KEY_E) == GLFW_PRESS)
-    {
-        wasdInput += glm::vec3(0.0f, 1.0f, 0.0f);
-    }
-
-    if (glfwGetKey(context.window, GLFW_KEY_Q) == GLFW_PRESS)
-    {
-        wasdInput += glm::vec3(0.0f, -1.0f, 0.0f);
-    }
-
     glfwSwapBuffers(context.window);
     glfwPollEvents();
 }

@@ -1,15 +1,16 @@
 #pragma once
 
 #include <Core/System/System.h>
-#include <OpenGL/OpenGLVertexArray.h>
-#include <OpenGL/OpenGLBuffer.h>
-#include <OpenGL/Shader/OpenGLShader.h>
+#include <ECS/Entity.h>
+#include <Events/Event.h>
 #include <memory>
-#include <OpenGL/OpenGLTexture.h>
 
 namespace ECSEngine
 {
 	class EntityRegistry;
+	class CameraSystem;
+	class InputSystem;
+	struct InputAction;
 }
 
 class SandboxSystem : public ECSEngine::SystemBase
@@ -23,5 +24,16 @@ protected:
 
 	virtual void onInitialize(ECSEngine::EntityRegistry& registry, ECSEngine::SystemContainer& systemContainer) override;
 	virtual void onDeinitialize(ECSEngine::EntityRegistry& registry) override;
+
+private:
+	std::weak_ptr<ECSEngine::CameraSystem> m_cameraSystem;
+	std::weak_ptr<ECSEngine::InputSystem> m_inputSystem;
+
+	ECSEngine::EntityId m_spotlightEntityId;
+	ECSEngine::EventHandle onActionEventHandle;
+
+	bool m_isFlashlightOn = false;
+
+	void onActionEvent(uint32_t userId, const ECSEngine::InputAction& action);
 };
 
