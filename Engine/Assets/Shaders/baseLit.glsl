@@ -118,7 +118,7 @@ void main()
         outputColor += processSpotlight(i, normalizedNormal, viewDirection, diffuseColor, specularColor);
     }
     
-    FragColor = vec4(outputColor, 1.0);
+    FragColor = vec4(outputColor, 0.5);
 }
 
 vec3 processDirectionLight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor)

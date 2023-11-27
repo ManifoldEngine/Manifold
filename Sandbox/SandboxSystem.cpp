@@ -8,30 +8,49 @@
 #include <Camera/CameraSystem.h>
 
 #include <ECS/EntityRegistry.h>
+#include <ECS/RegistryView.h>
 
 #include <RenderAPI/Mesh.h>
 #include <RenderAPI/Material.h>
 #include <RenderAPI/MeshComponent.h>
 #include <RenderAPI/Light/PointLightComponent.h>
+#include <RenderAPI/Light/DirectionalLightComponent.h>
 #include <RenderAPI/Light/SpotlightComponent.h>
 
 #include <OpenGL/Render/OpenGLResourceSystem.h>
 #include <OpenGL/Render/OpenGLRenderSystem.h>
+
+#include <MeshLoader/MeshLoader.h>
 
 #include <Inputs/InputSystem.h>
 
 #include "ShaderUtils.h"
 
 #include <glm/glm.hpp>
-#include <random>
+
+// srand
+#include <stdlib.h>
+#include <time.h>
+#include <glm/gtx/rotate_vector.hpp>
 
 using namespace ECSEngine;
 
-struct Cube {};
+struct PhysicsComponent
+{
+    glm::vec3 velocity;
+    float timeAcc = 0.0f;
+    float changeDirectionInterval = 0.0f;
+};
+
+struct CactusLight 
+{
+    EntityId ownerId;
+};
 
 void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
     size_t assetCount = 0;
+    std::srand(std::time(nullptr));
 
     // load assets.
     float vertices[] = {
@@ -106,45 +125,67 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
 
     cubeMesh->indices = indices;
 
-    std::filesystem::path rootPath;
+    namespace fs = std::filesystem;
+
+    fs::path rootPath;
     if (!FileSystem::tryGetRootPath(rootPath))
     {
         ECSE_LOG_ERROR(Log, "Could not get root path.");
         return;
     }
 
-    std::filesystem::path enginePath;
+    fs::path enginePath;
     if (!FileSystem::tryGetEnginePath(enginePath))
     {
         ECSE_LOG_ERROR(Log, "Could not get root path.");
         return;
     }
 
-    std::shared_ptr<Texture> boxTexture = std::make_shared<Texture>();
+   /* std::shared_ptr<Texture> boxTexture = std::make_shared<Texture>();
     boxTexture->id = assetCount++;
-    boxTexture->path = std::filesystem::path(rootPath).append("Sandbox/Assets/Images/container2.png").string();
+    boxTexture->path = fs::path(rootPath).append("Sandbox/Assets/Textures/container2.png").string();
 
     std::shared_ptr<Texture> boxFrameTexture = std::make_shared<Texture>();
     boxFrameTexture->id = assetCount++;
-    boxFrameTexture->path = std::filesystem::path(rootPath).append("Sandbox/Assets/Images/container2_specular.png").string();
+    boxFrameTexture->path = fs::path(rootPath).append("Sandbox/Assets/Textures/container2_specular.png").string();*/
+
+    std::vector<std::shared_ptr<Mesh>> loadedMeshes;
+    if (!MeshLoader::loadFromPath(fs::path(rootPath).append("Sandbox/Assets/Meshes/Cactus.fbx"), loadedMeshes) || loadedMeshes.empty())
+    {
+        ECSE_LOG_ERROR(Log, "Could not load cactus mesh.");
+        return;
+    }
+
+    std::shared_ptr<Mesh> cactusMesh = loadedMeshes[0];
+    cactusMesh->id = assetCount++;
+
+    std::shared_ptr<Texture> cactusTexture = std::make_shared<Texture>();
+    cactusTexture->id = assetCount++;
+    cactusTexture->path = fs::path(rootPath).append("Sandbox/Assets/Textures/Cactus_color.jpg").string();
 
     std::shared_ptr<Texture> floorTexture = std::make_shared<Texture>();
     floorTexture->id = assetCount++;
-    floorTexture->path = std::filesystem::path(rootPath).append("Sandbox/Assets/Images/floor.png").string();
+    floorTexture->path = fs::path(rootPath).append("Sandbox/Assets/Textures/floor.png").string();
 
     std::shared_ptr<Shader> baseLitShader = std::make_shared<Shader>();
     baseLitShader->id = assetCount++;
-    parseShaderSourceFileFromPath(std::filesystem::path(enginePath).append("Assets/Shaders/baseLit.glsl"), baseLitShader->name, baseLitShader->vertexSource, baseLitShader->fragmentSource);
+    parseShaderSourceFileFromPath(fs::path(enginePath).append("Assets/Shaders/baseLit.glsl"), baseLitShader->name, baseLitShader->vertexSource, baseLitShader->fragmentSource);
 
     std::shared_ptr<Shader> flatColorShader = std::make_shared<Shader>();
     flatColorShader->id = assetCount++;
-    parseShaderSourceFileFromPath(std::filesystem::path(enginePath).append("Assets/Shaders/flatColor.glsl"), flatColorShader->name, flatColorShader->vertexSource, flatColorShader->fragmentSource);
+    parseShaderSourceFileFromPath(fs::path(enginePath).append("Assets/Shaders/flatColor.glsl"), flatColorShader->name, flatColorShader->vertexSource, flatColorShader->fragmentSource);
 
-    std::shared_ptr<Material> boxMaterial = std::make_shared<Material>();
+
+    std::shared_ptr<Material> cactusMaterial = std::make_shared<Material>();
+    cactusMaterial->id = assetCount++;
+    cactusMaterial->shader = baseLitShader;
+    cactusMaterial->diffuse = cactusTexture;
+    
+    /*std::shared_ptr<Material> boxMaterial = std::make_shared<Material>();
     boxMaterial->id = assetCount++;
     boxMaterial->shader = baseLitShader;
     boxMaterial->diffuse = boxTexture;
-    boxMaterial->specular = boxFrameTexture;
+    boxMaterial->specular = boxFrameTexture;*/
 
     std::shared_ptr<Material> lightMaterial = std::make_shared<Material>();
     lightMaterial->id = assetCount++;
@@ -160,8 +201,9 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
     // initialize OpenGL
     std::shared_ptr<OpenGLResourceSystem> resourceSystem = systemContainer.initializeDependency<OpenGLResourceSystem>().lock();
     resourceSystem->onMeshLoaded(cubeMesh);
-    resourceSystem->onTextureLoaded(boxTexture);
-    resourceSystem->onTextureLoaded(boxFrameTexture);
+    resourceSystem->onMeshLoaded(cactusMesh);
+    resourceSystem->onTextureLoaded(cactusTexture);
+    //resourceSystem->onTextureLoaded(boxFrameTexture);
     resourceSystem->onTextureLoaded(floorTexture);
     resourceSystem->onShaderLoaded(baseLitShader);
     resourceSystem->onShaderLoaded(flatColorShader);
@@ -170,47 +212,57 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
 
     // initialize entities.
     {
-        glm::vec3 lowerBound = glm::vec3(-4.f, 0.f, -5.f);
-        glm::vec3 upperBound = glm::vec3(4.f, 1.f, 4.f);
-        std::mt19937 gen(UINT32_MAX);
-        std::uniform_real_distribution<float> randomX(lowerBound.x, upperBound.x);
-        std::uniform_real_distribution<float> randomY(lowerBound.y, upperBound.y);
-        std::uniform_real_distribution<float> randomZ(lowerBound.z, upperBound.z);
         for (int i = 0; i < 10; ++i)
         {
             // cube
-            EntityId cubeEntityId = registry.create();
-            registry.addComponent<Cube>(cubeEntityId);
-            Transform* cubeTransform = registry.addComponent<Transform>(cubeEntityId);
+            EntityId cactusEntityId = registry.create();
+            Transform* cactusTransform = registry.addComponent<Transform>(cactusEntityId);
 
-            const glm::vec3 position = glm::vec3(
-                randomX(gen),
-                randomY(gen),
-                randomZ(gen)
-            );
+            const glm::vec3 position = glm::vec3(i * 5.f, 0.0f, 0.0f);
 
-            cubeTransform->position = position;
+            cactusTransform->position = position;
+            cactusTransform->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
 
-            MeshComponent* cubeMeshComponent = registry.addComponent<MeshComponent>(cubeEntityId);
-            cubeMeshComponent->mesh = cubeMesh;
-            cubeMeshComponent->material = boxMaterial;
+            MeshComponent* cactusMeshComponent = registry.addComponent<MeshComponent>(cactusEntityId);
+            cactusMeshComponent->mesh = cactusMesh;
+            cactusMeshComponent->material = cactusMaterial;
+
+            PhysicsComponent* physics = registry.addComponent<PhysicsComponent>(cactusEntityId);
+            physics->velocity = glm::vec3(0.0f, 0.0f, -1.0f);
+            physics->changeDirectionInterval = (50 + (std::rand() / ((RAND_MAX + 1u) / 100))) / 100.f;
+
+            {
+                // light
+                EntityId lightEntityId = registry.create();
+                CactusLight* cactusLight = registry.addComponent<CactusLight>(lightEntityId);
+                cactusLight->ownerId = cactusEntityId;
+
+                SpotlightComponent* spotlight = registry.addComponent<SpotlightComponent>(lightEntityId);
+                spotlight->ambient = glm::vec3(.01f, .01f, .01f);
+                spotlight->diffuse = glm::vec3(.75f, .75f, .85f);
+
+                Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
+                lightTransform->position = position + glm::vec3(0.0f, 5.f, 0.0f);
+                lightTransform->rotation = glm::quatLookAt(physics->velocity, glm::vec3(0.0f, 1.0f, 0.0f));
+
+                MeshComponent* meshComponent = registry.addComponent<MeshComponent>(lightEntityId);
+                meshComponent->mesh = cubeMesh;
+                meshComponent->material = lightMaterial;
+            }
         }
     }
 
     {
-        // light
+        // directional light
         EntityId lightEntityId = registry.create();
-        PointLightComponent* pointLigh = registry.addComponent<PointLightComponent>(lightEntityId);
-        pointLigh->ambient = glm::vec3(.01f, .01f, .01f);
-        pointLigh->diffuse = glm::vec3(.75f, .75f, .85f);
+        DirectionalLightComponent* directionalLigh = registry.addComponent<DirectionalLightComponent>(lightEntityId);
+        directionalLigh->ambient = glm::vec3(.16f, .16f, .16f);
+        directionalLigh->diffuse = glm::vec3(.75f, .75f, .75f);
+        directionalLigh->direction = glm::vec3(-0.2f, -1.0f, -0.2f);
 
         Transform* lightTransform = registry.addComponent<Transform>(lightEntityId);
-        lightTransform->position = glm::vec3(-1.f, 1.f, -1.f);
+        lightTransform->position = glm::vec3(-1.f, 4.f, -1.f);
         lightTransform->scale = glm::vec3(.1f, .1f, .1f);
-
-        MeshComponent* lightMeshComponent = registry.addComponent<MeshComponent>(lightEntityId);
-        lightMeshComponent->mesh = cubeMesh;
-        lightMeshComponent->material = lightMaterial;
     }
 
     {
@@ -218,13 +270,12 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
         EntityId floorEntityId = registry.create();
         
         Transform* floorTransform = registry.addComponent<Transform>(floorEntityId);
-        floorTransform->position = glm::vec3(0.f, -1.0f, 0.f);
+        floorTransform->position = glm::vec3(0.f, 0.0f, 0.f);
         floorTransform->scale = glm::vec3(200.f, 0.1f, 200.f);
 
         MeshComponent* floorMeshComponent = registry.addComponent<MeshComponent>(floorEntityId);
         floorMeshComponent->mesh = cubeMesh;
         floorMeshComponent->material = floorMaterial;
-
     }
 
     m_cameraSystem = systemContainer.initializeDependency<CameraSystem>();
@@ -243,6 +294,7 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
         inputSystem->addBinding(LOCAL_USERID, "ToggleFlashlight", "F");
         onActionEventHandle = inputSystem->onActionEvent.subscribe(std::bind(&SandboxSystem::onActionEvent, this, std::placeholders::_1, std::placeholders::_2));
     }
+
 }
 
 void SandboxSystem::onDeinitialize(EntityRegistry& registry)
@@ -297,5 +349,56 @@ void SandboxSystem::tick(float deltaTime, EntityRegistry& registry)
     {
         // remove spotlight
         registry.removeComponent<SpotlightComponent>(m_spotlightEntityId);
+    }
+
+    RegistryView<Transform, PhysicsComponent> cactusView(registry);
+    for (const EntityId entityId : cactusView)
+    {
+        Transform* transform = registry.getComponent<Transform>(entityId);
+        PhysicsComponent* physics = registry.getComponent<PhysicsComponent>(entityId);
+
+        physics->timeAcc += deltaTime;
+
+        transform->position += physics->velocity * 5.f * deltaTime;
+
+        if (physics->timeAcc >= physics->changeDirectionInterval)
+        {
+            const bool isLeft = 1 + std::rand() / ((RAND_MAX + 1u) / 100) >= 50;
+
+            const float angle = (isLeft ? -1.f : 1.f) * glm::radians(45.f);
+
+            physics->velocity = glm::rotate(physics->velocity, angle, glm::vec3(0.0f, 1.0f, 0.0f));
+
+
+            glm::quat quatYaw = glm::angleAxis(angle, glm::vec3(0.0f, 1.0f, 0.0f));
+            glm::quat quatPitch(1.0, 0.0, 0.0, 0.0);
+
+            transform->rotation = quatYaw * transform->rotation * quatPitch;
+
+            physics->timeAcc = 0.0f;
+        }
+    }
+
+    RegistryView<Transform, CactusLight> cactusLightView(registry);
+    for (const EntityId entityId : cactusLightView)
+    {
+        Transform* transform = registry.getComponent<Transform>(entityId);
+        CactusLight* cactusLight = registry.getComponent<CactusLight>(entityId);
+
+        for (const EntityId cactusEntityId : cactusView)
+        {
+            if (cactusEntityId != cactusLight->ownerId)
+            {
+                continue;
+            }
+
+            Transform* cactusTransform = registry.getComponent<Transform>(cactusEntityId);
+            PhysicsComponent* physics = registry.getComponent<PhysicsComponent>(cactusEntityId);
+
+            transform->position = cactusTransform->position + glm::vec3(0.0f, 5.f, 0.0f);
+            glm::quat yaw = glm::angleAxis(glm::radians(180.f), glm::vec3(0.0f, 1.0f, 0.0f));
+            glm::quat pitch = glm::angleAxis(glm::radians(45.f), glm::vec3(1.0f, 0.0f, 0.0f));
+            transform->rotation =  yaw * glm::quatLookAt(physics->velocity, glm::vec3(0.0f, 1.0f, 0.0f)) * pitch;
+        }
     }
 }

@@ -80,7 +80,7 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 
 
 	glEnable(GL_DEPTH_TEST);
-
+	
 	// setting color state.
 	glClearColor(.1f, .1f, .1f, 1.f);
 	// consuming color state.
@@ -233,7 +233,7 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 
 		if (const auto& indexBuffer = vao->getIndexBuffer())
 		{
-			glDrawElements(GL_TRIANGLES, indexBuffer->getStrideCount(), GL_UNSIGNED_INT, nullptr);
+			glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indexBuffer->getStrideCount()), GL_UNSIGNED_INT, nullptr);
 		}
 		else
 		{

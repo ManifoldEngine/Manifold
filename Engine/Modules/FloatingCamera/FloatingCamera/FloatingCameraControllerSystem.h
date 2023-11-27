@@ -21,7 +21,7 @@ public:
 	virtual void tick(float deltaTime, ECSEngine::EntityRegistry& registry);
 
 private:
-	const float CAMERA_SPEED = 5.f;
+	const float CAMERA_SPEED = 10.f;
 	float m_previousCameraX = 0.f;
 	float m_previousCameraY = 0.f;
 

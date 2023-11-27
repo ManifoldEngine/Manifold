@@ -31,40 +31,40 @@ namespace ECSEngine
 	{
 	public:
 
-		OpenGLVertexBuffer(float* data, int count);
+		OpenGLVertexBuffer(float* data, size_t count);
 		~OpenGLVertexBuffer();
 		
 		// buffers can't be copied implicitely.
 		OpenGLVertexBuffer(const OpenGLVertexBuffer&) = delete;
 
 		void bind() const;
-		int getStrideCount() const;
-		int getStrideSize() const;
+		size_t getStrideCount() const;
+		size_t getStrideSize() const;
 		
 		std::vector<BufferLayoutElement> layout;
 		
-		static int getShaderDataTypeSize(ShaderDataType type);
-		static int getComponentCount(ShaderDataType type);
+		static size_t getShaderDataTypeSize(ShaderDataType type);
+		static size_t getComponentCount(ShaderDataType type);
 	private:
-		int m_size;
+		size_t m_size;
 		unsigned int m_vertexBufferObjectId;
 	};
 
 	class OpenGLIndexBuffer
 	{
 	public:
-		OpenGLIndexBuffer(unsigned int* indices, int size);
+		OpenGLIndexBuffer(unsigned int* indices, size_t size);
 		~OpenGLIndexBuffer();
 
 		// buffers can't be copied implicitely.
 		OpenGLIndexBuffer(const OpenGLVertexBuffer&) = delete;
 
 		void bind() const;
-		int getStrideCount() const;
-		int getStrideSize() const;
+		size_t getStrideCount() const;
+		size_t getStrideSize() const;
 
 	private:
-		int m_size;
+		size_t m_size;
 		unsigned int m_indexBufferObjectId;
 	};
 }

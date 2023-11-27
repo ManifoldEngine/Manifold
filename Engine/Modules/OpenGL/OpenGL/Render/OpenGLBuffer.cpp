@@ -4,7 +4,7 @@
 using namespace ECSEngine;
 
 // OpenGLVertexBuffer Begin
-OpenGLVertexBuffer::OpenGLVertexBuffer(float* data, int size)
+OpenGLVertexBuffer::OpenGLVertexBuffer(float* data, size_t size)
 	: m_size(size), m_vertexBufferObjectId(UINT32_MAX)
 {
 	glCreateBuffers(1, &m_vertexBufferObjectId);
@@ -23,9 +23,9 @@ void OpenGLVertexBuffer::bind() const
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferObjectId);
 }
 
-int OpenGLVertexBuffer::getStrideCount() const
+size_t OpenGLVertexBuffer::getStrideCount() const
 {
-	const int strideSize = getStrideSize();
+	const size_t strideSize = getStrideSize();
 	if (strideSize > 0)
 	{
 		return m_size / strideSize;
@@ -34,9 +34,9 @@ int OpenGLVertexBuffer::getStrideCount() const
 	return 0;
 }
 
-int OpenGLVertexBuffer::getStrideSize() const
+size_t OpenGLVertexBuffer::getStrideSize() const
 {
-	int size = 0;
+	size_t size = 0;
 	for (const auto& layoutElement : layout)
 	{
 		size += getShaderDataTypeSize(layoutElement.shaderType);
@@ -45,7 +45,7 @@ int OpenGLVertexBuffer::getStrideSize() const
 	return size;
 }
 
-int OpenGLVertexBuffer::getShaderDataTypeSize(ShaderDataType type)
+size_t OpenGLVertexBuffer::getShaderDataTypeSize(ShaderDataType type)
 {
 	switch (type)
 	{
@@ -66,7 +66,7 @@ int OpenGLVertexBuffer::getShaderDataTypeSize(ShaderDataType type)
 	return 0;
 }
 
-int OpenGLVertexBuffer::getComponentCount(ShaderDataType type)
+size_t OpenGLVertexBuffer::getComponentCount(ShaderDataType type)
 {
 	switch (type)
 	{
@@ -89,7 +89,7 @@ int OpenGLVertexBuffer::getComponentCount(ShaderDataType type)
 // OpenGLVertexBuffer End
 
 // OpenGLIndexBuffer Begin
-OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned int* indices, int size)
+OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned int* indices, size_t size)
 	: m_size(size), m_indexBufferObjectId(UINT32_MAX)
 {
 	glCreateBuffers(1, &m_indexBufferObjectId);
@@ -107,12 +107,12 @@ void OpenGLIndexBuffer::bind() const
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBufferObjectId);
 }
 
-int OpenGLIndexBuffer::getStrideCount() const
+size_t OpenGLIndexBuffer::getStrideCount() const
 {
 	return m_size / sizeof(int);
 }
 
-int OpenGLIndexBuffer::getStrideSize() const
+size_t OpenGLIndexBuffer::getStrideSize() const
 {
 	return sizeof(int);
 }

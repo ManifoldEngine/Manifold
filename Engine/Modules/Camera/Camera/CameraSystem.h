@@ -17,7 +17,7 @@ namespace ECSEngine
 		float width = 800.f;
 		float height = 800.f;
 		float nearClipPlane = .1f;
-		float farClipPlane = 100.f;
+		float farClipPlane = 1000.f;
 	};
 
 	struct CameraComponent

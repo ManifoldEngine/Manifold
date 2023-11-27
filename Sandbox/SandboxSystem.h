@@ -35,5 +35,7 @@ private:
 	bool m_isFlashlightOn = false;
 
 	void onActionEvent(uint32_t userId, const ECSEngine::InputAction& action);
+
+
 };
 

@@ -15,7 +15,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string_view& path)
     m_channels(0),
     m_boundSlot(-1)
 {
-    stbi_set_flip_vertically_on_load(1);
+    //stbi_set_flip_vertically_on_load(1);
    
     stbi_uc* imageData = stbi_load(path.data(), &m_width, &m_height, &m_channels, 0);
     if (imageData != nullptr)

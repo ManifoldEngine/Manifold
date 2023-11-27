@@ -1,5 +1,6 @@
 #if ECSE_WINDOWS
 #include "windows.h"
+#include <strsafe.h>
 #endif
 
 #include <filesystem>
@@ -57,9 +58,9 @@ int main(int argc, char** argv)
         }
         else
         {
-            std::cout << "Could not load the shared library for " << sPath << "\n";
+            std::cout << "Could not load the shared library for " << sPath << " (" << GetLastError() << ")\n";
         }
-         
+            
         std::cout << "\n";
     }
 

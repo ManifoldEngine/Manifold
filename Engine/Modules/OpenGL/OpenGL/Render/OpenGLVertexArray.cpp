@@ -57,10 +57,10 @@ void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buff
 				glEnableVertexAttribArray(m_attributeCount);
 				glVertexAttribPointer(
 					m_attributeCount, // GLuint index, 
-					OpenGLVertexBuffer::getComponentCount(layoutElement.shaderType), // GLint size,
+					static_cast<GLint>(OpenGLVertexBuffer::getComponentCount(layoutElement.shaderType)), // GLint size,
 					toOpenGLType(layoutElement.shaderType), // GLenum type, 
 					layoutElement.isNormalized, // GLboolean normalized,
-					buffer->getStrideSize(), // GLsizei stride,
+					static_cast<GLsizei>(buffer->getStrideSize()), // GLsizei stride,
 					(void*)accumulatedOffset // const void* pointer
 				);
 				accumulatedOffset += OpenGLVertexBuffer::getShaderDataTypeSize(layoutElement.shaderType);
@@ -77,9 +77,9 @@ void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buff
 				glEnableVertexAttribArray(m_attributeCount);
 				glVertexAttribIPointer(
 					m_attributeCount, // GLuint index, 
-					OpenGLVertexBuffer::getComponentCount(layoutElement.shaderType), // GLint size,
+					static_cast<GLint>(OpenGLVertexBuffer::getComponentCount(layoutElement.shaderType)), // GLint size,
 					toOpenGLType(layoutElement.shaderType), // GLenum type, 
-					buffer->getStrideSize(), // GLsizei stride,
+					static_cast<GLsizei>(buffer->getStrideSize()), // GLsizei stride,
 					(void*)accumulatedOffset // const void* pointer
 				);
 				accumulatedOffset += OpenGLVertexBuffer::getShaderDataTypeSize(layoutElement.shaderType);
