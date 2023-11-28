@@ -10,3 +10,6 @@
 [submodule "Engine/ThirdParties/assimp"]
 	path = Engine/ThirdParties/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "Engine/ThirdParties/json"]
+	path = Engine/ThirdParties/json
+	url = https://github.com/nlohmann/json

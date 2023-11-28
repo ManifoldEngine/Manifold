@@ -13,6 +13,8 @@ configurations { "Debug", "Release" }
 
     --glm
     includedirs { thirdpartiesdir .. "/glm" }
+    --json
+    includedirs { thirdpartiesdir .. "/json/include"}
     
     filter "configurations:Debug"
         includedirs { thirdpartiesdir .. "/SimpleTests/include" }
