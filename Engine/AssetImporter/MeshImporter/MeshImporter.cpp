@@ -1,4 +1,4 @@
-#include "MeshLoader.h"
+#include "MeshImporter.h"
 
 #include <Core/CoreAssert.h>
 
@@ -8,15 +8,18 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-using namespace ECSEngine;
+#include <nlohmann/json.hpp>
 
-bool MeshLoader::loadFromPath(const std::filesystem::path& path, std::vector<std::shared_ptr<Mesh>>& outMeshes)
+using namespace ECSEngine;
+using namespace nlohmann;
+
+bool MeshImporter::importFromPath(const std::filesystem::path& path, std::vector<std::shared_ptr<Mesh>>& outMeshes)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_FlipUVs);
 	if (scene == nullptr || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || scene->mRootNode == NULL)
 	{
-		ECSE_LOG_ERROR(LogMeshLoader, "Could not load scene: {}", std::string_view(importer.GetErrorString()));
+		ECSE_LOG_ERROR(LogMeshImporter, "Could not load scene: {}", std::string_view(importer.GetErrorString()));
 		return false;
 	}
 
@@ -33,7 +36,47 @@ bool MeshLoader::loadFromPath(const std::filesystem::path& path, std::vector<std
 	return true;
 }
 
-void MeshLoader::processNode(aiNode* node, const aiScene* scene, std::vector<const aiMesh*>& meshesAccumulator)
+bool MeshImporter::exportToPath(const std::filesystem::path& path, const std::shared_ptr<Mesh>& mesh)
+{
+	if (mesh == nullptr)
+	{
+		return false;
+	}
+
+	json output;
+
+	// export vertices
+	std::vector<float> vertices;
+	for (const Vertex& vertex : mesh->vertices)
+	{
+		vertices.push_back(vertex.position.x);
+		vertices.push_back(vertex.position.y);
+		vertices.push_back(vertex.position.z);
+
+		vertices.push_back(vertex.normal.x);
+		vertices.push_back(vertex.normal.y);
+		vertices.push_back(vertex.normal.z);
+
+		vertices.push_back(vertex.textureCoordinate.x);
+		vertices.push_back(vertex.textureCoordinate.y);
+	}
+
+	output["vertices"] = vertices;
+	
+	std::vector<uint32_t> indices;
+	for (const uint32_t index : indices)
+	{
+		indices.push_back(index);
+	}
+	
+	output["indices"] = indices;
+
+
+	
+	return true;
+}
+
+void MeshImporter::processNode(aiNode* node, const aiScene* scene, std::vector<const aiMesh*>& meshesAccumulator)
 {
 	if (node == nullptr)
 	{
@@ -52,7 +95,7 @@ void MeshLoader::processNode(aiNode* node, const aiScene* scene, std::vector<con
 	}
 }
 
-void MeshLoader::processMesh(const aiMesh* mesh, const aiScene* scene, const std::shared_ptr<Mesh>& outMesh)
+void MeshImporter::processMesh(const aiMesh* mesh, const aiScene* scene, const std::shared_ptr<Mesh>& outMesh)
 {
 	ECSE_ASSERT(outMesh != nullptr, "Out pointer recipient cannot be null");
 

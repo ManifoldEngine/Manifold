@@ -11,14 +11,15 @@ struct aiScene;
 
 namespace ECSEngine
 {
-    const std::string_view LogMeshLoader = "MeshLoader";
+    const std::string_view LogMeshImporter = "MeshImporter";
 
     struct Mesh;
 
-    class MeshLoader
+    class MeshImporter
     {
     public:
-        static bool loadFromPath(const std::filesystem::path& path, std::vector<std::shared_ptr<Mesh>>& outMeshes);
+        static bool importFromPath(const std::filesystem::path& path, std::vector<std::shared_ptr<Mesh>>& outMeshes);
+        static bool exportToPath(const std::filesystem::path& path, const std::shared_ptr<Mesh>& mesh);
     private:
         static void processNode(aiNode* node, const aiScene* scene, std::vector<const aiMesh*>& meshesAccumulator);
         static void processMesh(const aiMesh* mesh, const aiScene* scene, const std::shared_ptr<Mesh>& outMesh);

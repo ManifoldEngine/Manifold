@@ -20,8 +20,6 @@
 #include <OpenGL/Render/OpenGLResourceSystem.h>
 #include <OpenGL/Render/OpenGLRenderSystem.h>
 
-#include <MeshLoader/MeshLoader.h>
-
 #include <Inputs/InputSystem.h>
 
 #include "ShaderUtils.h"
@@ -149,15 +147,15 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
     boxFrameTexture->id = assetCount++;
     boxFrameTexture->path = fs::path(rootPath).append("Sandbox/Assets/Textures/container2_specular.png").string();*/
 
-    std::vector<std::shared_ptr<Mesh>> loadedMeshes;
-    if (!MeshLoader::loadFromPath(fs::path(rootPath).append("Sandbox/Assets/Meshes/Cactus.fbx"), loadedMeshes) || loadedMeshes.empty())
-    {
-        ECSE_LOG_ERROR(Log, "Could not load cactus mesh.");
-        return;
-    }
+    //std::vector<std::shared_ptr<Mesh>> loadedMeshes;
+    //if (!MeshImporter::importFromPath(fs::path(rootPath).append("Sandbox/Assets/Meshes/Cactus.fbx"), loadedMeshes) || loadedMeshes.empty())
+    //{
+    //    ECSE_LOG_ERROR(Log, "Could not load cactus mesh.");
+    //    return;
+    //}
 
-    std::shared_ptr<Mesh> cactusMesh = loadedMeshes[0];
-    cactusMesh->id = assetCount++;
+    /*std::shared_ptr<Mesh> cactusMesh = loadedMeshes[0];
+    cactusMesh->id = assetCount++;*/
 
     std::shared_ptr<Texture> cactusTexture = std::make_shared<Texture>();
     cactusTexture->id = assetCount++;
@@ -201,7 +199,7 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
     // initialize OpenGL
     std::shared_ptr<OpenGLResourceSystem> resourceSystem = systemContainer.initializeDependency<OpenGLResourceSystem>().lock();
     resourceSystem->onMeshLoaded(cubeMesh);
-    resourceSystem->onMeshLoaded(cactusMesh);
+    //resourceSystem->onMeshLoaded(cactusMesh);
     resourceSystem->onTextureLoaded(cactusTexture);
     //resourceSystem->onTextureLoaded(boxFrameTexture);
     resourceSystem->onTextureLoaded(floorTexture);
@@ -224,7 +222,7 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
             cactusTransform->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
 
             MeshComponent* cactusMeshComponent = registry.addComponent<MeshComponent>(cactusEntityId);
-            cactusMeshComponent->mesh = cactusMesh;
+            cactusMeshComponent->mesh = cubeMesh;
             cactusMeshComponent->material = cactusMaterial;
 
             PhysicsComponent* physics = registry.addComponent<PhysicsComponent>(cactusEntityId);
