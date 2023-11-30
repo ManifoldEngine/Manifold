@@ -16,6 +16,7 @@ namespace ECSEngine
 	struct Mesh
 	{
 		AssetId id;
+		std::string name;
 		std::vector<Vertex> vertices;
 		std::vector<uint32_t> indices;
 	};
