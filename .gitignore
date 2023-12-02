@@ -26,6 +26,7 @@ third-parties/premake
 bin/
 bin-int/
 .vs/
+vstools/
 
 #Python
 *__pycache__/
