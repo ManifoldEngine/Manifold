@@ -9,6 +9,9 @@ namespace ECSEngine
 	public:
 		// dumps a file to a string
 		static bool tryReadFile(const std::filesystem::path& filePath, std::string& outResult);
+
+		// dumps a string to a file
+		static bool tryWriteFile(const std::filesystem::path& filePath, const std::string& content);
 		
 		// returns a path to the root of the project
 		static bool tryGetRootPath(std::filesystem::path& outPath);

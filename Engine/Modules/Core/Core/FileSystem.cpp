@@ -21,7 +21,17 @@ bool FileSystem::tryReadFile(const std::filesystem::path& filePath, std::string&
 			return true;
 		}
 	}
+	return false;
+}
 
+bool FileSystem::tryWriteFile(const std::filesystem::path& filePath, const std::string& content)
+{
+	std::ofstream out(filePath);
+	if (out.is_open())
+	{
+		out << content;
+		return true;
+	}
 	return false;
 }
 

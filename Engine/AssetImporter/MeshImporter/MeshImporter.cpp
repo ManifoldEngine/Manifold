@@ -1,6 +1,7 @@
 #include "MeshImporter.h"
 
 #include <Core/CoreAssert.h>
+#include <Core/FileSystem.h>
 
 #include <RenderAPI/Mesh.h>
 
@@ -31,7 +32,7 @@ bool MeshImporter::importFromPath(const std::filesystem::path& path, std::vector
 		std::shared_ptr<Mesh> loadedMesh = std::make_shared<Mesh>();
 		processMesh(mesh, scene, loadedMesh);
 		outMeshes.push_back(loadedMesh);
-		ECSE_LOG(LogMeshImporter, "Imported {} with {} vertices from path [{}]", loadedMesh->name, loadedMesh->vertices.size(), path.string());
+		ECSE_LOG(LogMeshImporter, "Imported {} with {} vertices from path {}", loadedMesh->name, loadedMesh->vertices.size(), path.string());
 	}
 
 	return true;
@@ -39,10 +40,7 @@ bool MeshImporter::importFromPath(const std::filesystem::path& path, std::vector
 
 bool MeshImporter::exportToPath(const std::filesystem::path& path, const std::shared_ptr<Mesh>& mesh)
 {
-	if (mesh == nullptr)
-	{
-		return false;
-	}
+	ECSE_ASSERT(mesh != nullptr, "provided mesh cannot be null");
 
 	json output;
 
@@ -73,10 +71,8 @@ bool MeshImporter::exportToPath(const std::filesystem::path& path, const std::sh
 	}
 	
 	output["indices"] = indices;
-	
-	ECSE_LOG(LogMeshImporter, "output: {}", output.dump());
 
-	return true;
+	return FileSystem::tryWriteFile(path, output.dump());
 }
 
 void MeshImporter::processNode(aiNode* node, const aiScene* scene, std::vector<const aiMesh*>& meshesAccumulator)
