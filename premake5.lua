@@ -56,7 +56,7 @@ project "Sandbox"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
 
-    links { "Core", "OpenGL", "ECS", "Camera", "FloatingCamera" }
+    links { "Core", "OpenGL", "ECS", "Camera", "FloatingCamera", "Assets", "RenderAPI" }
 
     includedirs { moduledir .. "/**", "/%{prj.name}" }
 

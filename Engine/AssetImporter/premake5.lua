@@ -18,7 +18,7 @@ group "AssetImporter"
 
         includedirs { moduledir .. "/**", enginedir .. "/%{prj.name}" }
 
-        links { "Core" }
+        links { "Core", "Assets", "RenderAPI" }
 
         -- assimp
         includedirs { enginedir .. "/%{prj.name}/ThirdParties/assimp/include" }

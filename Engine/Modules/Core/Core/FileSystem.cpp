@@ -18,8 +18,8 @@ bool FileSystem::tryReadFile(const std::filesystem::path& filePath, std::string&
 			outResult.resize(size);
 			in.seekg(0, std::ios::beg);
 			in.read(&outResult[0], size);
-			return true;
 		}
+		return true;
 	}
 	return false;
 }

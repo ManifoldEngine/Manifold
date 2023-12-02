@@ -11,6 +11,7 @@ namespace ECSEngine
 	class CameraSystem;
 	class InputSystem;
 	struct InputAction;
+	struct Mesh;
 }
 
 class SandboxSystem : public ECSEngine::SystemBase
@@ -34,8 +35,8 @@ private:
 
 	bool m_isFlashlightOn = false;
 
+	std::shared_ptr<ECSEngine::Mesh> hardcodeCubeMesh(ECSEngine::SystemContainer& systemContainer);
+
 	void onActionEvent(uint32_t userId, const ECSEngine::InputAction& action);
-
-
 };
 

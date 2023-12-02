@@ -1,15 +1,17 @@
 #pragma once
 
-#include <RenderAPI/AssetId.h>
+#include <Assets/IJsonAsset.h>
 #include <string>
 
 namespace ECSEngine
 {
-	struct Shader
+	struct Shader : public IJsonAsset
 	{
-		AssetId id;
 		std::string name = "";
 		std::string vertexSource = "";
 		std::string fragmentSource = "";
+
+		virtual void parse(const std::string_view& content) override;
+		virtual std::string toJson() override;
 	};
 }

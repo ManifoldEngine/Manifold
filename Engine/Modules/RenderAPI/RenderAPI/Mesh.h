@@ -1,8 +1,9 @@
 #pragma once
 
-#include <RenderAPI/AssetId.h>
+#include <Assets/IJsonAsset.h>
 #include <glm/glm.hpp>
 #include <vector>
+#include <string>
 
 namespace ECSEngine
 {
@@ -13,11 +14,13 @@ namespace ECSEngine
 		glm::vec2 textureCoordinate;
 	};
 
-	struct Mesh
+	struct Mesh : public IJsonAsset
 	{
-		AssetId id;
 		std::string name;
 		std::vector<Vertex> vertices;
-		std::vector<uint32_t> indices;
+		std::vector<unsigned int> indices;
+
+		virtual void parse(const std::string_view& json) override;
+		virtual std::string toJson() override;
 	};
 }

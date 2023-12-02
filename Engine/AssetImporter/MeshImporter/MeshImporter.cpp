@@ -4,6 +4,7 @@
 #include <Core/FileSystem.h>
 
 #include <RenderAPI/Mesh.h>
+#include <RenderAPI/Material.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -42,37 +43,7 @@ bool MeshImporter::exportToPath(const std::filesystem::path& path, const std::sh
 {
 	ECSE_ASSERT(mesh != nullptr, "provided mesh cannot be null");
 
-	json output;
-
-	output["name"] = mesh->name;
-
-	// export vertices
-	std::vector<float> vertices;
-	for (const Vertex& vertex : mesh->vertices)
-	{
-		vertices.push_back(vertex.position.x);
-		vertices.push_back(vertex.position.y);
-		vertices.push_back(vertex.position.z);
-
-		vertices.push_back(vertex.normal.x);
-		vertices.push_back(vertex.normal.y);
-		vertices.push_back(vertex.normal.z);
-
-		vertices.push_back(vertex.textureCoordinate.x);
-		vertices.push_back(vertex.textureCoordinate.y);
-	}
-
-	output["vertices"] = vertices;
-	
-	std::vector<uint32_t> indices;
-	for (const uint32_t index : indices)
-	{
-		indices.push_back(index);
-	}
-	
-	output["indices"] = indices;
-
-	return FileSystem::tryWriteFile(path, output.dump());
+	return FileSystem::tryWriteFile(path, mesh->toJson());
 }
 
 void MeshImporter::processNode(aiNode* node, const aiScene* scene, std::vector<const aiMesh*>& meshesAccumulator)

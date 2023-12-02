@@ -20,6 +20,7 @@
 #include <OpenGL/Render/OpenGLBuffer.h>
 #include <OpenGL/Render/OpenGLVertexArray.h>
 #include <OpenGL/Render/OpenGLTexture.h>
+#include <OpenGL/Render/OpenGLMaterial.h>
 #include <OpenGL/Render/OpenGLShader.h>
 
 #include <glm/glm.hpp>
@@ -104,24 +105,31 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 		}
 
 		const std::shared_ptr<Mesh>& mesh = meshComponent->mesh;
-		const std::shared_ptr<Material>& material = meshComponent->material;
+		const std::shared_ptr<Material>& materialAsset = meshComponent->material;
 
-		if (mesh == nullptr || material == nullptr)
+		if (mesh == nullptr || materialAsset == nullptr)
 		{
 			ECSE_LOG_WARNING(LogOpenGL, "Entity {} with null mesh or material", entityId);
 			continue;
 		}
 
-		const std::shared_ptr<OpenGLVertexArray>& vao = resourceSystem->getVertexArray(mesh->id);
+		const std::shared_ptr<OpenGLVertexArray>& vao = resourceSystem->getVertexArray(mesh->name);
 		if (vao == nullptr)
 		{
 			ECSE_LOG_WARNING(LogOpenGL, "Attempting to draw a mesh that is not loaded");
 			continue;
 		}
 
-		ECSE_ASSERT(material->shader != nullptr, "A Shader is always expected in a material");
+		const std::shared_ptr<OpenGLMaterial> material = resourceSystem->getMaterial(materialAsset->name);
+		if (material == nullptr)
+		{
+			ECSE_LOG_WARNING(LogOpenGL, "Attempting to draw a material that is not loaded");
+			continue;
+		}
 
-		std::shared_ptr<OpenGLShader> shader = resourceSystem->getShader(material->shader->id);
+		ECSE_ASSERT(!material->shader.empty(), "A Shader is always expected in a material");
+
+		std::shared_ptr<OpenGLShader> shader = resourceSystem->getShader(material->shader);
 		if (shader == nullptr)
 		{
 			ECSE_LOG_WARNING(LogOpenGL, "Attempting to draw a mesh with an uncompiled shader");
@@ -146,9 +154,9 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 
 		// set material
 		std::shared_ptr<OpenGLTexture2D> diffuseTexture = nullptr;
-		if (material->diffuse != nullptr)
+		if (!material->diffuse.empty())
 		{
-			diffuseTexture = resourceSystem->getTexture(material->diffuse->id);
+			diffuseTexture = resourceSystem->getTexture(material->diffuse);
 			if (diffuseTexture != nullptr)
 			{
 				diffuseTexture->bind(textureIndex);
@@ -157,9 +165,9 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 		}
 
 		std::shared_ptr<OpenGLTexture2D> specularTexture = nullptr;
-		if (material->specular != nullptr)
+		if (!material->specular.empty())
 		{
-			specularTexture = resourceSystem->getTexture(material->specular->id);
+			specularTexture = resourceSystem->getTexture(material->specular);
 			if (specularTexture != nullptr)
 			{
 				specularTexture->bind(textureIndex);

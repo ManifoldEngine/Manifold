@@ -10,6 +10,8 @@
 #include <ECS/EntityRegistry.h>
 #include <ECS/RegistryView.h>
 
+#include <Assets/AssetSystem.h>
+
 #include <RenderAPI/Mesh.h>
 #include <RenderAPI/Material.h>
 #include <RenderAPI/MeshComponent.h>
@@ -21,8 +23,6 @@
 #include <OpenGL/Render/OpenGLRenderSystem.h>
 
 #include <Inputs/InputSystem.h>
-
-#include "ShaderUtils.h"
 
 #include <glm/glm.hpp>
 
@@ -47,166 +47,13 @@ struct CactusLight
 
 void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
-    size_t assetCount = 0;
-    std::srand(std::time(nullptr));
+    std::shared_ptr<AssetSystem> assetSystem = systemContainer.initializeDependency<AssetSystem>().lock();
 
-    // load assets.
-    float vertices[] = {
-        // positions               // normals           // texture coords
-        -0.5f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,   0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,   1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,     0.0f,  0.0f, -1.0f,   1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,     0.0f,  0.0f, -1.0f,   1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,     0.0f,  0.0f, -1.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,   0.0f, 0.0f,
-                                        
-        -0.5f, -0.5f,  0.5f,     0.0f,  0.0f,  1.0f,   0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,     0.0f,  0.0f,  1.0f,   1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,     0.0f,  0.0f,  1.0f,   1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,     0.0f,  0.0f,  1.0f,   1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,     0.0f,  0.0f,  1.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,     0.0f,  0.0f,  1.0f,   0.0f, 0.0f,
-                                               
-        -0.5f,  0.5f,  0.5f,    -1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,    -1.0f,  0.0f,  0.0f,   1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,    -1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,    -1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,    -1.0f,  0.0f,  0.0f,   0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,    -1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
-                                               
-         0.5f,  0.5f,  0.5f,     1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,     1.0f,  0.0f,  0.0f,   1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,     1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,     1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,     1.0f,  0.0f,  0.0f,   0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,     1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
-                                               
-        -0.5f, -0.5f, -0.5f,     0.0f, -1.0f,  0.0f,   0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,     0.0f, -1.0f,  0.0f,   1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,     0.0f, -1.0f,  0.0f,   1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,     0.0f, -1.0f,  0.0f,   1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,     0.0f, -1.0f,  0.0f,   0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,     0.0f, -1.0f,  0.0f,   0.0f, 1.0f,
-                                               
-        -0.5f,  0.5f, -0.5f,     0.0f,  1.0f,  0.0f,   0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,     0.0f,  1.0f,  0.0f,   1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,     0.0f,  1.0f,  0.0f,   1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,     0.0f,  1.0f,  0.0f,   1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,     0.0f,  1.0f,  0.0f,   0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,     0.0f,  1.0f,  0.0f,   0.0f, 1.0f
-    };
-
-    const size_t verticesSize = std::size(vertices);
-    std::vector<uint32_t> indices;
-    for (int i = 0; i < verticesSize; ++i)
-    {
-        indices.push_back(i);
-    }
-
-    std::shared_ptr<Mesh> cubeMesh = std::make_shared<Mesh>();
-    cubeMesh->id = assetCount++;
-    for (int i = 0; i < verticesSize; i += 8)
-    {
-        Vertex vertex;
-        vertex.position.x = vertices[i];
-        vertex.position.y = vertices[i + 1];
-        vertex.position.z = vertices[i + 2];
-
-        vertex.normal.x = vertices[i + 3];
-        vertex.normal.y = vertices[i + 4];
-        vertex.normal.z = vertices[i + 5];
-
-        vertex.textureCoordinate.x = vertices[i + 6];
-        vertex.textureCoordinate.y = vertices[i + 7];
-        cubeMesh->vertices.push_back(vertex);
-    }
-
-    cubeMesh->indices = indices;
-
-    namespace fs = std::filesystem;
-
-    fs::path rootPath;
-    if (!FileSystem::tryGetRootPath(rootPath))
-    {
-        ECSE_LOG_ERROR(Log, "Could not get root path.");
-        return;
-    }
-
-    fs::path enginePath;
-    if (!FileSystem::tryGetEnginePath(enginePath))
-    {
-        ECSE_LOG_ERROR(Log, "Could not get root path.");
-        return;
-    }
-
-   /* std::shared_ptr<Texture> boxTexture = std::make_shared<Texture>();
-    boxTexture->id = assetCount++;
-    boxTexture->path = fs::path(rootPath).append("Sandbox/Assets/Textures/container2.png").string();
-
-    std::shared_ptr<Texture> boxFrameTexture = std::make_shared<Texture>();
-    boxFrameTexture->id = assetCount++;
-    boxFrameTexture->path = fs::path(rootPath).append("Sandbox/Assets/Textures/container2_specular.png").string();*/
-
-    //std::vector<std::shared_ptr<Mesh>> loadedMeshes;
-    //if (!MeshImporter::importFromPath(fs::path(rootPath).append("Sandbox/Assets/Meshes/Cactus.fbx"), loadedMeshes) || loadedMeshes.empty())
-    //{
-    //    ECSE_LOG_ERROR(Log, "Could not load cactus mesh.");
-    //    return;
-    //}
-
-    /*std::shared_ptr<Mesh> cactusMesh = loadedMeshes[0];
-    cactusMesh->id = assetCount++;*/
-
-    std::shared_ptr<Texture> cactusTexture = std::make_shared<Texture>();
-    cactusTexture->id = assetCount++;
-    cactusTexture->path = fs::path(rootPath).append("Sandbox/Assets/Textures/Cactus_color.jpg").string();
-
-    std::shared_ptr<Texture> floorTexture = std::make_shared<Texture>();
-    floorTexture->id = assetCount++;
-    floorTexture->path = fs::path(rootPath).append("Sandbox/Assets/Textures/floor.png").string();
-
-    std::shared_ptr<Shader> baseLitShader = std::make_shared<Shader>();
-    baseLitShader->id = assetCount++;
-    parseShaderSourceFileFromPath(fs::path(enginePath).append("Assets/Shaders/baseLit.glsl"), baseLitShader->name, baseLitShader->vertexSource, baseLitShader->fragmentSource);
-
-    std::shared_ptr<Shader> flatColorShader = std::make_shared<Shader>();
-    flatColorShader->id = assetCount++;
-    parseShaderSourceFileFromPath(fs::path(enginePath).append("Assets/Shaders/flatColor.glsl"), flatColorShader->name, flatColorShader->vertexSource, flatColorShader->fragmentSource);
-
-
-    std::shared_ptr<Material> cactusMaterial = std::make_shared<Material>();
-    cactusMaterial->id = assetCount++;
-    cactusMaterial->shader = baseLitShader;
-    cactusMaterial->diffuse = cactusTexture;
-    
-    /*std::shared_ptr<Material> boxMaterial = std::make_shared<Material>();
-    boxMaterial->id = assetCount++;
-    boxMaterial->shader = baseLitShader;
-    boxMaterial->diffuse = boxTexture;
-    boxMaterial->specular = boxFrameTexture;*/
-
-    std::shared_ptr<Material> lightMaterial = std::make_shared<Material>();
-    lightMaterial->id = assetCount++;
-    lightMaterial->shader = flatColorShader;
-    lightMaterial->color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // white
-
-    std::shared_ptr<Material> floorMaterial = std::make_shared<Material>();
-    floorMaterial->id = assetCount++;
-    floorMaterial->shader = baseLitShader;
-    floorMaterial->diffuse = floorTexture;
-    floorMaterial->specular = floorTexture;
-    
-    // initialize OpenGL
-    std::shared_ptr<OpenGLResourceSystem> resourceSystem = systemContainer.initializeDependency<OpenGLResourceSystem>().lock();
-    resourceSystem->onMeshLoaded(cubeMesh);
-    //resourceSystem->onMeshLoaded(cactusMesh);
-    resourceSystem->onTextureLoaded(cactusTexture);
-    //resourceSystem->onTextureLoaded(boxFrameTexture);
-    resourceSystem->onTextureLoaded(floorTexture);
-    resourceSystem->onShaderLoaded(baseLitShader);
-    resourceSystem->onShaderLoaded(flatColorShader);
-
-    systemContainer.initializeDependency<OpenGLRenderSystem>();
+    std::shared_ptr<Mesh> cubeMesh = hardcodeCubeMesh(systemContainer);
+    std::shared_ptr<Mesh> cactusMesh = assetSystem->loadJsonAsset<Mesh>("Sandbox/Assets/Meshes/Cylinder.004.mesh");
+    std::shared_ptr<Material> cactusMaterial = assetSystem->loadJsonAsset<Material>("Sandbox/Assets/Materials/cactus.material");
+    std::shared_ptr<Material> lightMaterial = assetSystem->loadJsonAsset<Material>("Sandbox/Assets/Materials/light.material");
+    std::shared_ptr<Material> floorMaterial = assetSystem->loadJsonAsset<Material>("Sandbox/Assets/Materials/floor.material");
 
     // initialize entities.
     {
@@ -222,7 +69,7 @@ void SandboxSystem::onInitialize(EntityRegistry& registry, SystemContainer& syst
             cactusTransform->rotation = glm::angleAxis(glm::radians(-90.f), glm::vec3(1.f, 0.f, 0.f));
 
             MeshComponent* cactusMeshComponent = registry.addComponent<MeshComponent>(cactusEntityId);
-            cactusMeshComponent->mesh = cubeMesh;
+            cactusMeshComponent->mesh = cactusMesh;
             cactusMeshComponent->material = cactusMaterial;
 
             PhysicsComponent* physics = registry.addComponent<PhysicsComponent>(cactusEntityId);
@@ -302,6 +149,89 @@ void SandboxSystem::onDeinitialize(EntityRegistry& registry)
         std::shared_ptr<InputSystem> inputSystem = m_inputSystem.lock();
         inputSystem->onActionEvent.unsubscribe(onActionEventHandle);
     }
+}
+
+std::shared_ptr<Mesh> SandboxSystem::hardcodeCubeMesh(ECSEngine::SystemContainer& systemContainer)
+{
+    // load assets.
+    float vertices[] = {
+        // positions               // normals           // texture coords
+        -0.5f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,   0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,   1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,     0.0f,  0.0f, -1.0f,   1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,     0.0f,  0.0f, -1.0f,   1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,     0.0f,  0.0f, -1.0f,   0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,     0.0f,  0.0f, -1.0f,   0.0f, 0.0f,
+
+        -0.5f, -0.5f,  0.5f,     0.0f,  0.0f,  1.0f,   0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,     0.0f,  0.0f,  1.0f,   1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,     0.0f,  0.0f,  1.0f,   1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,     0.0f,  0.0f,  1.0f,   1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,     0.0f,  0.0f,  1.0f,   0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,     0.0f,  0.0f,  1.0f,   0.0f, 0.0f,
+
+        -0.5f,  0.5f,  0.5f,    -1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,    -1.0f,  0.0f,  0.0f,   1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,    -1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,    -1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,    -1.0f,  0.0f,  0.0f,   0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,    -1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
+
+         0.5f,  0.5f,  0.5f,     1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,     1.0f,  0.0f,  0.0f,   1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,     1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,     1.0f,  0.0f,  0.0f,   0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,     1.0f,  0.0f,  0.0f,   0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,     1.0f,  0.0f,  0.0f,   1.0f, 0.0f,
+
+        -0.5f, -0.5f, -0.5f,     0.0f, -1.0f,  0.0f,   0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,     0.0f, -1.0f,  0.0f,   1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,     0.0f, -1.0f,  0.0f,   1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,     0.0f, -1.0f,  0.0f,   1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,     0.0f, -1.0f,  0.0f,   0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,     0.0f, -1.0f,  0.0f,   0.0f, 1.0f,
+
+        -0.5f,  0.5f, -0.5f,     0.0f,  1.0f,  0.0f,   0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,     0.0f,  1.0f,  0.0f,   1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,     0.0f,  1.0f,  0.0f,   1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,     0.0f,  1.0f,  0.0f,   1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,     0.0f,  1.0f,  0.0f,   0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,     0.0f,  1.0f,  0.0f,   0.0f, 1.0f
+    };
+
+    const size_t verticesSize = std::size(vertices);
+    std::vector<uint32_t> indices;
+    for (int i = 0; i < verticesSize; ++i)
+    {
+        indices.push_back(i);
+    }
+
+    std::shared_ptr<Mesh> cubeMesh = std::make_shared<Mesh>();
+    cubeMesh->name = "CubeMesh";
+
+    for (int i = 0; i < verticesSize; i += 8)
+    {
+        Vertex vertex;
+        vertex.position.x = vertices[i];
+        vertex.position.y = vertices[i + 1];
+        vertex.position.z = vertices[i + 2];
+
+        vertex.normal.x = vertices[i + 3];
+        vertex.normal.y = vertices[i + 4];
+        vertex.normal.z = vertices[i + 5];
+
+        vertex.textureCoordinate.x = vertices[i + 6];
+        vertex.textureCoordinate.y = vertices[i + 7];
+        cubeMesh->vertices.push_back(vertex);
+    }
+
+    cubeMesh->indices = indices;
+
+    systemContainer.initializeDependency<OpenGLRenderSystem>();
+    std::shared_ptr<OpenGLResourceSystem> resourceSystem = systemContainer.initializeDependency<OpenGLResourceSystem>().lock();
+    resourceSystem->onMeshLoaded(cubeMesh);
+
+    return cubeMesh;
 }
 
 void SandboxSystem::onActionEvent(uint32_t userId, const InputAction& action)

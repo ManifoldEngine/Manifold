@@ -9,10 +9,8 @@
 #include <Utils/StringUtils.h>
 
 #include <filesystem>
-#include <nlohmann/json.hpp>
 
 using namespace ECSEngine;
-using namespace nlohmann;
 
 bool ShaderImporter::importFromPath(const std::filesystem::path& path, std::shared_ptr<Shader>& outShader)
 {
@@ -28,13 +26,7 @@ bool ShaderImporter::importFromPath(const std::filesystem::path& path, std::shar
 bool ShaderImporter::exportToPath(const std::filesystem::path& path, const std::shared_ptr<Shader>& shader)
 {
 	ECSE_ASSERT(shader != nullptr, "provided shader cannot be null");
-
-	json output;
-	output["name"] = shader->name;
-	output["vertexSource"] = shader->vertexSource;
-	output["fragmentSource"] = shader->fragmentSource;
-
-	return FileSystem::tryWriteFile(path, output.dump());
+	return FileSystem::tryWriteFile(path, shader->toJson());
 }
 
 bool ShaderImporter::parseShaderSourceFileFromPath(const std::filesystem::path& path, std::string& outFileName, std::string& outVertexSource, std::string& outFragmentSource)

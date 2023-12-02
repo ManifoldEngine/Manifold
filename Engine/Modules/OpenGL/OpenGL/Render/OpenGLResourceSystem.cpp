@@ -1,12 +1,15 @@
 #include "OpenGLResourceSystem.h"
 
+#include <Assets/AssetSystem.h>
+
 #include <OpenGL/Render/OpenGLBuffer.h>
 #include <OpenGL/Render/OpenGLVertexArray.h>
 #include <OpenGL/Render/OpenGLTexture.h>
 #include <OpenGL/Render/OpenGLShader.h>
+#include <OpenGL/Render/OpenGLMaterial.h>
 
 #include <RenderAPI/Mesh.h>
-#include <RenderAPI/Texture.h>
+#include <RenderAPI/Material.h>
 #include <RenderAPI/Shader.h>
 
 using namespace ECSEngine;
@@ -16,19 +19,43 @@ std::string_view OpenGLResourceSystem::getName() const
     return "OpenGLResourceSystem";
 }
 
-const std::shared_ptr<OpenGLVertexArray>& OpenGLResourceSystem::getVertexArray(AssetId assetId) 
+void OpenGLResourceSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
-	return m_vertexArrays[assetId];
+	m_assetSystem = systemContainer.initializeDependency<AssetSystem>();
+	if (!m_assetSystem.expired())
+	{
+		std::shared_ptr<AssetSystem> assetSystem = m_assetSystem.lock();
+		onAssetLoadedHandle = assetSystem->onJsonAssetLoaded.subscribe(std::bind(&OpenGLResourceSystem::onJsonAssetLoaded, this, std::placeholders::_1));
+	}
 }
 
-const std::shared_ptr<OpenGLTexture2D>& OpenGLResourceSystem::getTexture(AssetId assetId) 
+void OpenGLResourceSystem::onDeinitialize(EntityRegistry& registry)
 {
-	return m_textures[assetId];
+	if (!m_assetSystem.expired())
+	{
+		std::shared_ptr<AssetSystem> assetSystem = m_assetSystem.lock();
+		assetSystem->onJsonAssetLoaded.unsubscribe(onAssetLoadedHandle);
+	}
 }
 
-const std::shared_ptr<OpenGLShader>& OpenGLResourceSystem::getShader(AssetId assetId) 
+const std::shared_ptr<OpenGLVertexArray>& OpenGLResourceSystem::getVertexArray(const std::string& name) 
 {
-	return m_shaders[assetId];
+	return m_vertexArrays[name];
+}
+
+const std::shared_ptr<OpenGLTexture2D>& OpenGLResourceSystem::getTexture(const std::string& name)
+{
+	return m_textures[name];
+}
+
+const std::shared_ptr<OpenGLMaterial>& OpenGLResourceSystem::getMaterial(const std::string& name)
+{
+	return m_materials[name];
+}
+
+const std::shared_ptr<OpenGLShader>& OpenGLResourceSystem::getShader(const std::string& name)
+{
+	return m_shaders[name];
 }
 
 void OpenGLResourceSystem::onMeshLoaded(const std::shared_ptr<Mesh>& mesh)
@@ -71,18 +98,67 @@ void OpenGLResourceSystem::onMeshLoaded(const std::shared_ptr<Mesh>& mesh)
 	vertexArray->addVertexBuffer(vertexBuffer);
 	vertexArray->setIndexBuffer(indexBuffer);
 
-	m_vertexArrays[mesh->id] = vertexArray;
+	m_vertexArrays[mesh->name] = vertexArray;
 }
 
-void OpenGLResourceSystem::onTextureLoaded(const std::shared_ptr<Texture>& texture)
+void OpenGLResourceSystem::onMaterialLoaded(const std::shared_ptr<Material>& material)
 {
-	if (texture == nullptr)
+	if (material == nullptr)
 	{
-		ECSE_LOG_ERROR(LogOpenGL, "Received a null texture");
+		ECSE_LOG_ERROR(LogOpenGL, "Received a null material");
 		return;
 	}
+	std::shared_ptr<OpenGLMaterial> openGLMaterial = std::make_shared<OpenGLMaterial>();
+	openGLMaterial->name = material->name;
+	openGLMaterial->color = material->color;
+	openGLMaterial->shininess = material->shininess;
 
-	m_textures[texture->id] = std::make_shared<OpenGLTexture2D>(texture->path);
+	// shader
+	if (!material->shaderPath.empty())
+	{
+		const std::string shaderName = material->shaderPath.stem().string();
+		openGLMaterial->shader = shaderName;
+
+		if (!m_shaders.contains(shaderName) && !m_assetSystem.expired())
+		{
+			// make sure we load the shader
+			std::shared_ptr<AssetSystem> assetSystem = m_assetSystem.lock();
+			std::shared_ptr<Shader> shader = assetSystem->loadJsonAsset<Shader>(material->shaderPath);
+			onShaderLoaded(shader);
+		}
+	}
+
+	// diffuse
+	if (!material->diffusePath.empty())
+	{
+		openGLMaterial->diffuse = getOrAddTextureName(material->diffusePath);
+	}
+
+	// specular
+	if (!material->specularPath.empty())
+	{
+		openGLMaterial->diffuse = getOrAddTextureName(material->specularPath);
+	}
+
+	m_materials[openGLMaterial->name] = openGLMaterial;
+}
+
+const std::string OpenGLResourceSystem::getOrAddTextureName(const std::filesystem::path& originalPath)
+{
+	const std::string textureName = originalPath.filename().string();
+	if (!m_textures.contains(textureName))
+	{
+		std::filesystem::path path = originalPath;
+		if (path.is_relative())
+		{
+			std::filesystem::path rootPath;
+			ECSE_ASSERT(FileSystem::tryGetRootPath(rootPath), "we should be able to recover root path at this point.");
+			path = rootPath.append(path.string());
+		}
+		m_textures[textureName] = std::make_shared<OpenGLTexture2D>(path.string());
+	}
+
+	return textureName;
 }
 
 void OpenGLResourceSystem::onShaderLoaded(const std::shared_ptr<Shader>& shaderAsset)
@@ -96,6 +172,18 @@ void OpenGLResourceSystem::onShaderLoaded(const std::shared_ptr<Shader>& shaderA
 	std::shared_ptr<OpenGLShader> shader = std::make_shared<OpenGLShader>(shaderAsset->name, shaderAsset->vertexSource, shaderAsset->fragmentSource);
 	if (shader->compile())
 	{
-		m_shaders[shaderAsset->id] = shader;
+		m_shaders[shaderAsset->name] = shader;
+	}
+}
+
+void OpenGLResourceSystem::onJsonAssetLoaded(const std::shared_ptr<IJsonAsset>& jsonAsset)
+{
+	if (const auto& mesh = std::dynamic_pointer_cast<Mesh>(jsonAsset))
+	{
+		onMeshLoaded(mesh);
+	}
+	else if (const auto& material = std::dynamic_pointer_cast<Material>(jsonAsset))
+	{
+		onMaterialLoaded(material);
 	}
 }
