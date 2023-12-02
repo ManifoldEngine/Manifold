@@ -1,4 +1,4 @@
-#if ECSE_WINDOWS
+#if MANI_WINDOWS
 #include "windows.h"
 #include <strsafe.h>
 #endif
@@ -8,7 +8,7 @@
 
 int main(int argc, char** argv)
 {
-#ifdef ECSE_WINDOWS
+#ifdef MANI_WINDOWS
     namespace fs = std::filesystem;
 
     // runTests signature
@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     
     // base build path.
     const std::string prefix = "../../bin/";
-    const std::string basePath = prefix + ECSE_TESTS_BUILD_OUTPUTDIR;
+    const std::string basePath = prefix + MANI_TESTS_BUILD_OUTPUTDIR;
 
     std::vector<fs::path> paths;
     if (fs::exists(basePath) && fs::is_directory(basePath))

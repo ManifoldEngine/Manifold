@@ -1,7 +1,7 @@
 #include "SystemContainer.h"
 #include <CoreAssert.h>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 void SystemContainer::initialize()
 {

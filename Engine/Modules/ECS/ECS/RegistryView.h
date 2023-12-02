@@ -6,7 +6,7 @@
 #include "Entity.h"
 #include <bitset>
 
-namespace ECSEngine
+namespace Mani
 {
     /*
      * Allows a client to iterate over a view of entities with a specified set of components
@@ -42,7 +42,7 @@ namespace ECSEngine
             Iterator(
                 const EntityRegistry* inRegistry,
                 EntityId inCurrentEntityId,
-                std::bitset<ECSEngine::MAX_COMPONENTS> inComponentMask,
+                std::bitset<Mani::MAX_COMPONENTS> inComponentMask,
                 bool inIsAll
             );
 
@@ -54,7 +54,7 @@ namespace ECSEngine
         private:
             EntityId m_currentEntityId;
             const EntityRegistry* m_registry;
-            std::bitset<ECSEngine::MAX_COMPONENTS> m_componentMask;
+            std::bitset<Mani::MAX_COMPONENTS> m_componentMask;
             bool m_isAll = false;
 
             bool isValidIndex() const;
@@ -91,7 +91,7 @@ namespace ECSEngine
 
     private:
         const EntityRegistry* m_registry = nullptr;
-        std::bitset<ECSEngine::MAX_COMPONENTS> m_componentMask;
+        std::bitset<Mani::MAX_COMPONENTS> m_componentMask;
         bool m_bisAll = false;
     };
 
@@ -99,8 +99,8 @@ namespace ECSEngine
     template<typename ...TComponents>
     inline RegistryView<TComponents...>::Iterator::Iterator(
         const EntityRegistry* inRegistry,
-        ECSEngine::EntityId inCurrentEntityId,
-        std::bitset<ECSEngine::MAX_COMPONENTS> inComponentMask,
+        Mani::EntityId inCurrentEntityId,
+        std::bitset<Mani::MAX_COMPONENTS> inComponentMask,
         bool inIsAll
     ) :
         m_currentEntityId(inCurrentEntityId),

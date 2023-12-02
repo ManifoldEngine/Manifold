@@ -1,6 +1,6 @@
 include "locations.lua"
 
-workspace "ECSEngine"
+workspace "Mani"
 
 configurations { "Debug", "Release", "Distribution" }
     platforms { "Win64", "MacOSX" }
@@ -18,17 +18,17 @@ configurations { "Debug", "Release", "Distribution" }
       
     filter "configurations:Debug"
         includedirs { thirdpartiesdir .. "/SimpleTests/include" }
-        defines { "ECSE_DEBUG" }
-        defines { "ECSE_PROJECTROOT_PATH=\"".. _MAIN_SCRIPT_DIR .. "\"" }
+        defines { "MANI_DEBUG" }
+        defines { "MANI_PROJECTROOT_PATH=\"".. _MAIN_SCRIPT_DIR .. "\"" }
         symbols "On"
     
     filter "configurations:Release"
-        defines { "ECSE_RELEASE" }
-        defines { "ECSE_PROJECTROOT_PATH=\"".. _MAIN_SCRIPT_DIR .. "\"" }
+        defines { "MANI_RELEASE" }
+        defines { "MANI_PROJECTROOT_PATH=\"".. _MAIN_SCRIPT_DIR .. "\"" }
         optimize "On"
 
     filter "configurations:Distribution"
-        defines { "ECSE_DISTRIBUTION" }
+        defines { "MANI_DISTRIBUTION" }
         optimize "On"
 
     filter "platforms:MacOS"
@@ -40,10 +40,10 @@ configurations { "Debug", "Release", "Distribution" }
         system "windows"
     
     filter "system:macosx"
-        defines { "ECSE_MACOSX" }
+        defines { "MANI_MACOSX" }
             
     filter "system:windows"
-        defines { "ECSE_WINDOWS" }
+        defines { "MANI_WINDOWS" }
 
 group "Engine"
     include "Engine"

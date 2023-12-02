@@ -11,7 +11,7 @@
 #include <vector>
 #include <memory>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 void OpenGLSystem::destroyWindow(WindowContext& context)
 {
@@ -65,7 +65,7 @@ const OpenGLSystem::WindowContext& OpenGLSystem::getWindowContext() const
     return context;
 }
 
-std::shared_ptr<OpenGLInput> ECSEngine::OpenGLSystem::getInputGenerator() const
+std::shared_ptr<OpenGLInput> Mani::OpenGLSystem::getInputGenerator() const
 {
     return m_openGLInputGenerator;
 }
@@ -77,7 +77,7 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     // initialize glfw
     if (!glfwInit())
     {
-        ECSE_LOG_ERROR(LogOpenGL, "failed to init glfw");
+        MANI_LOG_ERROR(LogOpenGL, "failed to init glfw");
         return;
     }
 
@@ -85,7 +85,7 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef ECSE_MACOSX
+#ifdef MANI_MACOSX
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
@@ -93,7 +93,7 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     context.window = glfwCreateWindow(context.width, context.height, context.name.data(), NULL, NULL);
     if (context.window == nullptr)
     {
-        ECSE_LOG_ERROR(LogOpenGL, "failed to create glfwwindow");
+        MANI_LOG_ERROR(LogOpenGL, "failed to create glfwwindow");
         terminate();
         return;
     }
@@ -113,7 +113,7 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     GLenum result = glewInit();
     if (result != GLEW_OK)
     {
-        ECSE_LOG_ERROR(LogOpenGL, "failed to init glew");
+        MANI_LOG_ERROR(LogOpenGL, "failed to init glew");
         terminate();
         return;
     }
@@ -121,7 +121,7 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     // set the view port to the window's size.
     glViewport(0, 0, context.width, context.height);
     
-#if ECSE_OPENGL_DEBUG
+#if MANI_OPENGL_DEBUG
     glEnable(GL_DEBUG_OUTPUT);
     glDebugMessageCallback(OpenGLMessageCallback, nullptr);
 #endif

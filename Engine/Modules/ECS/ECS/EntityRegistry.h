@@ -5,7 +5,7 @@
 #include "Entity.h"
 #include <Events/Event.h>
 
-namespace ECSEngine
+namespace Mani
 {
 	/*
 	 * Holds a collection of entity and manage their component's memory.

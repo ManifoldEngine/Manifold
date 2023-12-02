@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace ECSEngine
+namespace MANIngine
 {
     const std::string_view Log#ModuleName# = "#ModuleName#";
 }

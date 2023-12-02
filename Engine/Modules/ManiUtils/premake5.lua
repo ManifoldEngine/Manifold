@@ -1,7 +1,7 @@
 include "../../../locations.lua"
 
 group "Engine"
-    project "ECSEUtils"
+    project "ManiUtils"
         kind "StaticLib"
         location (moduledir .. "/%{prj.name}")
         

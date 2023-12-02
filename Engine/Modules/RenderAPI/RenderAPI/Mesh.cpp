@@ -4,7 +4,7 @@
 
 #include <nlohmann/json.hpp>
 
-using namespace ECSEngine;
+using namespace Mani;
 using namespace nlohmann;
 
 void Mesh::parse(const std::string_view& content)
@@ -23,7 +23,7 @@ void Mesh::parse(const std::string_view& content)
 	name = object["name"];
 
 	std::vector<float> rawVertices = object["vertices"];
-	ECSE_ASSERT(rawVertices.size() % 8 == 0, "Vertices size should be divisible by 8");
+	MANI_ASSERT(rawVertices.size() % 8 == 0, "Vertices size should be divisible by 8");
 	for (size_t i = 0; i < rawVertices.size(); i += 8)
 	{
 		Vertex vertex;

@@ -1,7 +1,7 @@
 #include <OpenGL/OpenGL.h>
 #include <string>
 
-namespace ECSEngine
+namespace Mani
 {
 	struct OpenGLShader
 	{

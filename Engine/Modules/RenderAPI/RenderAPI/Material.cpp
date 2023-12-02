@@ -1,7 +1,7 @@
 #include "Material.h"
 #include <nlohmann/json.hpp>
 
-using namespace ECSEngine;
+using namespace Mani;
 using namespace nlohmann;
 
 void Material::parse(const std::string_view& content)

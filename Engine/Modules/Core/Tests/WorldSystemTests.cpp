@@ -4,7 +4,7 @@
 #include <Core/World/WorldSystem.h>
 #include <Events/Event.h>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 ST_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 {

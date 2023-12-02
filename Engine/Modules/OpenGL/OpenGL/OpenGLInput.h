@@ -6,7 +6,7 @@
 
 struct GLFWwindow;
 
-namespace ECSEngine
+namespace Mani
 {
 	class OpenGLSystem;
 

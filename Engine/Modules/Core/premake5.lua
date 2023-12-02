@@ -10,7 +10,7 @@ group "Engine"
             moduledir .. "/%{prj.name}/**.cpp" 
         }
 
-        links { "ECS", "ECSEUtils" }
+        links { "ECS", "MANIUtils" }
 
         includedirs { moduledir .. "/**" }
 group ""

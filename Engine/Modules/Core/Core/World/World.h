@@ -3,7 +3,7 @@
 #include <Core/Core.h>
 #include <ECS/EntityRegistry.h>
 
-namespace ECSEngine
+namespace Mani
 {
 	class SystemContainer;
 

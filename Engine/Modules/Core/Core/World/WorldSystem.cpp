@@ -2,7 +2,7 @@
 #include <Core/World/World.h>
 #include <vector>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 struct WorldSystem::Impl
 {

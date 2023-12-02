@@ -29,7 +29,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <GL/glew.h>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 std::string_view OpenGLRenderSystem::getName() const
 {
@@ -100,7 +100,7 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 
 		if (meshComponent->mesh == nullptr)
 		{
-			ECSE_LOG_WARNING(LogOpenGL, "Entity {} with null mesh or material", entityId);
+			MANI_LOG_WARNING(LogOpenGL, "Entity {} with null mesh or material", entityId);
 			continue;
 		}
 
@@ -109,30 +109,30 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 
 		if (mesh == nullptr || materialAsset == nullptr)
 		{
-			ECSE_LOG_WARNING(LogOpenGL, "Entity {} with null mesh or material", entityId);
+			MANI_LOG_WARNING(LogOpenGL, "Entity {} with null mesh or material", entityId);
 			continue;
 		}
 
 		const std::shared_ptr<OpenGLVertexArray>& vao = resourceSystem->getVertexArray(mesh->name);
 		if (vao == nullptr)
 		{
-			ECSE_LOG_WARNING(LogOpenGL, "Attempting to draw a mesh that is not loaded");
+			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a mesh that is not loaded");
 			continue;
 		}
 
 		const std::shared_ptr<OpenGLMaterial> material = resourceSystem->getMaterial(materialAsset->name);
 		if (material == nullptr)
 		{
-			ECSE_LOG_WARNING(LogOpenGL, "Attempting to draw a material that is not loaded");
+			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a material that is not loaded");
 			continue;
 		}
 
-		ECSE_ASSERT(!material->shader.empty(), "A Shader is always expected in a material");
+		MANI_ASSERT(!material->shader.empty(), "A Shader is always expected in a material");
 
 		std::shared_ptr<OpenGLShader> shader = resourceSystem->getShader(material->shader);
 		if (shader == nullptr)
 		{
-			ECSE_LOG_WARNING(LogOpenGL, "Attempting to draw a mesh with an uncompiled shader");
+			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a mesh with an uncompiled shader");
 			continue;
 		}
 
@@ -245,7 +245,7 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 		}
 		else
 		{
-			ECSE_ASSERT(false, "no index buffer provided with the vertices");
+			MANI_ASSERT(false, "no index buffer provided with the vertices");
 		}
 
 		if (diffuseTexture != nullptr)

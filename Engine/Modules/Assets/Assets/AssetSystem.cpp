@@ -1,6 +1,6 @@
 #include "AssetSystem.h"
 
-using namespace ECSEngine;
+using namespace Mani;
 
 std::string_view AssetSystem::getName() const
 {

@@ -11,5 +11,5 @@ group ""
         
         includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir }
 
-        defines { "ECSE_TESTS_BUILD_OUTPUTDIR=\"" .. outputdir .. "/\"" }
+        defines { "MANI_TESTS_BUILD_OUTPUTDIR=\"" .. outputdir .. "/\"" }
 group ""

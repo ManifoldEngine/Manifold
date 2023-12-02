@@ -11,7 +11,7 @@
 #include <memory>
 #include <unordered_map>
 
-namespace ECSEngine
+namespace Mani
 {
 	struct IBaseConfig
 	{
@@ -48,7 +48,7 @@ namespace ECSEngine
 		{
 			if (!FileSystem::tryGetRootPath(path))
 			{
-				ECSE_LOG_ERROR(LogCore, "Could not get root path.");
+				MANI_LOG_ERROR(LogCore, "Could not get root path.");
 				return nullptr;
 			}
 

@@ -1,6 +1,6 @@
 #include "EntityContainer_Implementation.h"
 
-using namespace ECSEngine;
+using namespace Mani;
 
 // EntityContainer_Implementation::ComponentPool begin
 

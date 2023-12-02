@@ -3,7 +3,7 @@
 #include <fstream>
 #include <Log.h>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 bool FileSystem::tryReadFile(const std::filesystem::path& filePath, std::string& outResult)
 {
@@ -38,8 +38,8 @@ bool FileSystem::tryWriteFile(const std::filesystem::path& filePath, const std::
 bool FileSystem::tryGetRootPath(std::filesystem::path& outPath)
 {
 	std::error_code errorCode;
-#ifndef ECSE_DISTRIBUTION
-	outPath = std::filesystem::path(ECSE_PROJECTROOT_PATH);
+#ifndef MANI_DISTRIBUTION
+	outPath = std::filesystem::path(MANI_PROJECTROOT_PATH);
 #else
 	outPath = std::filesystem::current_path(errorCode);
 	if (errorCode.value() != 0)

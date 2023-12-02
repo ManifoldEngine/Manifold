@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <memory>
 
-namespace ECSEngine
+namespace Mani
 {
 	DECLARE_EVENT(ActionEvent, uint32_t /*userId*/, const InputAction& /*inputAction*/)
 

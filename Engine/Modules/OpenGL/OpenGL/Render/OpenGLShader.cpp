@@ -2,7 +2,7 @@
 #include <gl/glew.h>
 #include <Core/Log.h>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 OpenGLShader::OpenGLShader(const std::string_view& inName, const std::string_view& inVertexSource, const std::string_view& inFragmentSource)
     : name(inName), vertexSource(inVertexSource), fragmentSource(inFragmentSource), shaderProgramId(UINT32_MAX)
@@ -49,7 +49,7 @@ bool OpenGLShader::compile()
     {
         char infoLog[512];
         glGetProgramInfoLog(shaderProgramId, 512, NULL, infoLog);
-        ECSE_LOG_ERROR(LogOpenGL, "program link failed: {}", infoLog);
+        MANI_LOG_ERROR(LogOpenGL, "program link failed: {}", infoLog);
         shaderProgramId = UINT32_MAX;
         return false;
     }
@@ -82,7 +82,7 @@ uint32_t OpenGLShader::compile(const std::string_view& inSource, int shaderType)
     {
         char infoLog[512];
         glGetShaderInfoLog(id, 512, NULL, infoLog);
-        ECSE_LOG_ERROR(LogOpenGL, "shader compilation failed: {}", infoLog);
+        MANI_LOG_ERROR(LogOpenGL, "shader compilation failed: {}", infoLog);
         id = UINT32_MAX;
         return id;
     }

@@ -1,4 +1,4 @@
-namespace ECSEngine
+namespace Mani
 {
 	class IRenderSystem
 	{

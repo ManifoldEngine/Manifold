@@ -3,7 +3,7 @@
 #include <Assets/IJsonAsset.h>
 #include <string>
 
-namespace ECSEngine
+namespace Mani
 {
 	struct Shader : public IJsonAsset
 	{

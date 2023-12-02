@@ -10,14 +10,14 @@
 
 #include <filesystem>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 bool ShaderImporter::importFromPath(const std::filesystem::path& path, std::shared_ptr<Shader>& outShader)
 {
-	ECSE_ASSERT(outShader != nullptr, "provided shader cannot be null");
+	MANI_ASSERT(outShader != nullptr, "provided shader cannot be null");
 	if (parseShaderSourceFileFromPath(path, outShader->name, outShader->vertexSource, outShader->fragmentSource))
 	{
-		ECSE_LOG(LogShaderImporter, "Imported {} from path {}", outShader->name, path.string());
+		MANI_LOG(LogShaderImporter, "Imported {} from path {}", outShader->name, path.string());
 		return true;
 	}
 	return false;
@@ -25,7 +25,7 @@ bool ShaderImporter::importFromPath(const std::filesystem::path& path, std::shar
 
 bool ShaderImporter::exportToPath(const std::filesystem::path& path, const std::shared_ptr<Shader>& shader)
 {
-	ECSE_ASSERT(shader != nullptr, "provided shader cannot be null");
+	MANI_ASSERT(shader != nullptr, "provided shader cannot be null");
 	return FileSystem::tryWriteFile(path, shader->toJson());
 }
 
@@ -34,7 +34,7 @@ bool ShaderImporter::parseShaderSourceFileFromPath(const std::filesystem::path& 
 	std::string source;
 	if (!FileSystem::tryReadFile(path, source))
 	{
-		ECSE_LOG_ERROR(LogShaderImporter, "Could not read source from {}", path.string());
+		MANI_LOG_ERROR(LogShaderImporter, "Could not read source from {}", path.string());
 		return false;
 	}
 
@@ -49,7 +49,7 @@ bool ShaderImporter::parseShaderSourceFileFromPath(const std::filesystem::path& 
 		size_t endOfLineIndex = source.find_first_of("\r\n", typeTokenIndex);
 		if (endOfLineIndex == std::string::npos)
 		{
-			ECSE_LOG_ERROR(LogShaderImporter, "Could not parse shader type token");
+			MANI_LOG_ERROR(LogShaderImporter, "Could not parse shader type token");
 			return false;
 		}
 
@@ -91,7 +91,7 @@ bool ShaderImporter::parseShaderSourceFileFromPath(const std::filesystem::path& 
 		}
 		else
 		{
-			ECSE_LOG_ERROR(LogShaderImporter, "Incorrect shader type token format for file [{}]", path.string());
+			MANI_LOG_ERROR(LogShaderImporter, "Incorrect shader type token format for file [{}]", path.string());
 			return false;
 		}
 	}

@@ -5,7 +5,7 @@
 #include <vector>
 #include <string>
 
-namespace ECSEngine
+namespace Mani
 {
 	struct Vertex
 	{

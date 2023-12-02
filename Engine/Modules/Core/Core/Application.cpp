@@ -7,14 +7,14 @@
 #include <Core/CoreAssert.h>
 #include <Core/Log/LogSystem.h>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 Application* Application::sm_application = nullptr;
 
 Application::Application()
 {
 	// there should be only one application instance.
-	ECSE_ASSERT(sm_application == nullptr, "an Application instance already exists.");
+	MANI_ASSERT(sm_application == nullptr, "an Application instance already exists.");
 	sm_application = this;
 
 	m_systemContainer = new SystemContainer();
@@ -32,7 +32,7 @@ Application::~Application()
 	sm_application = nullptr;
 }
 
-Application& ECSEngine::Application::get()
+Application& Mani::Application::get()
 {
 	return *sm_application;
 }

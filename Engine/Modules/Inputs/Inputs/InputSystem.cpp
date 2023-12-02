@@ -3,7 +3,7 @@
 #include <Log.h>
 #include <Inputs/Interfaces/InputGenerator.h>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 std::string_view InputSystem::getName() const
 {
@@ -45,7 +45,7 @@ void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 					InputAction& action = user->actions[actionName];
 					if (action.isPressed != buttonEvent.isPressed)
 					{
-						ECSE_LOG_VERBOSE(LogInputs, "Action {} state changed to {}", action.name, action.isPressed);
+						MANI_LOG_VERBOSE(LogInputs, "Action {} state changed to {}", action.name, action.isPressed);
 						action.isPressed = buttonEvent.isPressed;
 						onActionEvent.broadcast(user->userId, action);
 					}
@@ -54,7 +54,7 @@ void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 		}
 		else
 		{
-			ECSE_LOG_WARNING(LogInputs, "Could not get input buffer from generator {}", generator->getName());
+			MANI_LOG_WARNING(LogInputs, "Could not get input buffer from generator {}", generator->getName());
 		}
 		
 		std::vector<AxisControl> axis;
@@ -82,17 +82,17 @@ void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 				}	
 			}
 
-#if ECSE_DEBUG
+#if MANI_DEBUG
 			for (auto& [name, action] : user->actions)
 			{
 				// log action state
-				ECSE_LOG_VERBOSE(LogInputs, "Action {} axis changed to ({}, {}, {})", action.name, action.x, action.y, action.z);
+				MANI_LOG_VERBOSE(LogInputs, "Action {} axis changed to ({}, {}, {})", action.name, action.x, action.y, action.z);
 			}
 #endif
 		}
 		else
 		{
-			ECSE_LOG_WARNING(LogInputs, "Could not get axis from generator {}", generator->getName());
+			MANI_LOG_WARNING(LogInputs, "Could not get axis from generator {}", generator->getName());
 		}
 	}
 }

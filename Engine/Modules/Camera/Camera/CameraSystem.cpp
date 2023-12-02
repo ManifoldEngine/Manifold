@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <glm/ext/matrix_transform.hpp>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 std::string_view CameraSystem::getName() const
 {
@@ -52,7 +52,7 @@ void CameraSystem::tick(float deltaTime, EntityRegistry& registry)
         cameraComponent->view = glm::lookAt(transform->position, transform->position + transform->forward(), transform->up());
         
         const CameraConfig& config = cameraComponent->config;
-        ECSE_ASSERT(std::abs(config.height) > FLT_EPSILON, "Height of a camera cannot be 0.");
+        MANI_ASSERT(std::abs(config.height) > FLT_EPSILON, "Height of a camera cannot be 0.");
         cameraComponent->projection = glm::perspective(glm::radians(config.fov), 
                                                         config.width / config.height, 
                                                         config.nearClipPlane, 

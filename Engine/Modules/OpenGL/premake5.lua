@@ -10,7 +10,7 @@ group "Engine"
             moduledir .. "/%{prj.name}/**.cpp" 
         }
 
-        links { "Core", "Events", "ECSEUtils", "Camera", "Inputs" }
+        links { "Core", "Events", "MANIUtils", "Camera", "Inputs" }
 
         includedirs { moduledir .. "/**" }
 
@@ -33,7 +33,7 @@ group "Engine"
         includedirs { thirdpartiesdir .. "/stb"}
         
         filter("configurations:Debug")
-            defines { "ECSE_OPENGL_DEBUG" }
+            defines { "MANI_OPENGL_DEBUG" }
 group ""
 
 group "_TestLibs"

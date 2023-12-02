@@ -4,7 +4,7 @@
 #include <map>
 #include <memory>
 
-namespace ECSEngine
+namespace Mani
 {
 	class EntityRegistry;
 	class SystemContainer;

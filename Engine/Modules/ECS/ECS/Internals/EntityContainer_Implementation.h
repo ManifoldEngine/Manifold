@@ -6,7 +6,7 @@
 #include "Entity.h"
 #include <unordered_map>
 
-namespace ECSEngine {
+namespace Mani {
 	class EntityContainer_Implementation : public IEntityContainer
 	{
 

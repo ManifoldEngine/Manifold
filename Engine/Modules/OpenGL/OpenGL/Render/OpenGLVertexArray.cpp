@@ -2,7 +2,7 @@
 #include "OpenGLBuffer.h"
 #include "GL/glew.h"
 
-using namespace ECSEngine;
+using namespace Mani;
 
 GLenum toOpenGLType(ShaderDataType type)
 {
@@ -21,7 +21,7 @@ GLenum toOpenGLType(ShaderDataType type)
 		case ShaderDataType::Bool:     return GL_BOOL;
 	}
 
-	ECSE_ASSERT(false, "Unknown ShaderDataType");
+	MANI_ASSERT(false, "Unknown ShaderDataType");
 	return 0;
 }
 
@@ -108,7 +108,7 @@ void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buff
 			//}
 
 			default:
-				ECSE_ASSERT(false, "Unknown ShaderDataType");
+				MANI_ASSERT(false, "Unknown ShaderDataType");
 				break;
 		}
 	}

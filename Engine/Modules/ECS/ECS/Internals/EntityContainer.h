@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <typeindex>
 
-namespace ECSEngine
+namespace Mani
 {
 	/*
 	 * Holds a collection of entity and manage their component's memory.

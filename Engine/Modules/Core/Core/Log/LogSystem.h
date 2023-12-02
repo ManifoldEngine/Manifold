@@ -4,7 +4,7 @@
 #include <Core/System/System.h>
 #include <string_view>
 
-namespace ECSEngine
+namespace Mani
 {
 	enum class ELogLevel : uint8_t
 	{

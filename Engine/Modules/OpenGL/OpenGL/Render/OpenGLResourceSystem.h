@@ -6,7 +6,7 @@
 #include <memory>
 #include <filesystem>
 
-namespace ECSEngine
+namespace Mani
 {
 	class AssetSystem;
 	class IJsonAsset;

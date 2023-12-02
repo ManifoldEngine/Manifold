@@ -10,7 +10,7 @@
 #include <Inputs/InputSystem.h>
 
 
-using namespace ECSEngine;
+using namespace Mani;
 
 std::string_view FloatingCameraControllerSystem::getName() const
 {
@@ -36,7 +36,7 @@ void FloatingCameraControllerSystem::onInitialize(EntityRegistry& registry, Syst
 	}
 }
 
-void FloatingCameraControllerSystem::tick(float deltaTime, ECSEngine::EntityRegistry& registry)
+void FloatingCameraControllerSystem::tick(float deltaTime, Mani::EntityRegistry& registry)
 {
 	if (m_inputSystem.expired())
 	{

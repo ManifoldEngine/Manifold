@@ -3,9 +3,9 @@
 #include <Core/System/SystemContainer.h>
 #include <Events/Event.h>
 
-using namespace ECSEngine;
+using namespace Mani;
 
-namespace ECSEngine_Test
+namespace Mani_Test
 {
 	class SomeSystem : public SystemBase
 	{
@@ -48,7 +48,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 {
 	ST_TEST(CreateAndInitializeAWorld, "should create and initialize a world with a single system.")
 	{	
-		using namespace ECSEngine_Test;
+		using namespace Mani_Test;
 		
 		World world;
 		world.initialize();
@@ -86,7 +86,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 
 	ST_TEST(InitializationOrder, "Should respect the flow of initialization when creating a world and its systems")
 	{
-		using namespace ECSEngine_Test;
+		using namespace Mani_Test;
 
 		World world;
 		SystemContainer& systemContainer = world.getSystemContainer();
@@ -212,7 +212,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 
 	ST_TEST(HandleSystemInheritance, "Should handle inheritance")
 	{
-		using namespace ECSEngine_Test;
+		using namespace Mani_Test;
 
 		class SomeExtendedSystem : public SomeSystem 
 		{

@@ -3,7 +3,7 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 glm::mat4 Transform::calculate()
 {

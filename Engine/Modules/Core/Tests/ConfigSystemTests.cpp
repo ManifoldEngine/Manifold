@@ -5,7 +5,7 @@
 #include <string>
 #include <filesystem>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 ST_SECTION_BEGIN(ConfigSystemSection, "ConfigSystem")
 {

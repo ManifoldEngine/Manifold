@@ -9,7 +9,7 @@ struct aiNode;
 struct aiMesh;
 struct aiScene;
 
-namespace ECSEngine
+namespace Mani
 {
     const std::string_view LogMeshImporter = "MeshImporter";
 

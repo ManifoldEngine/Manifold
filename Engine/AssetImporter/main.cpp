@@ -10,7 +10,7 @@
 #include <vector>
 #include <memory>
 
-using namespace ECSEngine;
+using namespace Mani;
 namespace fs = std::filesystem;
 
 struct AssetImporterConfig : IBaseConfig
@@ -37,7 +37,7 @@ int main(int argc, char** argv)
 	fs::path rootPath;
 	if (!FileSystem::tryGetRootPath(rootPath))
 	{
-		ECSE_LOG_ERROR(Log, "Could not get root path");
+		MANI_LOG_ERROR(Log, "Could not get root path");
 		return EXIT_FAILURE;
 	}
 
@@ -69,12 +69,12 @@ void exploreDirectory(const fs::path& path)
 
 		if (extension == ".glsl")
 		{
-			ECSE_LOG(Log, "importing {}", entry.path().string());
+			MANI_LOG(Log, "importing {}", entry.path().string());
 			importShader(entry.path());
 		}
 		else if (extension == ".fbx")
 		{
-			ECSE_LOG(Log, "importing {}", entry.path().string());
+			MANI_LOG(Log, "importing {}", entry.path().string());
 			importModel(entry.path());
 		}
 	}
@@ -85,7 +85,7 @@ void importModel(const fs::path& path)
 	std::vector<std::shared_ptr<Mesh>> meshes;
 	if (!MeshImporter::importFromPath(path, meshes))
 	{
-		ECSE_LOG_ERROR(Log, "Could not import mesh at {}", path.string());
+		MANI_LOG_ERROR(Log, "Could not import mesh at {}", path.string());
 		return;
 	}
 
@@ -93,10 +93,10 @@ void importModel(const fs::path& path)
 	{
 		fs::path output = path.parent_path();
 		output.append(std::format("{}{}", mesh->name, ".mesh"));
-		ECSE_LOG(Log, "Saving {}", output.string());
+		MANI_LOG(Log, "Saving {}", output.string());
 		if (!MeshImporter::exportToPath(output, mesh))
 		{
-			ECSE_LOG_ERROR(Log, "Could not save mesh at {}", output.string());
+			MANI_LOG_ERROR(Log, "Could not save mesh at {}", output.string());
 		}
 	}
 }
@@ -106,15 +106,15 @@ void importShader(const fs::path& path)
 	std::shared_ptr<Shader> shader = std::make_shared<Shader>();
 	if (!ShaderImporter::importFromPath(path, shader))
 	{
-		ECSE_LOG_ERROR(Log, "Could not import shader at {}", path.string());
+		MANI_LOG_ERROR(Log, "Could not import shader at {}", path.string());
 		return;
 	}
 
 	fs::path output = path.parent_path();
 	output.append(std::format("{}{}", shader->name, ".shader"));
-	ECSE_LOG(Log, "Saving {}", output.string());
+	MANI_LOG(Log, "Saving {}", output.string());
 	if (!ShaderImporter::exportToPath(output, shader))
 	{
-		ECSE_LOG_ERROR(Log, "Could not save shader at {}", output.string());
+		MANI_LOG_ERROR(Log, "Could not save shader at {}", output.string());
 	}
 }

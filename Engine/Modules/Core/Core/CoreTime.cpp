@@ -2,7 +2,7 @@
 #include <chrono>
 #include <format>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 static float sm_deltaTime;
 

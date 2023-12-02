@@ -3,7 +3,7 @@
 #include <Core/Core.h>
 #include <string_view>
 
-namespace ECSEngine
+namespace Mani
 {
 	class Time
 	{

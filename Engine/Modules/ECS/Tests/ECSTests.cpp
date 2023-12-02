@@ -7,7 +7,7 @@ extern "C" __declspec(dllexport) void runTests()
 	SimpleTests::SimpleTestsRunner::runTests();
 }
 
-using namespace ECSEngine;
+using namespace Mani;
 
 ST_SECTION_BEGIN(ECS, "ECS")
 {

@@ -1,7 +1,7 @@
 #include "simpleTests.h"
 #include "Events/Event.h"
 
-using namespace ECSEngine;
+using namespace Mani;
 
 extern "C" __declspec(dllexport) void runTests()
 {

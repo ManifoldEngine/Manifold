@@ -4,7 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-namespace ECSEngine
+namespace Mani
 {
 	// todo #12: move transform component out of Core.
 	struct Transform

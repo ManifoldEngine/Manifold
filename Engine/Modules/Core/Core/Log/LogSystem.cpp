@@ -4,7 +4,7 @@
 #include <sstream>
 #include <unordered_map>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 #define RESET		"\033[0m"
 #define BLACK		"\033[30m"			/* Black */
@@ -109,7 +109,7 @@ void LogSystem::s_log(const std::string_view& channel, ELogLevel level, const st
 	}
 }
 
-void ECSEngine::LogSystem::s_setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
+void Mani::LogSystem::s_setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
 {
 	if (sm_logSystem != nullptr)
 	{
@@ -117,6 +117,6 @@ void ECSEngine::LogSystem::s_setChannelLogLevel(const std::string_view& channel,
 	}
 	else
 	{
-		ECSE_LOG_WARNING(LogCore, "LogSystem::setChannelLogLevel called without an application context. {}'s log level won't change.", channel);
+		MANI_LOG_WARNING(LogCore, "LogSystem::setChannelLogLevel called without an application context. {}'s log level won't change.", channel);
 	}
 }

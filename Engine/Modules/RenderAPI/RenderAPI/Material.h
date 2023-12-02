@@ -5,7 +5,7 @@
 #include <memory>
 #include <filesystem>
 
-namespace ECSEngine
+namespace Mani
 {
 	struct Material : public IJsonAsset
 	{

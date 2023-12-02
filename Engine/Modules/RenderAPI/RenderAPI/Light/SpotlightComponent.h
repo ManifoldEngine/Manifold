@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace ECSEngine
+namespace Mani
 {
 	struct SpotlightComponent
 	{

@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-namespace ECSEngine
+namespace Mani
 {
 	struct MeshComponent
 	{

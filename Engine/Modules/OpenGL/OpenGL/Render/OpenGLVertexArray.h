@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 
-namespace ECSEngine
+namespace Mani
 {
 	class OpenGLVertexBuffer;
 	class OpenGLIndexBuffer;

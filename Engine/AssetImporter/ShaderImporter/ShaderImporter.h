@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-namespace ECSEngine
+namespace Mani
 {
     const std::string_view LogShaderImporter = "ShaderImporter";
 

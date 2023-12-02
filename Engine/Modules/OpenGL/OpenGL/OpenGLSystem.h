@@ -8,7 +8,7 @@
 
 struct GLFWwindow;
 
-namespace ECSEngine
+namespace Mani
 {
 	// manages the opengl implementation using glfw and glew.
 	class OpenGLSystem : public SystemBase, public std::enable_shared_from_this<OpenGLSystem>
@@ -20,7 +20,7 @@ namespace ECSEngine
 			
 			int width = 800;
 			int height = 800;
-			std::string_view name = "ECSEngine";
+			std::string_view name = "Mani";
 		};
 
 		DECLARE_EVENT(OnWindowClosedEvent, const WindowContext&)

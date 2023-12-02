@@ -4,7 +4,7 @@
 #include <Inputs/Data/InputControl.h>
 #include <string>
 
-namespace ECSEngine
+namespace Mani
 {
 	class EntityRegistry;
 

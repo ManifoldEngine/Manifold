@@ -1,7 +1,7 @@
 #include "World.h"
 #include "System/SystemContainer.h"
 
-using namespace ECSEngine;
+using namespace Mani;
 
 World::World()
 {

@@ -15,7 +15,7 @@
 #include <filesystem>
 #include <memory>
 
-namespace ECSEngine
+namespace Mani
 {
 	class AssetSystem : public SystemBase
 	{
@@ -45,7 +45,7 @@ namespace ECSEngine
 		std::string content;
 		if (!FileSystem::tryReadFile(path, content))
 		{
-			ECSE_LOG_ERROR(LogAssets, "Could not find asset at path {}", path.string());
+			MANI_LOG_ERROR(LogAssets, "Could not find asset at path {}", path.string());
 			return nullptr;
 		}
 

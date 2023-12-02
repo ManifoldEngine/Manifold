@@ -2,7 +2,7 @@
 
 #include <OpenGL/OpenGL.h>
 
-namespace ECSEngine
+namespace Mani
 {
 	class OpenGLTexture2D
 	{

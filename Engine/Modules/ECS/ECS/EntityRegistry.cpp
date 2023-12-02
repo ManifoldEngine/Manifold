@@ -1,7 +1,7 @@
 #include "EntityRegistry.h"
 #include "Internals/EntityContainer_Implementation.h"
 
-using namespace ECSEngine;
+using namespace Mani;
 
 ComponentId EntityRegistry::s_componentCounter = 0;
 

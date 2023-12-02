@@ -5,7 +5,7 @@
 #include <ECS/Entity.h>
 #include <glm/glm.hpp>
 
-namespace ECSEngine
+namespace Mani
 {
 	class EntityRegistry;
 	class SystemContainer;

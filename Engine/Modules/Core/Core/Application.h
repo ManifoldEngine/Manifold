@@ -2,7 +2,7 @@
 
 #include <Core/Core.h>
 
-namespace ECSEngine
+namespace Mani
 {
 	class SystemContainer;
 

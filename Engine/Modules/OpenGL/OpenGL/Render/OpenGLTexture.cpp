@@ -5,7 +5,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 OpenGLTexture2D::OpenGLTexture2D(const std::string_view& path)
     : m_textureId(UINT32_MAX), 
@@ -42,7 +42,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string_view& path)
             }
             default:
             {
-                ECSE_ASSERT(false, "Unspported texture format");
+                MANI_ASSERT(false, "Unspported texture format");
                 break;
             }
         }
@@ -74,7 +74,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string_view& path)
     }
     else
     {
-        ECSE_LOG_ERROR(LogOpenGL, "Could not load texture at {}", path);
+        MANI_LOG_ERROR(LogOpenGL, "Could not load texture at {}", path);
     }
     stbi_image_free(imageData);
 }
@@ -90,7 +90,7 @@ void OpenGLTexture2D::bind(uint32_t slot)
     glBindTextureUnit(m_boundSlot, m_textureId);
 }
 
-void ECSEngine::OpenGLTexture2D::unbind()
+void Mani::OpenGLTexture2D::unbind()
 {
     if (m_boundSlot >= 0)
     {

@@ -2,7 +2,7 @@
 
 #include <string>
 
-namespace ECSEngine
+namespace Mani
 {
     class IJsonAsset
     {

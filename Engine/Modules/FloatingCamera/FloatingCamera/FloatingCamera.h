@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-namespace ECSEngine
+namespace Mani
 {
     const std::string_view LogFloatingCamera = "FloatingCamera";
 }

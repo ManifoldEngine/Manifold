@@ -6,7 +6,7 @@
 #include <Core/World/World.h>
 #include <memory>
 
-namespace ECSEngine
+namespace Mani
 {
 	class World;
 

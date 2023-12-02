@@ -9,7 +9,7 @@ namespace std
 	class bitset;
 }
 
-namespace ECSEngine 
+namespace Mani 
 {
 
 	const int MAX_COMPONENTS = 64;

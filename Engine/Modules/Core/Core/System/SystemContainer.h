@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-namespace ECSEngine
+namespace Mani
 {
 	// System container class. It manages unique systems. It also owns an EntityRegistry and is in charge
 	// of distributing the registry to systems.

@@ -1,7 +1,7 @@
 #include "ConfigSystem.h"
 #include <nlohmann/json.hpp>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 std::string_view ConfigSystem::getName() const
 {

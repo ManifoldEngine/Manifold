@@ -3,7 +3,7 @@
 #include <OpenGLSystem.h>
 #include <algorithm>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 // OpenGL callbacks BEGIN
 void OpenGLInput::glfwCallback_onMouseMoved(GLFWwindow* window, double x, double y)

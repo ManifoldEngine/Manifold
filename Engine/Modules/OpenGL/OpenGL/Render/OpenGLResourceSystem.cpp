@@ -12,7 +12,7 @@
 #include <RenderAPI/Material.h>
 #include <RenderAPI/Shader.h>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 std::string_view OpenGLResourceSystem::getName() const
 {
@@ -62,7 +62,7 @@ void OpenGLResourceSystem::onMeshLoaded(const std::shared_ptr<Mesh>& mesh)
 {
 	if (mesh == nullptr || mesh->vertices.empty() || mesh->indices.empty())
 	{
-		ECSE_LOG_ERROR(LogOpenGL, "Received a null or empty mesh");
+		MANI_LOG_ERROR(LogOpenGL, "Received a null or empty mesh");
 		return;
 	}
 
@@ -105,7 +105,7 @@ void OpenGLResourceSystem::onMaterialLoaded(const std::shared_ptr<Material>& mat
 {
 	if (material == nullptr)
 	{
-		ECSE_LOG_ERROR(LogOpenGL, "Received a null material");
+		MANI_LOG_ERROR(LogOpenGL, "Received a null material");
 		return;
 	}
 	std::shared_ptr<OpenGLMaterial> openGLMaterial = std::make_shared<OpenGLMaterial>();
@@ -152,7 +152,7 @@ const std::string OpenGLResourceSystem::getOrAddTextureName(const std::filesyste
 		if (path.is_relative())
 		{
 			std::filesystem::path rootPath;
-			ECSE_ASSERT(FileSystem::tryGetRootPath(rootPath), "we should be able to recover root path at this point.");
+			MANI_ASSERT(FileSystem::tryGetRootPath(rootPath), "we should be able to recover root path at this point.");
 			path = rootPath.append(path.string());
 		}
 		m_textures[textureName] = std::make_shared<OpenGLTexture2D>(path.string());
@@ -165,7 +165,7 @@ void OpenGLResourceSystem::onShaderLoaded(const std::shared_ptr<Shader>& shaderA
 {
 	if (shaderAsset == nullptr)
 	{
-		ECSE_LOG_ERROR(LogOpenGL, "Received null shader");
+		MANI_LOG_ERROR(LogOpenGL, "Received null shader");
 		return;
 	}
 

@@ -8,7 +8,7 @@ extern "C" __declspec(dllexport) void runTests()
 	SimpleTests::SimpleTestsRunner::runTests();
 }
 
-using namespace ECSEngine;
+using namespace Mani;
 
 class VirtualController : public IInputGenerator
 {

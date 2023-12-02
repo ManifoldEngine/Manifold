@@ -4,7 +4,7 @@
 #include <sstream>
 
 
-void ECSEngine::OpenGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+void Mani::OpenGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
     std::stringstream ss;
     switch (severity)
@@ -47,7 +47,7 @@ void ECSEngine::OpenGLMessageCallback(GLenum source, GLenum type, GLuint id, GLe
     {
         case GL_DEBUG_TYPE_ERROR:
         {
-            ECSE_LOG_ERROR(LogOpenGLAPI, "{}", ss.str());
+            MANI_LOG_ERROR(LogOpenGLAPI, "{}", ss.str());
             break;
         }
 
@@ -56,13 +56,13 @@ void ECSEngine::OpenGLMessageCallback(GLenum source, GLenum type, GLuint id, GLe
         case GL_DEBUG_TYPE_PORTABILITY:
         case GL_DEBUG_TYPE_PERFORMANCE:
         {
-            ECSE_LOG_WARNING(LogOpenGLAPI, "{}", ss.str());
+            MANI_LOG_WARNING(LogOpenGLAPI, "{}", ss.str());
             break;
         }
 
         default:
         {
-            ECSE_LOG(LogOpenGLAPI, "{}", ss.str());
+            MANI_LOG(LogOpenGLAPI, "{}", ss.str());
             break;
         }
     }

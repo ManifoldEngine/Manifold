@@ -1,7 +1,7 @@
 #include "Shader.h"
 #include <nlohmann/json.hpp>
 
-using namespace ECSEngine;
+using namespace Mani;
 using namespace nlohmann;
 
 void Shader::parse(const std::string_view& content)

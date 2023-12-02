@@ -4,7 +4,7 @@
 #include <string>
 #include <filesystem>
 
-namespace ECSEngine
+namespace Mani
 {
 	class FileSystem
 	{

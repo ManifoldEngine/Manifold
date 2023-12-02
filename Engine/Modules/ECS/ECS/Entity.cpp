@@ -1,7 +1,7 @@
 #include "Entity.h"
 #include <bitset>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 Entity::Entity()
 {

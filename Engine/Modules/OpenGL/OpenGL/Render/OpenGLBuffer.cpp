@@ -1,7 +1,7 @@
 #include "OpenGLBuffer.h"
 #include <GL/glew.h>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 // OpenGLVertexBuffer Begin
 OpenGLVertexBuffer::OpenGLVertexBuffer(float* data, size_t size)
@@ -62,7 +62,7 @@ size_t OpenGLVertexBuffer::getShaderDataTypeSize(ShaderDataType type)
 		case ShaderDataType::Bool:     return sizeof(bool);
 	}
 
-	ECSE_ASSERT(false, "Unknown ShaderDataType");
+	MANI_ASSERT(false, "Unknown ShaderDataType");
 	return 0;
 }
 
@@ -83,7 +83,7 @@ size_t OpenGLVertexBuffer::getComponentCount(ShaderDataType type)
 		case ShaderDataType::Bool:     return 1;
 	}
 
-	ECSE_ASSERT(false, "Unknown ShaderDataType");
+	MANI_ASSERT(false, "Unknown ShaderDataType");
 	return 0;
 }
 // OpenGLVertexBuffer End

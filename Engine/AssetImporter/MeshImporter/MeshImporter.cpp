@@ -12,7 +12,7 @@
 
 #include <nlohmann/json.hpp>
 
-using namespace ECSEngine;
+using namespace Mani;
 using namespace nlohmann;
 
 bool MeshImporter::importFromPath(const std::filesystem::path& path, std::vector<std::shared_ptr<Mesh>>& outMeshes)
@@ -21,7 +21,7 @@ bool MeshImporter::importFromPath(const std::filesystem::path& path, std::vector
 	const aiScene* scene = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_FlipUVs);
 	if (scene == nullptr || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || scene->mRootNode == NULL)
 	{
-		ECSE_LOG_ERROR(LogMeshImporter, "Could not load scene: {}", std::string_view(importer.GetErrorString()));
+		MANI_LOG_ERROR(LogMeshImporter, "Could not load scene: {}", std::string_view(importer.GetErrorString()));
 		return false;
 	}
 
@@ -33,7 +33,7 @@ bool MeshImporter::importFromPath(const std::filesystem::path& path, std::vector
 		std::shared_ptr<Mesh> loadedMesh = std::make_shared<Mesh>();
 		processMesh(mesh, scene, loadedMesh);
 		outMeshes.push_back(loadedMesh);
-		ECSE_LOG(LogMeshImporter, "Imported {} with {} vertices from path {}", loadedMesh->name, loadedMesh->vertices.size(), path.string());
+		MANI_LOG(LogMeshImporter, "Imported {} with {} vertices from path {}", loadedMesh->name, loadedMesh->vertices.size(), path.string());
 	}
 
 	return true;
@@ -41,7 +41,7 @@ bool MeshImporter::importFromPath(const std::filesystem::path& path, std::vector
 
 bool MeshImporter::exportToPath(const std::filesystem::path& path, const std::shared_ptr<Mesh>& mesh)
 {
-	ECSE_ASSERT(mesh != nullptr, "provided mesh cannot be null");
+	MANI_ASSERT(mesh != nullptr, "provided mesh cannot be null");
 
 	return FileSystem::tryWriteFile(path, mesh->toJson());
 }
@@ -67,7 +67,7 @@ void MeshImporter::processNode(aiNode* node, const aiScene* scene, std::vector<c
 
 void MeshImporter::processMesh(const aiMesh* mesh, const aiScene* scene, const std::shared_ptr<Mesh>& outMesh)
 {
-	ECSE_ASSERT(outMesh != nullptr, "Out pointer recipient cannot be null");
+	MANI_ASSERT(outMesh != nullptr, "Out pointer recipient cannot be null");
 
 	outMesh->name = mesh->mName.C_Str();
 

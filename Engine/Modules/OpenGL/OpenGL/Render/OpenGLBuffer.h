@@ -3,7 +3,7 @@
 #include "OpenGL.h"
 #include <Core/CoreAssert.h>
 
-namespace ECSEngine
+namespace Mani
 {
 	enum class ShaderDataType : uint8_t
 	{

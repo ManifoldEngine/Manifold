@@ -1,7 +1,7 @@
 #include "System.h"
 #include <Log.h>
 
-using namespace ECSEngine;
+using namespace Mani;
 
 std::string_view SystemBase::getName() const
 {
@@ -20,7 +20,7 @@ void SystemBase::initialize(EntityRegistry& registry, SystemContainer& systemCon
         return;
     }
 
-    ECSE_LOG(LogCore, "Initialized {}", getName());
+    MANI_LOG(LogCore, "Initialized {}", getName());
     onInitialize(registry, systemContainer);
     m_isInitialized = true;
 }
@@ -34,7 +34,7 @@ void SystemBase::deinitialize(EntityRegistry& registry)
 
     onDeinitialize(registry);
     m_isInitialized = false;
-    ECSE_LOG(LogCore, "Deinitialized {}", getName());
+    MANI_LOG(LogCore, "Deinitialized {}", getName());
 }
 
 void SystemBase::tick(float deltaTime, EntityRegistry& registry)

@@ -3,7 +3,7 @@
 #include <string>
 #include <algorithm>
 
-namespace ECSEngine
+namespace Mani
 {
 	class StringUtils
 	{
