@@ -2,7 +2,7 @@ include "locations.lua"
 
 workspace "ECSEngine"
 
-configurations { "Debug", "Release" }
+configurations { "Debug", "Release", "Distribution" }
     platforms { "Win64", "MacOSX" }
     startproject "Sandbox"
     language "C++"
@@ -15,14 +15,20 @@ configurations { "Debug", "Release" }
     includedirs { thirdpartiesdir .. "/glm" }
     --json
     includedirs { thirdpartiesdir .. "/json/include"}
-    
+      
     filter "configurations:Debug"
         includedirs { thirdpartiesdir .. "/SimpleTests/include" }
         defines { "ECSE_DEBUG" }
+        defines { "ECSE_PROJECTROOT_PATH=\"".. _MAIN_SCRIPT_DIR .. "\"" }
         symbols "On"
     
     filter "configurations:Release"
         defines { "ECSE_RELEASE" }
+        defines { "ECSE_PROJECTROOT_PATH=\"".. _MAIN_SCRIPT_DIR .. "\"" }
+        optimize "On"
+
+    filter "configurations:Distribution"
+        defines { "ECSE_DISTRIBUTION" }
         optimize "On"
 
     filter "platforms:MacOS"

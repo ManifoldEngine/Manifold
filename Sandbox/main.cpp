@@ -13,13 +13,13 @@
 #include <Inputs/InputSystem.h>
 
 #include "SandboxSystem.h"
-#include <iostream>
 
 using namespace ECSEngine;
 
 int main(int argc, char** argv)
 {
 	Application app;
+
 	SystemContainer& systemContainer = app.getSystemContainer();
 	systemContainer.createSystem<OpenGLSystem>();
 

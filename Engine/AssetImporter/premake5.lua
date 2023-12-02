@@ -25,8 +25,7 @@ group "AssetImporter"
         libdirs { enginedir .. "/%{prj.name}/ThirdParties/assimp/lib/Debug" }
         links { "assimp-vc143-mtd" }
 
-        CopyFile(
-            "ThirdParties/assimp/bin/Debug/assimp-vc143-mtd.dll", 
-            "bin/assimp-vc143-mtd.dll"
-        )
+        postbuildcommands {
+            "{COPYFILE} ThirdParties/assimp/bin/Debug/assimp-vc143-mtd.dll bin/assimp-vc143-mtd.dll"
+        }
 group ""

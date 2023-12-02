@@ -5,7 +5,7 @@
 
 using namespace ECSEngine;
 
-bool FileSystem::tryReadFile(const std::string& filePath, std::string& outResult)
+bool FileSystem::tryReadFile(const std::filesystem::path& filePath, std::string& outResult)
 {
 	std::ifstream in(filePath, std::ios::in | std::ios::binary);
 	if (in.is_open())
@@ -20,34 +20,23 @@ bool FileSystem::tryReadFile(const std::string& filePath, std::string& outResult
 			in.read(&outResult[0], size);
 			return true;
 		}
-		else
-		{
-			ECSE_LOG_ERROR(LogCore, "{} is empty", filePath);
-		}
-	}
-	else
-	{
-		ECSE_LOG_ERROR(LogCore, "Could not open file {}", filePath);
 	}
 
 	return false;
 }
 
-bool FileSystem::tryReadFile(const std::filesystem::path& filePath, std::string& outResult)
-{
-	return tryReadFile(filePath.string(), outResult);
-}
-
 bool FileSystem::tryGetRootPath(std::filesystem::path& outPath)
 {
 	std::error_code errorCode;
-	auto path = std::filesystem::current_path(errorCode);
+#ifndef ECSE_DISTRIBUTION
+	outPath = std::filesystem::path(ECSE_PROJECTROOT_PATH);
+#else
+	outPath = std::filesystem::current_path(errorCode);
 	if (errorCode.value() != 0)
 	{
 		return false;
 	}
-
-	outPath = path.parent_path().string();
+#endif
 	return true;
 }
 
