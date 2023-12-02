@@ -1,5 +1,4 @@
 include "../../../locations.lua"
-include "../../../utils.lua"
 
 group "AssetImporter"
     project "AssetImporter"

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <Core/Application.h>
 #include <Core/System/SystemContainer.h>
 #include <Core/Log/LogSystem.h>

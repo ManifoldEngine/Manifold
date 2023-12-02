@@ -26,6 +26,7 @@ namespace ECSEngine
 		virtual std::string_view getName() const;
 		virtual bool shouldTick(EntityRegistry& registry) const;
 
+		// loads a json asset from relative path. Path is relative to the root of the project.
 		template<Derived<IJsonAsset> TAsset>
 		std::shared_ptr<TAsset> loadJsonAsset(const std::filesystem::path& relativePath);
 	};

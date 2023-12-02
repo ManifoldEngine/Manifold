@@ -1,11 +1,11 @@
 ﻿#pragma once
 
-#include <process.h>
 #include <string_view>
 
 // Debug utilities
 #ifdef ECSE_DEBUG
 	#ifdef ECSE_WINDOWS
+		#include <process.h>
 		#define ECSE_DEBUGBREAK() std::abort()
 	#else	
 		#define ECSE_DEBUGBREAK()
