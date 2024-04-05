@@ -7,7 +7,11 @@
 #include <OpenGLInput.h>
 #include <memory>
 
-class CameraSystem;
+namespace Mani
+{
+	class CameraSystem;
+};
+
 struct GLFWwindow;
 
 namespace Mani

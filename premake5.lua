@@ -15,6 +15,8 @@ configurations { "Debug", "Release", "Distribution" }
     includedirs { thirdpartiesdir .. "/glm" }
     --json
     includedirs { thirdpartiesdir .. "/json/include"}
+    --physx
+    includedirs { thirdpartiesdir .. "/PhysX/physx/include"}
       
     filter "configurations:Debug"
         includedirs { thirdpartiesdir .. "/SimpleTests/include" }
@@ -56,7 +58,7 @@ project "Sandbox"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
 
-    links { "Core", "OpenGL", "ECS", "Camera", "FloatingCamera", "Assets", "RenderAPI" }
+    links { "Core", "OpenGL", "ECS", "Camera", "FloatingCamera", "Assets", "RenderAPI", "PhysX" }
 
     includedirs { moduledir .. "/**", "/%{prj.name}/Sources/" }
 
