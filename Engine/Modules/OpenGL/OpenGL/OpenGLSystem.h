@@ -5,7 +5,9 @@
 #include <Events/Event.h>
 #include <glm/glm.hpp>
 #include <OpenGLInput.h>
+#include <memory>
 
+class CameraSystem;
 struct GLFWwindow;
 
 namespace Mani
@@ -27,6 +29,10 @@ namespace Mani
 
 		OnWindowClosedEvent onWindowClosed;
 
+		OpenGLSystem();
+
+		static OpenGLSystem& get();
+
 		virtual std::string_view getName() const override;
 		virtual bool shouldTick(EntityRegistry& registry) const override;
 
@@ -41,8 +47,9 @@ namespace Mani
 		virtual void onDeinitialize(EntityRegistry& registry);
 
 	private:
-		WindowContext context;
+		static OpenGLSystem* s_openGLSystem;
 
+		WindowContext m_context;
 		std::shared_ptr<OpenGLInput> m_openGLInputGenerator = nullptr;
 
 		void terminate();

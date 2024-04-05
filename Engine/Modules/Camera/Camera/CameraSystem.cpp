@@ -1,9 +1,12 @@
 #include "CameraSystem.h"
-#include <ECS/EntityRegistry.h>
+
 #include <Core/Components/Transform.h>
+#include <Core/ManiAssert.h>
+
+#include <ECS/EntityRegistry.h>
 #include <ECS/RegistryView.h>
+
 #include <glm/ext/matrix_clip_space.hpp>
-#include <Core/CoreAssert.h>
 #include <algorithm>
 #include <glm/ext/matrix_transform.hpp>
 
@@ -54,7 +57,7 @@ void CameraSystem::tick(float deltaTime, EntityRegistry& registry)
         const CameraConfig& config = cameraComponent->config;
         MANI_ASSERT(std::abs(config.height) > FLT_EPSILON, "Height of a camera cannot be 0.");
         cameraComponent->projection = glm::perspective(glm::radians(config.fov), 
-                                                        config.width / config.height, 
+                                                        config.width / config.height,
                                                         config.nearClipPlane, 
                                                         config.farClipPlane);
     }
@@ -76,4 +79,29 @@ void CameraSystem::setCameraConfig(EntityRegistry& registry, const CameraConfig&
     {
         cameraComponent->config = config;
     }
+}
+
+glm::vec2 CameraSystem::worldToScreenSpace(glm::vec3 position, const EntityRegistry& registry) const
+{
+    const CameraComponent* cameraComponent = getCameraComponent(registry);
+    if (cameraComponent == nullptr)
+    {
+        return glm::vec2();
+    }
+
+    glm::vec4 position4 = glm::vec4(position, 1.0f);
+    glm::vec4 projectedPosition = position4 * cameraComponent->view;
+    
+    if (std::abs(projectedPosition.w) <= FLT_EPSILON)
+    {
+        return glm::vec2();
+    }
+
+    return glm::vec2(projectedPosition.x / projectedPosition.w, projectedPosition.y / projectedPosition.w);
+}
+
+float Mani::CameraConfig::getAspectRatio() const
+{
+    MANI_ASSERT(std::abs(height) > FLT_EPSILON, "height cannot be zero");
+    return width / height;
 }

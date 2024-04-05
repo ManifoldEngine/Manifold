@@ -8,7 +8,7 @@
 
 #include <Events/Event.h>
 
-#include <Assets/IJsonAsset.h>
+#include <Core/Interfaces/IJsonAsset.h>
 
 #include <Utils/TemplateUtils.h>
 

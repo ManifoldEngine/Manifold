@@ -36,7 +36,7 @@ void FloatingCameraControllerSystem::onInitialize(EntityRegistry& registry, Syst
 	}
 }
 
-void FloatingCameraControllerSystem::tick(float deltaTime, Mani::EntityRegistry& registry)
+void FloatingCameraControllerSystem::tick(float deltaTime, EntityRegistry& registry)
 {
 	if (m_inputSystem.expired())
 	{

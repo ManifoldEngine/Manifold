@@ -3,6 +3,11 @@
 
 using namespace Mani;
 
+bool Mani::isValid(EntityId entityId)
+{
+	return entityId != INVALID_ID;
+}
+
 Entity::Entity()
 {
 	m_components = new std::bitset<MAX_COMPONENTS>();

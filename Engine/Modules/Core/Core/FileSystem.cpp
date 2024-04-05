@@ -54,7 +54,6 @@ bool FileSystem::tryGetEnginePath(std::filesystem::path& outPath)
 {
 	if (tryGetRootPath(outPath))
 	{
-		// todo #1: we probably need to expose a config for this
 		outPath += "/Engine";
 		return true;
 	}

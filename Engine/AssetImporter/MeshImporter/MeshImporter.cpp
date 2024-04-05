@@ -1,6 +1,6 @@
 #include "MeshImporter.h"
 
-#include <Core/CoreAssert.h>
+#include <Core/ManiAssert.h>
 #include <Core/FileSystem.h>
 
 #include <RenderAPI/Mesh.h>

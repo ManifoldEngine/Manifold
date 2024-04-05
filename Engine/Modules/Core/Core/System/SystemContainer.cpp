@@ -1,5 +1,5 @@
 #include "SystemContainer.h"
-#include <CoreAssert.h>
+#include <ManiAssert.h>
 
 using namespace Mani;
 
@@ -42,7 +42,7 @@ void SystemContainer::tick(float deltaTime)
 
 	for (auto& system : m_systems)
 	{
-		if (system->shouldTick(m_registry))
+		if (system->shouldTick(m_registry) && system->isEnabled())
 		{
 			system->tick(deltaTime, m_registry);
 		}

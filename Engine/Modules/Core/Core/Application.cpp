@@ -4,18 +4,18 @@
 #include <Core/System/SystemContainer.h>
 #include <Core/World/WorldSystem.h>
 #include <Core/CoreTime.h>
-#include <Core/CoreAssert.h>
+#include <Core/ManiAssert.h>
 #include <Core/Log/LogSystem.h>
 
 using namespace Mani;
 
-Application* Application::sm_application = nullptr;
+Application* Application::s_application = nullptr;
 
 Application::Application()
 {
 	// there should be only one application instance.
-	MANI_ASSERT(sm_application == nullptr, "an Application instance already exists.");
-	sm_application = this;
+	MANI_ASSERT(s_application == nullptr, "an Application instance already exists.");
+	s_application = this;
 
 	m_systemContainer = new SystemContainer();
 	m_systemContainer->initialize();
@@ -29,12 +29,12 @@ Application::~Application()
 	m_systemContainer->destroySystem<WorldSystem>()
 		.destroySystem<LogSystem>();
 	delete m_systemContainer;
-	sm_application = nullptr;
+	s_application = nullptr;
 }
 
 Application& Mani::Application::get()
 {
-	return *sm_application;
+	return *s_application;
 }
 
 SystemContainer& Application::getSystemContainer()

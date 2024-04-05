@@ -19,6 +19,8 @@ namespace Mani
 
 	const EntityId INVALID_ID = UINT64_MAX;
 
+	bool isValid(EntityId entityId);
+
 	/*
 	 * An entity. It knows about its id and the components it has.
 	 */

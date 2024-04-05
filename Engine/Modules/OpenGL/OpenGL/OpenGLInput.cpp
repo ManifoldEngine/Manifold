@@ -155,4 +155,14 @@ void OpenGLInput::onInputSystemTick(float deltaTime, EntityRegistry& registry)
     {
         m_inputBuffer.push_back(ButtonControl{ "F", false });
     }
+
+    // F7
+    if (glfwGetKey(context.window, GLFW_KEY_F7) == GLFW_PRESS)
+    {
+        m_inputBuffer.push_back(ButtonControl{ "F7", true });
+    }
+    if (glfwGetKey(context.window, GLFW_KEY_F7) == GLFW_RELEASE)
+    {
+        m_inputBuffer.push_back(ButtonControl{ "F7", false });
+    }
 }

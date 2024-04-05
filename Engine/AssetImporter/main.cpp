@@ -1,10 +1,13 @@
 #include <Core/Log.h>
 #include <Core/ConfigSystem.h>
 
+#include <Scene/Scene.h>
+
 #include <RenderAPI/Mesh.h>
 #include <RenderAPI/Shader.h>
 
 #include <MeshImporter/MeshImporter.h>
+#include <SceneImporter/SceneImporter.h>
 #include <ShaderImporter/ShaderImporter.h>
 
 #include <vector>
@@ -97,6 +100,23 @@ void importModel(const fs::path& path)
 		if (!MeshImporter::exportToPath(output, mesh))
 		{
 			MANI_LOG_ERROR(Log, "Could not save mesh at {}", output.string());
+		}
+	}
+
+	std::shared_ptr<Scene> scene = std::make_shared<Scene>();
+	if (!SceneImporter::importFromPath(path, scene))
+	{
+		MANI_LOG_ERROR(Log, "Could not import scene from {}", path.string());
+		return;
+	}
+
+	{
+		fs::path output = path.parent_path();
+		output.append(std::format("{}{}", path.stem().string(), ".scene"));
+		MANI_LOG(Log, "Saving {}", output.string());
+		if (!SceneImporter::exportToPath(output, scene))
+		{
+			MANI_LOG_ERROR(Log, "Could not save scene at {}", path.string());
 		}
 	}
 }

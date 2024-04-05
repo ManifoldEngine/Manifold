@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Assets/IJsonAsset.h>
+#include <Core/Interfaces/IJsonAsset.h>
 #include <string>
 
 namespace Mani
