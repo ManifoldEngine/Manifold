@@ -56,6 +56,7 @@ class TestSystem : public SystemBase
 			const EntityId floorEntityId = registry.create();
 
 			Transform* transform = registry.addComponent<Transform>(floorEntityId);
+			transform->rotation = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
 			transform->scale = glm::vec3(50.f, .2f, 50.f);
 
 
@@ -84,6 +85,23 @@ class TestSystem : public SystemBase
 			PhysXDynamicBoxComponent* boxComponent = registry.addComponent<PhysXDynamicBoxComponent>(cubeEntityId);
 			boxComponent->extent = glm::vec3(1.f);
 			physxSystem->registerDynamicBoxComponent(cubeEntityId, *boxComponent, *transform);
+		}
+
+		{
+			// sphere
+			const EntityId sphereEntityId = registry.create();
+
+			Transform* transform = registry.addComponent<Transform>(sphereEntityId);
+			transform->position = glm::vec3(0.f, 60.f, 0.f);
+			transform->scale = glm::vec3(3.f, 3.f, 3.f);
+
+			MeshComponent* meshComponent = registry.addComponent<MeshComponent>(sphereEntityId);
+			meshComponent->mesh = assetSystem->loadJsonAsset<Mesh>("Sandbox/Assets/Meshes/Sphere.mesh");
+			meshComponent->material = assetSystem->loadJsonAsset<Material>("Sandbox/Assets/Materials/redLit.material");
+
+			PhysXDynamicSphereComponent* sphereComponent = registry.addComponent<PhysXDynamicSphereComponent>(sphereEntityId);
+			sphereComponent->radius = 1.f;
+			physxSystem->registerDynamicSphereComponent(sphereEntityId, *sphereComponent, *transform);
 		}
 	}
 

@@ -76,26 +76,37 @@ void PhysXSystem::tick(float deltaTime, EntityRegistry& registry)
 		m_accumulatedTime -= PHYSX_FIXED_DELTA_TIME;
 	}
 
-	RegistryView<Transform, PhysXDynamicBoxComponent> dynamicBoxView(registry);
-	for (const EntityId entityId : dynamicBoxView)
+	const auto updatePhysXEntity = [&](const EntityId entityId)
 	{
 		const auto it = m_actors.find(entityId);
 		if (it == m_actors.end())
 		{
 			// body is not registered.
-			continue;
+			return;
 		}
-		
+
 		const PxRigidActor* rigidActor = it->second;
 		if (rigidActor == nullptr)
 		{
-			continue;
+			return;
 		}
 
 		const PxTransform pxTransform = rigidActor->getGlobalPose();
 		Transform* transform = registry.getComponent<Transform>(entityId);
 		transform->position = PhysXMaths::toglmVec3(pxTransform.p);
 		transform->rotation = PhysXMaths::toglmQuat(pxTransform.q);
+	};
+
+	RegistryView<Transform, PhysXDynamicBoxComponent> dynamicBoxView(registry);
+	for (const EntityId entityId : dynamicBoxView)
+	{
+		updatePhysXEntity(entityId);
+	}
+
+	RegistryView<Transform, PhysXDynamicSphereComponent> dynamicSphereView(registry);
+	for (const EntityId entityId : dynamicSphereView)
+	{
+		updatePhysXEntity(entityId);
 	}
 }
 
