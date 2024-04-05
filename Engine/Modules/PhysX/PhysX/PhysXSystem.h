@@ -34,6 +34,8 @@ namespace Mani
 
 		std::unordered_map<EntityId, physx::PxRigidActor*> m_actors;
 
+		float m_accumulatedTime = 0.f;
+
 		physx::PxDefaultAllocator m_allocator;
 		physx::PxDefaultErrorCallback m_errorCallback;
 		physx::PxFoundation* m_foundation = NULL;

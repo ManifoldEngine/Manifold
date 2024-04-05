@@ -6,6 +6,8 @@
 using namespace Mani;
 using namespace physx;
 
+constexpr float PHYSX_FIXED_DELTA_TIME = 1.f / 60.f;
+
 std::string_view PhysXSystem::getName() const
 {
 	return "PhysXSystem";
@@ -66,8 +68,13 @@ void PhysXSystem::onDeinitialize(EntityRegistry& registry)
 
 void PhysXSystem::tick(float deltaTime, EntityRegistry& registry)
 {
-	m_scene->simulate(deltaTime);
-	m_scene->fetchResults(true);
+	m_accumulatedTime += deltaTime;
+	while (m_accumulatedTime >= PHYSX_FIXED_DELTA_TIME)
+	{
+		m_scene->simulate(PHYSX_FIXED_DELTA_TIME);
+		m_scene->fetchResults(true);
+		m_accumulatedTime -= PHYSX_FIXED_DELTA_TIME;
+	}
 
 	RegistryView<Transform, PhysXDynamicBoxComponent> dynamicBoxView(registry);
 	for (const EntityId entityId : dynamicBoxView)
