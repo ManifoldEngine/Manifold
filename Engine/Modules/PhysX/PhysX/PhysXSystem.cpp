@@ -258,6 +258,12 @@ bool PhysXSystem::createStaticRigidActor(EntityId entityId, const physx::PxTrans
 
 bool PhysXSystem::createDynamicRigidActor(EntityId entityId, const physx::PxTransform& transform, PxShape& shape, const PhysXDynamicComponent& dynamicComponent)
 {
+	if (m_actors.contains(entityId))
+	{
+		// for now we only allow 1 collision per entity.
+		return false;
+	}
+
 	PxRigidDynamic* body = m_physics->createRigidDynamic(transform);
 	if (body == nullptr)
 	{
