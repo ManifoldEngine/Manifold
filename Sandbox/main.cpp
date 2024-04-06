@@ -56,7 +56,7 @@ class TestSystem : public SystemBase
 			const EntityId floorEntityId = registry.create();
 
 			Transform* transform = registry.addComponent<Transform>(floorEntityId);
-			transform->rotation = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 0.f));
+			transform->rotation = glm::angleAxis(glm::radians(10.f), glm::vec3(1.f, 0.f, 1.f));
 			transform->scale = glm::vec3(50.f, .2f, 50.f);
 
 
@@ -103,11 +103,28 @@ class TestSystem : public SystemBase
 			sphereComponent->radius = 1.f;
 			physxSystem->registerDynamicSphereComponent(sphereEntityId, *sphereComponent, *transform);
 		}
+
+		{
+			// cactus
+			const EntityId cactusEntityId = registry.create();
+
+			Transform* transform = registry.addComponent<Transform>(cactusEntityId);
+			transform->position = glm::vec3(-10.f, 50.f, -10.f);
+			transform->scale = glm::vec3(3.f, 3.f, 3.f);
+
+			MeshComponent* meshComponent = registry.addComponent<MeshComponent>(cactusEntityId);
+			meshComponent->mesh = assetSystem->loadJsonAsset<Mesh>("Sandbox/Assets/Meshes/Cactus.mesh");
+			meshComponent->material = assetSystem->loadJsonAsset<Material>("Sandbox/Assets/Materials/cactus.material");
+
+			PhysXDynamicMeshComponent* physxMeshComponent = registry.addComponent<PhysXDynamicMeshComponent>(cactusEntityId);
+			physxMeshComponent->mesh = meshComponent->mesh;
+			const bool result = physxSystem->registerDynamicMeshComponent(cactusEntityId, *physxMeshComponent, *transform);
+			MANI_ASSERT(result, "could not register dynamic mesh");
+		}
 	}
 
 	void onDeinitialize(EntityRegistry& registry)
 	{
-
 	}
 };
 
@@ -125,7 +142,6 @@ int main(int argc, char** argv)
 						.createSystem<PhysXSystem>()
 						.createSystem<FloatingCameraControllerSystem>()
 						.createSystem<TestSystem>();
-
 
 	app.run();
 

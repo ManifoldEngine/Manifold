@@ -22,5 +22,5 @@ glm::vec3 Mani::PhysXMaths::toglmVec3(const physx::PxVec3& v)
 
 glm::quat Mani::PhysXMaths::toglmQuat(const physx::PxQuat& q)
 {
-	return glm::quat(q.x, q.y, q.z, q.w);
+	return glm::quat(q.w, q.x, q.y, q.z);
 }

@@ -10,7 +10,7 @@ group "Engine"
             moduledir .. "/%{prj.name}/**.cpp" 
         }
 
-        links { "Core" }
+        links { "Core", "RenderAPI" }
 
         includedirs { moduledir .. "/**" }
 
@@ -20,6 +20,7 @@ group "Engine"
         libdirs { thirdpartiesdir .. "/PhysX/physx/bin/win.x86_64.vc143.mt/debug/"}
         links {
             "PhysX_64",
+            "PhysXCooking_64",
             "PhysXCommon_64",
             "PhysXExtensions_static_64",
             "PhysXPvdSDK_static_64",

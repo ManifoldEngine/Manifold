@@ -4,6 +4,10 @@
 
 namespace Mani
 {
+	struct Mesh;
+
+	struct PhysXRegistrationComponent {};
+
 	struct PhysXStaticBoxComponent
 	{
 		glm::vec3 extent = glm::vec3(1.0f);
@@ -12,6 +16,11 @@ namespace Mani
 	struct PhysXStaticSphereComponent
 	{
 		float radius = 0.f;
+	};
+
+	struct PhysXStaticMeshComponent 
+	{
+		std::shared_ptr<Mesh> mesh;
 	};
 
 	struct PhysXDynamicComponent
@@ -28,5 +37,10 @@ namespace Mani
 	struct PhysXDynamicSphereComponent : public PhysXDynamicComponent
 	{
 		float radius = 0.f;
+	};
+
+	struct PhysXDynamicMeshComponent : public PhysXDynamicComponent
+	{
+		std::shared_ptr<Mesh> mesh;
 	};
 }
