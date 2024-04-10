@@ -1,23 +1,22 @@
 #pragma once
 
 #include "ECS.h"
+#include "Bitset.h"
 #include <cstdint>
-
-namespace std 
-{
-	template<size_t _Bits>
-	class bitset;
-}
 
 namespace Mani 
 {
-
 	const int MAX_COMPONENTS = 64;
 
+#if __EMSCRIPTEN__
+	using EntityId = unsigned int;
+	const EntityId INVALID_ID = UINT32_MAX;
+#else
 	using EntityId = size_t;
-	using ComponentId = size_t;
-
 	const EntityId INVALID_ID = UINT64_MAX;
+#endif
+
+	using ComponentId = unsigned int;
 
 	bool isValid(EntityId entityId);
 
@@ -31,18 +30,18 @@ namespace Mani
 		Entity(const Entity& other);
 		~Entity();
 
-		EntityId id = UINT64_MAX;
+		EntityId id = INVALID_ID;
 
 		// todo #2: this is kinda messed up. This means that when an entity is reused it will have the same id as in its previous life.
 		bool isAlive = false;
 
 		bool hasComponent(ComponentId componentId) const;
-		bool hasComponents(const std::bitset<MAX_COMPONENTS>& componentMask) const;
+		bool hasComponents(const Bitset<MAX_COMPONENTS>& componentMask) const;
 		void setComponentBit(ComponentId componentId);
 		void resetComponentBit(ComponentId componentId);
 		void resetComponentBits();
 
 	private:
-		std::bitset<MAX_COMPONENTS>* m_components = nullptr;
+		Bitset<MAX_COMPONENTS>* m_components = nullptr;
 	};
 }

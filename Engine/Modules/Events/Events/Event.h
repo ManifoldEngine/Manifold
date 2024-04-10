@@ -8,7 +8,14 @@ namespace Mani
 {
 	struct EventHandle
 	{
-		size_t id = UINT64_MAX;
+#if __EMSCRIPTEN__
+		using EventId = unsigned int;
+		static const EventId INVALID_EVENT_ID = UINT32_MAX;
+#else
+		using EventId = size_t;
+		static const EventId INVALID_EVENT_ID = UINT64_MAX;
+#endif
+		EventId id = INVALID_EVENT_ID;
 	};
 
 	template<typename ...TArgs>

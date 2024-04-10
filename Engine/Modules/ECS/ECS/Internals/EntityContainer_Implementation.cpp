@@ -33,7 +33,7 @@ EntityId EntityContainer_Implementation::create()
 {
 	if (m_entities.size() >= UINT64_MAX && m_entityPool.size() == 0)
 	{
-		return UINT64_MAX;
+		return INVALID_ID;
 	}
 
 	if (m_entityPool.size() > 0)

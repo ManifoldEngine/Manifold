@@ -32,88 +32,63 @@ std::unordered_map<ELogLevel, std::string_view> LEVEL_TO_COLOR_MAP =
 	{ ELogLevel::Error, RED },
 };
 
-struct LogSystem::Impl 
-{
-	void log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
-	{
-		if (!channels.contains(channel))
-		{
-			channels[channel] = ELogLevel::Log;
-		}
-
-		if (level > ELogLevel::Disabled && level >= channels[channel])
-		{
-			logImpl(channel, level, log);
-		}
-	}
-
-	static void s_log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
-	{
-		std::string modifiedLog = "[static] ";
-		modifiedLog += log;
-		logImpl(channel, level, modifiedLog);
-	}
-
-
-	void setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
-	{
-		channels[channel] = logLevel;
-	}
-
-private:
-	static void logImpl(const std::string_view& channel, ELogLevel level, const std::string_view& log)
-	{
-		std::stringstream ss;
-		ss << LEVEL_TO_COLOR_MAP[level];
-		ss << "[" << Time::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
-		ss << RESET;
-		std::cout << ss.str() << std::endl;
-	}
-
-	std::unordered_map<std::string_view, ELogLevel> channels;
-};
-
-LogSystem* LogSystem::sm_logSystem = nullptr;
+LogSystem* LogSystem::s_logSystem = nullptr;
 
 LogSystem::LogSystem()
 {
-	m_pImpl = new LogSystem::Impl();
-	sm_logSystem = this;
+	s_logSystem = this;
 }
 
 LogSystem::~LogSystem()
 {
-	delete m_pImpl;
-	sm_logSystem = nullptr;
+	s_logSystem = nullptr;
 }
 
 void LogSystem::log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
 {
-	m_pImpl->log(channel, level, log);
-}
+	if (!channels.contains(channel))
+	{
+		channels[channel] = ELogLevel::Log;
+	}
 
-void LogSystem::setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
-{
-	m_pImpl->setChannelLogLevel(channel, logLevel);
+	if (level > ELogLevel::Disabled && level >= channels[channel])
+	{
+		logImpl(channel, level, log);
+	}
 }
 
 void LogSystem::s_log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
 {
-	if (sm_logSystem != nullptr)
+	if (s_logSystem != nullptr)
 	{
-		sm_logSystem->log(channel, level, log);
+		s_logSystem->log(channel, level, log);
+		return;
 	}
-	else
-	{
-		Impl::s_log(channel, level, log);
-	}
+
+	std::string modifiedLog = "[static] ";
+	modifiedLog += log;
+	logImpl(channel, level, modifiedLog);
+}
+
+void LogSystem::setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
+{
+	channels[channel] = logLevel;
+}
+
+void LogSystem::logImpl(const std::string_view& channel, ELogLevel level, const std::string_view& log)
+{
+	std::stringstream ss;
+	ss << LEVEL_TO_COLOR_MAP[level];
+	ss << "[" << Time::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
+	ss << RESET;
+	std::cout << ss.str() << std::endl;
 }
 
 void Mani::LogSystem::s_setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
 {
-	if (sm_logSystem != nullptr)
+	if (s_logSystem != nullptr)
 	{
-		sm_logSystem->setChannelLogLevel(channel, logLevel);
+		s_logSystem->setChannelLogLevel(channel, logLevel);
 	}
 	else
 	{

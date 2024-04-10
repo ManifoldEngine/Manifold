@@ -1,19 +1,17 @@
 -- buildwebgl.lua
-include "../../locations.lua"
 
 premake.modules.buildwebgl = {}
 
 local m = premake.modules.buildwebgl
 
-local EMCC_PATH = "C:/Repository/emsdk/upstream/emscripten/"
-local PREMAKE_PATH = thirdpartiesdir .. "/premake/premake5.exe"
+local THIRD_PARTIES_PATH = "Engine\\ThirdParties" 
+local EMCC_PATH = THIRD_PARTIES_PATH .. "\\emscripten\\upstream\\emscripten\\"
+local PREMAKE_PATH = THIRD_PARTIES_PATH .. "\\premake\\premake5.exe"
 
-local workspaceLocation = "toInit" 
+local binOutput = "bin/webgl"
+local binIntOutput = "bin-int/webgl"
 
-local binOutput = "bin/" .. outputdir
-local binIntOutput = "bin-int/" .. outputdir
-
--- windows function
+-- windows specific function
 local function getfilesWithExtension(directory, extension)
     local filesWithExtension = {}
     -- get directory content
@@ -36,11 +34,17 @@ newaction {
     description = "Builds a wasm executable",
 
     onStart = function()
-        print("Starting WASM Build")
+        print("Starting EMCC Build")
+
+        os.execute(THIRD_PARTIES_PATH .. "\\emscripten\\emsdk.bat")
+        os.execute(THIRD_PARTIES_PATH .. "\\emscripten\\emsdk_env.bat")
     end,    
 
     onWorkspace = function(wks)
-        workspaceLocation = wks.location
+        -- produce makefiles
+        local gmakeCommand = PREMAKE_PATH .. " gmake"
+        print(gmakeCommand)
+        os.execute(gmakeCommand)
     end,
 
     onProject = function(prj)
@@ -48,28 +52,24 @@ newaction {
         if prj.kind ~= "ConsoleApp" then
             return
         end
-        projectName = prj.name
 
-        print("Building for " .. projectName)
-        
-        -- produce makefiles
-        local gmakeComment = "premake5.exe gmake"
-        print(gmakeComment)
-        os.execute(gmakeComment)
-        
+        print("Building for " .. prj.name)
+            
         -- build
-        local makeCommand = EMCC_PATH .. "emmake make " .. projectName
+        os.execute(EMCC_PATH .. "emmake --help")
+
+        local makeCommand = EMCC_PATH .. "emmake make " .. prj.name
         print(makeCommand)
         os.execute(makeCommand)
 
         -- get all object files
-        local files = getfilesWithExtension(workspaceLocation .. "/bin-int", ".o")
+        local files = getfilesWithExtension(binIntOutput .. "/", ".o")
         for i, filename in ipairs(files) do
-            files[i] = "bin-int/" .. filename
+            files[i] = binIntOutput .. "/" .. filename
         end
 
         local filesString = table.concat(files, " ")
-        local buildCommand = EMCC_PATH .. "em++ " .. filesString .. " -o " .. binOutput .. "/" .. projectName .. ".html"
+        local buildCommand = EMCC_PATH .. "em++ " .. filesString .. " -o " .. binOutput .. "/" .. prj.name .. ".html"
         print(buildCommand)
         os.execute(buildCommand)
     end,

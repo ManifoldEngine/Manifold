@@ -1,6 +1,7 @@
 #include "simpleTests.h"
 #include "ECS/EntityRegistry.h"
 #include "ECS/RegistryView.h"
+#include "ECS/Bitset.h"
 
 extern "C" __declspec(dllexport) void runTests()
 {
@@ -377,6 +378,61 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		ST_ASSERT((componentIdCreated.size() == 1 && componentIdCreated[0] == pair), "ComponentId should have been added to EntityId");
 		ST_ASSERT((componentIdDestroyed.size() == 1 && componentIdDestroyed[0] == pair), "ComponentId should have been removed from EntityId");
 		ST_ASSERT(entityIdDestroyed.size() == 1 && entityIdDestroyed[0] == entityId, "EntityId should have been destroyed");
+	}
+
+	ST_TEST(BitsetTests, "Should set, test and reset a bitset properly")
+	{
+		Bitset<64> bitset;
+		ST_ASSERT(bitset.any() == false, "fresh bitset should not be set");
+		bitset.set(0);
+		ST_ASSERT(bitset.test(0) == true, "bit 0 should have been set");
+		ST_ASSERT(bitset.test(1) == false, "bit 0 should not have been set");
+		bitset.reset();
+		ST_ASSERT(bitset.any() == false, "fresh bitset should not be set");
+		
+
+		bitset.set(5);
+		Bitset<64> otherBitset;
+		otherBitset.set(5);
+		ST_ASSERT(bitset == otherBitset, "bitsets should be equal");
+		otherBitset.reset();
+		ST_ASSERT(bitset != otherBitset, "Bitsets should not be equal anymore");
+
+		bitset.reset();
+		bitset.set(56);
+		ST_ASSERT(bitset.test(56) == true, "bit 56 should have been set");
+
+		bitset.reset();
+		bitset.set(1);
+		bitset.set(5);
+		bitset.set(56);
+
+		otherBitset.reset();
+		otherBitset.set(1);
+		otherBitset.set(5);
+		otherBitset.set(56);
+
+		ST_ASSERT(bitset == (bitset & otherBitset), "should be able to mask bitsets");
+
+		bitset.reset();
+		bitset.set(1);
+		bitset.set(5);
+		bitset.set(38);
+
+		otherBitset.reset();
+		otherBitset.set(4);
+		otherBitset.set(15);
+		otherBitset.set(64);
+
+		Bitset<64> resultBitset;
+		resultBitset.set(1);
+		resultBitset.set(5);
+		resultBitset.set(38);
+		resultBitset.set(4);
+		resultBitset.set(15);
+		resultBitset.set(64);
+
+		ST_ASSERT(resultBitset == (bitset | otherBitset), "should be able to add bitsets");
 	}
 }
 ST_SECTION_END(ECS)

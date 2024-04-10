@@ -1,4 +1,5 @@
 include "locations.lua"
+include "Engine/BuildScripts/buildwebgl.lua"
 
 workspace "Mani"
 

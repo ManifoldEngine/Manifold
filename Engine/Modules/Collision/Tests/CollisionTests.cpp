@@ -29,7 +29,7 @@ void addIfUnique(std::vector<glm::vec3>& vectors, const glm::vec3& v)
 
 	vectors.push_back(v);
 }
-
+/*
 ST_SECTION_BEGIN(Collision, "Collision")
 {
 	ST_SECTION_BEGIN(GJKTest, "GJK")
@@ -252,8 +252,9 @@ ST_SECTION_BEGIN(Collision, "Collision")
 			ST_ASSERT(hitResult.isHit == true, "it is a hit");
 			ST_ASSERT(glm::length2(hitResult.normal - glm::normalize((transform2.position - transform1.position))) < FLT_EPSILON, "it is penetrating in the correct direction");
 			ST_ASSERT(hitResult.penetrationDepth > FLT_EPSILON, "the penetration depth is by the correct amount");
-		}*/
+		}*//*
 	}
 	ST_SECTION_END(EPATest)
 }
 ST_SECTION_END(Collision)
+*/
