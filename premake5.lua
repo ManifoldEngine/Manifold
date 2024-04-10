@@ -17,7 +17,7 @@ configurations { "Debug", "Release", "Distribution" }
     includedirs { thirdpartiesdir .. "/json/include"}
     --physx
     includedirs { thirdpartiesdir .. "/PhysX/physx/include"}
-      
+
     filter "configurations:Debug"
         includedirs { thirdpartiesdir .. "/SimpleTests/include" }
         defines { "MANI_DEBUG" }
