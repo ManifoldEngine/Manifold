@@ -56,8 +56,6 @@ newaction {
         print("Building for " .. prj.name)
             
         -- build
-        os.execute(EMCC_PATH .. "emmake --help")
-
         local makeCommand = EMCC_PATH .. "emmake make " .. prj.name
         print(makeCommand)
         os.execute(makeCommand)

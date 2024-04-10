@@ -84,7 +84,7 @@ namespace Mani
 	};
 }
 
-#ifdef MANI_WINDOWS
+#if MANI_WINDOWS && !__EMSCRIPTEN__
 	#define DECLARE_EVENT(EVENTNAME, ... ) class __declspec(dllexport) EVENTNAME : public Event<__VA_ARGS__> {};
 #else
 	#define DECLARE_EVENT(EVENTNAME, ... ) class EVENTNAME : public Event<__VA_ARGS__> {};
