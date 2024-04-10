@@ -60,9 +60,6 @@ namespace Mani
 
 		Bitset& reset()
 		{
-			const unsigned int size = wordSize();
-			const unsigned int tbitspplus1 =  TBits;
-			const unsigned int wordsize = size / tbitspplus1 + 1;
 			for (unsigned int i = 0; i < wordCount(); ++i)
 			{
 				m_bits[i] = 0;
