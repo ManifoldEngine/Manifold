@@ -4,7 +4,7 @@
 
 // Debug utilities
 #ifdef MANI_DEBUG
-	#ifndef __EMSCRIPTEN__
+	#ifndef MANI_WEBGL
 		#ifdef MANI_WINDOWS
 			#include <process.h>
 			#define MANI_DEBUGBREAK() std::abort()

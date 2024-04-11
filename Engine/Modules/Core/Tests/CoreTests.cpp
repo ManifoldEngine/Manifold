@@ -1,6 +1,6 @@
 #include <simpleTests.h>
 
-#ifndef __EMSCRIPTEN__
+#ifndef MANI_WEBGL
 extern "C" __declspec(dllexport) void runTests()
 {
 	SimpleTests::SimpleTestsRunner::runTests();

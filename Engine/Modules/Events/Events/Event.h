@@ -8,7 +8,7 @@ namespace Mani
 {
 	struct EventHandle
 	{
-#if __EMSCRIPTEN__
+#if MANI_WEBGL
 		using EventId = unsigned int;
 		static const EventId INVALID_EVENT_ID = UINT32_MAX;
 #else
@@ -84,7 +84,7 @@ namespace Mani
 	};
 }
 
-#if MANI_WINDOWS && !__EMSCRIPTEN__
+#if MANI_WINDOWS && !MANI_WEBGL
 	#define DECLARE_EVENT(EVENTNAME, ... ) class __declspec(dllexport) EVENTNAME : public Event<__VA_ARGS__> {};
 #else
 	#define DECLARE_EVENT(EVENTNAME, ... ) class EVENTNAME : public Event<__VA_ARGS__> {};

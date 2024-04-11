@@ -30,7 +30,7 @@ float Time::getDeltaTime()
 
 std::string Time::getTimeFormatted()
 {
-#if __EMSCRIPTEN__
+#if MANI_WEBGL
 	// emscripten does not support timezones from std::chrono
 	const auto now = std::chrono::system_clock::now();
 	return std::format("{:%T}", std::chrono::floor<std::chrono::microseconds>(now));

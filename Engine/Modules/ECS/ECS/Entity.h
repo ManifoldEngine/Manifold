@@ -8,7 +8,7 @@ namespace Mani
 {
 	const int MAX_COMPONENTS = 64;
 
-#if __EMSCRIPTEN__
+#if MANI_WEBGL
 	using EntityId = unsigned int;
 	const EntityId INVALID_ID = UINT32_MAX;
 #else
