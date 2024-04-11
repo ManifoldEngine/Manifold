@@ -1,4 +1,5 @@
 #include "EntityContainer_Implementation.h"
+#include <assert.h>
 
 using namespace Mani;
 
@@ -175,7 +176,8 @@ ComponentId EntityContainer_Implementation::getComponentId(const std::type_index
 	}
 	else
 	{
-		ComponentId componentId = m_componentIds.size();
+		assert(m_componentIds.size() <= MAX_COMPONENTS);
+		ComponentId componentId = static_cast<ComponentId>(m_componentIds.size());
 		m_componentIds[typeIndex] = componentId;
 		return componentId;
 	}

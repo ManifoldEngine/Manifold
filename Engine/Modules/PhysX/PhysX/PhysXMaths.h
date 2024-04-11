@@ -1,7 +1,9 @@
 #pragma once
 
 #include <Core/CoreFwd.h>
-#include <PxPhysicsAPI.h>
+#include <foundation/PxVec3.h>
+#include <foundation/PxQuat.h>
+#include <foundation/PxTransform.h>
 #include <glm/fwd.hpp>
 
 namespace Mani

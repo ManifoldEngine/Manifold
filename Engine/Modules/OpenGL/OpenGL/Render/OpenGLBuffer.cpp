@@ -60,10 +60,8 @@ size_t OpenGLVertexBuffer::getShaderDataTypeSize(ShaderDataType type)
 		case ShaderDataType::Int3:     return sizeof(int) * 3;
 		case ShaderDataType::Int4:     return sizeof(int) * 4;
 		case ShaderDataType::Bool:     return sizeof(bool);
+		default: MANI_ASSERT(false, "Unknown ShaderDataType");  return 0;
 	}
-
-	MANI_ASSERT(false, "Unknown ShaderDataType");
-	return 0;
 }
 
 size_t OpenGLVertexBuffer::getComponentCount(ShaderDataType type)
@@ -81,10 +79,8 @@ size_t OpenGLVertexBuffer::getComponentCount(ShaderDataType type)
 		case ShaderDataType::Int3:     return 3;
 		case ShaderDataType::Int4:     return 4;
 		case ShaderDataType::Bool:     return 1;
+		default: MANI_ASSERT(false, "Unknown ShaderDataType");  return 0;
 	}
-
-	MANI_ASSERT(false, "Unknown ShaderDataType");
-	return 0;
 }
 // OpenGLVertexBuffer End
 

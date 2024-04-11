@@ -3,10 +3,12 @@
 
 using namespace Mani;
 
+#ifndef __EMSCRIPTEN__
 extern "C" __declspec(dllexport) void runTests()
 {
 	SimpleTests::SimpleTestsRunner::runTests();
 }
+#endif
 
 ST_SECTION_BEGIN(Core_Events, "Core Events")
 {

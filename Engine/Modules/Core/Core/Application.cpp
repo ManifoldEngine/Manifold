@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Application.h"
 #include <Core/System/SystemContainer.h>
 #include <Core/World/WorldSystem.h>

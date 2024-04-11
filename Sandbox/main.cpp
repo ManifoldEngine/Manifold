@@ -13,7 +13,7 @@
 #include <OpenGL/OpenGLSystem.h>
 #include <OpenGL/Render/OpenGLRenderSystem.h>
 
-#include <PhysX/PhysXSystem.h>
+//#include <PhysX/PhysXSystem.h>
 
 using namespace Mani;
 
@@ -30,7 +30,7 @@ class TestSystem : public SystemBase
 
 
 		std::shared_ptr<AssetSystem> assetSystem = systemContainer.initializeDependency<AssetSystem>().lock();
-		std::shared_ptr<PhysXSystem> physxSystem = systemContainer.initializeDependency<PhysXSystem>().lock();
+		//std::shared_ptr<PhysXSystem> physxSystem = systemContainer.initializeDependency<PhysXSystem>().lock();
 
 		{
 			// light
@@ -64,9 +64,9 @@ class TestSystem : public SystemBase
 			meshComponent->mesh = assetSystem->loadJsonAsset<Mesh>("Sandbox/Assets/Meshes/Cube.mesh");
 			meshComponent->material = assetSystem->loadJsonAsset<Material>("Sandbox/Assets/Materials/floor.material");
 
-			PhysXStaticBoxComponent* boxComponent = registry.addComponent<PhysXStaticBoxComponent>(floorEntityId);
+			/*PhysXStaticBoxComponent* boxComponent = registry.addComponent<PhysXStaticBoxComponent>(floorEntityId);
 			boxComponent->extent = glm::vec3(1.f);
-			physxSystem->registerStaticBoxComponent(floorEntityId, *boxComponent, *transform);
+			physxSystem->registerStaticBoxComponent(floorEntityId, *boxComponent, *transform);*/
 		}
 
 		{
@@ -82,9 +82,9 @@ class TestSystem : public SystemBase
 			meshComponent->mesh = assetSystem->loadJsonAsset<Mesh>("Sandbox/Assets/Meshes/Cube.mesh");
 			meshComponent->material = assetSystem->loadJsonAsset<Material>("Sandbox/Assets/Materials/redLit.material");
 
-			PhysXDynamicBoxComponent* boxComponent = registry.addComponent<PhysXDynamicBoxComponent>(cubeEntityId);
+			/*PhysXDynamicBoxComponent* boxComponent = registry.addComponent<PhysXDynamicBoxComponent>(cubeEntityId);
 			boxComponent->extent = glm::vec3(1.f);
-			physxSystem->registerDynamicBoxComponent(cubeEntityId, *boxComponent, *transform);
+			physxSystem->registerDynamicBoxComponent(cubeEntityId, *boxComponent, *transform);*/
 		}
 
 		{
@@ -99,9 +99,9 @@ class TestSystem : public SystemBase
 			meshComponent->mesh = assetSystem->loadJsonAsset<Mesh>("Sandbox/Assets/Meshes/Sphere.mesh");
 			meshComponent->material = assetSystem->loadJsonAsset<Material>("Sandbox/Assets/Materials/redLit.material");
 
-			PhysXDynamicSphereComponent* sphereComponent = registry.addComponent<PhysXDynamicSphereComponent>(sphereEntityId);
+			/*PhysXDynamicSphereComponent* sphereComponent = registry.addComponent<PhysXDynamicSphereComponent>(sphereEntityId);
 			sphereComponent->radius = 1.f;
-			physxSystem->registerDynamicSphereComponent(sphereEntityId, *sphereComponent, *transform);
+			physxSystem->registerDynamicSphereComponent(sphereEntityId, *sphereComponent, *transform);*/
 		}
 
 		{
@@ -116,10 +116,10 @@ class TestSystem : public SystemBase
 			meshComponent->mesh = assetSystem->loadJsonAsset<Mesh>("Sandbox/Assets/Meshes/Cactus.mesh");
 			meshComponent->material = assetSystem->loadJsonAsset<Material>("Sandbox/Assets/Materials/cactus.material");
 
-			PhysXDynamicMeshComponent* physxMeshComponent = registry.addComponent<PhysXDynamicMeshComponent>(cactusEntityId);
+			/*PhysXDynamicMeshComponent* physxMeshComponent = registry.addComponent<PhysXDynamicMeshComponent>(cactusEntityId);
 			physxMeshComponent->mesh = meshComponent->mesh;
 			const bool result = physxSystem->registerDynamicMeshComponent(cactusEntityId, *physxMeshComponent, *transform);
-			MANI_ASSERT(result, "could not register dynamic mesh");
+			MANI_ASSERT(result, "could not register dynamic mesh");*/
 		}
 	}
 
@@ -139,7 +139,7 @@ int main(int argc, char** argv)
 	
 	SystemContainer& worldSystemContainer = world->getSystemContainer();
 	worldSystemContainer.createSystem<OpenGLRenderSystem>()
-						.createSystem<PhysXSystem>()
+						//.createSystem<PhysXSystem>()
 						.createSystem<FloatingCameraControllerSystem>()
 						.createSystem<TestSystem>();
 

@@ -4,7 +4,7 @@ include "Engine/BuildScripts/buildwebgl.lua"
 workspace "Mani"
 
 configurations { "Debug", "Release", "Distribution" }
-    platforms { "Win64", "MacOSX" }
+    platforms { "Win64", "MacOSX", "WebGL" }
     startproject "Sandbox"
     language "C++"
     cppdialect "C++20"
@@ -40,6 +40,10 @@ configurations { "Debug", "Release", "Distribution" }
 
     filter "platforms:Win64"
         architecture "x64"
+        system "windows"
+
+    filter "platforms:WebGL"
+        defines { "MANI_WEBGL" }
         system "windows"
     
     filter "system:macosx"

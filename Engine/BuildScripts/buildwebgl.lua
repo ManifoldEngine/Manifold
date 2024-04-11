@@ -28,7 +28,6 @@ local function getfilesWithExtension(directory, extension)
     return filesWithExtension
 end
 
-
 newaction {
     trigger = "buildwebgl",
     description = "Builds a wasm executable",
@@ -53,10 +52,13 @@ newaction {
             return
         end
 
+        if prj.name ~= "Sandbox" then
+            return
+        end
+
         print("Building for " .. prj.name)
-            
         -- build
-        local makeCommand = EMCC_PATH .. "emmake make " .. prj.name
+        local makeCommand = EMCC_PATH .. "emmake make config=debug_webgl " .. prj.name
         print(makeCommand)
         os.execute(makeCommand)
 

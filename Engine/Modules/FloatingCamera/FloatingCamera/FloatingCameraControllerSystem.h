@@ -2,6 +2,7 @@
 
 #include <Core/System/System.h>
 #include <memory>
+#include <string>
 
 namespace Mani
 {
@@ -17,7 +18,7 @@ namespace Mani
 
 		void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override;
 
-		virtual void tick(float deltaTime, EntityRegistry& registry);
+		virtual void tick(float deltaTime, EntityRegistry& registry) override;
 
 	private:
 		const float CAMERA_SPEED = 10.f;

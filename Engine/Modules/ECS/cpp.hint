@@ -1,4 +1,0 @@
-// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
-// such as names of functions and macros.
-// For more information see https://go.microsoft.com/fwlink/?linkid=865984
-#define ST_ASSERT(EXPRESSION, DESCRIPTION) if (!(EXPRESSION)) { std::stringstream ss; ss << "Failed: " << DESCRIPTION << " (" << __FILE__ << ":" << __LINE__ << ")\n"; SimpleTests::SimpleTestsContext::notifyAssertFailed(ss.str()); return; }

@@ -9,7 +9,6 @@
 #include <Core/Log.h>
 #include <Inputs/InputSystem.h>
 
-
 using namespace Mani;
 
 std::string_view FloatingCameraControllerSystem::getName() const

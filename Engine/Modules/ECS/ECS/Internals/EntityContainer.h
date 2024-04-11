@@ -13,6 +13,8 @@ namespace Mani
 	class IEntityContainer
 	{
 	public:
+		virtual ~IEntityContainer() {};
+
 		// creates a new Entity and returns its id.
 		virtual EntityId create() = 0;
 

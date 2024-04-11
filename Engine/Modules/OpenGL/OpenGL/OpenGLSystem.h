@@ -47,8 +47,8 @@ namespace Mani
 		std::shared_ptr<OpenGLInput> getInputGenerator() const;
 
 	protected:
-		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer);
-		virtual void onDeinitialize(EntityRegistry& registry);
+		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override;
+		virtual void onDeinitialize(EntityRegistry& registry) override;
 
 	private:
 		static OpenGLSystem* s_openGLSystem;

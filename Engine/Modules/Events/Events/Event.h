@@ -47,7 +47,7 @@ namespace Mani
 	inline EventHandle Event<TArgs...>::subscribe(const std::function<void(TArgs ...)>& f)
 	{
 		m_callbacks->push_back(f);
-		return EventHandle{ m_callbacks->size() - 1 };
+		return EventHandle{ static_cast<EventHandle::EventId>(m_callbacks->size() - 1) };
 	};
 
 	template<typename ...TArgs>

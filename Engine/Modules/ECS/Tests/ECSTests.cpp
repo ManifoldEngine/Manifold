@@ -3,10 +3,12 @@
 #include "ECS/RegistryView.h"
 #include "ECS/Bitset.h"
 
+#ifndef __EMSCRIPTEN__
 extern "C" __declspec(dllexport) void runTests()
 {
 	SimpleTests::SimpleTestsRunner::runTests();
 }
+#endif
 
 using namespace Mani;
 
@@ -320,9 +322,9 @@ ST_SECTION_BEGIN(ECS, "ECS")
 			component1->vector.push_back(i + 1 * 1000.f);
 		}
 
-		ST_ASSERT(component2->vector[0] - 1.f <= FLT_EPSILON, "first vector element should be equal to the original value");
-		ST_ASSERT(component2->vector[1] - 2.f <= FLT_EPSILON, "second vector element should be equal to the original value");
-		ST_ASSERT(component2->vector[2] - 3.f <= FLT_EPSILON, "third vector element should be equal to the original value");
+		ST_ASSERT(component2->vector[0] - 1.f <= 1.192092896e-07F, "first vector element should be equal to the original value");
+		ST_ASSERT(component2->vector[1] - 2.f <= 1.192092896e-07F, "second vector element should be equal to the original value");
+		ST_ASSERT(component2->vector[2] - 3.f <= 1.192092896e-07F, "third vector element should be equal to the original value");
 	}
 
 	ST_TEST(EntityHasComponent, "Should return true if the entity has the component or not")

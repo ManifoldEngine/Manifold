@@ -39,7 +39,7 @@ ST_SECTION_BEGIN(ConfigSystemSection, "ConfigSystem")
 			return;
 		}
 
-		ST_ASSERT(std::abs(config->configValue - 50.0f) <= FLT_EPSILON, "Should be equal to the default value.");
+		ST_ASSERT(std::abs(config->configValue - 50.0f) <= 1.192092896e-07F, "Should be equal to the default value.");
 		ST_ASSERT(config->configPath == "/Some/Path/", "Should be equal to the default value.");
 		ST_ASSERT(config->configAmount == 10'000, "Should be equal to the default value.");
 	}
@@ -64,7 +64,7 @@ ST_SECTION_BEGIN(ConfigSystemSection, "ConfigSystem")
 			return;
 		}
 
-		ST_ASSERT(std::abs(config->configValue - 1000.0f) <= FLT_EPSILON, "Should be equal to the custom value.");
+		ST_ASSERT(std::abs(config->configValue - 1000.0f) <= 1.192092896e-07F, "Should be equal to the custom value.");
 		ST_ASSERT(config->configPath == "/Some/Path/SubPath/", "Should be equal to the custom value.");
 		ST_ASSERT(config->configAmount == 10'000'000, "Should be equal to the custom value.");
 	}

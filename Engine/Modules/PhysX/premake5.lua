@@ -26,6 +26,12 @@ group "Engine"
             "PhysXPvdSDK_static_64",
             "PhysXFoundation_64"
         }
+        
+        filter "platforms:webgl"
+            removefiles { 
+                moduledir .. "/%{prj.name}/**.h",
+                moduledir .. "/%{prj.name}/**.cpp" 
+            }
 group ""
 
 group "_TestLibs"
@@ -38,4 +44,7 @@ group "_TestLibs"
         links { "PhysX" }
         
         includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir .. "/**" }
+
+        filter "platforms:webgl"
+            removefiles { moduledir .. "/PhysX/Tests/**.h", moduledir .. "/PhysX/Tests/**.cpp" }
 group ""
