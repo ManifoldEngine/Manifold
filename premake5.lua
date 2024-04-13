@@ -1,9 +1,10 @@
 include "locations.lua"
+include "Engine/BuildScripts/buildwebgl.lua"
 
 workspace "Mani"
 
 configurations { "Debug", "Release", "Distribution" }
-    platforms { "Win64", "MacOSX" }
+    platforms { "Win64", "MacOSX", "WebGL" }
     startproject "Sandbox"
     language "C++"
     cppdialect "C++20"
@@ -15,7 +16,9 @@ configurations { "Debug", "Release", "Distribution" }
     includedirs { thirdpartiesdir .. "/glm" }
     --json
     includedirs { thirdpartiesdir .. "/json/include"}
-      
+    --physx
+    includedirs { thirdpartiesdir .. "/PhysX/physx/include"}
+
     filter "configurations:Debug"
         includedirs { thirdpartiesdir .. "/SimpleTests/include" }
         defines { "MANI_DEBUG" }
@@ -38,6 +41,12 @@ configurations { "Debug", "Release", "Distribution" }
     filter "platforms:Win64"
         architecture "x64"
         system "windows"
+
+    filter "platforms:WebGL"
+        defines { "MANI_WEBGL" }
+        linkoptions { "-sUSE_GLFW=3", "-sMAX_WEBGL_VERSION=2" }
+        -- rtti ("On")
+        system "windows"
     
     filter "system:macosx"
         defines { "MANI_MACOSX" }
@@ -56,23 +65,7 @@ project "Sandbox"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
 
-    links { "Core", "OpenGL", "ECS", "Camera", "FloatingCamera", "Assets", "RenderAPI" }
+    links { "Core", "OpenGL", "ECS", "Camera", "FloatingCamera", "Assets", "RenderAPI", "PhysX", "Inputs" }
 
-    includedirs { moduledir .. "/**", "/%{prj.name}" }
-
-    -- glew
-    includedirs { thirdpartiesdir .. "/glew-2.2.0/include" }
-    libdirs { thirdpartiesdir .. "/glew-2.2.0/lib/Release/x64/" }
-    links { "glew32s" }
-
-    ---- glfw
-    includedirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/include" }
-    libdirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/lib-vc2022/" }
-    links { "glfw3" }
-
-    -- openGL
-    links { "OpenGL32" }
-
-    -- stb (image)
-    includedirs { thirdpartiesdir .. "/stb"}
+    includedirs { moduledir .. "/**", "/%{prj.name}/Sources/" }
 

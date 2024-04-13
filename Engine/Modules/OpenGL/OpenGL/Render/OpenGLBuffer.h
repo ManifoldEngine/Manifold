@@ -1,7 +1,7 @@
 #pragma once
 
 #include "OpenGL.h"
-#include <Core/CoreAssert.h>
+#include <Core/ManiAssert.h>
 
 namespace Mani
 {

@@ -1,6 +1,6 @@
 #include "OpenGLRenderSystem.h"
 #include <Core/Log.h>
-#include <Core/CoreAssert.h>
+#include <Core/ManiAssert.h>
 
 #include <Core/Components/Transform.h>
 
@@ -16,6 +16,7 @@
 #include <RenderAPI/Light/SpotlightComponent.h>
 
 #include <OpenGL/OpenGL.h>
+#include <OpenGL/OpenGLSystem.h>
 #include <OpenGL/Render/OpenGLResourceSystem.h>
 #include <OpenGL/Render/OpenGLBuffer.h>
 #include <OpenGL/Render/OpenGLVertexArray.h>
@@ -27,6 +28,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
 #include <GL/glew.h>
 
 using namespace Mani;
@@ -54,6 +56,16 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 		return;
 	}
 
+	uint32_t x, y, width, height;
+	getViewport(x, y, width, height);
+	RegistryView<CameraComponent> cameraView(registry);
+	for (const auto& entityId : cameraView)
+	{
+		CameraComponent* cameraComponent = registry.getComponent<CameraComponent>(entityId);
+		cameraComponent->config.width = static_cast<float>(width);
+		cameraComponent->config.height = static_cast<float>(height);
+	}
+
 	std::shared_ptr<OpenGLResourceSystem> resourceSystem = m_resourceSystem.lock();
 	
 	glm::mat4 viewMatrix;
@@ -79,11 +91,11 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 		projectionMatrix = cameraComponent->projection;
 	}
 
-
 	glEnable(GL_DEPTH_TEST);
 	
 	// setting color state.
-	glClearColor(.1f, .1f, .1f, 1.f);
+	glClearColor(m_clearColor.x, m_clearColor.y, m_clearColor.z, m_clearColor.w);
+
 	// consuming color state.
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -138,7 +150,7 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 
 		shader->use();
 
-		glm::mat4 modelMatrix = transform->calculate();
+		glm::mat4 modelMatrix = transform->calculateModelMatrix();
 		glm::mat3 normalMatrix = glm::inverseTranspose(glm::mat3(modelMatrix));
 
 		// set vertex uniforms
@@ -258,4 +270,19 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 			specularTexture->unbind();
 		}
 	}
+}
+
+void Mani::OpenGLRenderSystem::getViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t& height)
+{
+	const OpenGLSystem::WindowContext& context = OpenGLSystem::get().getWindowContext();
+
+	x = 0;
+	y = 0;
+	width = context.width;
+	height = context.height;
+}
+
+void Mani::OpenGLRenderSystem::setClearColor(const glm::vec4& color)
+{
+	m_clearColor = color;
 }

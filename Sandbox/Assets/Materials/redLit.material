@@ -1,0 +1,14 @@
+{
+    "name": "RedLitMaterial",
+    "color": 
+    {
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 0.0
+    },
+    "shaderPath": "Engine/Assets/Shaders/WebGL/webgl_baseLit.shader",
+    "diffusePath": "Sandbox/Assets/Textures/red.png",
+    "specularPath": "Sandbox/Assets/Textures/red.png",
+    "shininess": 32.0
+}

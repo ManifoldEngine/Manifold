@@ -4,13 +4,15 @@
 
 // Debug utilities
 #ifdef MANI_DEBUG
-	#ifdef MANI_WINDOWS
-		#include <process.h>
-		#define MANI_DEBUGBREAK() std::abort()
-	#else	
-		#define MANI_DEBUGBREAK()
+	#ifndef MANI_WEBGL
+		#ifdef MANI_WINDOWS
+			#include <process.h>
+			#define MANI_DEBUGBREAK() std::abort()
+		#else	
+			#define MANI_DEBUGBREAK()
+		#endif
+		#define MANI_ASSERT_ENABLED
 	#endif
-	#define MANI_ASSERT_ENABLED
 #endif
 
 namespace Mani

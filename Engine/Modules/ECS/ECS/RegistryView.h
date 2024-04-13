@@ -4,7 +4,7 @@
 #include "Internals/EntityContainer.h"
 #include "EntityRegistry.h"
 #include "Entity.h"
-#include <bitset>
+#include "Bitset.h"
 
 namespace Mani
 {
@@ -42,7 +42,7 @@ namespace Mani
             Iterator(
                 const EntityRegistry* inRegistry,
                 EntityId inCurrentEntityId,
-                std::bitset<Mani::MAX_COMPONENTS> inComponentMask,
+                Bitset<Mani::MAX_COMPONENTS> inComponentMask,
                 bool inIsAll
             );
 
@@ -54,7 +54,7 @@ namespace Mani
         private:
             EntityId m_currentEntityId;
             const EntityRegistry* m_registry;
-            std::bitset<Mani::MAX_COMPONENTS> m_componentMask;
+            Bitset<Mani::MAX_COMPONENTS> m_componentMask;
             bool m_isAll = false;
 
             bool isValidIndex() const;
@@ -91,7 +91,7 @@ namespace Mani
 
     private:
         const EntityRegistry* m_registry = nullptr;
-        std::bitset<Mani::MAX_COMPONENTS> m_componentMask;
+        Bitset<Mani::MAX_COMPONENTS> m_componentMask;
         bool m_bisAll = false;
     };
 
@@ -100,7 +100,7 @@ namespace Mani
     inline RegistryView<TComponents...>::Iterator::Iterator(
         const EntityRegistry* inRegistry,
         Mani::EntityId inCurrentEntityId,
-        std::bitset<Mani::MAX_COMPONENTS> inComponentMask,
+        Bitset<Mani::MAX_COMPONENTS> inComponentMask,
         bool inIsAll
     ) :
         m_currentEntityId(inCurrentEntityId),

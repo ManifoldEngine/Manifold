@@ -13,6 +13,11 @@ bool SystemBase::shouldTick(EntityRegistry& registry) const
     return false;
 }
 
+ETickGroup SystemBase::getTickGroup() const
+{
+    return ETickGroup::Tick;
+}
+
 void SystemBase::initialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
     if (m_isInitialized)
@@ -37,6 +42,28 @@ void SystemBase::deinitialize(EntityRegistry& registry)
     MANI_LOG(LogCore, "Deinitialized {}", getName());
 }
 
+void SystemBase::enable()
+{
+    if (m_isEnabled)
+    {
+        return;
+    }
+
+    m_isEnabled = true;
+    onEnabled();
+}
+
+void SystemBase::disable()
+{
+    if (!m_isEnabled)
+    {
+        return;
+    }
+
+    m_isEnabled = false;
+    onDisabled();
+}
+
 void SystemBase::tick(float deltaTime, EntityRegistry& registry)
 {
 }
@@ -46,10 +73,23 @@ bool SystemBase::isInitialized() const
     return m_isInitialized;
 }
 
+bool Mani::SystemBase::isEnabled() const
+{
+    return m_isEnabled;
+}
+
 void SystemBase::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
 }
 
 void SystemBase::onDeinitialize(EntityRegistry& registry)
+{
+}
+
+void SystemBase::onEnabled()
+{
+}
+
+void SystemBase::onDisabled()
 {
 }

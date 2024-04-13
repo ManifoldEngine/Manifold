@@ -2,16 +2,26 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
 #include <Core/Application.h>
 #include <Core/Log.h>
-#include <Core/CoreAssert.h>
+#include <Core/ManiAssert.h>
+
+#include <Camera/CameraSystem.h>
+
 #include <OpenGLDebug.h>
 
 #include <iostream>
 #include <vector>
 #include <memory>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 using namespace Mani;
+
+OpenGLSystem* OpenGLSystem::s_openGLSystem = nullptr;
 
 void OpenGLSystem::destroyWindow(WindowContext& context)
 {
@@ -24,7 +34,7 @@ void OpenGLSystem::destroyWindow(WindowContext& context)
 
 void OpenGLSystem::terminate()
 {
-    destroyWindow(context);
+    destroyWindow(m_context);
     glfwTerminate();
 }
 
@@ -33,7 +43,7 @@ void OpenGLSystem::glfwCallback_onWindowClosed(GLFWwindow* window)
 {
     if (auto* openGlSystem = (OpenGLSystem*)glfwGetWindowUserPointer(window))
     {
-        openGlSystem->onWindowClosed.broadcast(openGlSystem->context);
+        openGlSystem->onWindowClosed.broadcast(openGlSystem->m_context);
         Application::get().stop();
     }
 }
@@ -42,13 +52,25 @@ void OpenGLSystem::glfwCallback_onWindowResized(GLFWwindow* window, int newWidth
 {
     if (auto* openGlSystem = (OpenGLSystem*)glfwGetWindowUserPointer(window))
     {
-        openGlSystem->context.width = newWidth;
-        openGlSystem->context.height = newHeight;
+        openGlSystem->m_context.width = newWidth;
+        openGlSystem->m_context.height = newHeight;
     }
 
     glViewport(0, 0, newWidth, newHeight);
 }
 // glfw callbacks begin
+
+Mani::OpenGLSystem::OpenGLSystem()
+{
+    // there should be only one OpenGLSystem instance.
+    MANI_ASSERT(s_openGLSystem == nullptr, "an OpenGLSystem instance already exists.");
+    s_openGLSystem = this;
+}
+
+OpenGLSystem& Mani::OpenGLSystem::get()
+{
+    return *s_openGLSystem;
+}
 
 std::string_view OpenGLSystem::getName() const
 {
@@ -62,7 +84,7 @@ bool OpenGLSystem::shouldTick(EntityRegistry& registry) const
 
 const OpenGLSystem::WindowContext& OpenGLSystem::getWindowContext() const
 {
-    return context;
+    return m_context;
 }
 
 std::shared_ptr<OpenGLInput> Mani::OpenGLSystem::getInputGenerator() const
@@ -72,8 +94,6 @@ std::shared_ptr<OpenGLInput> Mani::OpenGLSystem::getInputGenerator() const
 
 void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
-    SystemBase::onInitialize(registry, systemContainer);
-
     // initialize glfw
     if (!glfwInit())
     {
@@ -90,24 +110,24 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
 #endif
 
     // create the window
-    context.window = glfwCreateWindow(context.width, context.height, context.name.data(), NULL, NULL);
-    if (context.window == nullptr)
+    m_context.window = glfwCreateWindow(m_context.width, m_context.height, m_context.name.data(), NULL, NULL);
+    if (m_context.window == nullptr)
     {
         MANI_LOG_ERROR(LogOpenGL, "failed to create glfwwindow");
         terminate();
         return;
     }
 
-    glfwGetWindowSize(context.window, &context.width, &context.height);
-    glfwSetInputMode(context.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwGetWindowSize(m_context.window, &m_context.width, &m_context.height);
+    glfwSetInputMode(m_context.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // set this as the window's user pointer. This allows us to retrieve this pointer from the window pointer provided in glfw's callbacks.
-    glfwSetWindowUserPointer(context.window, this);
-    glfwMakeContextCurrent(context.window);
+    glfwSetWindowUserPointer(m_context.window, this);
+    glfwMakeContextCurrent(m_context.window);
 
     // set glfw callbacks
-    glfwSetWindowCloseCallback(context.window, &OpenGLSystem::glfwCallback_onWindowClosed);
-    glfwSetFramebufferSizeCallback(context.window, &OpenGLSystem::glfwCallback_onWindowResized);
+    glfwSetWindowCloseCallback(m_context.window, &OpenGLSystem::glfwCallback_onWindowClosed);
+    glfwSetFramebufferSizeCallback(m_context.window, &OpenGLSystem::glfwCallback_onWindowResized);
 
     // init glew to load the correct opengl runtime
     GLenum result = glewInit();
@@ -119,11 +139,13 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     }
 
     // set the view port to the window's size.
-    glViewport(0, 0, context.width, context.height);
+    glViewport(0, 0, m_context.width, m_context.height);
     
-#if MANI_OPENGL_DEBUG
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(OpenGLMessageCallback, nullptr);
+#ifndef MANI_WEBGL
+    #if MANI_OPENGL_DEBUG
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback(OpenGLMessageCallback, nullptr);
+    #endif
 #endif
 
     m_openGLInputGenerator = std::make_shared<OpenGLInput>(shared_from_this());
@@ -140,6 +162,10 @@ void OpenGLSystem::onDeinitialize(EntityRegistry& entityRegistry)
 
 void OpenGLSystem::tick(float deltaTime, EntityRegistry& entityRegistry)
 {
-    glfwSwapBuffers(context.window);
+    glfwSwapBuffers(m_context.window);
     glfwPollEvents();
+
+#ifdef __EMSCRIPTEN__
+    emscripten_sleep(100);
+#endif
 }

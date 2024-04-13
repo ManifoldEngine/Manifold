@@ -24,7 +24,7 @@ namespace Mani
 		bool isRunning() const { return m_isRunning; }
 
 	private:
-		static Application* sm_application;
+		static Application* s_application;
 
 		bool m_isRunning = false;
 		

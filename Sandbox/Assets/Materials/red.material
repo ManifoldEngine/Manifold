@@ -1,0 +1,14 @@
+{
+    "name": "RedMaterial",
+    "color": 
+    {
+        "x": 1.0,
+        "y": 0.0,
+        "z": 0.0,
+        "w": 1.0
+    },
+    "shaderPath": "Engine/Assets/Shaders/WebGL/webgl_flatColor.shader",
+    "diffusePath": "",
+    "specularPath": "",
+    "shininess": 32.0
+}

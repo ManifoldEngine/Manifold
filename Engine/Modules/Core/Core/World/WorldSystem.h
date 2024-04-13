@@ -13,8 +13,6 @@ namespace Mani
 	class WorldSystem : public SystemBase
 	{
 	public:
-		WorldSystem();
-		~WorldSystem();
 
 		virtual std::string_view getName() const override { return "WorldSystem"; }
 		virtual bool shouldTick(EntityRegistry& registry) const override { return true; }
@@ -31,8 +29,8 @@ namespace Mani
 		virtual void tick(float deltaTime, EntityRegistry& registry) override;
 
 	private:
-		struct Impl;
 
-		Impl* m_pImpl;
+		std::vector<std::shared_ptr<World>> m_worlds;
+		std::shared_ptr<World> m_relevantWorld = nullptr;
 	};
 }

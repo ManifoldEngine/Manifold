@@ -1,5 +1,5 @@
 #type vertex 
-#version 330 core
+#version 100
 
 layout(location = 0) in vec3 aPosition;
 layout(location = 1) in vec3 aNormal;
@@ -23,7 +23,7 @@ void main()
 }
 
 #type fragment
-#version 330 core
+#version 100
 
 struct Material
 {

@@ -1,6 +1,7 @@
 #include "CoreTime.h"
 #include <chrono>
 #include <format>
+#include <sstream>
 
 using namespace Mani;
 
@@ -29,8 +30,14 @@ float Time::getDeltaTime()
 
 std::string Time::getTimeFormatted()
 {
+#if MANI_WEBGL
+	// emscripten does not support timezones from std::chrono
+	const auto now = std::chrono::system_clock::now();
+	return std::format("{:%T}", std::chrono::floor<std::chrono::microseconds>(now));
+#else
 	auto const now = std::chrono::current_zone()->to_local(std::chrono::system_clock::now());
-	return std::format("{:%T}", now);;
+	return std::format("{:%T}", now);
+#endif
 }
 
 void Time::onApplicationStart()

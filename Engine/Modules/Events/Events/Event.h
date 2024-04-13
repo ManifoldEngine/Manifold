@@ -8,7 +8,14 @@ namespace Mani
 {
 	struct EventHandle
 	{
-		size_t id = UINT64_MAX;
+#if MANI_WEBGL
+		using EventId = unsigned int;
+		static const EventId INVALID_EVENT_ID = UINT32_MAX;
+#else
+		using EventId = size_t;
+		static const EventId INVALID_EVENT_ID = UINT64_MAX;
+#endif
+		EventId id = INVALID_EVENT_ID;
 	};
 
 	template<typename ...TArgs>
@@ -40,7 +47,7 @@ namespace Mani
 	inline EventHandle Event<TArgs...>::subscribe(const std::function<void(TArgs ...)>& f)
 	{
 		m_callbacks->push_back(f);
-		return EventHandle{ m_callbacks->size() - 1 };
+		return EventHandle{ static_cast<EventHandle::EventId>(m_callbacks->size() - 1) };
 	};
 
 	template<typename ...TArgs>
@@ -77,7 +84,7 @@ namespace Mani
 	};
 }
 
-#ifdef MANI_WINDOWS
+#if MANI_WINDOWS && !MANI_WEBGL
 	#define DECLARE_EVENT(EVENTNAME, ... ) class __declspec(dllexport) EVENTNAME : public Event<__VA_ARGS__> {};
 #else
 	#define DECLARE_EVENT(EVENTNAME, ... ) class EVENTNAME : public Event<__VA_ARGS__> {};

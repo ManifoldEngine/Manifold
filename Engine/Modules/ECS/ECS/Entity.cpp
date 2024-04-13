@@ -1,11 +1,15 @@
 #include "Entity.h"
-#include <bitset>
 
 using namespace Mani;
 
+bool Mani::isValid(EntityId entityId)
+{
+	return entityId != INVALID_ID;
+}
+
 Entity::Entity()
 {
-	m_components = new std::bitset<MAX_COMPONENTS>();
+	m_components = new Bitset<MAX_COMPONENTS>();
 }
 
 Entity::Entity(const Entity& other)
@@ -26,7 +30,7 @@ bool Entity::hasComponent(ComponentId componentId) const
 	return m_components->test(componentId);
 }
 
-bool Entity::hasComponents(const std::bitset<MAX_COMPONENTS>& componentMask) const
+bool Entity::hasComponents(const Bitset<MAX_COMPONENTS>& componentMask) const
 {
 	return componentMask == (componentMask & *m_components);
 }

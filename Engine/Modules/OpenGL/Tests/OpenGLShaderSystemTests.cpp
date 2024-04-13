@@ -4,10 +4,12 @@
 #include <Core/Application.h>
 #include <Utils/StringUtils.h>
 
+#ifndef MANI_WEBGL
 extern "C" __declspec(dllexport) void runTests()
 {
     SimpleTests::SimpleTestsRunner::runTests();
 }
+#endif
 
 using namespace Mani;
 

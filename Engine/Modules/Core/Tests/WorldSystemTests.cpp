@@ -17,7 +17,7 @@ ST_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 			virtual std::string_view getName() const override { return "SomeWorldSystem"; }
 			virtual bool shouldTick(EntityRegistry& registry) const override { return true; }
 
-			virtual void tick(float deltaTime, EntityRegistry& registry)
+			virtual void tick(float deltaTime, EntityRegistry& registry) override
 			{
 				onTick.broadcast(deltaTime);
 			}
@@ -42,7 +42,7 @@ ST_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 		std::shared_ptr<SomeWorldSystem> someWorlSystem = world->getSystemContainer().initializeDependency<SomeWorldSystem>().lock();
 		someWorlSystem->onTick.subscribe([&hasTicked](float deltaTime) 
 		{ 
-			ST_ASSERT(deltaTime < FLT_EPSILON, "Should have ticked with the same delta time than the application's tick");
+			ST_ASSERT(deltaTime < 1.192092896e-07F, "Should have ticked with the same delta time than the application's tick");
 			hasTicked = true;
 		});
 

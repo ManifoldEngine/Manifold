@@ -11,6 +11,7 @@ namespace Mani
 	class IInputGenerator
 	{
 	public:
+		virtual ~IInputGenerator() {}
 		virtual std::string getName() const = 0;
 		virtual bool consumeInputBuffer(std::vector<ButtonControl>& outBuffer) = 0;
 		virtual bool getAxis(std::vector<AxisControl>& outAxis) = 0;

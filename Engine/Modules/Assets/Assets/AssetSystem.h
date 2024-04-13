@@ -8,12 +8,13 @@
 
 #include <Events/Event.h>
 
-#include <Assets/IJsonAsset.h>
+#include <Core/Interfaces/IJsonAsset.h>
 
 #include <Utils/TemplateUtils.h>
 
 #include <filesystem>
 #include <memory>
+#include <iostream>
 
 namespace Mani
 {

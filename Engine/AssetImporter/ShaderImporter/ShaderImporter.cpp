@@ -1,7 +1,7 @@
 #include "ShaderImporter.h"
 
 #include <Core/Log.h>
-#include <Core/CoreAssert.h>
+#include <Core/ManiAssert.h>
 #include <Core/FileSystem.h>
 
 #include <RenderAPI/Shader.h>
@@ -84,10 +84,12 @@ bool ShaderImporter::parseShaderSourceFileFromPath(const std::filesystem::path& 
 		if (typeName == "vertex")
 		{
 			outVertexSource = content;
+			outVertexSource.erase(0, outVertexSource.find("\n") + 1); // stripping first line as we don't need the type token
 		}
 		else if (typeName == "fragment")
 		{
 			outFragmentSource = content;
+			outFragmentSource.erase(0, outFragmentSource.find("\n") + 1); // stripping first line as we don't need the type token
 		}
 		else
 		{

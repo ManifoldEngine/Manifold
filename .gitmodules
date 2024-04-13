@@ -13,3 +13,9 @@
 [submodule "Engine/AssetImporter/ThirdParties/assimp"]
 	path = Engine/AssetImporter/ThirdParties/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "Engine/ThirdParties/PhysX"]
+	path = Engine/ThirdParties/PhysX
+	url = https://github.com/NVIDIA-Omniverse/PhysX.git
+[submodule "Engine/ThirdParties/emscripten"]
+	path = Engine/ThirdParties/emscripten
+	url = https://github.com/emscripten-core/emsdk.git

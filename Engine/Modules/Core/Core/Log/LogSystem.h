@@ -3,6 +3,7 @@
 #include <Core/Core.h>
 #include <Core/System/System.h>
 #include <string_view>
+#include <unordered_map>
 
 namespace Mani
 {
@@ -28,10 +29,12 @@ namespace Mani
 
 		static void s_log(const std::string_view& channel, ELogLevel level, const std::string_view& log);
 		static void s_setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel);
+		
 	private:
-		struct Impl;
-		Impl* m_pImpl = nullptr;
-
-		static LogSystem* sm_logSystem;
+		static LogSystem* s_logSystem;
+		
+		std::unordered_map<std::string_view, ELogLevel> channels;
+		
+		static void logImpl(const std::string_view& channel, ELogLevel level, const std::string_view& log);
 	};
 }

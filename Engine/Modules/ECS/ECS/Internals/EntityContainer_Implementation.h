@@ -1,9 +1,9 @@
 #pragma once
 
 #include <ECS.h>
-#include <internals/EntityContainer.h>
-#include <vector>
+#include "EntityContainer.h"
 #include "Entity.h"
+#include <vector>
 #include <unordered_map>
 
 namespace Mani {
@@ -14,6 +14,7 @@ namespace Mani {
 
 	public:
 		// IEntityContainer begin
+		virtual ~EntityContainer_Implementation() = default;
 		EntityId create() override;
 		bool destroy(EntityId entityId) override;
 		const Entity* getEntity(EntityId entityId) const override;

@@ -1,5 +1,5 @@
 #include "OpenGLShader.h"
-#include <gl/glew.h>
+#include <GL/glew.h>
 #include <Core/Log.h>
 
 using namespace Mani;
@@ -69,6 +69,8 @@ void OpenGLShader::use() const
     glUseProgram(shaderProgramId);
 }
 
+#include <iostream>
+
 uint32_t OpenGLShader::compile(const std::string_view& inSource, int shaderType)
 {
     uint32_t id = glCreateShader(shaderType);
@@ -82,6 +84,7 @@ uint32_t OpenGLShader::compile(const std::string_view& inSource, int shaderType)
     {
         char infoLog[512];
         glGetShaderInfoLog(id, 512, NULL, infoLog);
+        std::cout << "shader compilation failed: " << infoLog << std::endl;
         MANI_LOG_ERROR(LogOpenGL, "shader compilation failed: {}", infoLog);
         id = UINT32_MAX;
         return id;

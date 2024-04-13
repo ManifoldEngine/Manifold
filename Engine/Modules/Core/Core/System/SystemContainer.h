@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System.h"
+#include <Core/ManiAssert.h>
 #include <ECS/EntityRegistry.h>
 #include <Utils/TemplateUtils.h>
 #include <vector>
@@ -14,11 +15,12 @@ namespace Mani
 	{
 	public:
 		// Initializes all created systems. once this is called, will initialize newly created systems
-		virtual void initialize();
-		// Deinitiailize all systems
-		virtual void deinitialize();
+		void initialize();
 
-		virtual void tick(float deltaTime);
+		// Deinitiailize all systems
+		void deinitialize();
+
+		void tick(float deltaTime);
 
 		// creates a new TSystem : public SystemBase
 		// if the container is initialized, the system will be initialized as well
@@ -27,9 +29,9 @@ namespace Mani
 		// returns true if a system was created.
 		template<Derived<SystemBase> TSystem>
 		SystemContainer& createSystem();
-
+		
 		template<typename TSystem>
-		std::weak_ptr<TSystem> getSystem() const;
+		std::weak_ptr<TSystem> getSystem();
 
 		// creates, initializes then return a shared pointer to the TSystem
 		// this is most notably useful to allow a system to initialize a dependency and receive a pointer to it
@@ -69,13 +71,24 @@ namespace Mani
 		{
 			system->initialize(m_registry, *this);
 		}
-		m_systems.push_back(system);
 
+		ETickGroup targetTickGroup = system->getTickGroup();
+		auto insertIt = m_systems.end();
+		for (auto it = m_systems.begin(); it != m_systems.end(); it++)
+		{
+			if ((*it)->getTickGroup() > targetTickGroup)
+			{
+				insertIt = it;
+				break;
+			}
+		}
+
+		m_systems.insert(insertIt, system);
 		return *this;
 	}
 
 	template<typename TSystem>
-	inline std::weak_ptr<TSystem> SystemContainer::getSystem() const
+	inline std::weak_ptr<TSystem> SystemContainer::getSystem()
 	{
 		for (auto& system : m_systems)
 		{
@@ -118,5 +131,56 @@ namespace Mani
 			}
 		}
 		return *this;
+	}
+
+	inline void SystemContainer::initialize()
+	{
+		if (m_isInitialized)
+		{
+			return;
+		}
+
+		for (auto& system : m_systems)
+		{
+			system->initialize(m_registry, *this);
+		}
+
+		m_isInitialized = true;
+	}
+
+	inline void SystemContainer::deinitialize()
+	{
+		if (!m_isInitialized)
+		{
+			return;
+		}
+
+		for (auto it = m_systems.rbegin(); it != m_systems.rend(); it++)
+		{
+			(*it)->deinitialize(m_registry);
+		}
+
+		m_isInitialized = false;
+	}
+
+	inline void SystemContainer::tick(float deltaTime)
+	{
+		if (!m_isInitialized)
+		{
+			return;
+		}
+
+		for (auto& system : m_systems)
+		{
+			if (system->shouldTick(m_registry) && system->isEnabled())
+			{
+				system->tick(deltaTime, m_registry);
+			}
+		}
+	}
+
+	inline size_t SystemContainer::size() const
+	{
+		return m_systems.size();
 	}
 }

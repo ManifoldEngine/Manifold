@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Assets/IJsonAsset.h>
+#include <Core/Interfaces/IJsonAsset.h>
 #include <glm/glm.hpp>
 #include <vector>
 #include <string>

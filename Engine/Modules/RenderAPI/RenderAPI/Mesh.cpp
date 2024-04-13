@@ -1,6 +1,6 @@
 #include "Mesh.h"
 
-#include <Core/CoreAssert.h>
+#include <Core/ManiAssert.h>
 
 #include <nlohmann/json.hpp>
 

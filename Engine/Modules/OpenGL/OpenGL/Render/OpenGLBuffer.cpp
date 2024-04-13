@@ -7,7 +7,11 @@ using namespace Mani;
 OpenGLVertexBuffer::OpenGLVertexBuffer(float* data, size_t size)
 	: m_size(size), m_vertexBufferObjectId(UINT32_MAX)
 {
+#ifdef MANI_WEBGL
+	glGenBuffers(1, &m_vertexBufferObjectId);
+#else
 	glCreateBuffers(1, &m_vertexBufferObjectId);
+#endif
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferObjectId);
 	glBufferData(GL_ARRAY_BUFFER, m_size, data, GL_STATIC_DRAW);
@@ -60,10 +64,8 @@ size_t OpenGLVertexBuffer::getShaderDataTypeSize(ShaderDataType type)
 		case ShaderDataType::Int3:     return sizeof(int) * 3;
 		case ShaderDataType::Int4:     return sizeof(int) * 4;
 		case ShaderDataType::Bool:     return sizeof(bool);
+		default: MANI_ASSERT(false, "Unknown ShaderDataType");  return 0;
 	}
-
-	MANI_ASSERT(false, "Unknown ShaderDataType");
-	return 0;
 }
 
 size_t OpenGLVertexBuffer::getComponentCount(ShaderDataType type)
@@ -81,10 +83,8 @@ size_t OpenGLVertexBuffer::getComponentCount(ShaderDataType type)
 		case ShaderDataType::Int3:     return 3;
 		case ShaderDataType::Int4:     return 4;
 		case ShaderDataType::Bool:     return 1;
+		default: MANI_ASSERT(false, "Unknown ShaderDataType");  return 0;
 	}
-
-	MANI_ASSERT(false, "Unknown ShaderDataType");
-	return 0;
 }
 // OpenGLVertexBuffer End
 
@@ -92,7 +92,11 @@ size_t OpenGLVertexBuffer::getComponentCount(ShaderDataType type)
 OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned int* indices, size_t size)
 	: m_size(size), m_indexBufferObjectId(UINT32_MAX)
 {
+#ifdef MANI_WEBGL
+	glGenBuffers(1, &m_indexBufferObjectId);
+#else
 	glCreateBuffers(1, &m_indexBufferObjectId);
+#endif
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_indexBufferObjectId);
 	glBufferData(GL_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);

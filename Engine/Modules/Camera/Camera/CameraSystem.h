@@ -4,6 +4,7 @@
 #include <Core/System/System.h>
 #include <ECS/Entity.h>
 #include <glm/glm.hpp>
+#include <memory>
 
 namespace Mani
 {
@@ -14,10 +15,12 @@ namespace Mani
 	struct CameraConfig
 	{
 		float fov = 45.f;
+		float nearClipPlane = .1f;
+		float farClipPlane = 10'000.f;
 		float width = 800.f;
 		float height = 800.f;
-		float nearClipPlane = .1f;
-		float farClipPlane = 1000.f;
+
+		float getAspectRatio() const;
 	};
 
 	struct CameraComponent
@@ -44,6 +47,8 @@ namespace Mani
 
 		void setCameraConfig(EntityRegistry& registry, const CameraConfig& config);
 
+		glm::vec2 worldToScreenSpace(glm::vec3 position, const EntityRegistry& registry) const;
+		
 	private:
 		EntityId m_cameraId;
 	};
