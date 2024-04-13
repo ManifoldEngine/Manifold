@@ -20,7 +20,7 @@ namespace Mani
 	
 	private:
 
-		static void onApplicationStart();
 		static void onNewFrame();
+		static void onApplicationStart();
 	};
 }

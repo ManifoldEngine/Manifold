@@ -1,4 +1,5 @@
 #include "OpenGLDebug.h"
+#ifndef MANI_WEBGL
 #include <Core/Log.h>
 #include <string_view>
 #include <sstream>
@@ -67,3 +68,4 @@ void Mani::OpenGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum s
         }
     }
 }
+#endif

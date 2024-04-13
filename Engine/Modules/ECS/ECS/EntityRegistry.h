@@ -3,6 +3,7 @@
 #include "ECS.h"
 #include "Internals/EntityContainer.h"
 #include "Entity.h"
+#include "Internals/EntityContainer_Implementation.h"
 #include <Events/Event.h>
 
 namespace Mani
@@ -118,5 +119,52 @@ namespace Mani
 	inline ComponentId EntityRegistry::getComponentId() const
 	{
 		return m_entityContainer->getComponentId(typeid(TComponent));
+	}
+
+	inline EntityRegistry::EntityRegistry()
+	{
+		m_entityContainer = new EntityContainer_Implementation();
+	}
+
+	inline EntityRegistry::~EntityRegistry()
+	{
+		delete m_entityContainer;
+	}
+
+	inline EntityId EntityRegistry::create()
+	{
+		const EntityId entityId = m_entityContainer->create();
+		onEntityCreated.broadcast(*this, entityId);
+		return entityId;
+	}
+
+	inline bool EntityRegistry::destroy(EntityId entityId)
+	{
+		if (m_entityContainer->destroy(entityId))
+		{
+			onEntityDestroyed.broadcast(*this, entityId);
+			return true;
+		}
+		return false;
+	}
+
+	inline const Entity* EntityRegistry::getEntity(EntityId entityId) const
+	{
+		return m_entityContainer->getEntity(entityId);
+	}
+
+	inline size_t EntityRegistry::size() const
+	{
+		return m_entityContainer->size();
+	}
+
+	inline bool EntityRegistry::isValid(EntityId entityId) const
+	{
+		return m_entityContainer->isValid(entityId);
+	}
+
+	inline void EntityRegistry::resetComponentIds()
+	{
+		s_componentCounter = 0;
 	}
 }

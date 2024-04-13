@@ -15,6 +15,10 @@
 #include <vector>
 #include <memory>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 using namespace Mani;
 
 OpenGLSystem* OpenGLSystem::s_openGLSystem = nullptr;
@@ -137,9 +141,11 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     // set the view port to the window's size.
     glViewport(0, 0, m_context.width, m_context.height);
     
-#if MANI_OPENGL_DEBUG
-    glEnable(GL_DEBUG_OUTPUT);
-    glDebugMessageCallback(OpenGLMessageCallback, nullptr);
+#ifndef MANI_WEBGL
+    #if MANI_OPENGL_DEBUG
+        glEnable(GL_DEBUG_OUTPUT);
+        glDebugMessageCallback(OpenGLMessageCallback, nullptr);
+    #endif
 #endif
 
     m_openGLInputGenerator = std::make_shared<OpenGLInput>(shared_from_this());
@@ -158,4 +164,8 @@ void OpenGLSystem::tick(float deltaTime, EntityRegistry& entityRegistry)
 {
     glfwSwapBuffers(m_context.window);
     glfwPollEvents();
+
+#ifdef __EMSCRIPTEN__
+    emscripten_sleep(100);
+#endif
 }

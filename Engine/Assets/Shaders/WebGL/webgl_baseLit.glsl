@@ -1,18 +1,20 @@
 #type vertex 
 #version 100
 
-layout(location = 0) in vec3 aPosition;
-layout(location = 1) in vec3 aNormal;
-layout(location = 2) in vec2 aTextureCoordinate;
+precision mediump float;
+
+attribute vec3 aPosition;
+attribute vec3 aNormal;
+attribute vec2 aTextureCoordinate;
 
 uniform mat4 model;
 uniform mat3 normalMatrix;
 uniform mat4 view;
 uniform mat4 projection;
 
-out vec3 fragmentPosition;
-out vec3 normal;
-out vec2 textureCoordinate;
+varying vec3 fragmentPosition;
+varying vec3 normal;
+varying vec2 textureCoordinate;
 
 void main()
 {
@@ -24,6 +26,8 @@ void main()
 
 #type fragment
 #version 100
+
+precision mediump float;
 
 struct Material
 {
@@ -70,13 +74,13 @@ struct Spotlight
 #define MAX_POINT_LIGHTS 32
 #define MAX_SPOTLIGHTS 32
 
-in vec3 fragmentPosition;
-in vec3 normal;
-in vec2 textureCoordinate;
+varying vec3 fragmentPosition;
+varying vec3 normal;
+varying vec2 textureCoordinate;
 
-uniform int directionalLightsCount;
-uniform int pointLightsCount;
-uniform int spotlightsCount;
+uniform float directionalLightsCount;
+uniform float pointLightsCount;
+uniform float spotlightsCount;
 
 uniform Material material;
 uniform DirectionLight directionalLights[MAX_DIRECTIONAL_LIGHTS];
@@ -85,64 +89,66 @@ uniform Spotlight spotlights[MAX_SPOTLIGHTS];
 
 uniform vec3 viewPosition;
 
-out vec4 FragColor;
-
-vec3 processDirectionLight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor);
-vec3 processPointLight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor);
-vec3 processSpotlight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor);
+vec3 processDirectionLight(float index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor);
+vec3 processPointLight(float index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor);
+vec3 processSpotlight(float index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor);
+float mininmum(float a, float b);
 
 void main()
 {
     vec3 normalizedNormal = normalize(normal);
-    vec3 diffuseColor = texture(material.diffuseMap, textureCoordinate).rgb;
-    vec3 specularColor = texture(material.specularMap, textureCoordinate).rgb;
+    vec3 diffuseColor = texture2D(material.diffuseMap, textureCoordinate).rgb;
+    vec3 specularColor = texture2D(material.specularMap, textureCoordinate).rgb;
     vec3 viewDirection = normalize(viewPosition - fragmentPosition);
 
     vec3 outputColor = vec3(0.0);
 
     // directional lights
-    for (int i = 0; i < min(directionalLightsCount, MAX_DIRECTIONAL_LIGHTS); i++)
+    const float maxDirectionalLightsCount = mininmum(directionalLightsCount, MAX_DIRECTIONAL_LIGHTS);
+    for (float i = 0.; i < maxDirectionalLightsCount; i++)
     {
         outputColor += processDirectionLight(i, normalizedNormal, viewDirection, diffuseColor, specularColor);
     }
 
     // point lights
-    for (int i = 0; i < min(pointLightsCount, MAX_POINT_LIGHTS); i++)
+    const float maxPointLightsCount = mininmum(pointLightsCount, MAX_POINT_LIGHTS);
+    for (float i = 0.; i < maxPointLightsCount; i++)
     {
         outputColor += processPointLight(i, normalizedNormal, viewDirection, diffuseColor, specularColor);
     }
 
     // spotlights
-    for (int i = 0; i < min(spotlightsCount, MAX_POINT_LIGHTS); i++)
+    const float maxSpotlightsCount = mininmum(spotlightsCount, MAX_POINT_LIGHTS);
+    for (float i = 0.; i < maxSpotlightsCount; i++)
     {
         outputColor += processSpotlight(i, normalizedNormal, viewDirection, diffuseColor, specularColor);
     }
     
-    FragColor = vec4(outputColor, 0.5);
+    gl_FragColor = vec4(outputColor, 0.5);
 }
 
-vec3 processDirectionLight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor)
+vec3 processDirectionLight(float index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor)
 {
-    vec3 lightDirection = normalize(-directionalLights[index].direction);
+    vec3 lightDirection = normalize(-directionalLights[int(index)].direction);
 
     // ambient
-    vec3 ambient = directionalLights[index].ambient * diffuseColor;
+    vec3 ambient = directionalLights[int(index)].ambient * diffuseColor;
 
     // diffuse
     float diffuseScalar = max(dot(normal, lightDirection), 0.0);
-    vec3 diffuse = directionalLights[index].diffuse * diffuseScalar * diffuseColor;
+    vec3 diffuse = directionalLights[int(index)].diffuse * diffuseScalar * diffuseColor;
 
     // specular
     vec3 reflectDirection = reflect(-lightDirection, normal);
     float specularScalar = pow(max(dot(viewDirection, reflectDirection), 0.0), material.shininess);
-    vec3 specular = directionalLights[index].specular * specularScalar * specularColor;
+    vec3 specular = directionalLights[int(index)].specular * specularScalar * specularColor;
 
     return ambient + diffuse + specular;
 }
 
-vec3 processPointLight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor)
+vec3 processPointLight(float index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor)
 {
-    PointLight light = pointLights[index];
+    PointLight light = pointLights[int(index)];
 
 
     vec3 lightDirection = normalize(light.position - fragmentPosition);
@@ -167,10 +173,10 @@ vec3 processPointLight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseC
     return ambient + diffuse + specular;
 }
 
-vec3 processSpotlight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor)
+vec3 processSpotlight(float index, vec3 normal, vec3 viewDirection, vec3 diffuseColor, vec3 specularColor)
 {
 
-    Spotlight light = spotlights[index];
+    Spotlight light = spotlights[int(index)];
 
     vec3 lightDirection = normalize(light.position - fragmentPosition);
     float theta = dot(lightDirection, normalize(-light.direction));
@@ -197,4 +203,9 @@ vec3 processSpotlight(int index, vec3 normal, vec3 viewDirection, vec3 diffuseCo
     {
         return ambient;
     }
+}
+
+float mininmum(float a, float b)
+{
+    return a < b ? a : b;
 }

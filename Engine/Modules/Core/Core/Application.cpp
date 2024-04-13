@@ -45,6 +45,7 @@ void Application::run()
 	Time::onApplicationStart();
 	m_systemContainer->initialize();
 	m_isRunning = true;
+
 	while (m_isRunning)
 	{
 		Time::onNewFrame();

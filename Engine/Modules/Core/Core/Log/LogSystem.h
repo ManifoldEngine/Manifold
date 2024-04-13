@@ -3,6 +3,7 @@
 #include <Core/Core.h>
 #include <Core/System/System.h>
 #include <string_view>
+#include <unordered_map>
 
 namespace Mani
 {

@@ -14,7 +14,7 @@ namespace Mani
 
 	class IInputGenerator;
 
-	constexpr uint32_t LOCAL_USERID = 0;
+	const uint32_t LOCAL_USERID = 0;
 
 	struct InputUser
 	{
@@ -42,14 +42,15 @@ namespace Mani
 	class InputSystem: public SystemBase
 	{
 	public:
-		std::string_view getName() const override;
-		bool shouldTick(EntityRegistry& registry) const override;
+		virtual std::string_view getName() const override;
+		virtual bool shouldTick(EntityRegistry& registry) const override;
 
-		void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override;
+		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override;
 		
-		void tick(float deltaTime, EntityRegistry& registry) override;
+		virtual void tick(float deltaTime, EntityRegistry& registry) override;
 
-		uint32_t createInputUser(const std::vector<InputAction>& actions, const std::unordered_map<std::string, std::vector<std::string>>& bindings);		void destroyInputUser(uint32_t userId);
+		uint32_t createInputUser(const std::vector<InputAction>& actions, const std::unordered_map<std::string, std::vector<std::string>>& bindings);
+		void destroyInputUser(uint32_t userId);
 		void assignInputGenerator(uint32_t userId, const std::weak_ptr<IInputGenerator>& generator);
 
 		const InputAction* getAction(uint32_t userId, const std::string& name) const;

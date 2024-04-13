@@ -14,6 +14,7 @@
 
 #include <filesystem>
 #include <memory>
+#include <iostream>
 
 namespace Mani
 {

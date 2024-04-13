@@ -7,7 +7,7 @@
         "z": 0.0,
         "w": 0.0
     },
-    "shaderPath": "Engine/Assets/Shaders/baseLit.shader",
+    "shaderPath": "Engine/Assets/Shaders/WebGL/webgl_baseLit.shader",
     "diffusePath": "Sandbox/Assets/Textures/Cactus_color.jpg",
     "specularPath": "",
     "shininess": 32.0

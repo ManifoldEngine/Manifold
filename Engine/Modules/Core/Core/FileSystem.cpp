@@ -37,15 +37,16 @@ bool FileSystem::tryWriteFile(const std::filesystem::path& filePath, const std::
 
 bool FileSystem::tryGetRootPath(std::filesystem::path& outPath)
 {
+#ifdef MANI_WEBGL
+#elif MANI_DISTRIBUTION
 	std::error_code errorCode;
-#ifndef MANI_DISTRIBUTION
-	outPath = std::filesystem::path(MANI_PROJECTROOT_PATH);
-#else
 	outPath = std::filesystem::current_path(errorCode);
 	if (errorCode.value() != 0)
 	{
 		return false;
 	}
+#else
+	outPath = std::filesystem::path(MANI_PROJECTROOT_PATH);
 #endif
 	return true;
 }

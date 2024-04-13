@@ -28,12 +28,20 @@ group "Engine"
 
         -- openGL
         links { "OpenGL32" }
-
+    
         -- stb (image)
         includedirs { thirdpartiesdir .. "/stb"}
         
         filter("configurations:Debug")
-            defines { "MANI_OPENGL_DEBUG" }
+           defines { "MANI_OPENGL_DEBUG" }
+           
+        -- webgl
+        filter("platforms:WebGL")
+            includedirs { thirdpartiesdir .. "emscripten/upstream/emscripten/cache/sysroot/include" }
+            removeincludedirs { thirdpartiesdir .. "/glew-2.2.0/include" }
+            removelibdirs { thirdpartiesdir .. "/glew-2.2.0/lib/Release/x64/" }
+            removeincludedirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/include" }
+            removelibdirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/lib-vc2022/" }
 group ""
 
 group "_TestLibs"

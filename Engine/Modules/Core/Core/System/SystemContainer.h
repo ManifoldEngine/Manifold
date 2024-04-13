@@ -1,6 +1,7 @@
 #pragma once
 
 #include "System.h"
+#include <Core/ManiAssert.h>
 #include <ECS/EntityRegistry.h>
 #include <Utils/TemplateUtils.h>
 #include <vector>
@@ -14,11 +15,12 @@ namespace Mani
 	{
 	public:
 		// Initializes all created systems. once this is called, will initialize newly created systems
-		virtual void initialize();
-		// Deinitiailize all systems
-		virtual void deinitialize();
+		void initialize();
 
-		virtual void tick(float deltaTime);
+		// Deinitiailize all systems
+		void deinitialize();
+
+		void tick(float deltaTime);
 
 		// creates a new TSystem : public SystemBase
 		// if the container is initialized, the system will be initialized as well
@@ -129,5 +131,56 @@ namespace Mani
 			}
 		}
 		return *this;
+	}
+
+	inline void SystemContainer::initialize()
+	{
+		if (m_isInitialized)
+		{
+			return;
+		}
+
+		for (auto& system : m_systems)
+		{
+			system->initialize(m_registry, *this);
+		}
+
+		m_isInitialized = true;
+	}
+
+	inline void SystemContainer::deinitialize()
+	{
+		if (!m_isInitialized)
+		{
+			return;
+		}
+
+		for (auto it = m_systems.rbegin(); it != m_systems.rend(); it++)
+		{
+			(*it)->deinitialize(m_registry);
+		}
+
+		m_isInitialized = false;
+	}
+
+	inline void SystemContainer::tick(float deltaTime)
+	{
+		if (!m_isInitialized)
+		{
+			return;
+		}
+
+		for (auto& system : m_systems)
+		{
+			if (system->shouldTick(m_registry) && system->isEnabled())
+			{
+				system->tick(deltaTime, m_registry);
+			}
+		}
+	}
+
+	inline size_t SystemContainer::size() const
+	{
+		return m_systems.size();
 	}
 }

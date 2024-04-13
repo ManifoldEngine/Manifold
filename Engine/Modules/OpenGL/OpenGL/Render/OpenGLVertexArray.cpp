@@ -26,7 +26,11 @@ GLenum toOpenGLType(ShaderDataType type)
 OpenGLVertexArray::OpenGLVertexArray()
 	: m_vertexArrayObjectId(-1)
 {
+#if MANI_WEBGL
+	glGenVertexArrays(1, &m_vertexArrayObjectId);
+#else
 	glCreateVertexArrays(1, &m_vertexArrayObjectId);
+#endif
 }
 
 OpenGLVertexArray::~OpenGLVertexArray()

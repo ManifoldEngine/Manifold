@@ -19,9 +19,11 @@ using namespace Mani;
 
 class TestSystem : public SystemBase
 {
-	std::string_view getName() const { return "TestSystem"; }
+public:
+	virtual std::string_view getName() const override { return "TestSystem"; }
 
-	void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+protected:
+	virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
 	{
 		// initialize inputs
 		std::shared_ptr<OpenGLSystem> openGLSystem = Application::get().getSystemContainer().getSystem<OpenGLSystem>().lock();
@@ -123,7 +125,7 @@ class TestSystem : public SystemBase
 		}
 	}
 
-	void onDeinitialize(EntityRegistry& registry)
+	virtual void onDeinitialize(EntityRegistry& registry) override
 	{
 	}
 };

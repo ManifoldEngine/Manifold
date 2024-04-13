@@ -44,6 +44,8 @@ configurations { "Debug", "Release", "Distribution" }
 
     filter "platforms:WebGL"
         defines { "MANI_WEBGL" }
+        linkoptions { "-sUSE_GLFW=3", "-sMAX_WEBGL_VERSION=2" }
+        -- rtti ("On")
         system "windows"
     
     filter "system:macosx"
@@ -63,7 +65,7 @@ project "Sandbox"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
 
-    links { "Core", "OpenGL", "ECS", "Camera", "FloatingCamera", "Assets", "RenderAPI", "PhysX" }
+    links { "Core", "OpenGL", "ECS", "Camera", "FloatingCamera", "Assets", "RenderAPI", "PhysX", "Inputs" }
 
     includedirs { moduledir .. "/**", "/%{prj.name}/Sources/" }
 
