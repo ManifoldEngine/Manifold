@@ -68,7 +68,7 @@ namespace Mani
             }
 
             EntityId entityId = 0;
-            for (; entityId < m_registry->size(); ++entityId)
+            for (; entityId < m_registry->unadjustedSize(); ++entityId)
             {
                 if (!m_registry->isValid(entityId))
                 {
@@ -86,7 +86,7 @@ namespace Mani
 
         const Iterator end() const
         {
-            return Iterator(m_registry, m_registry->size(), m_componentMask, m_bisAll);
+            return Iterator(m_registry, m_registry->unadjustedSize(), m_componentMask, m_bisAll);
         }
 
     private:
@@ -133,7 +133,7 @@ namespace Mani
         do
         {
             m_currentEntityId++;
-        } while (m_currentEntityId < m_registry->size() && !isValidIndex());
+        } while (m_currentEntityId < m_registry->unadjustedSize() && !isValidIndex());
         return *this;
     }
 
