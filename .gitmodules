@@ -1,21 +1,30 @@
-[submodule "Engine/ThirdParties/SimpleTests"]
-	path = Engine/ThirdParties/SimpleTests
+[submodule "ThirdParties/SimpleTests"]
+	path = ThirdParties/SimplesTests
 	url = https://github.com/nox282/SimpleTests
-[submodule "Engine/ThirdParties/stb"]
-	path = Engine/ThirdParties/stb
+[submodule "ThirdParties/stb"]
+	path = ThirdParties/stb
 	url = https://github.com/nothings/stb
-[submodule "Engine/ThirdParties/glm"]
-	path = Engine/ThirdParties/glm
+[submodule "ThirdParties/glm"]
+	path = ThirdParties/glm
 	url = https://github.com/g-truc/glm
-[submodule "Engine/ThirdParties/json"]
-	path = Engine/ThirdParties/json
+[submodule "ThirdParties/json"]
+	path = ThirdParties/json
 	url = https://github.com/nlohmann/json
-[submodule "Engine/AssetImporter/ThirdParties/assimp"]
-	path = Engine/AssetImporter/ThirdParties/assimp
+[submodule "ThirdParties/assimp"]
+	path = ThirdParties/assimp
 	url = https://github.com/assimp/assimp.git
-[submodule "Engine/ThirdParties/PhysX"]
-	path = Engine/ThirdParties/PhysX
+[submodule "ThirdParties/PhysX"]
+	path = ThirdParties/PhysX
 	url = https://github.com/NVIDIA-Omniverse/PhysX.git
-[submodule "Engine/ThirdParties/emscripten"]
-	path = Engine/ThirdParties/emscripten
+[submodule "ThirdParties/emsdk"]
+	path = ThirdParties/emsdk
 	url = https://github.com/emscripten-core/emsdk.git
+[submodule "ThirdParties/glfw"]
+	path = ThirdParties/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "ThirdParties/glew"]
+	path = ThirdParties/glew
+	url = https://github.com/nigels-com/glew
+[submodule "ThirdParties/lua"]
+	path = ThirdParties/lua
+	url = https://github.com/rjpcomputing/luaforwindows.git
