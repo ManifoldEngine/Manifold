@@ -1,3 +1,27 @@
-[submodule "SimpleTests"]
+[submodule "ThirdParties/SimpleTests"]
 	path = ThirdParties/SimplesTests
 	url = https://github.com/nox282/SimpleTests
+[submodule "ThirdParties/stb"]
+	path = ThirdParties/stb
+	url = https://github.com/nothings/stb
+[submodule "glm"]
+	path = glm
+	url = https://github.com/g-truc/glm
+[submodule "ThirdParties/json"]
+	path = ThirdParties/json
+	url = https://github.com/nlohmann/json
+[submodule "ThirdParties/assimp"]
+	path = ThirdParties/assimp
+	url = https://github.com/assimp/assimp.git
+[submodule "ThirdParties/PhysX"]
+	path = ThirdParties/PhysX
+	url = https://github.com/NVIDIA-Omniverse/PhysX.git
+[submodule "emsdk"]
+	path = emsdk
+	url = https://github.com/emscripten-core/emsdk.git
+[submodule "ThirdParties/glfw"]
+	path = ThirdParties/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "ThirdParties/glew"]
+	path = ThirdParties/glew
+	url = https://github.com/nigels-com/glew
