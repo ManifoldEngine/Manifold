@@ -1,4 +1,4 @@
-local fs = require("Scripts/LuaScripts/filesystem")
+local fs = require("Scripts/LuaScripts/windowsFilesystem")
 
 function displayHelp()
     print(string.format(
@@ -17,6 +17,9 @@ local projectName = "Project"
 local projectPath = ".."
 local templatePath = "ProjectTemplate"
 
+local enginDirToken = "{{ENGINE_DIR}}"
+local projectNameToken = "{{PROJECT_NAME}}"
+
 local engineDir = fs.getCurrentDirectoryName()
 
 -- get project name
@@ -33,18 +36,34 @@ else
 end
 
 print("Initializing project " .. projectPath .. "/" .. projectName)
+function copyAndReplaceTokens (directoryPath, destinationPath) 
+    for entry in fs.ls(directoryPath) do
+        if entry ~= ".." then
+            local sourceEntry = entry
+            local destEntry = entry
+            
+            if destEntry == projectNameToken then
+                destEntry = projectName
+            end
 
-print("copying project template to " .. projectPath)
-for filename in fs.ls(templatePath) do
-    local sourcePath = templatePath .. "\\" .. filename
-    local destPath = projectPath .. "\\" .. filename
-    print("copying and filling in project tokens [" .. sourcePath .. "] to [" .. destPath .. "]")
-    fs.copyFile(sourcePath, destPath)
-    fs.replaceTokenInFile(destPath, "{{ENGINE_DIR}}", engineDir)
-    fs.replaceTokenInFile(destPath, "{{PROJECT_NAME}}", projectName)
+            if destEntry == enginDirToken then
+                destEntry = engineDir
+            end
+
+            local entryPath = directoryPath .. "\\" .. sourceEntry
+            local entryDestPath = destinationPath .. "\\" .. destEntry
+
+            if fs.isDirectory(entryPath) then
+                fs.createDirectory(entryDestPath)
+                copyAndReplaceTokens(entryPath, entryDestPath)
+            else
+                print("copying [" .. entryPath .. "] to [" .. entryDestPath .. "]")
+                fs.copyFile(entryPath, entryDestPath)
+                fs.replaceTokenInFile(entryDestPath, enginDirToken, engineDir)
+                fs.replaceTokenInFile(entryDestPath, projectNameToken, projectName)
+            end
+        end
+    end
 end
 
-print("Creating project directories")
-fs.createDirectory(projectPath .. "\\" .. projectName)
-fs.createDirectory(projectPath .. "\\" .. projectName .. "\\" .. "Assets")
-fs.createDirectory(projectPath .. "\\" .. projectName .. "\\" .. "Sources")
+copyAndReplaceTokens(templatePath, projectPath)
