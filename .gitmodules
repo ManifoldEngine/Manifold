@@ -4,7 +4,7 @@
 [submodule "ThirdParties/stb"]
 	path = ThirdParties/stb
 	url = https://github.com/nothings/stb
-[submodule "glm"]
+[submodule "ThirdParties/glm"]
 	path = ThirdParties/glm
 	url = https://github.com/g-truc/glm
 [submodule "ThirdParties/json"]
@@ -16,7 +16,7 @@
 [submodule "ThirdParties/PhysX"]
 	path = ThirdParties/PhysX
 	url = https://github.com/NVIDIA-Omniverse/PhysX.git
-[submodule "emsdk"]
+[submodule "ThirdParties/emsdk"]
 	path = ThirdParties/emsdk
 	url = https://github.com/emscripten-core/emsdk.git
 [submodule "ThirdParties/glfw"]

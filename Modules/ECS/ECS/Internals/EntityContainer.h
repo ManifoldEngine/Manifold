@@ -24,8 +24,11 @@ namespace Mani
 		// returns a const ref to an entity object
 		virtual const Entity* getEntity(EntityId entityId) const = 0;
 
-		// returns the number of entities
+		// returns the number of alive entities
 		virtual size_t size() const = 0;
+
+		// returns the total number of entities (alive and pooled)
+		virtual size_t unadjustedSize() const = 0;
 
 		// returns true if an entity with specified id exists
 		virtual bool isValid(EntityId entityId) const = 0;

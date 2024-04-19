@@ -49,6 +49,8 @@ namespace Mani
 		bool removeComponent(EntityId entityId);
 
 		size_t size() const;
+
+		size_t unadjustedSize() const;
 		
 		bool isValid(EntityId entityId) const;
 
@@ -156,6 +158,11 @@ namespace Mani
 	inline size_t EntityRegistry::size() const
 	{
 		return m_entityContainer->size();
+	}
+
+	inline size_t EntityRegistry::unadjustedSize() const
+	{
+		return m_entityContainer->unadjustedSize();
 	}
 
 	inline bool EntityRegistry::isValid(EntityId entityId) const

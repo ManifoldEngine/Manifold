@@ -19,6 +19,7 @@ namespace Mani {
 		bool destroy(EntityId entityId) override;
 		const Entity* getEntity(EntityId entityId) const override;
 		size_t size() const override;
+		size_t unadjustedSize() const override;
 		bool isValid(EntityId entityId) const override;
 
 		void* addComponent(EntityId entityId, ComponentId componentId, size_t componentSize) override;

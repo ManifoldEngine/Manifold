@@ -436,5 +436,35 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		ST_ASSERT(resultBitset == (bitset | otherBitset), "should be able to add bitsets");
 	}
+	
+	ST_TEST(DoNotAssumeRegistrySizeContainsAllIndices, "Should iterate over all the entities")
+	{
+		struct Component {};
+
+		EntityRegistry registry;
+
+		const EntityId entity1 = registry.create();
+		registry.addComponent<Component>(entity1);
+		const EntityId entity2 = registry.create();
+		registry.addComponent<Component>(entity2);
+		
+		size_t count = 0;
+		for (const EntityId entityId : RegistryView<Component>(registry))
+		{
+			count++;
+		}
+
+		ST_ASSERT(count == 2, "All entities should have been visited");
+
+		registry.destroy(entity1);
+
+		count = 0;
+		for (const EntityId entityId : RegistryView<Component>(registry))
+		{
+			count++;
+		}
+
+		ST_ASSERT(count == 1, "All entities should have been visited");
+	}
 }
 ST_SECTION_END(ECS)

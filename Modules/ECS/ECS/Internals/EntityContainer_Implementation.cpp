@@ -81,9 +81,14 @@ size_t EntityContainer_Implementation::size() const
 	return m_entities.size() - m_entityPool.size();
 }
 
+size_t EntityContainer_Implementation::unadjustedSize() const
+{
+	return m_entities.size();
+}
+
 bool EntityContainer_Implementation::isValid(EntityId entityId) const
 {
-	if (entityId >= m_entities.size() && entityId == INVALID_ID)
+	if (entityId >= m_entities.size() || entityId == INVALID_ID)
 	{
 		return false;
 	}
