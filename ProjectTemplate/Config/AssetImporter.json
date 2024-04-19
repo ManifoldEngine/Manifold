@@ -1,0 +1,4 @@
+{
+	"engineAssetPath": "{{ENGINE_DIR}}/Assets",
+	"projectAssetPath": "{{PROJECT_NAME}}/Assets"
+}
