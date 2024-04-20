@@ -37,15 +37,15 @@ Manifold is provided as static library. The recommended way to install it is thr
 Your project is ready to be edited. In the folder above Manifold, you should find the folloing structure:
 ```
 | Config
-|-- // for any config file set outside of the c++ project
-| Engine
-|-- // Manifold's sources
+|-- [for any config file set outside of the c++ project]
+| Engine/
+|-- [Manifold's sources]
 | [YourProjectName]
-|-- Assets
-|---- // The default location for your assets
-|-- Sources
-|---- main.cpp // a Manifold's take on hello world.
-|---- // The default location for your c++ code.
+|-- Assets/
+|---- [The default location for your assets]
+|-- Sources/
+|---- main.cpp
+|---- [The default location for your c++ code.]
 ```
 
 ### Build System
