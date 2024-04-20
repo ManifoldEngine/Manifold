@@ -136,9 +136,8 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
         terminate();
         return;
     }
-    if (gl3wIsSupported(3, 2))
+    if (!gl3wIsSupported(3, 2))
     {
-
         MANI_LOG_ERROR(LogOpenGL, "OpenGL 3.2 is not supported");
         terminate();
         return;
