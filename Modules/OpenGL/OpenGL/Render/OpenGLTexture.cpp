@@ -1,6 +1,6 @@
 #include "OpenGLTexture.h"
 #include <Core/Log.h>
-#include <GL/glew.h>
+#include <GL/gl3w.h>
 #include <Core/ManiAssert.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>

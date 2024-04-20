@@ -14,16 +14,16 @@ group "Engine"
 
         includedirs { moduledir .. "/**" }
 
-        defines { "GLEW_STATIC" }
-
-        -- glew
-        includedirs { thirdpartiesdir .. "/glew-2.2.0/include" }
-        libdirs { thirdpartiesdir .. "/glew-2.2.0/lib/Release/x64/" }
-        links { "glew32s" }
+        -- gl3w
+        includedirs { thirdpartiesdir .. "/gl3w/include" }
+        files {
+            thirdpartiesdir .. "/gl3w/include/**.h",
+            thirdpartiesdir .. "/gl3w/src/gl3w.c"
+        }
 
         -- glfw
-        includedirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/include" }
-        libdirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/lib-vc2022/" }
+        includedirs { thirdpartiesdir .. "/glfw/include" }
+        libdirs { thirdpartiesdir .. "/glfw/src/Debug" }
         links { "glfw3" }
 
         -- openGL

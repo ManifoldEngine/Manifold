@@ -1,5 +1,5 @@
 #include "OpenGLShader.h"
-#include <GL/glew.h>
+#include <GL/gl3w.h>
 #include <Core/Log.h>
 
 using namespace Mani;

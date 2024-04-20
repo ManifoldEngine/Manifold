@@ -29,7 +29,7 @@
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <GL/glew.h>
+#include <GL/gl3w.h>
 
 using namespace Mani;
 
