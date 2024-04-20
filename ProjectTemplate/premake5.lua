@@ -20,7 +20,7 @@ configurations { "Debug", "Release", "Distribution" }
     includedirs { thirdpartiesdir .. "/PhysX/physx/include"}
     --SimpleTests
     includedirs { thirdpartiesdir .. "/SimpleTests/include" }
-
+    
     filter "configurations:Debug"
         defines { "MANI_DEBUG" }
         defines { "MANI_PROJECTROOT_PATH=\"".. _MAIN_SCRIPT_DIR .. "\"" }

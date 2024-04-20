@@ -1,6 +1,6 @@
 #include "OpenGLSystem.h"
 
-#include <GL/glew.h>
+#include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 
 #include <Core/Application.h>
@@ -129,11 +129,17 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
     glfwSetWindowCloseCallback(m_context.window, &OpenGLSystem::glfwCallback_onWindowClosed);
     glfwSetFramebufferSizeCallback(m_context.window, &OpenGLSystem::glfwCallback_onWindowResized);
 
-    // init glew to load the correct opengl runtime
-    GLenum result = glewInit();
-    if (result != GLEW_OK)
+    // init gl3w to load the correct opengl runtime
+    if (gl3wInit() != GL3W_OK)
     {
         MANI_LOG_ERROR(LogOpenGL, "failed to init glew");
+        terminate();
+        return;
+    }
+    if (gl3wIsSupported(3, 2))
+    {
+
+        MANI_LOG_ERROR(LogOpenGL, "OpenGL 3.2 is not supported");
         terminate();
         return;
     }

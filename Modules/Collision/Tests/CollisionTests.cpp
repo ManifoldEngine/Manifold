@@ -1,4 +1,4 @@
-#include "simpleTests.h"
+#include <simpleTests.h>
 #include <Core/CoreFwd.h>
 #include <Collision/Algorithms/GJK.h>
 #include <Collision/Algorithms/EPA.h>

@@ -1,6 +1,6 @@
 [submodule "ThirdParties/SimpleTests"]
-	path = ThirdParties/SimplesTests
-	url = https://github.com/nox282/SimpleTests
+	path = ThirdParties/SimpleTests
+	url = https://github.com/nox282/SimpleTests.git
 [submodule "ThirdParties/stb"]
 	path = ThirdParties/stb
 	url = https://github.com/nothings/stb
@@ -25,3 +25,6 @@
 [submodule "ThirdParties/lua"]
 	path = ThirdParties/lua
 	url = https://github.com/rjpcomputing/luaforwindows.git
+[submodule "ThirdParties/gl3w"]
+	path = ThirdParties/gl3w
+	url = https://github.com/skaslev/gl3w.git

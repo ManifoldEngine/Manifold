@@ -1,5 +1,5 @@
 #include "OpenGLBuffer.h"
-#include <GL/glew.h>
+#include <GL/gl3w.h>
 
 using namespace Mani;
 
