@@ -45,7 +45,7 @@ Your project is ready to be edited. In the folder above Manifold, you should fin
 |---- [The default location for your assets]
 |-- Sources/
 |---- main.cpp
-|---- [The default location for your c++ code.]
+|---- [The default location for your c++ code]
 ```
 
 ### Build System
