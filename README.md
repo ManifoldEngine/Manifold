@@ -2,7 +2,7 @@
 Manifold is an ECS Game Engine focused on modularity. It promotes a System based architecture and procedural code.
 
 # Requirements
-Some of the dependencies are provided with the engine submodule. This includes a Premake5 executable and a lua interpreter
+Some of the dependencies are provided with the engine submodule. This includes a Premake5 executable, a cmake executable, and a lua interpreter
 
 ## Windows
 * Visual Studio 2022
