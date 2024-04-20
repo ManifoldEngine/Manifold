@@ -25,6 +25,6 @@ group "AssetImporter"
         links { "assimp-vc143-mtd" }
 
         postbuildcommands {
-            "{COPYFILE} ThirdParties/assimp/bin/Debug/assimp-vc143-mtd.dll bin/assimp-vc143-mtd.dll"
+            "{COPYFILE} " .. thirdpartiesdir .. "/assimp/bin/Debug/assimp-vc143-mtd.dll bin/assimp-vc143-mtd.dll"
         }
 group ""
