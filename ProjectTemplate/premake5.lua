@@ -14,6 +14,7 @@ configurations { "Debug", "Release", "Distribution" }
 
     --glm
     includedirs { thirdpartiesdir .. "/glm" }
+    defines { "GLM_ENABLE_EXPERIMENTAL" }
     --json
     includedirs { thirdpartiesdir .. "/json/include"}
     --physx

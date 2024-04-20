@@ -18,12 +18,12 @@ group "Engine"
         includedirs { thirdpartiesdir .. "/gl3w/include" }
         files {
             thirdpartiesdir .. "/gl3w/include/**.h",
-            thirdpartiesdir .. "/gl3w/src/glew.c"
+            thirdpartiesdir .. "/gl3w/src/gl3w.c"
         }
 
         -- glfw
         includedirs { thirdpartiesdir .. "/glfw/include" }
-        libdirs { thirdpartiesdir .. "/glfw/lib-vc2022/" }
+        libdirs { thirdpartiesdir .. "/glfw/src/Debug" }
         links { "glfw3" }
 
         -- openGL

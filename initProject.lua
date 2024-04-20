@@ -114,14 +114,14 @@ if shouldBuildThirdParties then
     local glfwDir = "ThirdParties\\glfw\\"
     print("build glfw")
     os.execute(cmake .. " -S " .. glfwDir .. " -B " .. glfwDir .. " -D BUILD_SHARED_LIBS=OFF")
-    os.execute(cmake .. " --build " .. glfwDir)
+    -- os.execute(cmake .. " --build " .. glfwDir)
+    os.execute(MSBuild .. " " .. glfwDir .. "ALL_BUILD.vcxproj")
     
     print("======================================")
     
     -- physx
     local physxDir = "ThirdParties\\PhysX\\physx\\"
     print("build PhysX")
-    
     os.execute("cd " .. physxDir .. " && generate_projects.bat vc17win64")
     os.execute(MSBuild .. " " .. physxDir .. "compiler/vc17win64/ALL_BUILD.vcxproj")
 end

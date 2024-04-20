@@ -9,7 +9,7 @@ class HelloWorldSystem : public SystemBase
     {
         MANI_LOG(Log, "Hello world!");
     }
-}
+};
 
 int main(int argc, char** argv)
 {
