@@ -20,8 +20,8 @@ group "AssetImporter"
         links { "Core", "Assets", "RenderAPI", "Scene" }
 
         -- assimp
-        includedirs { enginedir .. "/%{prj.name}/ThirdParties/assimp/include" }
-        libdirs { enginedir .. "/%{prj.name}/ThirdParties/assimp/lib/Debug" }
+        includedirs { thirdpartiesdir .. "/assimp/include" }
+        libdirs { thirdpartiesdir .. "/assimp/lib/Debug" }
         links { "assimp-vc143-mtd" }
 
         postbuildcommands {
