@@ -13,6 +13,9 @@ namespace Mani
 		bool isLoaded() const { return m_isLoaded; };
 		void bind(uint32_t slot);
 		void unbind();
+
+		int getWidth() const { return m_width; }
+		int getHeight() const { return m_height; }
 	private:
 		unsigned int m_textureId;
 		bool m_isLoaded;

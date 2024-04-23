@@ -9,8 +9,8 @@
 
 #include <Camera/CameraSystem.h>
 
-#include <RenderAPI/Mesh.h>
 #include <RenderAPI/MeshComponent.h>
+#include <RenderAPI/SpriteComponent.h>
 #include <RenderAPI/Light/DirectionalLightComponent.h>
 #include <RenderAPI/Light/PointLightComponent.h>
 #include <RenderAPI/Light/SpotlightComponent.h>
@@ -23,6 +23,7 @@
 #include <OpenGL/Render/OpenGLTexture.h>
 #include <OpenGL/Render/OpenGLMaterial.h>
 #include <OpenGL/Render/OpenGLShader.h>
+#include <OpenGL/Render/OpenGLSprite.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -103,8 +104,8 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 	RegistryView<Transform, PointLightComponent> pointLightsView(registry);
 	RegistryView<Transform, SpotlightComponent> spotlightsView(registry);
 
+	// Render MeshComponents
 	RegistryView<Transform, MeshComponent> meshesView(registry);
-
 	for (const EntityId entityId : meshesView)
 	{
 		Transform* transform = registry.getComponent<Transform>(entityId);
@@ -269,6 +270,88 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 		{
 			specularTexture->unbind();
 		}
+	}
+
+	// Render SpriteComponents
+	RegistryView <Transform, SpriteComponent> spritesView(registry);
+	for (const EntityId entityId : spritesView)
+	{
+		const Transform& transform = *registry.getComponent<Transform>(entityId);
+		const SpriteComponent& spriteComponent = *registry.getComponent<SpriteComponent>(entityId);
+
+		if (spriteComponent.sprite == nullptr)
+		{
+			MANI_LOG_WARNING(LogOpenGL, "Entity {} with null sprite", entityId);
+			return;
+		}
+
+		const std::shared_ptr<OpenGLSprite> sprite = resourceSystem->getSprite(spriteComponent.sprite->name);
+		if (sprite == nullptr)
+		{
+			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a sprite that is not loaded");
+			return;
+		}
+
+		MANI_ASSERT(!sprite->shaderName.empty(), "A Shader is always expected in a sprite");
+
+		const std::shared_ptr<OpenGLShader> shader = resourceSystem->getShader(sprite->shaderName);
+		if (shader == nullptr)
+		{
+			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a vao that is not loaded");
+			return;
+		}
+
+		const std::shared_ptr<OpenGLVertexArray> vao = resourceSystem->getQuad(spriteComponent.repeatAmount);
+		if (vao == nullptr)
+		{
+			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a vao that is not loaded");
+			return;
+		}
+
+		const std::shared_ptr<OpenGLTexture2D> texture = resourceSystem->getTexture(sprite->textureName);
+		if (texture == nullptr)
+		{
+			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a texture that is not loaded");
+			return;
+		}
+
+		shader->use();
+
+		Transform scaledTransform = transform;
+		const float width = static_cast<float>(texture->getWidth());
+		const float height = static_cast<float>(texture->getHeight());
+		MANI_ASSERT(width > 0.f && height > 0.f, "do not divide by zero");
+		if (width > height)
+		{
+			scaledTransform.scale.z *= height / width;
+		}
+		else
+		{
+			scaledTransform.scale.x *= width / height;
+		}
+
+		glm::mat4 modelMatrix = scaledTransform.calculateModelMatrix();
+
+		shader->setFloatMatrix4("model", glm::value_ptr(modelMatrix));
+		shader->setFloatMatrix4("view", glm::value_ptr(viewMatrix));
+		shader->setFloatMatrix4("projection", glm::value_ptr(projectionMatrix));
+
+		int textureIndex = 0;
+		texture->bind(textureIndex);
+		shader->setTextureSlot("sprite", textureIndex++);
+		shader->setFloat4("color", spriteComponent.color.x, spriteComponent.color.y, spriteComponent.color.z, spriteComponent.color.w);
+
+		vao->bind();
+		if (const auto& indexBuffer = vao->getIndexBuffer())
+		{
+			glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indexBuffer->getStrideCount()), GL_UNSIGNED_INT, nullptr);
+		}
+		else
+		{
+			MANI_ASSERT(false, "no index buffer provided with the vertices");
+		}
+
+		texture->unbind();
 	}
 }
 
