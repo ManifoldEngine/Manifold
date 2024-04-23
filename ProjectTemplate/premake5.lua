@@ -69,5 +69,5 @@ project "{{PROJECT_NAME}}"
 
     links { "Core", "OpenGL", "ECS", "Camera", "FloatingCamera", "Assets", "RenderAPI", "PhysX", "Inputs" }
 
-    includedirs { moduledir .. "/**", "/%{prj.name}/Sources/" }
+    includedirs { moduledir .. "/**", "%{prj.name}/Sources" }
 
