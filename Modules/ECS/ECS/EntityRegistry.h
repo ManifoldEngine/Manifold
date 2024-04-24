@@ -1,9 +1,8 @@
 #pragma once
 
 #include "ECS.h"
-#include "Internals/EntityContainer.h"
+#include "EntityContainer.h"
 #include "Entity.h"
-#include "Internals/EntityContainer_Implementation.h"
 #include <Events/Event.h>
 
 namespace Mani
@@ -25,9 +24,6 @@ namespace Mani
 		EntityEvent onEntityDestroyed;
 		EntityComponentEvent onComponentAdded;
 		EntityComponentEvent onComponentRemoved;
-
-		EntityRegistry();
-		~EntityRegistry();
 
 		EntityId create();
 		bool destroy(EntityId entityId);
@@ -58,21 +54,16 @@ namespace Mani
 		template<typename TComponent>
 		ComponentId getComponentId() const;
 
-		// Resets the component id counter. This is mainly for easier testing.
-		static void resetComponentIds();
-
 	private:
-		static ComponentId s_componentCounter;
-
-		IEntityContainer* m_entityContainer;
+		EntityContainer m_entityContainer;
 	};
 
 	template<typename TComponent>
 	inline TComponent* EntityRegistry::addComponent(EntityId entityId)
 	{
-		const ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
+		const ComponentId componentId = m_entityContainer.getComponentId(typeid(TComponent));
 
-		void* buffer = m_entityContainer->addComponent(entityId, componentId, sizeof(TComponent));
+		void* buffer = m_entityContainer.addComponent(entityId, componentId, sizeof(TComponent));
 		if (buffer == nullptr)
 		{
 			return nullptr;
@@ -87,29 +78,29 @@ namespace Mani
 	template<typename TComponent>
 	inline TComponent* EntityRegistry::getComponent(EntityId entityId)
 	{
-		const ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
-		return static_cast<TComponent*>(m_entityContainer->getComponent(entityId, componentId));
+		const ComponentId componentId = m_entityContainer.getComponentId(typeid(TComponent));
+		return static_cast<TComponent*>(m_entityContainer.getComponent(entityId, componentId));
 	}
 
 	template<typename TComponent>
 	inline bool EntityRegistry::hasComponent(EntityId entityId) const
 	{
-		const ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
-		return m_entityContainer->hasComponent(entityId, componentId);
+		const ComponentId componentId = m_entityContainer.getComponentId(typeid(TComponent));
+		return m_entityContainer.hasComponent(entityId, componentId);
 	}
 
 	template<typename TComponent>
 	inline const TComponent* EntityRegistry::getComponent(EntityId entityId) const
 	{
-		const ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
-		return static_cast<const TComponent*>(m_entityContainer->getComponent(entityId, componentId));;
+		const ComponentId componentId = m_entityContainer.getComponentId(typeid(TComponent));
+		return static_cast<const TComponent*>(m_entityContainer.getComponent(entityId, componentId));;
 	}
 
 	template<typename TComponent>
 	inline bool EntityRegistry::removeComponent(EntityId entityId)
 	{
-		const ComponentId componentId = m_entityContainer->getComponentId(typeid(TComponent));
-		if (m_entityContainer->removeComponent(entityId, componentId))
+		const ComponentId componentId = m_entityContainer.getComponentId(typeid(TComponent));
+		if (m_entityContainer.removeComponent(entityId, componentId))
 		{
 			onComponentRemoved.broadcast(*this, entityId, componentId);
 			return true;
@@ -120,29 +111,19 @@ namespace Mani
 	template<typename TComponent>
 	inline ComponentId EntityRegistry::getComponentId() const
 	{
-		return m_entityContainer->getComponentId(typeid(TComponent));
-	}
-
-	inline EntityRegistry::EntityRegistry()
-	{
-		m_entityContainer = new EntityContainer_Implementation();
-	}
-
-	inline EntityRegistry::~EntityRegistry()
-	{
-		delete m_entityContainer;
+		return m_entityContainer.getComponentId(typeid(TComponent));
 	}
 
 	inline EntityId EntityRegistry::create()
 	{
-		const EntityId entityId = m_entityContainer->create();
+		const EntityId entityId = m_entityContainer.create();
 		onEntityCreated.broadcast(*this, entityId);
 		return entityId;
 	}
 
 	inline bool EntityRegistry::destroy(EntityId entityId)
 	{
-		if (m_entityContainer->destroy(entityId))
+		if (m_entityContainer.destroy(entityId))
 		{
 			onEntityDestroyed.broadcast(*this, entityId);
 			return true;
@@ -152,26 +133,21 @@ namespace Mani
 
 	inline const Entity* EntityRegistry::getEntity(EntityId entityId) const
 	{
-		return m_entityContainer->getEntity(entityId);
+		return m_entityContainer.getEntity(entityId);
 	}
 
 	inline size_t EntityRegistry::size() const
 	{
-		return m_entityContainer->size();
+		return m_entityContainer.size();
 	}
 
 	inline size_t EntityRegistry::unadjustedSize() const
 	{
-		return m_entityContainer->unadjustedSize();
+		return m_entityContainer.unadjustedSize();
 	}
 
 	inline bool EntityRegistry::isValid(EntityId entityId) const
 	{
-		return m_entityContainer->isValid(entityId);
-	}
-
-	inline void EntityRegistry::resetComponentIds()
-	{
-		s_componentCounter = 0;
+		return m_entityContainer.isValid(entityId);
 	}
 }

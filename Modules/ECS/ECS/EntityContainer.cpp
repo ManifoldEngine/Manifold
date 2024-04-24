@@ -1,18 +1,18 @@
-#include "EntityContainer_Implementation.h"
+#include "EntityContainer.h"
 #include <assert.h>
 
 using namespace Mani;
 
-// EntityContainer_Implementation::ComponentPool begin
+// EntityContainer::ComponentPool begin
 
-EntityContainer_Implementation::ComponentPool::ComponentPool(size_t inElementsSize)
+EntityContainer::ComponentPool::ComponentPool(size_t inElementsSize)
 	: elementSize(inElementsSize)
 {
 	capacity = INITIAL_COMPONENT_COUNT;
 	data = std::vector<unsigned char>(capacity * elementSize, 0);
 }
 
-void* EntityContainer_Implementation::ComponentPool::Get(size_t index)
+void* EntityContainer::ComponentPool::Get(size_t index)
 {
 	if (index >= capacity)
 	{
@@ -28,9 +28,9 @@ void* EntityContainer_Implementation::ComponentPool::Get(size_t index)
 	return &data[0] + index * elementSize;
 }
 
-// EntityContainer_Implementation::ComponentPool end
+// EntityContainer::ComponentPool end
 
-EntityId EntityContainer_Implementation::create()
+EntityId EntityContainer::create()
 {
 	if (m_entities.size() >= UINT64_MAX && m_entityPool.size() == 0)
 	{
@@ -51,7 +51,7 @@ EntityId EntityContainer_Implementation::create()
 	return m_entities.back().id;
 }
 
-bool EntityContainer_Implementation::destroy(EntityId entityId)
+bool EntityContainer::destroy(EntityId entityId)
 {
 	if (!isValid(entityId))
 	{
@@ -66,7 +66,7 @@ bool EntityContainer_Implementation::destroy(EntityId entityId)
 	return true;
 }
 
-const Entity* EntityContainer_Implementation::getEntity(EntityId entityId) const
+const Entity* EntityContainer::getEntity(EntityId entityId) const
 {
 	if (!isValid(entityId))
 	{
@@ -76,17 +76,17 @@ const Entity* EntityContainer_Implementation::getEntity(EntityId entityId) const
 	return &m_entities[entityId];
 }
 
-size_t EntityContainer_Implementation::size() const
+size_t EntityContainer::size() const
 {
 	return m_entities.size() - m_entityPool.size();
 }
 
-size_t EntityContainer_Implementation::unadjustedSize() const
+size_t EntityContainer::unadjustedSize() const
 {
 	return m_entities.size();
 }
 
-bool EntityContainer_Implementation::isValid(EntityId entityId) const
+bool EntityContainer::isValid(EntityId entityId) const
 {
 	if (entityId >= m_entities.size() || entityId == INVALID_ID)
 	{
@@ -96,7 +96,7 @@ bool EntityContainer_Implementation::isValid(EntityId entityId) const
 	return m_entities[entityId].isAlive;
 }
 
-void* EntityContainer_Implementation::addComponent(EntityId entityId, ComponentId componentId, size_t componentSize)
+void* EntityContainer::addComponent(EntityId entityId, ComponentId componentId, size_t componentSize)
 {
 	if (!isValid(entityId))
 	{
@@ -124,7 +124,7 @@ void* EntityContainer_Implementation::addComponent(EntityId entityId, ComponentI
 	return m_componentPools[componentId]->Get(entityId);	
 }
 
-void* EntityContainer_Implementation::getComponent(EntityId entityId, ComponentId componentId) const
+void* EntityContainer::getComponent(EntityId entityId, ComponentId componentId) const
 {
 	if (!isValid(entityId))
 	{
@@ -145,7 +145,7 @@ void* EntityContainer_Implementation::getComponent(EntityId entityId, ComponentI
 	return m_componentPools[componentId]->Get(entityId);
 }
 
-bool EntityContainer_Implementation::removeComponent(EntityId entityId, ComponentId componentId)
+bool EntityContainer::removeComponent(EntityId entityId, ComponentId componentId)
 {
 	if (!isValid(entityId))
 	{
@@ -163,7 +163,7 @@ bool EntityContainer_Implementation::removeComponent(EntityId entityId, Componen
 	return true;
 }
 
-bool EntityContainer_Implementation::hasComponent(EntityId entityId, ComponentId componentId) const
+bool EntityContainer::hasComponent(EntityId entityId, ComponentId componentId) const
 {
 	if (!isValid(entityId))
 	{
@@ -173,17 +173,18 @@ bool EntityContainer_Implementation::hasComponent(EntityId entityId, ComponentId
 	return m_entities[entityId].hasComponent(componentId);
 }
 
-ComponentId EntityContainer_Implementation::getComponentId(const std::type_index& typeIndex)
+ComponentId EntityContainer::getComponentId(const std::type_index& typeIndex) const
 {
-	if (auto it = m_componentIds.find(typeIndex); it != m_componentIds.end())
+	std::unordered_map<std::type_index, ComponentId>* componentIds = const_cast<std::unordered_map<std::type_index, ComponentId>*>(&m_componentIds);
+	if (auto it = componentIds->find(typeIndex); it != componentIds->end())
 	{
 		return it->second;
 	}
 	else
 	{
-		assert(m_componentIds.size() <= MAX_COMPONENTS);
-		ComponentId componentId = static_cast<ComponentId>(m_componentIds.size());
-		m_componentIds[typeIndex] = componentId;
+		assert(componentIds->size() <= MAX_COMPONENTS);
+		ComponentId componentId = static_cast<ComponentId>(componentIds->size());
+		(*componentIds)[typeIndex] = componentId;
 		return componentId;
 	}
 }

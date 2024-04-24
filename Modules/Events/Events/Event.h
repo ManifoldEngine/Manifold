@@ -84,7 +84,7 @@ namespace Mani
 	};
 }
 
-#if MANI_WINDOWS && !MANI_WEBGL
+#ifdef MANI_WINDOWS
 	#define DECLARE_EVENT(EVENTNAME, ... ) class __declspec(dllexport) EVENTNAME : public Event<__VA_ARGS__> {};
 #else
 	#define DECLARE_EVENT(EVENTNAME, ... ) class EVENTNAME : public Event<__VA_ARGS__> {};
