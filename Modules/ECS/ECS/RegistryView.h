@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ECS.h"
-#include "Internals/EntityContainer.h"
 #include "EntityRegistry.h"
 #include "Entity.h"
 #include "Bitset.h"

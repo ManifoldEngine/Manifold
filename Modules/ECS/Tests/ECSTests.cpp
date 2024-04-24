@@ -14,11 +14,6 @@ using namespace Mani;
 
 ST_SECTION_BEGIN(ECS, "ECS")
 {
-	ST_AFTER_EACH(AfdterEachECSTest)
-	{
-		EntityRegistry::resetComponentIds();
-	}
-
 	ST_TEST(CreateEditDestroyEntities, "Should create a registry, create an entity, add a component, edit the component, then destroy the entity")
 	{
 		struct DataComponent 
