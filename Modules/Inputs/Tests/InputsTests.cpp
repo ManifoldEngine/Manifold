@@ -1,6 +1,9 @@
 #include "simpleTests.h"
 #include <Inputs/InputSystem.h>
-#include <Inputs/Interfaces/InputGenerator.h>
+#include <Inputs/Data/InputAction.h>
+#include <Inputs/Data/InputControl.h>
+#include <Inputs/Data/InputDevice.h>
+#include <Inputs/Data/InputUser.h>
 #include <Core/System/SystemContainer.h>
 
 #ifndef MANI_WEBGL
@@ -12,22 +15,50 @@ extern "C" __declspec(dllexport) void runTests()
 
 using namespace Mani;
 
-class VirtualController : public IInputGenerator
+class VirtualControllerSystem : public SystemBase
 {
 public:
-	virtual std::string getName() const override
+	virtual std::string_view getName() const override { return "VirtualControllerSystem"; }
+	virtual bool shouldTick(EntityRegistry& registry) const override { return true; }
+	virtual ETickGroup getTickGroup() const override { return ETickGroup::PreTick; }
+
+	virtual void tick(float deltaTime, EntityRegistry& registry)
+	{
+		RegistryView<InputDevice> deviceView(registry);
+		for (const EntityId entityId : deviceView)
+		{
+			InputDevice* device = registry.getComponent<InputDevice>(entityId);
+			consumeInputBuffer(device->buttonBuffer);
+			getAxis(device->axis);
+		}
+	}
+
+protected:
+	virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
+	{
+		deviceId = registry.create();
+		InputDevice* inputDevice = registry.addComponent<InputDevice>(deviceId);
+		inputDevice->deviceName = getDeviceName();
+	}
+	virtual void onDeinitialize(EntityRegistry& registry) override
+	{
+		registry.destroy(deviceId);
+	}
+
+public:
+	std::string getDeviceName() const
 	{
 		return "My Cool Joystick";
 	}
 
-	virtual bool consumeInputBuffer(std::vector<ButtonControl>& outBuffer) override
+	bool consumeInputBuffer(std::vector<ButtonControl>& outBuffer)
 	{
 		outBuffer = buffer;
 		buffer.clear();
 		return true;
 	}
 
-	virtual bool getAxis(std::vector<AxisControl>& outAxis) override
+	bool getAxis(std::vector<AxisControl>& outAxis)
 	{
 		outAxis.clear();
 		outAxis.push_back(m_leftStick);
@@ -37,9 +68,7 @@ public:
 		return true;
 	}
 
-	virtual void onInputSystemTick(float deltaTime, EntityRegistry& registry) override 
-	{
-	}
+	EntityId getDeviceId() const { return deviceId; }
 
 	void setLeftStick(float x, float y)
 	{
@@ -77,6 +106,8 @@ public:
 
 	std::vector<ButtonControl> buffer;
 private:
+	EntityId deviceId;
+
 	ButtonControl m_aButton = { "AButton" };
 	ButtonControl m_bButton = { "BButton" };
 
@@ -86,12 +117,12 @@ private:
 	AxisControl m_leftBumper = { "LeftBumper" };
 };
 
-std::vector<InputAction> actionTemplate = 
+std::unordered_map<std::string, InputAction> actionTemplate =
 {
-	{ "Jump" },
-	{ "Dodge" },
-	{ "Move" },
-	{ "Shoot" },
+	{ "Jump", { "Jump" }},
+	{ "Dodge", { "Dodge" }},
+	{ "Move", { "Move" }},
+	{ "Shoot", { "Shoot" }},
 };
 
 std::unordered_map<std::string, std::vector<std::string>> inputBindingsTemplate =
@@ -103,6 +134,27 @@ std::unordered_map<std::string, std::vector<std::string>> inputBindingsTemplate 
 	{ "RightBumper", { "Shoot" }},
 };
 
+class InputUserMockSystem : public SystemBase
+{
+public:
+	virtual std::string_view getName() const override { return "VirtualControllerSystem"; }
+	virtual bool shouldTick(EntityRegistry& registry) const override { return true; }
+	virtual ETickGroup getTickGroup() const override { return ETickGroup::PreTick; }
+
+	// never do this!
+	InputUser* inputUser = nullptr;
+
+protected:
+	virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
+	{
+		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
+
+		EntityId entityId = registry.create();
+		inputUser = registry.addComponent<InputUser>(entityId);
+		inputUser->inputDevices.push_back(controller->getDeviceId());
+	}
+};
+
 ST_SECTION_BEGIN(Inputs, "Inputs")
 {
 	ST_TEST(CreateInputUser, "Should create an input user and assign an input generator to it.")
@@ -111,15 +163,14 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		systemContainer.initialize();
 
 		std::vector<InputAction> registeredActions;
+		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
 		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
 
-		EventHandle handle = inputSystem->onActionEvent.subscribe([&registeredActions](uint32_t userId, const InputAction& action) 
+		EventHandle handle = inputSystem->onActionEvent.subscribe([&registeredActions](EntityId entityId, const InputAction& action) 
 		{
 			registeredActions.push_back(action);
 		});
-
-		std::shared_ptr<VirtualController> controller = std::make_shared<VirtualController>();
-		
+				
 		// press A button before pluging in the virtual controller
 		controller->setAButton(true);
 
@@ -128,11 +179,12 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		ST_ASSERT(registeredActions.size() == 0, "Should not have registered an input.");
 
 		// create a user and assign them the virtual controller.
-		const uint32_t userId = inputSystem->createInputUser(actionTemplate, inputBindingsTemplate);
-		
-		// assign virtual controller to user
-		inputSystem->assignInputGenerator(userId, controller);
+		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
+		inputUser->inputUser->actions = actionTemplate;
+		inputUser->inputUser->bindings = inputBindingsTemplate;
 
+		// press A button again
+		controller->setAButton(true);
 		// tick the system, consumes input buffers
 		systemContainer.tick(.0f);
 
@@ -165,26 +217,21 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		SystemContainer systemContainer;
 		systemContainer.initialize();
 
+		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
 		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
-
-		std::shared_ptr<VirtualController> controller = std::make_shared<VirtualController>();
+		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
 
 		// create a user and assign them the virtual controller.
-		std::vector<InputAction> actions =
+		inputUser->inputUser->actions =
 		{
-			InputAction { "Move" }
+			{ "Move", { "Move" }}
 		};
 		
-		std::unordered_map<std::string, std::vector<std::string>> bindings =
+		inputUser->inputUser->bindings =
 		{
 			{ "LeftStick", { "Move" }},
 			{ "RightStick", { "Move" }}
 		};
-
-		const uint32_t userId = inputSystem->createInputUser(actions, bindings);
-
-		// assign virtual controller to user
-		inputSystem->assignInputGenerator(userId, controller);
 
 		// tick the system, consumes input buffers
 		systemContainer.tick(.0f);
@@ -197,8 +244,8 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		// tick the system, consumes input buffers
 		systemContainer.tick(.0f);
 
-		const InputAction* moveAction = inputSystem->getAction(userId, "Move");
-		ST_ASSERT(moveAction->x <= FLT_EPSILON, "Move X axis should be zero");
+		const InputAction& moveAction = inputUser->inputUser->actions["Move"];
+		ST_ASSERT(moveAction.x <= FLT_EPSILON, "Move X axis should be zero");
 
 		systemContainer.deinitialize();
 	}
@@ -210,19 +257,14 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 
 		bool bHasActionBeenTriggered = false;
 
+		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
 		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
-		EventHandle handle = inputSystem->onActionEvent.subscribe([&bHasActionBeenTriggered](uint32_t userId, const InputAction& inputAction) 
+		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
+
+		EventHandle handle = inputSystem->onActionEvent.subscribe([&bHasActionBeenTriggered](EntityId entityId, const InputAction& action)
 		{
 			bHasActionBeenTriggered = true;
 		});
-
-		std::shared_ptr<VirtualController> controller = std::make_shared<VirtualController>();
-
-		// create a user and assign them the virtual controller.
-		const uint32_t userId = inputSystem->createInputUser({}, {});
-
-		// assign virtual controller to user
-		inputSystem->assignInputGenerator(userId, controller);
 
 		controller->setAButton(true);
 		controller->setBButton(true);
@@ -248,32 +290,30 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 
 		std::vector<InputAction> actionEvents;
 
+		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
 		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
-		EventHandle handle = inputSystem->onActionEvent.subscribe([&actionEvents](uint32_t userId, const InputAction& inputAction)
+		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
+		EventHandle handle = inputSystem->onActionEvent.subscribe([&actionEvents](EntityId entityId, const InputAction& inputAction)
 			{
 				actionEvents.push_back(inputAction);
 			});
 
-		std::shared_ptr<VirtualController> controller = std::make_shared<VirtualController>();
-
 		// create a user and assign them the virtual controller.
-		const uint32_t userId = inputSystem->createInputUser(
+		inputUser->inputUser->actions =
+		{
+			{ "Jump",{ "Jump" } },
+			{ "Dodge",{ "Dodge" } }
+		};
+		inputUser->inputUser->bindings =
+		{
 			{
-				{ "Jump" },
-				{ "Dodge" }
-			}, 
-			{
+				"AButton",
 				{
-					"AButton",
-					{
-						"Jump",
-						"Dodge",
-					}
+					"Jump",
+					"Dodge",
 				}
-			});
-
-		// assign virtual controller to user
-		inputSystem->assignInputGenerator(userId, controller);
+			}
+		};
 
 		controller->setAButton(true);
 		

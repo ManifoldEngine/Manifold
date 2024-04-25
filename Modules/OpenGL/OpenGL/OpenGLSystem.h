@@ -4,7 +4,6 @@
 #include <Core/System/System.h>
 #include <Events/Event.h>
 #include <glm/glm.hpp>
-#include <OpenGLInput.h>
 #include <memory>
 
 namespace Mani
@@ -44,8 +43,7 @@ namespace Mani
 
 		const WindowContext& getWindowContext() const;
 
-		std::shared_ptr<OpenGLInput> getInputGenerator() const;
-
+		
 	protected:
 		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override;
 		virtual void onDeinitialize(EntityRegistry& registry) override;
@@ -54,7 +52,6 @@ namespace Mani
 		static OpenGLSystem* s_openGLSystem;
 
 		WindowContext m_context;
-		std::shared_ptr<OpenGLInput> m_openGLInputGenerator = nullptr;
 
 		void terminate();
 

@@ -1,219 +1,91 @@
 #include "InputSystem.h"
 
-#include <Log.h>
-#include <Inputs/Interfaces/InputGenerator.h>
+#include <Inputs/Inputs.h>
+
+#include <Inputs/Data/InputUser.h>
+#include <Inputs/Data/InputDevice.h>
 
 using namespace Mani;
 
-std::string_view InputSystem::getName() const
-{
-	return "InputSystem";
-}
-
-bool InputSystem::shouldTick(EntityRegistry& registry) const
-{
-	return true;
-}
-
-void InputSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
-{
-	createInputUser({}, {});
-}
-
 void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 {
-	for (const auto& user : m_users)
+	RegistryView<InputUser> inputUserView(registry);
+	for (const EntityId entityId : inputUserView)
 	{
-		std::weak_ptr weakGenerator = m_generators[user->userId];
-		if (weakGenerator.expired())
+		InputUser* inputUser = registry.getComponent<InputUser>(entityId);
+		
+		// axis are reset each tick.
+		for (auto& [name, action] : inputUser->actions)
 		{
-			continue;
+			action.x = 0.f;
+			action.y = 0.f;
+			action.z = 0.f;
 		}
 
-		std::shared_ptr<IInputGenerator> generator = weakGenerator.lock();
-
-		generator->onInputSystemTick(deltaTime, registry);
-
-		std::vector<ButtonControl> buffer;
-		if (generator->consumeInputBuffer(buffer))
+		// consume assigned input device
+		for (const EntityId deviceId : inputUser->inputDevices)
 		{
-			for (const ButtonControl& buttonEvent : buffer)
+			InputDevice* inputDevice = registry.getComponent<InputDevice>(deviceId);
+			if (inputDevice == nullptr)
 			{
-				const std::vector<std::string>& boundActionNames = user->bindings[buttonEvent.name];
-				for (const std::string& actionName : boundActionNames)
+				continue;
+			}
+
+			// buttons
+			for (const ButtonControl& control : inputDevice->buttonBuffer)
+			{
+				auto boundActionNamesIt = inputUser->bindings.find(control.name);
+				if (boundActionNamesIt == inputUser->bindings.end())
 				{
-					InputAction& action = user->actions[actionName];
-					if (action.isPressed != buttonEvent.isPressed)
+					continue;
+				}
+
+				for (const std::string& actionName : boundActionNamesIt->second)
+				{
+					InputAction& action = inputUser->actions[actionName];
+					if (action.isPressed != control.isPressed)
 					{
 						MANI_LOG_VERBOSE(LogInputs, "Action {} state changed to {}", action.name, action.isPressed);
-						action.isPressed = buttonEvent.isPressed;
-						onActionEvent.broadcast(user->userId, action);
+						action.isPressed = control.isPressed;
+						onActionEvent.broadcast(entityId, action);
 					}
 				}
 			}
-		}
-		else
-		{
-			MANI_LOG_WARNING(LogInputs, "Could not get input buffer from generator {}", generator->getName());
-		}
-		
-		std::vector<AxisControl> axis;
-		if (generator->getAxis(axis))
-		{
-			// axis are reset each tick.
-			for (auto& [name, action] : user->actions)
-			{
-				action.x = 0.f;
-				action.y = 0.f;
-				action.z = 0.f;
-			}
 
-			for (const AxisControl& axisControl : axis)
+			// axis
+			for (const AxisControl& axis : inputDevice->axis)
 			{
-				const std::vector<std::string>& boundActionNames = user->bindings[axisControl.name];
-				for (const std::string& actionName : boundActionNames)
+				auto boundActionNamesIt = inputUser->bindings.find(axis.name);
+				if (boundActionNamesIt == inputUser->bindings.end())
 				{
-					InputAction& action = user->actions[actionName];
+					continue;
+				}
 
-					action.x += axisControl.x;
-					action.y += axisControl.y;
-					action.z += axisControl.z;
+				for (const std::string& actionName : boundActionNamesIt->second)
+				{
+					InputAction& action = inputUser->actions[actionName];
 
-				}	
+					action.x += axis.x;
+					action.y += axis.y;
+					action.z += axis.z;
+				}
 			}
+		}
 
 #if MANI_DEBUG
-			for (auto& [name, action] : user->actions)
-			{
-				// log action state
-				MANI_LOG_VERBOSE(LogInputs, "Action {} axis changed to ({}, {}, {})", action.name, action.x, action.y, action.z);
-			}
-#endif
-		}
-		else
+		for (auto& [name, action] : inputUser->actions)
 		{
-			MANI_LOG_WARNING(LogInputs, "Could not get axis from generator {}", generator->getName());
+			// log action state
+			MANI_LOG_VERBOSE(LogInputs, "Action {} axis changed to ({}, {}, {})", action.name, action.x, action.y, action.z);
 		}
+#endif
 	}
-}
 
-const InputAction* InputSystem::getAction(uint32_t userId, const std::string& name) const
-{
-	std::shared_ptr<InputUser> user = getInputUser(userId);
-	if (user == nullptr)
+	// clear button buffers
+	RegistryView<InputDevice> inputDeviceView(registry);
+	for (const EntityId entityId : inputDeviceView)
 	{
-		return nullptr;
+		InputDevice* inputDevice = registry.getComponent<InputDevice>(entityId);
+		inputDevice->buttonBuffer.clear();
 	}
-
-	const InputAction& action = user->actions[name];
-	if (action.name.empty())
-	{
-		return nullptr;
-	}
-
-	return &action;
-}
-
-uint32_t InputSystem::createInputUser(const std::vector<InputAction>& actions, const std::unordered_map<std::string, std::vector<std::string>>& bindings)
-{
-	std::shared_ptr<InputUser> user = std::make_shared<InputUser>();
-	
-	// iterate by copy
-	for (const InputAction action : actions)
-	{
-		user->actions[action.name] = action;
-	}
-
-	user->bindings = bindings;
-
-	user->userId = userCounter++;
-	m_users.push_back(user);
-	return user->userId;
-}
-
-std::shared_ptr<InputUser> InputSystem::getInputUser(uint32_t userId) const
-{
-	const auto it = std::find_if(m_users.begin(), m_users.end(), [&userId](const std::shared_ptr<InputUser>& inputUser) {
-		return userId == inputUser->userId;
-	});
-
-	if (it == m_users.end())
-	{
-		return nullptr;
-	}
-	
-	return *it;
-}
-
-void InputSystem::destroyInputUser(uint32_t userId)
-{
-	const auto it = std::find_if(m_users.begin(), m_users.end(), [&userId](const std::shared_ptr<InputUser>& inputUser) {
-		return userId == inputUser->userId;
-	});
-
-	if (it != m_users.end())
-	{
-		m_users.erase(it);
-	}
-}
-
-void InputSystem::assignInputGenerator(uint32_t userId, const std::weak_ptr<IInputGenerator>& generator)
-{
-	m_generators[userId] = generator;
-}
-
-bool InputSystem::addAction(uint32_t userId, const std::string& name) 
-{
-	std::shared_ptr<InputUser> user = getInputUser(userId);
-	if (user == nullptr)
-	{
-		return false;
-	}
-
-	user->actions[name] = InputAction{ name };
-	return true;
-}
-
-bool InputSystem::removeAction(uint32_t userId, const std::string& name) 
-{
-	std::shared_ptr<InputUser> user = getInputUser(userId);
-	if (user == nullptr)
-	{
-		return false;
-	}
-
-	return user->actions.erase(name) > 0;
-}
-
-bool InputSystem::addBinding(uint32_t userId, const std::string& action, const std::string control)
-{
-	std::shared_ptr<InputUser> user = getInputUser(userId);
-	if (user == nullptr)
-	{
-		return false;
-	}
-
-	std::vector<std::string>& actions = user->bindings[control];
-	actions.push_back(action);
-	return true;
-}
-
-bool InputSystem::removeBinding(uint32_t userId, const std::string& action, const std::string control) 
-{
-	std::shared_ptr<InputUser> user = getInputUser(userId);
-	if (user == nullptr)
-	{
-		return false;
-	}
-
-	std::vector<std::string>& actions = user->bindings[control];
-	auto it = std::find(actions.begin(), actions.end(), action);
-	
-	if (it != actions.end())
-	{
-		actions.erase(it);
-		return true;
-	}
-	
-	return false;
 }

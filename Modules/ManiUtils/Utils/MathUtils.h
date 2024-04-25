@@ -15,5 +15,12 @@ namespace Mani
 			}
 			return glm::normalize(v);
 		}
+
+		static float mapRanges(float value, float minX, float maxX, float minY, float maxY)
+		{
+			MANI_ASSERT(std::abs(maxX - minX) > FLT_EPSILON, "Do not divide by zero.");
+			const float slope = (maxY - maxX) / (maxX - minX);
+			return minY + slope * (value - minX);
+		}
 	};
 }

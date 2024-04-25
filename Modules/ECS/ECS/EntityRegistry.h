@@ -25,6 +25,11 @@ namespace Mani
 		EntityComponentEvent onComponentAdded;
 		EntityComponentEvent onComponentRemoved;
 
+		EntityRegistry();
+		~EntityRegistry();
+
+		EntityId getSingletonId() const { return m_singletonId;  }
+
 		EntityId create();
 		bool destroy(EntityId entityId);
 		const Entity* getEntity(EntityId entityId) const;
@@ -55,6 +60,7 @@ namespace Mani
 		ComponentId getComponentId() const;
 
 	private:
+		EntityId m_singletonId;
 		EntityContainer m_entityContainer;
 	};
 
@@ -112,6 +118,16 @@ namespace Mani
 	inline ComponentId EntityRegistry::getComponentId() const
 	{
 		return m_entityContainer.getComponentId(typeid(TComponent));
+	}
+
+	inline EntityRegistry::EntityRegistry()
+	{
+		m_singletonId = create();
+	}
+
+	inline EntityRegistry::~EntityRegistry()
+	{
+		destroy(m_singletonId);
 	}
 
 	inline EntityId EntityRegistry::create()

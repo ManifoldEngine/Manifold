@@ -27,7 +27,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		// create an entity
 		EntityId entityId = registry.create();
 	
-		ST_ASSERT(entityId == 0, "Entity should have the first id.");
+		ST_ASSERT(entityId == 1, "Entity should have the first id.");
 		ST_ASSERT(registry.isValid(entityId), "Entity should be valid.");
 	
 		// add a DataComponent
@@ -75,8 +75,6 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		// create an entity
 		EntityId entityId = registry.create();
 	
-		ST_ASSERT(entityId == 0, "Should be the first entity addded.");
-
 		// add a DataComponent
 		DataComponent* dataComponent = registry.addComponent<DataComponent>(entityId);
 		ST_ASSERT(dataComponent != nullptr, "Component should not be a nullptr.");
@@ -109,8 +107,6 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		// create an entity
 		EntityId entityId = registry.create();
 
-		ST_ASSERT(entityId == 0, "Should be the first entity addded.");
-
 		// add a DataComponent
 		DataComponent* dataComponent = registry.addComponent<DataComponent>(entityId);
 		ST_ASSERT(dataComponent != nullptr, "Component should not be a nullptr.");
@@ -128,7 +124,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		// we expect the entity to be recycled
 		entityId = registry.create();
-		ST_ASSERT(entityId == 0, "Should be the first entity addded.");
+		ST_ASSERT(entityId == 1, "Should be the first entity addded.");
 
 		// Entity should not have a DataComponent
 		dataComponent = registry.getComponent<DataComponent>(entityId);
@@ -168,7 +164,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		// create e few entities, all of them with DataComponent, some of them with OtherDataComponent
 		const int entityCount = 10;
-		for (int i = 0; i < entityCount; i++)
+		for (int i = 1; i < entityCount; i++)
 		{
 			const EntityId entityId = registry.create();
 			registry.addComponent<DataComponent>(entityId);
@@ -180,7 +176,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		ST_ASSERT(registry.size() == entityCount, "should have created 10 entities");
 
-		int entityCounter = 0;
+		int entityCounter = 1;
 		for (EntityId entityId : RegistryView<DataComponent, OtherDataComponent>(registry))
 		{
 			entityCounter++;
@@ -194,7 +190,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent and OtherDataComponent in the registry view");
 
 		// iterate over the entities with DataComponent
-		entityCounter = 0;
+		entityCounter = 1;
 		for (EntityId entityId : RegistryView<DataComponent>(registry))
 		{
 			entityCounter++;
@@ -203,7 +199,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		}
 		ST_ASSERT(entityCounter == entityCount, "There should be 10 entities with DataComponent in the registry view");
 
-		entityCounter = 0;
+		entityCounter = 1;
 		for (EntityId entityId : RegistryView<OtherDataComponent>(registry))
 		{
 			entityCounter++;
@@ -231,8 +227,9 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		EntityRegistry registry;
 
 		// create e few entities, all of them with DataComponent, some of them with OtherDataComponent
-		const int entityCount = 10;
-		for (int i = 0; i < entityCount; i++)
+		int entityCount = 10;
+		// entity ids start at 1 to leave room for the singleton entity
+		for (int i = 1; i < entityCount; i++)
 		{
 			const EntityId entityId = registry.create();
 			if (i % 2 == 0)
@@ -244,7 +241,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		ST_ASSERT(registry.size() == entityCount, "should have created 10 entities");
 
 		// iterate over the entities with DataComponent
-		int entityCounter = 0;
+		int entityCounter = 1;
 		for (EntityId entityId : RegistryView<DataComponent>(registry))
 		{
 			entityCounter++;
@@ -279,7 +276,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		};
 
 		EntityRegistry registry;
-		for (int i = 0; i < 1'000'000; ++i)
+		for (int i = 1; i < 1'000'000; ++i)
 		{
 			const EntityId entityId = registry.create();
 			Transform* transform = registry.addComponent<Transform>(entityId);
