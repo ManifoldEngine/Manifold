@@ -87,11 +87,6 @@ const OpenGLSystem::WindowContext& OpenGLSystem::getWindowContext() const
     return m_context;
 }
 
-std::shared_ptr<OpenGLInput> Mani::OpenGLSystem::getInputGenerator() const
-{
-    return m_openGLInputGenerator;
-}
-
 void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
 {
     // initialize glfw
@@ -152,16 +147,11 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
         glDebugMessageCallback(OpenGLMessageCallback, nullptr);
     #endif
 #endif
-
-    m_openGLInputGenerator = std::make_shared<OpenGLInput>(shared_from_this());
 }
 
 void OpenGLSystem::onDeinitialize(EntityRegistry& entityRegistry)
 {
     SystemBase::onDeinitialize(entityRegistry);
-
-    m_openGLInputGenerator.reset();
-
     terminate();
 }
 

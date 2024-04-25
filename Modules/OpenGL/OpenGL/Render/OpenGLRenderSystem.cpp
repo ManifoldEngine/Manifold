@@ -276,16 +276,16 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 	RegistryView <Transform, SpriteComponent> spritesView(registry);
 	for (const EntityId entityId : spritesView)
 	{
-		const Transform& transform = *registry.getComponent<Transform>(entityId);
-		const SpriteComponent& spriteComponent = *registry.getComponent<SpriteComponent>(entityId);
+		const Transform* transform = registry.getComponent<Transform>(entityId);
+		const SpriteComponent* spriteComponent = registry.getComponent<SpriteComponent>(entityId);
 
-		if (spriteComponent.sprite == nullptr)
+		if (spriteComponent->sprite == nullptr)
 		{
 			MANI_LOG_WARNING(LogOpenGL, "Entity {} with null sprite", entityId);
 			return;
 		}
 
-		const std::shared_ptr<OpenGLSprite> sprite = resourceSystem->getSprite(spriteComponent.sprite->name);
+		const std::shared_ptr<OpenGLSprite> sprite = resourceSystem->getSprite(spriteComponent->sprite->name);
 		if (sprite == nullptr)
 		{
 			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a sprite that is not loaded");
@@ -301,7 +301,7 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 			return;
 		}
 
-		const std::shared_ptr<OpenGLVertexArray> vao = resourceSystem->getQuad(spriteComponent.repeatAmount);
+		const std::shared_ptr<OpenGLVertexArray> vao = resourceSystem->getQuad(spriteComponent->repeatAmount);
 		if (vao == nullptr)
 		{
 			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a vao that is not loaded");
@@ -317,21 +317,28 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 
 		shader->use();
 
-		Transform scaledTransform = transform;
+		//Transform scaledTransform = *transform;
+		Transform transformCopy = *transform;
+		const glm::vec2& pivot = spriteComponent->pivot;
+		
+		// since we know the quad is 1x1, we can assume that the scale is the actual world size.
+		transformCopy.position.x -= pivot.x * transformCopy.scale.x;
+		transformCopy.position.z -= pivot.y * transformCopy.scale.z;
+		
 		const float width = static_cast<float>(texture->getWidth());
 		const float height = static_cast<float>(texture->getHeight());
 		MANI_ASSERT(width > 0.f && height > 0.f, "do not divide by zero");
 		if (width > height)
 		{
-			scaledTransform.scale.z *= height / width;
+			transformCopy.scale.z *= height / width;
 		}
 		else
 		{
-			scaledTransform.scale.x *= width / height;
+			transformCopy.scale.x *= width / height;
 		}
-
-		glm::mat4 modelMatrix = scaledTransform.calculateModelMatrix();
-
+			
+		glm::mat4 modelMatrix = transformCopy.calculateModelMatrix();
+		
 		shader->setFloatMatrix4("model", glm::value_ptr(modelMatrix));
 		shader->setFloatMatrix4("view", glm::value_ptr(viewMatrix));
 		shader->setFloatMatrix4("projection", glm::value_ptr(projectionMatrix));
@@ -339,7 +346,7 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 		int textureIndex = 0;
 		texture->bind(textureIndex);
 		shader->setTextureSlot("sprite", textureIndex++);
-		shader->setFloat4("color", spriteComponent.color.x, spriteComponent.color.y, spriteComponent.color.z, spriteComponent.color.w);
+		shader->setFloat4("color", spriteComponent->color.x, spriteComponent->color.y, spriteComponent->color.z, spriteComponent->color.w);
 
 		vao->bind();
 		if (const auto& indexBuffer = vao->getIndexBuffer())
