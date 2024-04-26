@@ -29,7 +29,7 @@ out vec4 FragColor;
 void main()
 {
     vec4 textureColor = texture(sprite, textureCoordinate);
-    if (textureColor.w < .01)
+    if (textureColor.w < .001)
     {
         discard;
     }
