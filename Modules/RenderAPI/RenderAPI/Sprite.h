@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Core/Interfaces/IJsonAsset.h>
+#include <RenderAPI/Texture.h>
 #include <filesystem>
 
 namespace Mani

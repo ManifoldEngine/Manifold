@@ -1,6 +1,7 @@
 #pragma once
 
 #include <OpenGL/OpenGL.h>
+#include <RenderAPI/Texture.h>
 
 namespace Mani
 {
@@ -14,6 +15,7 @@ namespace Mani
 		void bind(uint32_t slot);
 		void unbind();
 
+		void setFilteringMode(TextureFiltering mode);
 		int getWidth() const { return m_width; }
 		int getHeight() const { return m_height; }
 	private:
@@ -23,5 +25,8 @@ namespace Mani
 		int m_height;
 		int m_channels;
 		int m_boundSlot;
+		int filteringMode;
+
+		static int toOpenGLTextureFiltering(Mani::TextureFiltering mode);
 	};
 }

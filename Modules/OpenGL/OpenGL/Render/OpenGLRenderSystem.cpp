@@ -315,6 +315,8 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 			return;
 		}
 
+		texture->setFilteringMode(spriteComponent->filteringMode);
+
 		shader->use();
 
 		//Transform scaledTransform = *transform;
@@ -322,7 +324,7 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 		const glm::vec2& pivot = spriteComponent->pivot;
 		
 		// since we know the quad is 1x1, we can assume that the scale is the actual world size.
-		transformCopy.position.x -= pivot.x * transformCopy.scale.x;
+		transformCopy.position.x += pivot.x * transformCopy.scale.x;
 		transformCopy.position.z -= pivot.y * transformCopy.scale.z;
 		
 		const float width = static_cast<float>(texture->getWidth());

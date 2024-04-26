@@ -16,7 +16,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string_view& path)
     m_boundSlot(-1)
 {
     stbi_set_flip_vertically_on_load(1);
-   
+
     stbi_uc* imageData = stbi_load(path.data(), &m_width, &m_height, &m_channels, 0);
     if (imageData != nullptr)
     {
@@ -55,8 +55,9 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string_view& path)
         glTexParameteri(m_textureId, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(m_textureId, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        glTexParameteri(m_textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(m_textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        GLint filteringMode = toOpenGLTextureFiltering(mode);
+        glTexParameteri(m_textureId, GL_TEXTURE_MIN_FILTER, filteringMode);
+        glTexParameteri(m_textureId, GL_TEXTURE_MAG_FILTER, filteringMode);
 
         // generate texture from image data.
         glTexSubImage2D(
@@ -81,6 +82,8 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string_view& path)
 
         glTextureParameteri(m_textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTextureParameteri(m_textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        filteringMode = GL_LINEAR;
 
         // generate texture from image data.
         glTextureSubImage2D(
@@ -116,7 +119,7 @@ void OpenGLTexture2D::bind(uint32_t slot)
 #if MANI_WEBGL
     glActiveTexture(GL_TEXTURE0 + m_boundSlot);
     glBindTexture(GL_TEXTURE_2D, m_textureId);
-#else
+#else 
     glBindTextureUnit(m_boundSlot, m_textureId);
 #endif
 }
@@ -133,4 +136,26 @@ void Mani::OpenGLTexture2D::unbind()
 #endif
         m_boundSlot = -1;
     }
+}
+
+void Mani::OpenGLTexture2D::setFilteringMode(TextureFiltering mode)
+{
+    GLint glMode = toOpenGLTextureFiltering(mode);
+    if (glMode != filteringMode)
+    {
+        glTextureParameteri(m_textureId, GL_TEXTURE_MIN_FILTER, glMode);
+        glTextureParameteri(m_textureId, GL_TEXTURE_MAG_FILTER, glMode);
+        filteringMode = glMode;
+    }
+}
+
+int Mani::OpenGLTexture2D::toOpenGLTextureFiltering(Mani::TextureFiltering mode)
+{
+    switch (mode)
+    {
+        case TextureFiltering::LINEAR: return GL_LINEAR;
+        case TextureFiltering::NEAREST: return GL_NEAREST;
+        default: MANI_ASSERT(false, "Unknown texture filtering mode.");
+    }
+    return 0;
 }

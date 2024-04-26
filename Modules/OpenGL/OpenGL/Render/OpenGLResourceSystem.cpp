@@ -175,17 +175,16 @@ const std::shared_ptr<OpenGLVertexArray>& Mani::OpenGLResourceSystem::getQuad(ui
 
 	const float repeatAmountF = static_cast<float>(repeatAmount);
 
-	// hardcoded 2d quad
+	// hardcoded 2d quad. We flip the X axis because OpenGL is right handed.
 	std::vector<float> vertices =
 	{
-		//    vertex			// texture
-		0.0f, 0.0f, 1.0f,		0.0f,			repeatAmountF,
-		1.0f, 0.0f, 0.0f,		repeatAmountF,	0.0f,
-		0.0f, 0.0f, 0.0f,		0.0f,			0.0f,
-
-		0.0f, 0.0f, 1.0f,		0.0f,			repeatAmountF,
-		1.0f, 0.0f, 1.0f,		repeatAmountF,	repeatAmountF,
-		1.0f, 0.0f, 0.0f,		repeatAmountF,	0.0f,
+		//    vertex		//        texture
+		0.0f, 0.0f, 1.0f,	0.0f,			repeatAmountF,
+		-1.0f, 0.0f, 0.0f,	repeatAmountF,	0.0f,
+		0.0f, 0.0f, 0.0f,	0.0f,			0.0f,
+		0.0f, 0.0f, 1.0f,	0.0f,			repeatAmountF,
+		-1.0f, 0.0f, 1.0f,	repeatAmountF,	repeatAmountF,
+		-1.0f, 0.0f, 0.0f,	repeatAmountF,	0.0f,
 	};
 
 	std::shared_ptr<OpenGLVertexBuffer> vertexBuffer = std::make_shared<OpenGLVertexBuffer>(&vertices[0], (int)(sizeof(float) * vertices.size()));
