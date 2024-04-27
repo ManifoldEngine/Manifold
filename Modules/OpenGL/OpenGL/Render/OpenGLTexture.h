@@ -15,7 +15,7 @@ namespace Mani
 		void bind(uint32_t slot);
 		void unbind();
 
-		void setFilteringMode(TextureFiltering mode);
+		void setFilteringMode(ETextureFiltering mode);
 		int getWidth() const { return m_width; }
 		int getHeight() const { return m_height; }
 	private:
@@ -27,6 +27,6 @@ namespace Mani
 		int m_boundSlot;
 		int filteringMode;
 
-		static int toOpenGLTextureFiltering(Mani::TextureFiltering mode);
+		static int toOpenGLTextureFiltering(Mani::ETextureFiltering mode);
 	};
 }

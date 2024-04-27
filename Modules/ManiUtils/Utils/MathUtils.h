@@ -16,6 +16,20 @@ namespace Mani
 			return glm::normalize(v);
 		}
 
+		static glm::vec3 clampLenght(const glm::vec3& v, float min, float max)
+		{
+			const float length = glm::length(v);
+			if (length < min)
+			{
+				return normalize(v) * min;
+			}
+			if (length > max)
+			{
+				return normalize(v) * max;
+			}
+			return v;
+		}
+
 		static float mapRanges(float value, float minX, float maxX, float minY, float maxY)
 		{
 			MANI_ASSERT(std::abs(maxX - minX) > FLT_EPSILON, "Do not divide by zero.");
