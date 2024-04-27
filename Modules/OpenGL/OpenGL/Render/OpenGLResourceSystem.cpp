@@ -94,9 +94,9 @@ void OpenGLResourceSystem::onMeshLoaded(const std::shared_ptr<Mesh>& mesh)
 	std::shared_ptr<OpenGLVertexBuffer> vertexBuffer = std::make_shared<OpenGLVertexBuffer>(&vertices[0], (int)(sizeof(float) * vertices.size()));
 	vertexBuffer->layout =
 	{
-		{ ShaderDataType::Float3, false },
-		{ ShaderDataType::Float3, true  },
-		{ ShaderDataType::Float2, false }
+		{ EShaderDataType::Float3, false },
+		{ EShaderDataType::Float3, true  },
+		{ EShaderDataType::Float2, false }
 	};
 
 	std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(&mesh->indices[0], (int)sizeof(uint32_t) * mesh->indices.size());
@@ -190,8 +190,8 @@ const std::shared_ptr<OpenGLVertexArray>& Mani::OpenGLResourceSystem::getQuad(ui
 	std::shared_ptr<OpenGLVertexBuffer> vertexBuffer = std::make_shared<OpenGLVertexBuffer>(&vertices[0], (int)(sizeof(float) * vertices.size()));
 	vertexBuffer->layout =
 	{
-		{ ShaderDataType::Float3, false },
-		{ ShaderDataType::Float2, false }
+		{ EShaderDataType::Float3, false },
+		{ EShaderDataType::Float2, false }
 	};
 
 	m_quadVertexArrays[repeatAmount] = std::make_shared<OpenGLVertexArray>();

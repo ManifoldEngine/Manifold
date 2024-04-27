@@ -11,6 +11,6 @@ namespace Mani
 		std::shared_ptr<Sprite> sprite;
 		uint16_t repeatAmount = 1;
 		glm::vec2 pivot = glm::vec2(0.5f, 0.5f);
-		TextureFiltering filteringMode = TextureFiltering::NEAREST;
+		ETextureFiltering filteringMode = ETextureFiltering::NEAREST;
 	};
 }

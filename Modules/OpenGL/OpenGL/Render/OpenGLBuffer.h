@@ -5,7 +5,7 @@
 
 namespace Mani
 {
-	enum class ShaderDataType : uint8_t
+	enum class EShaderDataType : uint8_t
 	{
 		None = 0, 
 		Float, 
@@ -23,7 +23,7 @@ namespace Mani
 
 	struct BufferLayoutElement
 	{
-		ShaderDataType shaderType = ShaderDataType::None;
+		EShaderDataType shaderType = EShaderDataType::None;
 		bool isNormalized = false;
 	};
 
@@ -43,8 +43,8 @@ namespace Mani
 		
 		std::vector<BufferLayoutElement> layout;
 		
-		static size_t getShaderDataTypeSize(ShaderDataType type);
-		static size_t getComponentCount(ShaderDataType type);
+		static size_t getShaderDataTypeSize(EShaderDataType type);
+		static size_t getComponentCount(EShaderDataType type);
 	private:
 		size_t m_size;
 		unsigned int m_vertexBufferObjectId;

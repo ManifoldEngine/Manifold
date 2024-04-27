@@ -138,7 +138,7 @@ void Mani::OpenGLTexture2D::unbind()
     }
 }
 
-void Mani::OpenGLTexture2D::setFilteringMode(TextureFiltering mode)
+void Mani::OpenGLTexture2D::setFilteringMode(ETextureFiltering mode)
 {
     GLint glMode = toOpenGLTextureFiltering(mode);
     if (glMode != filteringMode)
@@ -149,12 +149,12 @@ void Mani::OpenGLTexture2D::setFilteringMode(TextureFiltering mode)
     }
 }
 
-int Mani::OpenGLTexture2D::toOpenGLTextureFiltering(Mani::TextureFiltering mode)
+int Mani::OpenGLTexture2D::toOpenGLTextureFiltering(Mani::ETextureFiltering mode)
 {
     switch (mode)
     {
-        case TextureFiltering::LINEAR: return GL_LINEAR;
-        case TextureFiltering::NEAREST: return GL_NEAREST;
+        case ETextureFiltering::LINEAR: return GL_LINEAR;
+        case ETextureFiltering::NEAREST: return GL_NEAREST;
         default: MANI_ASSERT(false, "Unknown texture filtering mode.");
     }
     return 0;

@@ -21,6 +21,7 @@ namespace Mani
 		DECLARE_EVENT(EntityComponentEvent, EntityRegistry& /*registry*/, EntityId /*entityId*/, ComponentId /*componentId*/);
 
 		EntityEvent onEntityCreated;
+		EntityEvent onBeforeEntityDestroyed;
 		EntityEvent onEntityDestroyed;
 		EntityComponentEvent onComponentAdded;
 		EntityComponentEvent onComponentRemoved;
@@ -139,6 +140,7 @@ namespace Mani
 
 	inline bool EntityRegistry::destroy(EntityId entityId)
 	{
+		onBeforeEntityDestroyed.broadcast(*this, entityId);
 		if (m_entityContainer.destroy(entityId))
 		{
 			onEntityDestroyed.broadcast(*this, entityId);
