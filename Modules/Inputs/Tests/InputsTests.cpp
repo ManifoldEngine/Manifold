@@ -125,7 +125,7 @@ std::unordered_map<std::string, InputAction> actionTemplate =
 	{ "Shoot", { "Shoot" }},
 };
 
-std::unordered_map<std::string, std::vector<std::string>> inputBindingsTemplate =
+std::unordered_map<std::string, std::unordered_set<std::string>> inputBindingsTemplate =
 {
 	{ "LeftStick", { "Move" }},
 	{ "RightStick", { "Move" }},
