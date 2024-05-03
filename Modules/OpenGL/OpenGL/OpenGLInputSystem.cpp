@@ -72,8 +72,19 @@ void Mani::OpenGLInputSystem::tick(float deltaTime, EntityRegistry& registry)
     mouse.x = s_mouse.x;
     mouse.y = s_mouse.y;
 
-    // W
     const OpenGLSystem::WindowContext& context = openGLSystem->getWindowContext();
+    
+    // MOUSE LEFT CLICK
+    if (glfwGetKey(context.window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+    {
+        inputDevice->buttonBuffer.push_back(ButtonControl{ "MouseLeftClick", true });
+    }
+    if (glfwGetKey(context.window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
+    {
+        inputDevice->buttonBuffer.push_back(ButtonControl{ "MouseLeftClick", false });
+    }
+
+    // W
     if (glfwGetKey(context.window, GLFW_KEY_W) == GLFW_PRESS)
     {
         inputDevice->buttonBuffer.push_back(ButtonControl{ "W", true });
