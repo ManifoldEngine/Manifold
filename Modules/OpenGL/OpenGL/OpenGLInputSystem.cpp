@@ -73,16 +73,6 @@ void Mani::OpenGLInputSystem::tick(float deltaTime, EntityRegistry& registry)
     mouse.y = s_mouse.y;
 
     const OpenGLSystem::WindowContext& context = openGLSystem->getWindowContext();
-    
-    // MOUSE LEFT CLICK
-    if (glfwGetKey(context.window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-    {
-        inputDevice->buttonBuffer.push_back(ButtonControl{ "MouseLeftClick", true });
-    }
-    if (glfwGetKey(context.window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_RELEASE)
-    {
-        inputDevice->buttonBuffer.push_back(ButtonControl{ "MouseLeftClick", false });
-    }
 
     // W
     if (glfwGetKey(context.window, GLFW_KEY_W) == GLFW_PRESS)
@@ -168,5 +158,15 @@ void Mani::OpenGLInputSystem::tick(float deltaTime, EntityRegistry& registry)
     if (glfwGetKey(context.window, GLFW_KEY_F7) == GLFW_RELEASE)
     {
         inputDevice->buttonBuffer.push_back(ButtonControl{ "F7", false });
+    }
+
+    // SPACE
+    if (glfwGetKey(context.window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        inputDevice->buttonBuffer.push_back(ButtonControl{ "Space", true });
+    }
+    if (glfwGetKey(context.window, GLFW_KEY_SPACE) == GLFW_RELEASE)
+    {
+        inputDevice->buttonBuffer.push_back(ButtonControl{ "Space", false });
     }
 }
