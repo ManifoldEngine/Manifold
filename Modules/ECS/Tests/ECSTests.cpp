@@ -458,5 +458,31 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		ST_ASSERT(count == 1, "All entities should have been visited");
 	}
+
+	ST_TEST(CreateEntitiesDuringIteration, "Should be able to create entities during RegistryView iteration without fail")
+	{
+		struct Component {};
+		struct CommonComponent {};
+		struct OtherComponent {};
+
+		EntityRegistry registry;
+
+		{
+			const EntityId entityId = registry.create();
+			registry.addComponent<Component>(entityId);
+			registry.addComponent<CommonComponent>(entityId);
+		}
+
+		RegistryView<Component> view(registry);
+		for (const EntityId entityId : view)
+		{
+			Component* comp = registry.getComponent<Component>(entityId);
+			ST_ASSERT(comp != nullptr && registry.isValid(entityId), "Entity should be valid");
+
+			const EntityId newId = registry.create();
+			registry.addComponent<CommonComponent>(newId);
+			registry.addComponent<OtherComponent>(newId);
+		}
+	}
 }
 ST_SECTION_END(ECS)

@@ -4,6 +4,7 @@
 #include "EntityRegistry.h"
 #include "Entity.h"
 #include "Bitset.h"
+#include <cassert>
 
 namespace Mani
 {
@@ -53,10 +54,11 @@ namespace Mani
         private:
             EntityId m_currentEntityId;
             const EntityRegistry* m_registry;
+            size_t m_size;
             Bitset<Mani::MAX_COMPONENTS> m_componentMask;
             bool m_isAll = false;
 
-            bool isValidIndex() const;
+            bool isValidIndex(const EntityId id) const;
         };
 
         const Iterator begin() const
@@ -104,9 +106,13 @@ namespace Mani
     ) :
         m_currentEntityId(inCurrentEntityId),
         m_registry(inRegistry),
+        m_size(0),
         m_componentMask(inComponentMask),
         m_isAll(inIsAll)
-    {}
+    {
+        assert(m_registry != nullptr);
+        m_size = m_registry->unadjustedSize();
+    }
 
     template<typename ...TComponents>
     inline EntityId RegistryView<TComponents...>::Iterator::operator*() const
@@ -117,34 +123,41 @@ namespace Mani
     template<typename ...TComponents>
     inline bool RegistryView<TComponents...>::Iterator::operator==(const Iterator& other) const
     {
-        return m_currentEntityId == other.m_currentEntityId;
+        return m_registry == other.m_registry && 
+            m_size == other.m_size &&
+            m_currentEntityId == other.m_currentEntityId;
     }
     
     template<typename ...TComponents>
     inline bool RegistryView<TComponents...>::Iterator::operator!=(const Iterator& other) const
     {
-        return m_currentEntityId != other.m_currentEntityId;
+        return m_registry != other.m_registry ||
+            m_size != other.m_size ||
+            m_currentEntityId != other.m_currentEntityId;
     }
 
     template<typename ...TComponents>
     inline RegistryView<TComponents...>::Iterator& RegistryView<TComponents...>::Iterator::operator++()
     {
-        do
+        for (m_currentEntityId++; m_currentEntityId < m_size; m_currentEntityId++)
         {
-            m_currentEntityId++;
-        } while (m_currentEntityId < m_registry->unadjustedSize() && !isValidIndex());
+            if (isValidIndex(m_currentEntityId))
+            {
+                break; 
+            }
+        }
         return *this;
     }
 
     template<typename ...TComponents>
-    inline bool RegistryView<TComponents...>::Iterator::isValidIndex() const
+    inline bool RegistryView<TComponents...>::Iterator::isValidIndex(const EntityId id) const
     {
-        if (!m_registry->isValid(m_currentEntityId))
+        if (!m_registry->isValid(id))
         {
             return false;
         }
 
-        const Entity* entity = m_registry->getEntity(m_currentEntityId);
+        const Entity* entity = m_registry->getEntity(id);
         return m_isAll || entity->hasComponents(m_componentMask);
     }
     // ITERATOR END
