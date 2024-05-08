@@ -37,16 +37,16 @@ namespace Mani
 		static OpenGLSystem& get();
 
 		virtual std::string_view getName() const override;
-		virtual bool shouldTick(EntityRegistry& registry) const override;
+		virtual bool shouldTick(ECS::Registry& registry) const override;
 
-		virtual void tick(float deltaTime, EntityRegistry& registry) override;
+		virtual void tick(float deltaTime, ECS::Registry& registry) override;
 
 		const WindowContext& getWindowContext() const;
 
 		
 	protected:
-		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override;
-		virtual void onDeinitialize(EntityRegistry& registry) override;
+		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
+		virtual void onDeinitialize(ECS::Registry& registry) override;
 
 	private:
 		static OpenGLSystem* s_openGLSystem;

@@ -9,32 +9,32 @@ ST_SECTION_BEGIN(TransformSystemSection, "TransformSystem")
 	{
 	public:
 		virtual std::string_view getName() const override { return "TestSystem"; }
-		virtual bool shouldTick(EntityRegistry& registry) const override { return true; }
+		virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
 
-		EntityId parentId;
-		EntityId childId;
+		ECS::EntityId parentId;
+		ECS::EntityId childId;
 
 		// this is just for the test, you should never ever do this.
 		Transform* parentTransform = nullptr;
 		Transform* childTransform = nullptr;
 
 	protected:
-		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
+		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override
 		{
 			parentId = registry.create();
 			childId = registry.create();
 			
-			registry.addComponent<Transform>(parentId);
-			registry.addComponent<Transform>(childId);
+			registry.add<Transform>(parentId);
+			registry.add<Transform>(childId);
 
-			parentTransform = registry.getComponent<Transform>(parentId);
-			childTransform = registry.getComponent<Transform>(childId);
+			parentTransform = registry.get<Transform>(parentId);
+			childTransform = registry.get<Transform>(childId);
 
 			childTransform->parentId = parentId;
 			childTransform->localPosition = glm::vec3(5.f, 0.f, 0.f);
 		}
 
-		virtual void onDeinitialize(EntityRegistry& registry) override
+		virtual void onDeinitialize(ECS::Registry& registry) override
 		{
 			registry.destroy(childId);
 			registry.destroy(parentId);
@@ -45,9 +45,9 @@ ST_SECTION_BEGIN(TransformSystemSection, "TransformSystem")
 	{
 		class TestSystem : public TestSystemBase
 		{
-			virtual void tick(float deltaTime, EntityRegistry& registry) override
+			virtual void tick(float deltaTime, ECS::Registry& registry) override
 			{
-				Transform* parentTransform = registry.getComponent<Transform>(parentId);
+				Transform* parentTransform = registry.get<Transform>(parentId);
 				parentTransform->position += glm::vec3(0.f, 5.f, 0.f);
 			}
 		};

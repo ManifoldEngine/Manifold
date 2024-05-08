@@ -16,7 +16,7 @@ std::string_view PhysXSystem::getName() const
 	return "PhysXSystem";
 }
 
-bool PhysXSystem::shouldTick(EntityRegistry& registry) const
+bool PhysXSystem::shouldTick(ECS::Registry& registry) const
 {
 	return true;
 }
@@ -26,7 +26,7 @@ ETickGroup PhysXSystem::getTickGroup() const
 	return ETickGroup::PostTick;
 }
 
-void PhysXSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+void PhysXSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
 	m_foundation = PxCreateFoundation(PX_PHYSICS_VERSION, m_allocator, m_errorCallback);
 
@@ -57,7 +57,7 @@ void PhysXSystem::onInitialize(EntityRegistry& registry, SystemContainer& system
 	onEntityDestroyedHandle = registry.onEntityDestroyed.subscribe(std::bind(&PhysXSystem::onEntityDestroyed, this, std::placeholders::_1, std::placeholders::_2));
 }
 
-void PhysXSystem::onDeinitialize(EntityRegistry& registry)
+void PhysXSystem::onDeinitialize(ECS::Registry& registry)
 {
 	registry.onComponentRemoved.unsubscribe(onComponentRemovedHandle);
 	registry.onEntityDestroyed.unsubscribe(onEntityDestroyedHandle);
@@ -75,7 +75,7 @@ void PhysXSystem::onDeinitialize(EntityRegistry& registry)
 	PX_RELEASE(m_foundation);
 }
 
-void PhysXSystem::tick(float deltaTime, EntityRegistry& registry)
+void PhysXSystem::tick(float deltaTime, ECS::Registry& registry)
 {
 	m_accumulatedTime += deltaTime;
 	while (m_accumulatedTime >= PHYSX_FIXED_DELTA_TIME)
@@ -85,7 +85,7 @@ void PhysXSystem::tick(float deltaTime, EntityRegistry& registry)
 		m_accumulatedTime -= PHYSX_FIXED_DELTA_TIME;
 	}
 
-	const auto updatePhysXEntity = [&](const EntityId entityId)
+	const auto updatePhysXEntity = [&](const ECS::EntityId entityId)
 	{
 		const auto it = m_actors.find(entityId);
 		if (it == m_actors.end())
@@ -101,31 +101,31 @@ void PhysXSystem::tick(float deltaTime, EntityRegistry& registry)
 		}
 
 		const PxTransform pxTransform = rigidActor->getGlobalPose();
-		Transform* transform = registry.getComponent<Transform>(entityId);
+		Transform* transform = registry.get<Transform>(entityId);
 		transform->position = PhysXMaths::toglmVec3(pxTransform.p);
 		transform->rotation = PhysXMaths::toglmQuat(pxTransform.q);
 	};
 
-	RegistryView<Transform, PhysXDynamicBoxComponent> dynamicBoxView(registry);
-	for (const EntityId entityId : dynamicBoxView)
+	ECS::View<Transform, PhysXDynamicBoxComponent> dynamicBoxView(registry);
+	for (const ECS::EntityId entityId : dynamicBoxView)
 	{
 		updatePhysXEntity(entityId);
 	}
 
-	RegistryView<Transform, PhysXDynamicSphereComponent> dynamicSphereView(registry);
-	for (const EntityId entityId : dynamicSphereView)
+	ECS::View<Transform, PhysXDynamicSphereComponent> dynamicSphereView(registry);
+	for (const ECS::EntityId entityId : dynamicSphereView)
 	{
 		updatePhysXEntity(entityId);
 	}
 
-	RegistryView<Transform, PhysXDynamicMeshComponent> dynamicMeshView(registry);
-	for (const EntityId entityId : dynamicMeshView)
+	ECS::View<Transform, PhysXDynamicMeshComponent> dynamicMeshView(registry);
+	for (const ECS::EntityId entityId : dynamicMeshView)
 	{
 		updatePhysXEntity(entityId);
 	}
 }
 
-bool PhysXSystem::registerStaticBoxComponent(EntityId entityId, const PhysXStaticBoxComponent& boxComponent, const Transform& transform)
+bool PhysXSystem::registerStaticBoxComponent(ECS::EntityId entityId, const PhysXStaticBoxComponent& boxComponent, const Transform& transform)
 {
 	const glm::vec3 extent = boxComponent.extent * transform.scale;
 	PxShape* boxShape = m_physics->createShape(PxBoxGeometry(extent.x, extent.y, extent.z), *m_defaultMaterial);
@@ -141,7 +141,7 @@ bool PhysXSystem::registerStaticBoxComponent(EntityId entityId, const PhysXStati
 	return result;
 }
 
-bool PhysXSystem::registerStaticSphereComponent(EntityId entityId, const PhysXStaticSphereComponent& sphereComponent, const Transform& transform)
+bool PhysXSystem::registerStaticSphereComponent(ECS::EntityId entityId, const PhysXStaticSphereComponent& sphereComponent, const Transform& transform)
 {
 	const float scaleFactor = std::max(std::max(transform.scale.x, transform.scale.y), transform.scale.z);
 	const float radius = sphereComponent.radius * scaleFactor;
@@ -158,7 +158,7 @@ bool PhysXSystem::registerStaticSphereComponent(EntityId entityId, const PhysXSt
 	return result;
 }
 
-bool PhysXSystem::registerStaticMeshComponent(EntityId entityId, const PhysXStaticMeshComponent& meshComponent, const Transform& transform)
+bool PhysXSystem::registerStaticMeshComponent(ECS::EntityId entityId, const PhysXStaticMeshComponent& meshComponent, const Transform& transform)
 {
 	PxConvexMesh* pxMesh = createPxConvexMesh(meshComponent.mesh);
 	if (pxMesh == nullptr)
@@ -181,7 +181,7 @@ bool PhysXSystem::registerStaticMeshComponent(EntityId entityId, const PhysXStat
 	return result;
 }
 
-bool PhysXSystem::registerDynamicBoxComponent(EntityId entityId, const PhysXDynamicBoxComponent& boxComponent, const Transform& transform)
+bool PhysXSystem::registerDynamicBoxComponent(ECS::EntityId entityId, const PhysXDynamicBoxComponent& boxComponent, const Transform& transform)
 {
 	const glm::vec3 extent = boxComponent.extent * transform.scale;
 	PxShape* boxShape = m_physics->createShape(PxBoxGeometry(extent.x, extent.y, extent.z), *m_defaultMaterial);
@@ -197,7 +197,7 @@ bool PhysXSystem::registerDynamicBoxComponent(EntityId entityId, const PhysXDyna
 	return result;
 }
 
-bool PhysXSystem::registerDynamicSphereComponent(EntityId entityId, const PhysXDynamicSphereComponent& sphereComponent, const Transform& transform)
+bool PhysXSystem::registerDynamicSphereComponent(ECS::EntityId entityId, const PhysXDynamicSphereComponent& sphereComponent, const Transform& transform)
 {
 	const float scaleFactor = std::max(std::max(transform.scale.x, transform.scale.y), transform.scale.z);
 	const float radius = sphereComponent.radius * scaleFactor;
@@ -214,7 +214,7 @@ bool PhysXSystem::registerDynamicSphereComponent(EntityId entityId, const PhysXD
 	return result;
 }
 
-bool PhysXSystem::registerDynamicMeshComponent(EntityId entityId, const PhysXDynamicMeshComponent& meshComponent, const Transform& transform)
+bool PhysXSystem::registerDynamicMeshComponent(ECS::EntityId entityId, const PhysXDynamicMeshComponent& meshComponent, const Transform& transform)
 {
 	PxConvexMesh* pxMesh = createPxConvexMesh(meshComponent.mesh);
 	if (pxMesh == nullptr)
@@ -237,7 +237,7 @@ bool PhysXSystem::registerDynamicMeshComponent(EntityId entityId, const PhysXDyn
 	return result;
 }
 
-bool PhysXSystem::createStaticRigidActor(EntityId entityId, const physx::PxTransform& transform, PxShape& shape)
+bool PhysXSystem::createStaticRigidActor(ECS::EntityId entityId, const physx::PxTransform& transform, PxShape& shape)
 {
 	PxRigidStatic* body = m_physics->createRigidStatic(transform);
 	if (body == nullptr)
@@ -256,7 +256,7 @@ bool PhysXSystem::createStaticRigidActor(EntityId entityId, const physx::PxTrans
 	return true;
 }
 
-bool PhysXSystem::createDynamicRigidActor(EntityId entityId, const physx::PxTransform& transform, PxShape& shape, const PhysXDynamicComponent& dynamicComponent)
+bool PhysXSystem::createDynamicRigidActor(ECS::EntityId entityId, const physx::PxTransform& transform, PxShape& shape, const PhysXDynamicComponent& dynamicComponent)
 {
 	if (m_actors.contains(entityId))
 	{
@@ -320,17 +320,17 @@ PxConvexMesh* PhysXSystem::createPxConvexMesh(const std::shared_ptr<Mesh>& mesh)
 	return pxMesh;
 }
 
-void PhysXSystem::onComponentRemoved(EntityRegistry& registry, EntityId entityId, ComponentId componentId)
+void PhysXSystem::onComponentRemoved(ECS::Registry& registry, ECS::EntityId entityId, ECS::ComponentId componentId)
 {
 	checkForDestroyedActors(entityId);
 }
 
-void PhysXSystem::onEntityDestroyed(EntityRegistry& registry, EntityId entityId)
+void PhysXSystem::onEntityDestroyed(ECS::Registry& registry, ECS::EntityId entityId)
 {
 	checkForDestroyedActors(entityId);
 }
 
-void PhysXSystem::checkForDestroyedActors(EntityId entityId)
+void PhysXSystem::checkForDestroyedActors(ECS::EntityId entityId)
 {
 	auto it = m_actors.find(entityId);
 	if (it == m_actors.end())

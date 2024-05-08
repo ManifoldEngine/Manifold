@@ -3,8 +3,8 @@
 #include <Core/Components/Transform.h>
 #include <Core/ManiAssert.h>
 
-#include <ECS/EntityRegistry.h>
-#include <ECS/RegistryView.h>
+#include <ECS/Registry.h>
+#include <ECS/View.h>
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <algorithm>
@@ -17,36 +17,36 @@ std::string_view CameraSystem::getName() const
     return "CameraSystem";
 }
 
-bool CameraSystem::shouldTick(EntityRegistry& registry) const
+bool CameraSystem::shouldTick(ECS::Registry& registry) const
 {
     return true;
 }
 
-void CameraSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+void CameraSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
     m_cameraId = registry.create();
-    Transform* transform = registry.addComponent<Transform>(m_cameraId);
+    Transform* transform = registry.add<Transform>(m_cameraId);
     transform->position = glm::vec3(0.0f, 0.0f, -3.0f);
-    registry.addComponent<CameraComponent>(m_cameraId);
+    registry.add<CameraComponent>(m_cameraId);
 }
 
-void CameraSystem::onDeinitialize(EntityRegistry& registry)
+void CameraSystem::onDeinitialize(ECS::Registry& registry)
 {
     registry.destroy(m_cameraId);
 }
 
-void CameraSystem::tick(float deltaTime, EntityRegistry& registry)
+void CameraSystem::tick(float deltaTime, ECS::Registry& registry)
 {
-    RegistryView<Transform, CameraComponent> view(registry);
-    for (const EntityId& entityId : view)
+    ECS::View<Transform, CameraComponent> view(registry);
+    for (const ECS::EntityId& entityId : view)
     {
-        Transform* transform = registry.getComponent<Transform>(entityId);
+        Transform* transform = registry.get<Transform>(entityId);
         if (transform == nullptr)
         {
             continue;
         }
 
-        CameraComponent* cameraComponent = registry.getComponent<CameraComponent>(entityId);
+        CameraComponent* cameraComponent = registry.get<CameraComponent>(entityId);
         if (cameraComponent == nullptr)
         {
             continue;
@@ -63,25 +63,25 @@ void CameraSystem::tick(float deltaTime, EntityRegistry& registry)
     }
 }
 
-const CameraComponent* CameraSystem::getCameraComponent(const EntityRegistry& registry) const
+const CameraComponent* CameraSystem::getCameraComponent(const ECS::Registry& registry) const
 {
-    return registry.getComponent<CameraComponent>(m_cameraId);
+    return registry.get<CameraComponent>(m_cameraId);
 }
 
-Transform* CameraSystem::getCameraTransform(EntityRegistry& registry) const
+Transform* CameraSystem::getCameraTransform(ECS::Registry& registry) const
 {
-    return registry.getComponent<Transform>(m_cameraId);
+    return registry.get<Transform>(m_cameraId);
 }
 
-void CameraSystem::setCameraConfig(EntityRegistry& registry, const CameraConfig& config)
+void CameraSystem::setCameraConfig(ECS::Registry& registry, const CameraConfig& config)
 {
-    if (auto* cameraComponent = registry.getComponent<CameraComponent>(m_cameraId))
+    if (auto* cameraComponent = registry.get<CameraComponent>(m_cameraId))
     {
         cameraComponent->config = config;
     }
 }
 
-glm::vec2 CameraSystem::worldToScreenSpace(glm::vec3 position, const EntityRegistry& registry) const
+glm::vec2 CameraSystem::worldToScreenSpace(glm::vec3 position, const ECS::Registry& registry) const
 {
     const CameraComponent* cameraComponent = getCameraComponent(registry);
     if (cameraComponent == nullptr)

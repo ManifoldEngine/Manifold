@@ -4,8 +4,8 @@
 
 #include <Core/Components/Transform.h>
 
-#include <ECS/EntityRegistry.h>
-#include <ECS/RegistryView.h>
+#include <ECS/Registry.h>
+#include <ECS/View.h>
 
 #include <Camera/CameraSystem.h>
 
@@ -39,18 +39,18 @@ std::string_view OpenGLRenderSystem::getName() const
 	return "OpenGLRenderSystem";
 }
 
-bool OpenGLRenderSystem::shouldTick(EntityRegistry& registry) const
+bool OpenGLRenderSystem::shouldTick(ECS::Registry& registry) const
 {
 	return true;
 }
 
-void OpenGLRenderSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
 	m_resourceSystem = systemContainer.initializeDependency<OpenGLResourceSystem>();
 	m_cameraSystem = systemContainer.initializeDependency<CameraSystem>();
 }
 
-void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
+void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 {
 	if (m_resourceSystem.expired() || m_cameraSystem.expired())
 	{
@@ -59,10 +59,10 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 
 	uint32_t x, y, width, height;
 	getViewport(x, y, width, height);
-	RegistryView<CameraComponent> cameraView(registry);
+	ECS::View<CameraComponent> cameraView(registry);
 	for (const auto& entityId : cameraView)
 	{
-		CameraComponent* cameraComponent = registry.getComponent<CameraComponent>(entityId);
+		CameraComponent* cameraComponent = registry.get<CameraComponent>(entityId);
 		cameraComponent->config.width = static_cast<float>(width);
 		cameraComponent->config.height = static_cast<float>(height);
 	}
@@ -100,16 +100,16 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 	// consuming color state.
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	RegistryView<DirectionalLightComponent> directionalLightsView(registry);
-	RegistryView<Transform, PointLightComponent> pointLightsView(registry);
-	RegistryView<Transform, SpotlightComponent> spotlightsView(registry);
+	ECS::View<DirectionalLightComponent> directionalLightsView(registry);
+	ECS::View<Transform, PointLightComponent> pointLightsView(registry);
+	ECS::View<Transform, SpotlightComponent> spotlightsView(registry);
 
 	// Render MeshComponents
-	RegistryView<Transform, MeshComponent> meshesView(registry);
-	for (const EntityId entityId : meshesView)
+	ECS::View<Transform, MeshComponent> meshesView(registry);
+	for (const ECS::EntityId entityId : meshesView)
 	{
-		Transform* transform = registry.getComponent<Transform>(entityId);
-		const MeshComponent* meshComponent = registry.getComponent<MeshComponent>(entityId);
+		Transform* transform = registry.get<Transform>(entityId);
+		const MeshComponent* meshComponent = registry.get<MeshComponent>(entityId);
 
 		if (meshComponent->mesh == nullptr)
 		{
@@ -194,9 +194,9 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 		int directionalLightIndex = 0;
 		int pointLightIndex = 0;
 		int spotlightIndex = 0;
-		for(const EntityId entityId : directionalLightsView)
+		for(const ECS::EntityId entityId : directionalLightsView)
 		{
-			const DirectionalLightComponent* light = registry.getComponent<DirectionalLightComponent>(entityId);
+			const DirectionalLightComponent* light = registry.get<DirectionalLightComponent>(entityId);
 
 			const std::string directionalLightArray = std::format("directionalLights[{}]", directionalLightIndex);
 			shader->setFloat3(std::format("{}.direction", directionalLightArray).c_str(), light->direction.x, light->direction.y, light->direction.z);
@@ -206,10 +206,10 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 			directionalLightIndex++;
 		}
 
-		for (const EntityId entityId : pointLightsView)
+		for (const ECS::EntityId entityId : pointLightsView)
 		{
-			const Transform* transform = registry.getComponent<Transform>(entityId);
-			const PointLightComponent* light = registry.getComponent<PointLightComponent>(entityId);
+			const Transform* transform = registry.get<Transform>(entityId);
+			const PointLightComponent* light = registry.get<PointLightComponent>(entityId);
 
 			const std::string pointLightArray = std::format("pointLights[{}]", pointLightIndex);
 			shader->setFloat3(std::format("{}.position", pointLightArray).c_str(), transform->position.x, transform->position.y, transform->position.z);
@@ -225,10 +225,10 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 			pointLightIndex++;
 		}
 
-		for (const EntityId entityId : spotlightsView)
+		for (const ECS::EntityId entityId : spotlightsView)
 		{
-			const Transform* transform = registry.getComponent<Transform>(entityId);
-			const SpotlightComponent* light = registry.getComponent<SpotlightComponent>(entityId);
+			const Transform* transform = registry.get<Transform>(entityId);
+			const SpotlightComponent* light = registry.get<SpotlightComponent>(entityId);
 			const glm::vec3 forward = transform->forward();
 
 			const std::string spotlightsArray = std::format("spotlights[{}]", spotlightIndex);
@@ -273,11 +273,11 @@ void OpenGLRenderSystem::tick(float deltaTime, EntityRegistry& registry)
 	}
 
 	// Render SpriteComponents
-	RegistryView <Transform, SpriteComponent> spritesView(registry);
-	for (const EntityId entityId : spritesView)
+	ECS::View<Transform, SpriteComponent> spritesView(registry);
+	for (const ECS::EntityId entityId : spritesView)
 	{
-		const Transform* transform = registry.getComponent<Transform>(entityId);
-		const SpriteComponent* spriteComponent = registry.getComponent<SpriteComponent>(entityId);
+		const Transform* transform = registry.get<Transform>(entityId);
+		const SpriteComponent* spriteComponent = registry.get<SpriteComponent>(entityId);
 
 		if (spriteComponent->sprite == nullptr)
 		{

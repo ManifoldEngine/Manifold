@@ -6,42 +6,44 @@
 
 namespace Mani 
 {
-	const int MAX_COMPONENTS = 64;
+	namespace ECS
+	{
+		const int MAX_COMPONENTS = 64;
 
 #if MANI_WEBGL
-	using EntityId = unsigned int;
-	const EntityId INVALID_ID = UINT32_MAX;
+		using EntityId = unsigned int;
+		const EntityId INVALID_ID = UINT32_MAX;
 #else
-	using EntityId = size_t;
-	const EntityId INVALID_ID = UINT64_MAX;
+		using EntityId = size_t;
+		const EntityId INVALID_ID = UINT64_MAX;
 #endif
 
-	using ComponentId = unsigned int;
+		using ComponentId = unsigned int;
 
-	bool isValid(EntityId entityId);
+		bool isValid(EntityId entityId);
 
-	/*
-	 * An entity. It knows about its id and the components it has.
-	 */
-	class Entity
-	{
-	public:
-		Entity();
-		Entity(const Entity& other);
-		~Entity();
+		/*
+		 * An entity. It knows about its id and the components it has.
+		 */
+		class Entity
+		{
+		public:
+			Entity() = default;
+			Entity(const Entity& other);
+			
+			EntityId id = ECS::INVALID_ID;
 
-		EntityId id = INVALID_ID;
+			// todo #2: this is kinda messed up. This means that when an entity is reused it will have the same id as in its previous life.
+			bool isAlive = false;
 
-		// todo #2: this is kinda messed up. This means that when an entity is reused it will have the same id as in its previous life.
-		bool isAlive = false;
+			bool hasComponent(ComponentId componentId) const;
+			bool hasComponents(const Bitset<MAX_COMPONENTS>& componentMask) const;
+			void setComponentBit(ComponentId componentId);
+			void resetComponentBit(ComponentId componentId);
+			void resetComponentBits();
 
-		bool hasComponent(ComponentId componentId) const;
-		bool hasComponents(const Bitset<MAX_COMPONENTS>& componentMask) const;
-		void setComponentBit(ComponentId componentId);
-		void resetComponentBit(ComponentId componentId);
-		void resetComponentBits();
-
-	private:
-		Bitset<MAX_COMPONENTS>* m_components = nullptr;
-	};
+		private:
+			Bitset<MAX_COMPONENTS> m_components;
+		};
+	}
 }

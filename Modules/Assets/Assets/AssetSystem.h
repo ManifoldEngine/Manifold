@@ -25,7 +25,7 @@ namespace Mani
 		OnJsonAssetEvent onJsonAssetLoaded;
 
 		virtual std::string_view getName() const;
-		virtual bool shouldTick(EntityRegistry& registry) const;
+		virtual bool shouldTick(ECS::Registry& registry) const;
 
 		// loads a json asset from relative path. Path is relative to the root of the project.
 		template<Derived<IJsonAsset> TAsset>

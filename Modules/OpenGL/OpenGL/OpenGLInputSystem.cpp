@@ -18,7 +18,7 @@ void OpenGLInputSystem::glfwCallback_onMouseMoved(GLFWwindow* window, double x, 
 }
 // OpenGL callbacks END
 
-void Mani::OpenGLInputSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+void Mani::OpenGLInputSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
     m_openGLSystem = Application::get().getSystemContainer().getSystem<OpenGLSystem>();
     MANI_ASSERT(!m_openGLSystem.expired(), "Needs OpenGLSystem to execute.");
@@ -27,7 +27,7 @@ void Mani::OpenGLInputSystem::onInitialize(EntityRegistry& registry, SystemConta
     const OpenGLSystem::WindowContext& context = openGLSystem->getWindowContext();
     glfwSetCursorPosCallback(context.window, &OpenGLInputSystem::glfwCallback_onMouseMoved);
 
-    InputDevice* inputDevice = registry.addComponent<InputDevice>(registry.getSingletonId());
+    InputDevice* inputDevice = registry.add<InputDevice>(registry.getSingletonId());
     inputDevice->deviceName = "OpenGLInput";
     inputDevice->axis =
     {
@@ -36,7 +36,7 @@ void Mani::OpenGLInputSystem::onInitialize(EntityRegistry& registry, SystemConta
     };
 }
 
-void Mani::OpenGLInputSystem::onDeinitialize(EntityRegistry& registry)
+void Mani::OpenGLInputSystem::onDeinitialize(ECS::Registry& registry)
 {
     if (!m_openGLSystem.expired())
     {
@@ -45,10 +45,10 @@ void Mani::OpenGLInputSystem::onDeinitialize(EntityRegistry& registry)
         glfwSetCursorPosCallback(context.window, NULL);
     }
 
-    registry.removeComponent<InputDevice>(registry.getSingletonId());
+    registry.remove<InputDevice>(registry.getSingletonId());
 }
 
-void Mani::OpenGLInputSystem::tick(float deltaTime, EntityRegistry& registry)
+void Mani::OpenGLInputSystem::tick(float deltaTime, ECS::Registry& registry)
 {
     if (m_openGLSystem.expired())
     {
@@ -57,7 +57,7 @@ void Mani::OpenGLInputSystem::tick(float deltaTime, EntityRegistry& registry)
 
     std::shared_ptr<OpenGLSystem> openGLSystem = m_openGLSystem.lock();
 
-    InputDevice* inputDevice = registry.getComponent<InputDevice>(registry.getSingletonId());
+    InputDevice* inputDevice = registry.get<InputDevice>(registry.getSingletonId());
     if (inputDevice == nullptr)
     {
         return;

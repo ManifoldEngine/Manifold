@@ -4,7 +4,7 @@
 
 using namespace Mani;
 
-void WorldSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+void WorldSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
 	if (isInitialized())
 	{
@@ -17,7 +17,7 @@ void WorldSystem::onInitialize(EntityRegistry& registry, SystemContainer& system
 	}
 }
 
-void WorldSystem::onDeinitialize(EntityRegistry& registry)
+void WorldSystem::onDeinitialize(ECS::Registry& registry)
 {
 	if (!isInitialized())
 	{
@@ -54,7 +54,7 @@ std::shared_ptr<World> WorldSystem::getRelevantWorld() const
 	return m_relevantWorld;
 }
 
-void WorldSystem::tick(float deltaTime, EntityRegistry& registry)
+void WorldSystem::tick(float deltaTime, ECS::Registry& registry)
 {
 	for (auto& world : m_worlds)
 	{

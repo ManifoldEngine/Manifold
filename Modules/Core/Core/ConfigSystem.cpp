@@ -8,7 +8,7 @@ std::string_view ConfigSystem::getName() const
     return "ConfigSystem";
 }
 
-bool ConfigSystem::shouldTick(EntityRegistry& registry) const
+bool ConfigSystem::shouldTick(ECS::Registry& registry) const
 {
     return false;
 }

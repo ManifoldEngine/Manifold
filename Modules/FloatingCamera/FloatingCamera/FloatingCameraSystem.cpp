@@ -6,39 +6,39 @@
 
 using namespace Mani;
 
-void FloatingCameraSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+void FloatingCameraSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
-	EntityId entityId = registry.create();
-	registry.addComponent<FloatingCamera>(entityId);
+	ECS::EntityId entityId = registry.create();
+	registry.add<FloatingCamera>(entityId);
 	
-	InputUser& inputUser = *registry.addComponent<InputUser>(entityId);
+	InputUser& inputUser = *registry.add<InputUser>(entityId);
 	InputUtils::setAction(inputUser, MOVE_ACTION);
 	InputUtils::setAction(inputUser, AIM_ACTION);
 	InputUtils::addBinding(inputUser, "WASD", MOVE_ACTION);
 	InputUtils::addBinding(inputUser, "Mouse", AIM_ACTION);
 }
 
-void FloatingCameraSystem::tick(float deltaTime, EntityRegistry& registry)
+void FloatingCameraSystem::tick(float deltaTime, ECS::Registry& registry)
 {
-	RegistryView<FloatingCamera, InputUser> floatingCameraView(registry);
-	for (const EntityId entityId : floatingCameraView)
+	ECS::View<FloatingCamera, InputUser> floatingCameraView(registry);
+	for (const ECS::EntityId entityId : floatingCameraView)
 	{
-		InputUser* inputUser = registry.getComponent<InputUser>(entityId);
-		FloatingCamera* floatingCamera = registry.getComponent<FloatingCamera>(entityId);
+		InputUser* inputUser = registry.get<InputUser>(entityId);
+		FloatingCamera* floatingCamera = registry.get<FloatingCamera>(entityId);
 
 		const InputAction& moveAction = inputUser->actions[MOVE_ACTION];
 		const InputAction& aimAction = inputUser->actions[AIM_ACTION];
 
-		RegistryView<Transform, CameraComponent> cameraView(registry);
+		ECS::View<Transform, CameraComponent> cameraView(registry);
 		if (cameraView.begin() == cameraView.end())
 		{
 			MANI_LOG_ERROR(LogFloatingCamera, "Could not find a camera in the world");
 			continue;
 		}
 
-		const EntityId cameraId = *cameraView.begin();
+		const ECS::EntityId cameraId = *cameraView.begin();
 
-		Transform* transform = registry.getComponent<Transform>(cameraId);
+		Transform* transform = registry.get<Transform>(cameraId);
 		if (transform == nullptr)
 		{
 			continue;

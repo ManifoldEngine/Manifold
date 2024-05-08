@@ -21,7 +21,7 @@ std::string_view OpenGLResourceSystem::getName() const
     return "OpenGLResourceSystem";
 }
 
-void OpenGLResourceSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
 	m_assetSystem = systemContainer.initializeDependency<AssetSystem>();
 	if (!m_assetSystem.expired())
@@ -31,7 +31,7 @@ void OpenGLResourceSystem::onInitialize(EntityRegistry& registry, SystemContaine
 	}
 }
 
-void OpenGLResourceSystem::onDeinitialize(EntityRegistry& registry)
+void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry)
 {
 	if (!m_assetSystem.expired())
 	{

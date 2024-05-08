@@ -77,7 +77,7 @@ std::string_view OpenGLSystem::getName() const
     return "OpenGLSystem";
 }
 
-bool OpenGLSystem::shouldTick(EntityRegistry& registry) const
+bool OpenGLSystem::shouldTick(ECS::Registry& registry) const
 {
     return true;
 }
@@ -87,7 +87,7 @@ const OpenGLSystem::WindowContext& OpenGLSystem::getWindowContext() const
     return m_context;
 }
 
-void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+void OpenGLSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
     // initialize glfw
     if (!glfwInit())
@@ -149,13 +149,13 @@ void OpenGLSystem::onInitialize(EntityRegistry& registry, SystemContainer& syste
 #endif
 }
 
-void OpenGLSystem::onDeinitialize(EntityRegistry& entityRegistry)
+void OpenGLSystem::onDeinitialize(ECS::Registry& entityRegistry)
 {
     SystemBase::onDeinitialize(entityRegistry);
     terminate();
 }
 
-void OpenGLSystem::tick(float deltaTime, EntityRegistry& entityRegistry)
+void OpenGLSystem::tick(float deltaTime, ECS::Registry& entityRegistry)
 {
     glfwSwapBuffers(m_context.window);
     glfwPollEvents();

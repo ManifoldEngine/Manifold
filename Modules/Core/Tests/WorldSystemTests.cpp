@@ -15,9 +15,9 @@ ST_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 		{
 		public:
 			virtual std::string_view getName() const override { return "SomeWorldSystem"; }
-			virtual bool shouldTick(EntityRegistry& registry) const override { return true; }
+			virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
 
-			virtual void tick(float deltaTime, EntityRegistry& registry) override
+			virtual void tick(float deltaTime, ECS::Registry& registry) override
 			{
 				onTick.broadcast(deltaTime);
 			}

@@ -42,8 +42,8 @@ namespace Mani
 
 
 	protected:
-		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer);
-		virtual void onDeinitialize(EntityRegistry& registry);
+		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer);
+		virtual void onDeinitialize(ECS::Registry& registry);
 
 	private:
 		EventHandle onAssetLoadedHandle;

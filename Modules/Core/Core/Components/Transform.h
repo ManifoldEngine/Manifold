@@ -18,7 +18,7 @@ namespace Mani
 		glm::quat localRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 		glm::vec3 localScale = glm::vec3(1.0f, 1.0f, 1.0f);
 
-		EntityId parentId = INVALID_ID;
+		ECS::EntityId parentId = ECS::INVALID_ID;
 
 		bool hasParent() const;
 

@@ -19,28 +19,28 @@ class VirtualControllerSystem : public SystemBase
 {
 public:
 	virtual std::string_view getName() const override { return "VirtualControllerSystem"; }
-	virtual bool shouldTick(EntityRegistry& registry) const override { return true; }
+	virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
 	virtual ETickGroup getTickGroup() const override { return ETickGroup::PreTick; }
 
-	virtual void tick(float deltaTime, EntityRegistry& registry)
+	virtual void tick(float deltaTime, ECS::Registry& registry)
 	{
-		RegistryView<InputDevice> deviceView(registry);
-		for (const EntityId entityId : deviceView)
+		ECS::View<InputDevice> deviceView(registry);
+		for (const ECS::EntityId entityId : deviceView)
 		{
-			InputDevice* device = registry.getComponent<InputDevice>(entityId);
+			InputDevice* device = registry.get<InputDevice>(entityId);
 			consumeInputBuffer(device->buttonBuffer);
 			getAxis(device->axis);
 		}
 	}
 
 protected:
-	virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
+	virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override
 	{
 		deviceId = registry.create();
-		InputDevice* inputDevice = registry.addComponent<InputDevice>(deviceId);
+		InputDevice* inputDevice = registry.add<InputDevice>(deviceId);
 		inputDevice->deviceName = getDeviceName();
 	}
-	virtual void onDeinitialize(EntityRegistry& registry) override
+	virtual void onDeinitialize(ECS::Registry& registry) override
 	{
 		registry.destroy(deviceId);
 	}
@@ -68,7 +68,7 @@ public:
 		return true;
 	}
 
-	EntityId getDeviceId() const { return deviceId; }
+	ECS::EntityId getDeviceId() const { return deviceId; }
 
 	void setLeftStick(float x, float y)
 	{
@@ -106,7 +106,7 @@ public:
 
 	std::vector<ButtonControl> buffer;
 private:
-	EntityId deviceId;
+	ECS::EntityId deviceId;
 
 	ButtonControl m_aButton = { "AButton" };
 	ButtonControl m_bButton = { "BButton" };
@@ -138,19 +138,19 @@ class InputUserMockSystem : public SystemBase
 {
 public:
 	virtual std::string_view getName() const override { return "VirtualControllerSystem"; }
-	virtual bool shouldTick(EntityRegistry& registry) const override { return true; }
+	virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
 	virtual ETickGroup getTickGroup() const override { return ETickGroup::PreTick; }
 
 	// never do this!
 	InputUser* inputUser = nullptr;
 
 protected:
-	virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
+	virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override
 	{
 		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
 
-		EntityId entityId = registry.create();
-		inputUser = registry.addComponent<InputUser>(entityId);
+		ECS::EntityId entityId = registry.create();
+		inputUser = registry.add<InputUser>(entityId);
 		inputUser->inputDevices.push_back(controller->getDeviceId());
 	}
 };
@@ -166,7 +166,7 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
 		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
 
-		EventHandle handle = inputSystem->onActionEvent.subscribe([&registeredActions](EntityId entityId, const InputAction& action) 
+		EventHandle handle = inputSystem->onActionEvent.subscribe([&registeredActions](ECS::EntityId entityId, const InputAction& action) 
 		{
 			registeredActions.push_back(action);
 		});
@@ -261,7 +261,7 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
 		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
 
-		EventHandle handle = inputSystem->onActionEvent.subscribe([&bHasActionBeenTriggered](EntityId entityId, const InputAction& action)
+		EventHandle handle = inputSystem->onActionEvent.subscribe([&bHasActionBeenTriggered](ECS::EntityId entityId, const InputAction& action)
 		{
 			bHasActionBeenTriggered = true;
 		});
@@ -293,7 +293,7 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
 		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
 		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
-		EventHandle handle = inputSystem->onActionEvent.subscribe([&actionEvents](EntityId entityId, const InputAction& inputAction)
+		EventHandle handle = inputSystem->onActionEvent.subscribe([&actionEvents](ECS::EntityId entityId, const InputAction& inputAction)
 			{
 				actionEvents.push_back(inputAction);
 			});

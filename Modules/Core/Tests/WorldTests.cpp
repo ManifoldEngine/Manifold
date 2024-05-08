@@ -10,12 +10,12 @@ namespace Mani_Test
 	class SomeSystem : public SystemBase
 	{
 	public:
-		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
+		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override
 		{
 			onInitializeCalled = true;
 		}
 
-		virtual void onDeinitialize(EntityRegistry& registry) override
+		virtual void onDeinitialize(ECS::Registry& registry) override
 		{
 			if (onDeinitializeCalled)
 			{
@@ -23,12 +23,12 @@ namespace Mani_Test
 			}
 		}
 
-		virtual bool shouldTick(EntityRegistry& registry) const override
+		virtual bool shouldTick(ECS::Registry& registry) const override
 		{
 			return true;
 		}
 
-		virtual void tick(float deltaTime, EntityRegistry& registry) override
+		virtual void tick(float deltaTime, ECS::Registry& registry) override
 		{
 			tickCalled = true;
 		}
@@ -143,7 +143,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		{
 		public:
 			virtual std::string_view getName() const override { return "SomeSystem1"; }
-			virtual void onDeinitialize(EntityRegistry& registry) override { onDeinitialized.broadcast(); }
+			virtual void onDeinitialize(ECS::Registry& registry) override { onDeinitialized.broadcast(); }
 			InitHandle initHandle;
 			OnDeinitializedEvent onDeinitialized;
 		};
@@ -152,7 +152,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		{
 		public:
 			virtual std::string_view getName() const override { return "SomeSystem2"; }
-			virtual void onDeinitialize(EntityRegistry& registry) override { onDeinitialized.broadcast(); }
+			virtual void onDeinitialize(ECS::Registry& registry) override { onDeinitialized.broadcast(); }
 			InitHandle initHandle;
 			OnDeinitializedEvent onDeinitialized;
 		};
@@ -161,7 +161,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		{
 		public:
 			virtual std::string_view getName() const override { return "SomeSystem3"; }
-			virtual void onDeinitialize(EntityRegistry& registry) override { onDeinitialized.broadcast(); }
+			virtual void onDeinitialize(ECS::Registry& registry) override { onDeinitialized.broadcast(); }
 			InitHandle initHandle;
 			OnDeinitializedEvent onDeinitialized;
 		};
@@ -250,7 +250,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		class SomeSystem : public SystemBase
 		{
 		public:
-			virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
+			virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override
 			{
 				onInitializeCalled = true;
 			}
@@ -261,7 +261,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		class SomeOtherSystem : public SystemBase
 		{
 		public:
-			virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override
+			virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override
 			{
 				onInitializeCalled = true;
 				dependency = systemContainer.initializeDependency<SomeSystem>();

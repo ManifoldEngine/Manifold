@@ -8,12 +8,12 @@ namespace Mani
 	{
 	public:
 		virtual std::string_view getName() const override;
-		virtual bool shouldTick(EntityRegistry& registry) const override;
+		virtual bool shouldTick(ECS::Registry& registry) const override;
 
-		virtual tick(float deltaTime, EntityRegistry& registry) override;
+		virtual tick(float deltaTime, ECS::Registry& registry) override;
 
 	protected:
-		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override;
-		virtual void onDeinitialize(EntityRegistry& registry) override;
+		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
+		virtual void onDeinitialize(ECS::Registry& registry) override;
 	};
 }

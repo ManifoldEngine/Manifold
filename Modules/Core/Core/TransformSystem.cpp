@@ -8,7 +8,7 @@ std::string_view TransformSystem::getName() const
     return "TransformSystem";
 }
 
-bool TransformSystem::shouldTick(EntityRegistry& registry) const
+bool TransformSystem::shouldTick(ECS::Registry& registry) const
 {
     return true;
 }
@@ -18,16 +18,16 @@ ETickGroup TransformSystem::getTickGroup() const
     return ETickGroup::PostTick;
 }
 
-void TransformSystem::tick(float deltaTime, EntityRegistry& registry)
+void TransformSystem::tick(float deltaTime, ECS::Registry& registry)
 {
     m_processedTransforms.clear();
     m_childrenMap.clear();
 
-    RegistryView<Transform> transformView(registry);
+    ECS::View<Transform> transformView(registry);
     for (const auto& entityId : transformView)
     {
         {
-            Transform* transform = registry.getComponent<Transform>(entityId);
+            Transform* transform = registry.get<Transform>(entityId);
             if (!transform->hasParent())
             {
                 // no parent, no worries.
@@ -47,12 +47,12 @@ void TransformSystem::tick(float deltaTime, EntityRegistry& registry)
     }
 }
 
-void TransformSystem::updateTransform(EntityRegistry& registry, EntityId entityId)
+void TransformSystem::updateTransform(ECS::Registry& registry, ECS::EntityId entityId)
 {
-    Transform* transform = registry.getComponent<Transform>(entityId);
+    Transform* transform = registry.get<Transform>(entityId);
     MANI_ASSERT(transform != nullptr, "entity must have a transform component");
 
-    Transform* parentTransform = registry.getComponent<Transform>(transform->parentId);
+    Transform* parentTransform = registry.get<Transform>(transform->parentId);
     MANI_ASSERT(parentTransform != nullptr, "Parent entity must have a transform component");
 
     transform->position = transform->localPosition;
@@ -72,9 +72,9 @@ void TransformSystem::updateTransform(EntityRegistry& registry, EntityId entityI
     transform->scale.z = glm::length(glm::vec3(result[2]));
 }
 
-void TransformSystem::updateTransformsAndTheirChildrenRecursively(EntityRegistry& registry, EntityId entityId)
+void TransformSystem::updateTransformsAndTheirChildrenRecursively(ECS::Registry& registry, ECS::EntityId entityId)
 {
-    if (!isValid(entityId))
+    if (!ECS::isValid(entityId))
     {
         return;
     }

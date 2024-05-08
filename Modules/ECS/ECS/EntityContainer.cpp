@@ -5,14 +5,14 @@ using namespace Mani;
 
 // EntityContainer::ComponentPool begin
 
-EntityContainer::ComponentPool::ComponentPool(size_t inElementsSize)
+ECS::EntityContainer::ComponentPool::ComponentPool(size_t inElementsSize)
 	: elementSize(inElementsSize)
 {
 	capacity = INITIAL_COMPONENT_COUNT;
 	data = std::vector<unsigned char>(capacity * elementSize, 0);
 }
 
-void* EntityContainer::ComponentPool::Get(size_t index)
+void* ECS::EntityContainer::ComponentPool::Get(size_t index)
 {
 	if (index >= capacity)
 	{
@@ -30,35 +30,35 @@ void* EntityContainer::ComponentPool::Get(size_t index)
 
 // EntityContainer::ComponentPool end
 
-EntityId EntityContainer::create()
+ECS::EntityId ECS::EntityContainer::create()
 {
 	if (m_entities.size() >= UINT64_MAX && m_entityPool.size() == 0)
 	{
-		return INVALID_ID;
+		return ECS::INVALID_ID;
 	}
 
 	if (m_entityPool.size() > 0)
 	{
-		EntityId id = m_entityPool.back();
+		ECS::EntityId id = m_entityPool.back();
 		m_entityPool.pop_back();
 		m_entities[id].isAlive = true;
 		return id;
 	}
 
-	m_entities.push_back(Entity());
+	m_entities.push_back(ECS::Entity());
 	m_entities.back().id = m_entities.size() - 1;
 	m_entities.back().isAlive = true;
 	return m_entities.back().id;
 }
 
-bool EntityContainer::destroy(EntityId entityId)
+bool ECS::EntityContainer::destroy(ECS::EntityId entityId)
 {
 	if (!isValid(entityId))
 	{
 		return false;
 	}
 
-	Entity& entity = m_entities[entityId];
+	ECS::Entity& entity = m_entities[entityId];
 	entity.isAlive = false;
 	entity.resetComponentBits();
 
@@ -66,7 +66,7 @@ bool EntityContainer::destroy(EntityId entityId)
 	return true;
 }
 
-const Entity* EntityContainer::getEntity(EntityId entityId) const
+const ECS::Entity* ECS::EntityContainer::getEntity(ECS::EntityId entityId) const
 {
 	if (!isValid(entityId))
 	{
@@ -76,19 +76,19 @@ const Entity* EntityContainer::getEntity(EntityId entityId) const
 	return &m_entities[entityId];
 }
 
-size_t EntityContainer::size() const
+size_t ECS::EntityContainer::size() const
 {
 	return m_entities.size() - m_entityPool.size();
 }
 
-size_t EntityContainer::unadjustedSize() const
+size_t ECS::EntityContainer::unadjustedSize() const
 {
 	return m_entities.size();
 }
 
-bool EntityContainer::isValid(EntityId entityId) const
+bool ECS::EntityContainer::isValid(ECS::EntityId entityId) const
 {
-	if (entityId >= m_entities.size() || entityId == INVALID_ID)
+	if (entityId >= m_entities.size() || entityId == ECS::INVALID_ID)
 	{
 		return false;
 	}
@@ -96,7 +96,7 @@ bool EntityContainer::isValid(EntityId entityId) const
 	return m_entities[entityId].isAlive;
 }
 
-void* EntityContainer::addComponent(EntityId entityId, ComponentId componentId, size_t componentSize)
+void* ECS::EntityContainer::addComponent(ECS::EntityId entityId, ComponentId componentId, size_t componentSize)
 {
 	if (!isValid(entityId))
 	{
@@ -124,7 +124,7 @@ void* EntityContainer::addComponent(EntityId entityId, ComponentId componentId, 
 	return m_componentPools[componentId]->Get(entityId);	
 }
 
-void* EntityContainer::getComponent(EntityId entityId, ComponentId componentId) const
+void* ECS::EntityContainer::getComponent(ECS::EntityId entityId, ComponentId componentId) const
 {
 	if (!isValid(entityId))
 	{
@@ -145,7 +145,7 @@ void* EntityContainer::getComponent(EntityId entityId, ComponentId componentId) 
 	return m_componentPools[componentId]->Get(entityId);
 }
 
-bool EntityContainer::removeComponent(EntityId entityId, ComponentId componentId)
+bool ECS::EntityContainer::removeComponent(ECS::EntityId entityId, ComponentId componentId)
 {
 	if (!isValid(entityId))
 	{
@@ -163,7 +163,7 @@ bool EntityContainer::removeComponent(EntityId entityId, ComponentId componentId
 	return true;
 }
 
-bool EntityContainer::hasComponent(EntityId entityId, ComponentId componentId) const
+bool ECS::EntityContainer::hasComponent(ECS::EntityId entityId, ComponentId componentId) const
 {
 	if (!isValid(entityId))
 	{
@@ -173,7 +173,7 @@ bool EntityContainer::hasComponent(EntityId entityId, ComponentId componentId) c
 	return m_entities[entityId].hasComponent(componentId);
 }
 
-ComponentId EntityContainer::getComponentId(const std::type_index& typeIndex) const
+ECS::ComponentId ECS::EntityContainer::getComponentId(const std::type_index& typeIndex) const
 {
 	std::unordered_map<std::type_index, ComponentId>* componentIds = const_cast<std::unordered_map<std::type_index, ComponentId>*>(&m_componentIds);
 	if (auto it = componentIds->find(typeIndex); it != componentIds->end())

@@ -14,7 +14,7 @@ namespace Mani
 		// control to actions binding
 		std::unordered_map<std::string, std::unordered_set<std::string>> bindings;
 		
-		std::vector<EntityId> inputDevices;
+		std::vector<ECS::EntityId> inputDevices;
 	};
 
 	namespace InputUtils

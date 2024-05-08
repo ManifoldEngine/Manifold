@@ -7,7 +7,7 @@ std::string_view AssetSystem::getName() const
 	return "AssetSystem";
 }
 
-bool AssetSystem::shouldTick(EntityRegistry& registry) const
+bool AssetSystem::shouldTick(ECS::Registry& registry) const
 {
 	return false;
 }
