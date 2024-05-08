@@ -85,7 +85,7 @@ namespace Mani
 }
 
 #ifdef MANI_WINDOWS
-	#define DECLARE_EVENT(EVENTNAME, ... ) class __declspec(dllexport) EVENTNAME : public Event<__VA_ARGS__> {};
+	#define DECLARE_EVENT(EVENTNAME, ... ) class __declspec(dllexport) EVENTNAME : public Mani::Event<__VA_ARGS__> {};
 #else
-	#define DECLARE_EVENT(EVENTNAME, ... ) class EVENTNAME : public Event<__VA_ARGS__> {};
+	#define DECLARE_EVENT(EVENTNAME, ... ) class EVENTNAME : public Mani::Event<__VA_ARGS__> {};
 #endif

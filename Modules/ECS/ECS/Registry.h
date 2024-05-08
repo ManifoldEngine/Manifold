@@ -31,42 +31,65 @@ namespace Mani
 			Registry();
 			~Registry();
 
+			// creates an entity id
 			ECS::EntityId create();
+
+			// destroys an entity and its components
 			bool destroy(ECS::EntityId entityId);
+			
+			// returs an entity object
 			const Entity* getEntity(ECS::EntityId entityId) const;
 
+			// adds a TComponent to an entity
+			// returns the added component
 			template<typename TComponent>
 			TComponent* add(ECS::EntityId entityId);
 
+			// removes a TComponent to an entity
+			// returns true if a component was removed
 			template<typename TComponent>
 			bool remove(ECS::EntityId entityId);
 
+			// returns an entity's TComponent
 			template<typename TComponent>
 			TComponent* get(ECS::EntityId entityId);
 
+			// returns an entity's const TComponent
 			template<typename TComponent>
 			const TComponent* get(ECS::EntityId entityId) const;
 
+			// returns true if an entity has a component (fast)
 			template<typename TComponent>
 			bool has(ECS::EntityId entityId) const;
 
+			// adds a singleton TComponent
+			// returns the added component
 			template<typename TComponent>
 			TComponent* addSingle();
 
+			// removes a singleton TComponent
+			// returns true if a component was removed
 			template<typename TComponent>
 			bool removeSingle();
 
+			// returns an singleton TComponent
 			template<typename TComponent>
 			TComponent* getSingle();
 
+			// returns an singleton const TComponent
 			template<typename TComponent>
 			const TComponent* getSingle() const;
 
+			// returns if a singleton Tcomponent exists(fast)
 			template<typename TComponent>
 			bool hasSingle() const;
 
+			// returns the amount of alive entities
 			size_t size() const;
+			// returns the amount of dead and alive entities.
+			// dead entities are pending recycling
 			size_t unadjustedSize() const;
+			// returns true if an entity with entityId exists and is alive
 			bool isValid(ECS::EntityId entityId) const;
 
 			// Converts a TComponent type into a numerical identifier.
