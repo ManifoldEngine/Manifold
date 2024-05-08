@@ -19,8 +19,8 @@ namespace Mani
 			template<typename ...TComponents>
 			friend class View;
 
-			DECLARE_EVENT(EntityEvent, Registry& /*registry*/, ECS::EntityId /*entityId*/);
-			DECLARE_EVENT(EntityComponentEvent, Registry& /*registry*/, ECS::EntityId /*entityId*/, ComponentId /*componentId*/);
+			DECLARE_EVENT(EntityEvent, Registry& /*registry*/, EntityId /*entityId*/);
+			DECLARE_EVENT(EntityComponentEvent, Registry& /*registry*/, EntityId /*entityId*/, ComponentId /*componentId*/);
 
 			EntityEvent onEntityCreated;
 			EntityEvent onBeforeEntityDestroyed;
@@ -30,8 +30,6 @@ namespace Mani
 
 			Registry();
 			~Registry();
-
-			ECS::EntityId getSingletonId() const { return m_singletonId; }
 
 			ECS::EntityId create();
 			bool destroy(ECS::EntityId entityId);
@@ -128,6 +126,36 @@ namespace Mani
 				return true;
 			}
 			return false;
+		}
+
+		template<typename TComponent>
+		inline TComponent* Registry::addSingle()
+		{
+			return add<TComponent>(m_singletonId);
+		}
+
+		template<typename TComponent>
+		inline bool Registry::removeSingle()
+		{
+			return remove<TComponent>(m_singletonId);
+		}
+
+		template<typename TComponent>
+		inline TComponent* Registry::getSingle()
+		{
+			return get<TComponent>(m_singletonId);
+		}
+
+		template<typename TComponent>
+		inline const TComponent* Registry::getSingle() const
+		{
+			return get<TComponent>(m_singletonId);
+		}
+
+		template<typename TComponent>
+		inline bool Registry::hasSingle() const
+		{
+			return has<TComponent>(m_singletonId);
 		}
 
 		template<typename TComponent>

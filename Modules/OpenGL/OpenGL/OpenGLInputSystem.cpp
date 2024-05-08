@@ -27,7 +27,7 @@ void Mani::OpenGLInputSystem::onInitialize(ECS::Registry& registry, SystemContai
     const OpenGLSystem::WindowContext& context = openGLSystem->getWindowContext();
     glfwSetCursorPosCallback(context.window, &OpenGLInputSystem::glfwCallback_onMouseMoved);
 
-    InputDevice* inputDevice = registry.add<InputDevice>(registry.getSingletonId());
+    InputDevice* inputDevice = registry.addSingle<InputDevice>();
     inputDevice->deviceName = "OpenGLInput";
     inputDevice->axis =
     {
@@ -45,7 +45,7 @@ void Mani::OpenGLInputSystem::onDeinitialize(ECS::Registry& registry)
         glfwSetCursorPosCallback(context.window, NULL);
     }
 
-    registry.remove<InputDevice>(registry.getSingletonId());
+    registry.removeSingle<InputDevice>();
 }
 
 void Mani::OpenGLInputSystem::tick(float deltaTime, ECS::Registry& registry)
@@ -57,7 +57,7 @@ void Mani::OpenGLInputSystem::tick(float deltaTime, ECS::Registry& registry)
 
     std::shared_ptr<OpenGLSystem> openGLSystem = m_openGLSystem.lock();
 
-    InputDevice* inputDevice = registry.get<InputDevice>(registry.getSingletonId());
+    InputDevice* inputDevice = registry.getSingle<InputDevice>();
     if (inputDevice == nullptr)
     {
         return;
