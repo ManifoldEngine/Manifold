@@ -16,16 +16,16 @@ namespace Mani
 	{
 	public:
 		virtual std::string_view getName() const override;
-		virtual bool shouldTick(EntityRegistry& registry) const override;
+		virtual bool shouldTick(ECS::Registry& registry) const override;
 
-		virtual void tick(float deltaTime, EntityRegistry& registry) override;
+		virtual void tick(float deltaTime, ECS::Registry& registry) override;
 
 		// IRenderSystem
 		virtual void getViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t& height) override;
 		virtual void setClearColor(const glm::vec4& color) override;
 
 	protected:
-		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override;
+		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
 		
 	private:
 		std::weak_ptr<OpenGLResourceSystem> m_resourceSystem;

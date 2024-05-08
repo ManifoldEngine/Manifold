@@ -16,11 +16,11 @@ namespace Mani
 	{
 	public:
 		virtual std::string_view getName() const override { return "FloatingCameraSystem"; }
-		virtual bool shouldTick(EntityRegistry& registry) const override { return true; }
+		virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
 
-		void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer) override;
+		void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
 
-		virtual void tick(float deltaTime, EntityRegistry& registry) override;
+		virtual void tick(float deltaTime, ECS::Registry& registry) override;
 
 	private:
 		const std::string MOVE_ACTION = "FloatingCameraMove";

@@ -7,7 +7,7 @@
 #include <Core/System/System.h>
 #include <Core/System/SystemContainer.h>
 
-#include <ECS/RegistryView.h>
+#include <ECS/View.h>
 
 #include <Core/World/WorldSystem.h>
 

@@ -2,50 +2,39 @@
 
 using namespace Mani;
 
-bool Mani::isValid(EntityId entityId)
+bool ECS::isValid(ECS::EntityId entityId)
 {
-	return entityId != INVALID_ID;
+	return entityId != ECS::INVALID_ID;
 }
 
-Entity::Entity()
-{
-	m_components = new Bitset<MAX_COMPONENTS>();
-}
-
-Entity::Entity(const Entity& other)
-	: Entity()
+ECS::Entity::Entity(const Entity& other)
 {
 	id = other.id;
 	isAlive = other.isAlive;
-	*m_components = *other.m_components;
+	m_components = other.m_components;
 }
 
-Entity::~Entity()
+bool ECS::Entity::hasComponent(ComponentId componentId) const
 {
-	delete m_components;
+	return m_components.test(componentId);
 }
 
-bool Entity::hasComponent(ComponentId componentId) const
+bool ECS::Entity::hasComponents(const Bitset<MAX_COMPONENTS>& componentMask) const
 {
-	return m_components->test(componentId);
+	return componentMask == (componentMask & m_components);
 }
 
-bool Entity::hasComponents(const Bitset<MAX_COMPONENTS>& componentMask) const
+void ECS::Entity::setComponentBit(ComponentId componentId)
 {
-	return componentMask == (componentMask & *m_components);
+	m_components.set(componentId, true);
 }
 
-void Entity::setComponentBit(ComponentId componentId)
+void ECS::Entity::resetComponentBit(ComponentId componentId)
 {
-	m_components->set(componentId, true);
+	m_components.set(componentId, false);
 }
 
-void Entity::resetComponentBit(ComponentId componentId)
+void ECS::Entity::resetComponentBits()
 {
-	m_components->set(componentId, false);
-}
-
-void Entity::resetComponentBits()
-{
-	m_components->reset();
+	m_components.reset();
 }

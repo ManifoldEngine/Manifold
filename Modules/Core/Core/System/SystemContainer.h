@@ -2,7 +2,7 @@
 
 #include "System.h"
 #include <Core/ManiAssert.h>
-#include <ECS/EntityRegistry.h>
+#include <ECS/Registry.h>
 #include <Utils/TemplateUtils.h>
 #include <vector>
 #include <memory>
@@ -49,7 +49,7 @@ namespace Mani
 		size_t size() const;
 
 	private:
-		EntityRegistry m_registry;
+		ECS::Registry m_registry;
 		std::vector<std::shared_ptr<SystemBase>> m_systems;
 		bool m_isInitialized = false;
 	};

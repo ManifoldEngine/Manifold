@@ -7,12 +7,12 @@
 
 using namespace Mani;
 
-void InputSystem::tick(float deltaTime, EntityRegistry& registry)
+void InputSystem::tick(float deltaTime, ECS::Registry& registry)
 {
-	RegistryView<InputUser> inputUserView(registry);
-	for (const EntityId entityId : inputUserView)
+	ECS::View<InputUser> inputUserView(registry);
+	for (const ECS::EntityId entityId : inputUserView)
 	{
-		InputUser* inputUser = registry.getComponent<InputUser>(entityId);
+		InputUser* inputUser = registry.get<InputUser>(entityId);
 		
 		// axis are reset each tick.
 		for (auto& [name, action] : inputUser->actions)
@@ -23,9 +23,9 @@ void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 		}
 
 		// consume assigned input device
-		for (const EntityId deviceId : inputUser->inputDevices)
+		for (const ECS::EntityId deviceId : inputUser->inputDevices)
 		{
-			InputDevice* inputDevice = registry.getComponent<InputDevice>(deviceId);
+			InputDevice* inputDevice = registry.get<InputDevice>(deviceId);
 			if (inputDevice == nullptr)
 			{
 				continue;
@@ -82,10 +82,10 @@ void InputSystem::tick(float deltaTime, EntityRegistry& registry)
 	}
 
 	// clear button buffers
-	RegistryView<InputDevice> inputDeviceView(registry);
-	for (const EntityId entityId : inputDeviceView)
+	ECS::View<InputDevice> inputDeviceView(registry);
+	for (const ECS::EntityId entityId : inputDeviceView)
 	{
-		InputDevice* inputDevice = registry.getComponent<InputDevice>(entityId);
+		InputDevice* inputDevice = registry.get<InputDevice>(entityId);
 		inputDevice->buttonBuffer.clear();
 	}
 }

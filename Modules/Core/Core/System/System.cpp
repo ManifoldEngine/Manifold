@@ -1,4 +1,5 @@
 #include "System.h"
+#include <ECS/Registry.h>
 #include <Log.h>
 
 using namespace Mani;
@@ -8,7 +9,7 @@ std::string_view SystemBase::getName() const
     return "NONE";
 }
 
-bool SystemBase::shouldTick(EntityRegistry& registry) const
+bool SystemBase::shouldTick(ECS::Registry& registry) const
 {
     return false;
 }
@@ -18,7 +19,7 @@ ETickGroup SystemBase::getTickGroup() const
     return ETickGroup::Tick;
 }
 
-void SystemBase::initialize(EntityRegistry& registry, SystemContainer& systemContainer)
+void SystemBase::initialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
     if (m_isInitialized)
     {
@@ -30,7 +31,7 @@ void SystemBase::initialize(EntityRegistry& registry, SystemContainer& systemCon
     m_isInitialized = true;
 }
 
-void SystemBase::deinitialize(EntityRegistry& registry)
+void SystemBase::deinitialize(ECS::Registry& registry)
 {
     if (!m_isInitialized)
     {
@@ -64,7 +65,7 @@ void SystemBase::disable()
     onDisabled();
 }
 
-void SystemBase::tick(float deltaTime, EntityRegistry& registry)
+void SystemBase::tick(float deltaTime, ECS::Registry& registry)
 {
 }
 
@@ -78,11 +79,11 @@ bool Mani::SystemBase::isEnabled() const
     return m_isEnabled;
 }
 
-void SystemBase::onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+void SystemBase::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
 }
 
-void SystemBase::onDeinitialize(EntityRegistry& registry)
+void SystemBase::onDeinitialize(ECS::Registry& registry)
 {
 }
 

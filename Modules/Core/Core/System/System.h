@@ -12,29 +12,33 @@ namespace Mani
 		PostTick = 2,
 	};
 
-	class EntityRegistry;
+	namespace ECS
+	{
+		class Registry;
+	}
+
 	class SystemContainer;
 	
 	class SystemBase
 	{
 	public:
 		virtual std::string_view getName() const;
-		virtual bool shouldTick(EntityRegistry& registry) const;
+		virtual bool shouldTick(ECS::Registry& registry) const;
 		virtual ETickGroup getTickGroup() const;
 
-		void initialize(EntityRegistry& registry, SystemContainer& systemContainer);
-		void deinitialize(EntityRegistry& registry);
+		void initialize(ECS::Registry& registry, SystemContainer& systemContainer);
+		void deinitialize(ECS::Registry& registry);
 		
 		void enable();
 		void disable();
 
-		virtual void tick(float deltaTime, EntityRegistry& registry);
+		virtual void tick(float deltaTime, ECS::Registry& registry);
 	
 		bool isInitialized() const;
 		bool isEnabled() const;
 	protected:
-		virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer);
-		virtual void onDeinitialize(EntityRegistry& registry);
+		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer);
+		virtual void onDeinitialize(ECS::Registry& registry);
 
 		virtual void onEnabled();
 		virtual void onDisabled();

@@ -9,7 +9,7 @@ using namespace nlohmann;
 
 bool Mani::Transform::hasParent() const
 {
-	return isValid(parentId);
+	return ECS::isValid(parentId);
 }
 
 glm::mat4 Transform::calculateModelMatrix() const

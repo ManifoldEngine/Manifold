@@ -22,7 +22,7 @@ namespace Mani
 	{
 	public:
 		virtual std::string_view getName() const override;
-		virtual bool shouldTick(EntityRegistry& registry) const override;
+		virtual bool shouldTick(ECS::Registry& registry) const override;
 		
 		template<Derived<IBaseConfig> TConfig>
 		std::shared_ptr<TConfig> getConfig(const std::string& configName, std::filesystem::path path = "");

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Core/Core.h>
-#include <ECS/EntityRegistry.h>
+#include <ECS/Registry.h>
 
 namespace Mani
 {

@@ -1,6 +1,6 @@
 #include "simpleTests.h"
-#include "ECS/EntityRegistry.h"
-#include "ECS/RegistryView.h"
+#include "ECS/Registry.h"
+#include "ECS/View.h"
 #include "ECS/Bitset.h"
 
 #ifndef MANI_WEBGL
@@ -22,16 +22,16 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		};
 
 		// create a registry
-		EntityRegistry registry;
+		ECS::Registry registry;
 
 		// create an entity
-		EntityId entityId = registry.create();
+		ECS::EntityId entityId = registry.create();
 	
 		ST_ASSERT(entityId == 1, "Entity should have the first id.");
 		ST_ASSERT(registry.isValid(entityId), "Entity should be valid.");
 	
 		// add a DataComponent
-		auto* component = registry.addComponent<DataComponent>(entityId);
+		auto* component = registry.add<DataComponent>(entityId);
 	
 		ST_ASSERT(component != nullptr, "Component should not be a nullptr.");
 		if (component == nullptr)
@@ -43,7 +43,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		component->someData += 10;
 
 		// get the component again to verify the pointer points to the correct location.
-		auto* componentFromRegistry = registry.getComponent<DataComponent>(entityId);
+		auto* componentFromRegistry = registry.get<DataComponent>(entityId);
 	
 		ST_ASSERT(componentFromRegistry != nullptr, "Component should not be a nullptr.");
 		if (componentFromRegistry == nullptr)
@@ -58,7 +58,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 	
 		ST_ASSERT(!registry.isValid(entityId), "Entity should not be valid anymore");
 
-		auto* componentFromRegistryAfterDelete = registry.getComponent<DataComponent>(entityId);
+		auto* componentFromRegistryAfterDelete = registry.get<DataComponent>(entityId);
 		ST_ASSERT(componentFromRegistryAfterDelete == nullptr, "Entity's component should be nullptr after delete.");
 	}
 
@@ -70,23 +70,23 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		};
 
 		// create a registry
-		EntityRegistry registry;
+		ECS::Registry registry;
 
 		// create an entity
-		EntityId entityId = registry.create();
+		ECS::EntityId entityId = registry.create();
 	
 		// add a DataComponent
-		DataComponent* dataComponent = registry.addComponent<DataComponent>(entityId);
+		DataComponent* dataComponent = registry.add<DataComponent>(entityId);
 		ST_ASSERT(dataComponent != nullptr, "Component should not be a nullptr.");
 		if (dataComponent == nullptr)
 		{
 			return;
 		}
 
-		const bool didRemoveDataComponent = registry.removeComponent<DataComponent>(entityId);
+		const bool didRemoveDataComponent = registry.remove<DataComponent>(entityId);
 		ST_ASSERT(didRemoveDataComponent, "Should have removed the Data component");
 
-		dataComponent = registry.getComponent<DataComponent>(entityId);
+		dataComponent = registry.get<DataComponent>(entityId);
 		ST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
 	}
 
@@ -102,13 +102,13 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		};
 
 		// create a registry
-		EntityRegistry registry;
+		ECS::Registry registry;
 
 		// create an entity
-		EntityId entityId = registry.create();
+		ECS::EntityId entityId = registry.create();
 
 		// add a DataComponent
-		DataComponent* dataComponent = registry.addComponent<DataComponent>(entityId);
+		DataComponent* dataComponent = registry.add<DataComponent>(entityId);
 		ST_ASSERT(dataComponent != nullptr, "Component should not be a nullptr.");
 		if (dataComponent == nullptr)
 		{
@@ -119,7 +119,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		const bool didDestroy = registry.destroy(entityId);
 		ST_ASSERT(didDestroy, "Should have detroyed entity");
 
-		dataComponent = registry.getComponent<DataComponent>(entityId);
+		dataComponent = registry.get<DataComponent>(entityId);
 		ST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
 
 		// we expect the entity to be recycled
@@ -127,10 +127,10 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		ST_ASSERT(entityId == 1, "Should be the first entity addded.");
 
 		// Entity should not have a DataComponent
-		dataComponent = registry.getComponent<DataComponent>(entityId);
+		dataComponent = registry.get<DataComponent>(entityId);
 		ST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
 
-		OtherDataComponent* otherDataComponent = registry.addComponent<OtherDataComponent>(entityId);
+		OtherDataComponent* otherDataComponent = registry.add<OtherDataComponent>(entityId);
 		ST_ASSERT(otherDataComponent != nullptr, "Component should not be a nullptr.");
 		if (otherDataComponent == nullptr)
 		{
@@ -139,7 +139,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		otherDataComponent->someOtherData += 10;
 
-		OtherDataComponent* otherOtherDataComponent = registry.getComponent<OtherDataComponent>(entityId);
+		OtherDataComponent* otherOtherDataComponent = registry.get<OtherDataComponent>(entityId);
 		ST_ASSERT(otherOtherDataComponent != nullptr, "Other Component should not be a nullptr.");
 		if (otherOtherDataComponent == nullptr)
 		{
@@ -160,57 +160,57 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		};
 
 		// create a registry
-		EntityRegistry registry;
+		ECS::Registry registry;
 
 		// create e few entities, all of them with DataComponent, some of them with OtherDataComponent
 		const int entityCount = 10;
 		for (int i = 1; i < entityCount; i++)
 		{
-			const EntityId entityId = registry.create();
-			registry.addComponent<DataComponent>(entityId);
+			const ECS::EntityId entityId = registry.create();
+			registry.add<DataComponent>(entityId);
 			if (i % 2 == 0)
 			{
-				registry.addComponent<OtherDataComponent>(entityId);
+				registry.add<OtherDataComponent>(entityId);
 			}
 		}
 
 		ST_ASSERT(registry.size() == entityCount, "should have created 10 entities");
 
 		int entityCounter = 1;
-		for (EntityId entityId : RegistryView<DataComponent, OtherDataComponent>(registry))
+		for (ECS::EntityId entityId : ECS::View<DataComponent, OtherDataComponent>(registry))
 		{
 			entityCounter++;
 
-			auto* component = registry.getComponent<DataComponent>(entityId);
+			auto* component = registry.get<DataComponent>(entityId);
 			ST_ASSERT(component != nullptr, "should have a DataComponent");
 
-			auto* otherComponent = registry.getComponent<OtherDataComponent>(entityId);
+			auto* otherComponent = registry.get<OtherDataComponent>(entityId);
 			ST_ASSERT(otherComponent != nullptr, "should have a OtherDataComponent");
 		}
 		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent and OtherDataComponent in the registry view");
 
 		// iterate over the entities with DataComponent
 		entityCounter = 1;
-		for (EntityId entityId : RegistryView<DataComponent>(registry))
+		for (ECS::EntityId entityId : ECS::View<DataComponent>(registry))
 		{
 			entityCounter++;
-			auto* component = registry.getComponent<DataComponent>(entityId);
+			auto* component = registry.get<DataComponent>(entityId);
 			ST_ASSERT(component != nullptr, "should have a DataComponent");
 		}
 		ST_ASSERT(entityCounter == entityCount, "There should be 10 entities with DataComponent in the registry view");
 
 		entityCounter = 1;
-		for (EntityId entityId : RegistryView<OtherDataComponent>(registry))
+		for (ECS::EntityId entityId : ECS::View<OtherDataComponent>(registry))
 		{
 			entityCounter++;
-			auto* otherComponent = registry.getComponent<OtherDataComponent>(entityId);
+			auto* otherComponent = registry.get<OtherDataComponent>(entityId);
 			ST_ASSERT(otherComponent != nullptr, "should have a OtherDataComponent");
 		}
 		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with OtherDataComponent in the registry view");
 
 
 		entityCounter = 0;
-		for (EntityId entityId : RegistryView<>(registry))
+		for (ECS::EntityId entityId : ECS::View<>(registry))
 		{
 			entityCounter++;
 		}
@@ -224,17 +224,17 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		};
 
 		// create a registry
-		EntityRegistry registry;
+		ECS::Registry registry;
 
 		// create e few entities, all of them with DataComponent, some of them with OtherDataComponent
 		int entityCount = 10;
 		// entity ids start at 1 to leave room for the singleton entity
 		for (int i = 1; i < entityCount; i++)
 		{
-			const EntityId entityId = registry.create();
+			const ECS::EntityId entityId = registry.create();
 			if (i % 2 == 0)
 			{
-				registry.addComponent<DataComponent>(entityId);
+				registry.add<DataComponent>(entityId);
 			}
 		}
 
@@ -242,10 +242,10 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		// iterate over the entities with DataComponent
 		int entityCounter = 1;
-		for (EntityId entityId : RegistryView<DataComponent>(registry))
+		for (ECS::EntityId entityId : ECS::View<DataComponent>(registry))
 		{
 			entityCounter++;
-			auto* component = registry.getComponent<DataComponent>(entityId);
+			auto* component = registry.get<DataComponent>(entityId);
 			ST_ASSERT(component != nullptr, "should have a DataComponent");
 		}
 		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent in the registry view");
@@ -257,10 +257,10 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		struct Component1 {};
 		struct Component2 {};
 
-		EntityRegistry registry;
-		const ComponentId componentId0 = registry.getComponentId<Component0>();
-		const ComponentId componentId1 = registry.getComponentId<Component1>();
-		const ComponentId componentId2 = registry.getComponentId<Component2>();
+		ECS::Registry registry;
+		const ECS::ComponentId componentId0 = registry.getComponentId<Component0>();
+		const ECS::ComponentId componentId1 = registry.getComponentId<Component1>();
+		const ECS::ComponentId componentId2 = registry.getComponentId<Component2>();
 		
 		ST_ASSERT(componentId1 - componentId0 == 1, "The second componentid should follow the first one");
 		ST_ASSERT(componentId2 - componentId1 == 1, "The third componentid should follow the second one");
@@ -275,11 +275,11 @@ ST_SECTION_BEGIN(ECS, "ECS")
 			float scale[3];
 		};
 
-		EntityRegistry registry;
+		ECS::Registry registry;
 		for (int i = 1; i < 1'000'000; ++i)
 		{
-			const EntityId entityId = registry.create();
-			Transform* transform = registry.addComponent<Transform>(entityId);
+			const ECS::EntityId entityId = registry.create();
+			Transform* transform = registry.add<Transform>(entityId);
 			transform->position[0] = 1.f;
 			transform->position[1] = 1.f;
 			transform->position[2] = 1.f;
@@ -303,12 +303,12 @@ ST_SECTION_BEGIN(ECS, "ECS")
 			std::vector<float> vector = { 1.f, 2.f, 3.f };
 		};
 
-		EntityRegistry registry;
-		const EntityId entity1 = registry.create();
-		const EntityId entity2 = registry.create();
+		ECS::Registry registry;
+		const ECS::EntityId entity1 = registry.create();
+		const ECS::EntityId entity2 = registry.create();
 
-		DynamicComponent* component1 = registry.addComponent<DynamicComponent>(entity1);
-		DynamicComponent* component2 = registry.addComponent<DynamicComponent>(entity2);
+		DynamicComponent* component1 = registry.add<DynamicComponent>(entity1);
+		DynamicComponent* component2 = registry.add<DynamicComponent>(entity2);
 		for (int i = 0; i < 1000; ++i)
 		{
 			component1->vector.push_back(i + 1 * 1000.f);
@@ -323,55 +323,55 @@ ST_SECTION_BEGIN(ECS, "ECS")
 	{
 		struct Component {};
 
-		EntityRegistry registry;
+		ECS::Registry registry;
 
-		const EntityId entityId = registry.create();
+		const ECS::EntityId entityId = registry.create();
 
-		ST_ASSERT(registry.hasComponent<Component>(entityId) == false, "Should not have the component yet");
+		ST_ASSERT(registry.has<Component>(entityId) == false, "Should not have the component yet");
 
-		registry.addComponent<Component>(entityId);
+		registry.add<Component>(entityId);
 
-		ST_ASSERT(registry.hasComponent<Component>(entityId) == true, "Should now have the component");
+		ST_ASSERT(registry.has<Component>(entityId) == true, "Should now have the component");
 	}
 
 	ST_TEST(EntityRegistryEvents, "Should subscribe to all events and confirm that a callback was received")
 	{
 		struct Component {};
 
-		EntityRegistry registry;
+		ECS::Registry registry;
 
-		std::vector<EntityId> entityIdCreated;
-		std::vector<EntityId> entityIdDestroyed;
-		std::vector<std::pair<EntityId, ComponentId>> componentIdCreated;
-		std::vector<std::pair<EntityId, ComponentId>> componentIdDestroyed;
+		std::vector<ECS::EntityId> entityIdCreated;
+		std::vector<ECS::EntityId> entityIdDestroyed;
+		std::vector<std::pair<ECS::EntityId, ECS::ComponentId>> componentIdCreated;
+		std::vector<std::pair<ECS::EntityId, ECS::ComponentId>> componentIdDestroyed;
 
-		registry.onEntityCreated.subscribe([&entityIdCreated](EntityRegistry& registry, EntityId entityId) {
+		registry.onEntityCreated.subscribe([&entityIdCreated](ECS::Registry& registry, ECS::EntityId entityId) {
 			entityIdCreated.push_back(entityId);
 		});
 
-		registry.onEntityDestroyed.subscribe([&entityIdDestroyed](EntityRegistry& registry, EntityId entityId) {
+		registry.onEntityDestroyed.subscribe([&entityIdDestroyed](ECS::Registry& registry, ECS::EntityId entityId) {
 			entityIdDestroyed.push_back(entityId);
 		});
 
-		registry.onComponentAdded.subscribe([&componentIdCreated](EntityRegistry& registry, EntityId entityId, ComponentId componentId) {
+		registry.onComponentAdded.subscribe([&componentIdCreated](ECS::Registry& registry, ECS::EntityId entityId, ECS::ComponentId componentId) {
 			componentIdCreated.push_back({ entityId, componentId });
 		});
 
-		registry.onComponentRemoved.subscribe([&componentIdDestroyed](EntityRegistry& registry, EntityId entityId, ComponentId componentId) {
+		registry.onComponentRemoved.subscribe([&componentIdDestroyed](ECS::Registry& registry, ECS::EntityId entityId, ECS::ComponentId componentId) {
 			componentIdDestroyed.push_back({ entityId, componentId });
 		});
 
-		EntityId entityId = registry.create();
-		ComponentId componentId = registry.getComponentId<Component>();
-		registry.addComponent<Component>(entityId);
-		registry.removeComponent<Component>(entityId);
+		ECS::EntityId entityId = registry.create();
+		ECS::ComponentId componentId = registry.getComponentId<Component>();
+		registry.add<Component>(entityId);
+		registry.remove<Component>(entityId);
 		registry.destroy(entityId);
 
-		std::pair<EntityId, ComponentId> pair = { entityId, componentId };
-		ST_ASSERT(entityIdCreated.size() == 1 && entityIdCreated[0] == entityId, "EntityId should have been created");
-		ST_ASSERT((componentIdCreated.size() == 1 && componentIdCreated[0] == pair), "ComponentId should have been added to EntityId");
-		ST_ASSERT((componentIdDestroyed.size() == 1 && componentIdDestroyed[0] == pair), "ComponentId should have been removed from EntityId");
-		ST_ASSERT(entityIdDestroyed.size() == 1 && entityIdDestroyed[0] == entityId, "EntityId should have been destroyed");
+		std::pair<ECS::EntityId, ECS::ComponentId> pair = { entityId, componentId };
+		ST_ASSERT(entityIdCreated.size() == 1 && entityIdCreated[0] == entityId, "ECS::EntityId should have been created");
+		ST_ASSERT((componentIdCreated.size() == 1 && componentIdCreated[0] == pair), "ECS::ComponentId should have been added to ECS::EntityId");
+		ST_ASSERT((componentIdDestroyed.size() == 1 && componentIdDestroyed[0] == pair), "ECS::ComponentId should have been removed from ECS::EntityId");
+		ST_ASSERT(entityIdDestroyed.size() == 1 && entityIdDestroyed[0] == entityId, "ECS::EntityId should have been destroyed");
 	}
 
 	ST_TEST(BitsetTests, "Should set, test and reset a bitset properly")
@@ -433,15 +433,15 @@ ST_SECTION_BEGIN(ECS, "ECS")
 	{
 		struct Component {};
 
-		EntityRegistry registry;
+		ECS::Registry registry;
 
-		const EntityId entity1 = registry.create();
-		registry.addComponent<Component>(entity1);
-		const EntityId entity2 = registry.create();
-		registry.addComponent<Component>(entity2);
+		const ECS::EntityId entity1 = registry.create();
+		registry.add<Component>(entity1);
+		const ECS::EntityId entity2 = registry.create();
+		registry.add<Component>(entity2);
 		
 		size_t count = 0;
-		for (const EntityId entityId : RegistryView<Component>(registry))
+		for (const ECS::EntityId entityId : ECS::View<Component>(registry))
 		{
 			count++;
 		}
@@ -451,7 +451,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		registry.destroy(entity1);
 
 		count = 0;
-		for (const EntityId entityId : RegistryView<Component>(registry))
+		for (const ECS::EntityId entityId : ECS::View<Component>(registry))
 		{
 			count++;
 		}
@@ -459,29 +459,29 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		ST_ASSERT(count == 1, "All entities should have been visited");
 	}
 
-	ST_TEST(CreateEntitiesDuringIteration, "Should be able to create entities during RegistryView iteration without fail")
+	ST_TEST(CreateEntitiesDuringIteration, "Should be able to create entities during ECS::View iteration without fail")
 	{
 		struct Component {};
 		struct CommonComponent {};
 		struct OtherComponent {};
 
-		EntityRegistry registry;
+		ECS::Registry registry;
 
 		{
-			const EntityId entityId = registry.create();
-			registry.addComponent<Component>(entityId);
-			registry.addComponent<CommonComponent>(entityId);
+			const ECS::EntityId entityId = registry.create();
+			registry.add<Component>(entityId);
+			registry.add<CommonComponent>(entityId);
 		}
 
-		RegistryView<Component> view(registry);
-		for (const EntityId entityId : view)
+		ECS::View<Component> view(registry);
+		for (const ECS::EntityId entityId : view)
 		{
-			Component* comp = registry.getComponent<Component>(entityId);
+			Component* comp = registry.get<Component>(entityId);
 			ST_ASSERT(comp != nullptr && registry.isValid(entityId), "Entity should be valid");
 
-			const EntityId newId = registry.create();
-			registry.addComponent<CommonComponent>(newId);
-			registry.addComponent<OtherComponent>(newId);
+			const ECS::EntityId newId = registry.create();
+			registry.add<CommonComponent>(newId);
+			registry.add<OtherComponent>(newId);
 		}
 	}
 }
