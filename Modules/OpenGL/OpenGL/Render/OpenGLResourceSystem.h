@@ -36,9 +36,9 @@ namespace Mani
 		const std::shared_ptr<OpenGLSprite>& getSprite(const std::string& name);
 		const std::shared_ptr<OpenGLVertexArray>& getQuad(uint16_t repeatAmount);
 
-		void onMeshLoaded(const std::shared_ptr<Mesh>& mesh);
-		void onMaterialLoaded(const std::shared_ptr<Material>& material);
-		void onSpriteLoaded(const std::shared_ptr<Sprite>& sprite);
+		void onMeshLoaded(ECS::Registry& registry, const std::shared_ptr<Mesh>& mesh);
+		void onMaterialLoaded(ECS::Registry& registry, const std::shared_ptr<Material>& material);
+		void onSpriteLoaded(ECS::Registry& registry, const std::shared_ptr<Sprite>& sprite);
 
 
 	protected:
@@ -47,8 +47,7 @@ namespace Mani
 
 	private:
 		EventHandle onAssetLoadedHandle;
-		std::weak_ptr<AssetSystem> m_assetSystem;
-
+		
 		std::unordered_map<std::string, std::shared_ptr<OpenGLVertexArray>> m_vertexArrays;
 		std::unordered_map<uint16_t, std::shared_ptr<OpenGLVertexArray>> m_quadVertexArrays;
 		std::unordered_map<std::string, std::shared_ptr<OpenGLTexture2D>> m_textures;
@@ -56,10 +55,10 @@ namespace Mani
 		std::unordered_map<std::string, std::shared_ptr<OpenGLShader>> m_shaders;
 		std::unordered_map<std::string, std::shared_ptr<OpenGLSprite>> m_sprites;
 
-		void onJsonAssetLoaded(const std::shared_ptr<IJsonAsset>& jsonAsset);
+		void onJsonAssetLoaded(ECS::Registry& registry, const std::weak_ptr<IJsonAsset>& jsonAsset);
 
 		const std::string getOrAddTextureName(const std::filesystem::path& path);
-		const std::string getOrAddShaderName(const std::filesystem::path& path);
+		const std::string getOrAddShaderName(ECS::Registry& registry, const std::filesystem::path& path);
 		void onShaderLoaded(const std::shared_ptr<Shader>& shaderAsset);
 	};
 }

@@ -1,9 +1,10 @@
 #pragma once
 
-#include <Assets/JsonToAsset.h>
+#include <Assets/IJsonAsset.h>
 #include <vector>
 #include <memory>
 #include <filesystem>
+#include <glm/glm.hpp>
 
 namespace Mani
 {
@@ -11,7 +12,7 @@ namespace Mani
 	{
 		std::string name;
 
-		glm::vec4 color;
+		glm::vec4 color = glm::vec4(1.f);
 
 		std::filesystem::path shaderPath;
 		std::filesystem::path diffusePath;

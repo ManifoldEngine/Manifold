@@ -2,18 +2,13 @@
 
 #include <Assets/Assets.h>
 
-#include <Core/Log.h>
-#include <Core/System/System.h>
-#include <Core/FileSystem.h>
+#include <Core/CoreFwd.h>
 
-#include <Events/Event.h>
-
-#include <Core/Interfaces/IJsonAsset.h>
-
+#include <Assets/AssetDatabase.h>
 #include <Utils/TemplateUtils.h>
 
+#include <Core/FileSystem.h>
 #include <filesystem>
-#include <memory>
 #include <iostream>
 
 namespace Mani
@@ -21,39 +16,51 @@ namespace Mani
 	class AssetSystem : public SystemBase
 	{
 	public:
-		DECLARE_EVENT(OnJsonAssetEvent, const std::shared_ptr<IJsonAsset> /*jsonAsset*/);
-		OnJsonAssetEvent onJsonAssetLoaded;
-
 		virtual std::string_view getName() const;
 		virtual bool shouldTick(ECS::Registry& registry) const;
 
 		// loads a json asset from relative path. Path is relative to the root of the project.
 		template<Derived<IJsonAsset> TAsset>
-		std::shared_ptr<TAsset> loadJsonAsset(const std::filesystem::path& relativePath);
+		static std::weak_ptr<TAsset> loadJsonAsset(ECS::Registry& registry, const std::filesystem::path& relativePath);
+
+		// unloads a json asset from relative path. Path is relative to the root of the project.
+		static bool unloadJsonAsset(ECS::Registry& registry, const std::filesystem::path& relativePath);
+
+	protected:
+		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
+		virtual void onDeinitialize(ECS::Registry& registry) override;
+
+		static bool tryGetFullPath(const std::filesystem::path& relativePath, std::filesystem::path& outPath);
 	};
 
 	template<Derived<IJsonAsset> TAsset>
-	inline std::shared_ptr<TAsset> AssetSystem::loadJsonAsset(const std::filesystem::path& relativePath)
+	inline std::weak_ptr<TAsset> AssetSystem::loadJsonAsset(ECS::Registry& registry, const std::filesystem::path& relativePath)
 	{
 		std::filesystem::path path;
-		if (!FileSystem::tryGetRootPath(path))
+		if (!tryGetFullPath(relativePath, path))
 		{
-			return nullptr;
+			return std::weak_ptr<TAsset>();
 		}
 
-		path.append(relativePath.string());
-
+		AssetDatabase* database = registry.getSingle<AssetDatabase>();
+		MANI_ASSERT(database != nullptr, "Asset system was not initialized, or the asset database got deleted");
+		if (database->jsonAssets.contains(path))
+		{
+			return dynamic_pointer_cast<TAsset>(database->jsonAssets[path]);
+		}
+		
 		std::string content;
 		if (!FileSystem::tryReadFile(path, content))
 		{
 			MANI_LOG_ERROR(LogAssets, "Could not find asset at path {}", path.string());
-			return nullptr;
+			return std::weak_ptr<TAsset>();
 		}
 
 		std::shared_ptr<TAsset> asset = std::make_shared<TAsset>();
 		asset->parse(content);
 
-		onJsonAssetLoaded.broadcast(asset);
+		database->jsonAssets[path] = asset;
+		database->onJsonAssetLoaded.broadcast(registry, asset);
 		return asset;
 	}
 }

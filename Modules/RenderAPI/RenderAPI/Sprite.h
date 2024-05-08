@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Core/Interfaces/IJsonAsset.h>
+#include <Assets/IJsonAsset.h>
 #include <RenderAPI/Texture.h>
 #include <filesystem>
 

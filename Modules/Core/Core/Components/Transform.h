@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Core/Core.h>
-#include <Core/Interfaces/IJsonAsset.h>
+#include <Assets/IJsonAsset.h>
 #include <ECS/Entity.h>
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>

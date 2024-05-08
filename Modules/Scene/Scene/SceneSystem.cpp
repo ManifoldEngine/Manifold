@@ -30,7 +30,7 @@ ECS::EntityId SceneSystem::spawnScene(ECS::Registry& registry, const std::filesy
 	}
 
 	std::shared_ptr<AssetSystem> assetSystem = m_assetSystem.lock();
-	std::shared_ptr<Scene> scene = assetSystem->loadJsonAsset<Scene>(path);
+	std::shared_ptr<Scene> scene = AssetSystem::loadJsonAsset<Scene>(registry, path).lock();
 	if (scene == nullptr)
 	{
 		return ECS::INVALID_ID;
@@ -66,13 +66,13 @@ ECS::EntityId SceneSystem::spawnNode(ECS::Registry& registry, const Scene::Node&
 
 	if (!node.meshAsset.empty())
 	{
-		std::shared_ptr<Mesh> mesh = assetSystem->loadJsonAsset<Mesh>(node.meshAsset);
+		std::shared_ptr<Mesh> mesh = assetSystem->loadJsonAsset<Mesh>(registry, node.meshAsset).lock();
 		if (mesh == nullptr)
 		{
 			return ECS::INVALID_ID;
 		}
 
-		std::shared_ptr<Material> material = assetSystem->loadJsonAsset<Material>(materialAssetPath);
+		std::shared_ptr<Material> material = assetSystem->loadJsonAsset<Material>(registry, materialAssetPath).lock();
 		if (mesh == nullptr)
 		{
 			return ECS::INVALID_ID;
