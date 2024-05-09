@@ -10,8 +10,8 @@ namespace Mani
 	namespace ECS
 	{
 		/*
-	 * Holds a collection of entity and manage their component's memory.
-	 */
+		 * Holds a collection of entity and manage their component's memory.
+		 */
 		class Registry
 		{
 #define INITIAL_COMPONENT_COUNT 1000
