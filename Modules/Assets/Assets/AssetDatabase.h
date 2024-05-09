@@ -11,5 +11,6 @@ namespace Mani
 		OnJsonAssetEvent onJsonAssetLoaded;
 
 		std::unordered_map<std::filesystem::path, std::shared_ptr<IJsonAsset>> jsonAssets;
+		std::unordered_map<std::filesystem::path, std::shared_ptr<IJsonAsset>> jsonAssetsrfl;
 	};
 }
