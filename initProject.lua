@@ -4,14 +4,14 @@ local fs = require("Scripts/LuaScripts/windowsFilesystem")
 
 function displayHelp()
     print(string.format(
-[[Creates a bland project in the parent folder.
+[[Creates a blank project in the parent folder.
 Usage:
-    %s [ProjectName]
-    %s --no-template
+    [ProjectName] : name of the project - generates project files and builds third parties
+    --no-template : skip project files generation - only build third parties
+    --no-thirdparties : skip third parties - only generate project files
+
 To display this 
-    %s -h
-Or
-    %s --help
+    -h or --help
 ]], arg[0], arg[0], arg[0], arg[0], arg[0]))
 
 end
@@ -112,16 +112,16 @@ if shouldBuildThirdParties then
     
     -- glfw
     local glfwDir = "ThirdParties\\glfw\\"
-    print("build glfw")
+    print("building glfw")
     os.execute(cmake .. " -S " .. glfwDir .. " -B " .. glfwDir .. " -D BUILD_SHARED_LIBS=OFF")
-    -- os.execute(cmake .. " --build " .. glfwDir)
     os.execute(MSBuild .. " " .. glfwDir .. "ALL_BUILD.vcxproj")
     
     print("======================================")
     
-    -- physx
-    local physxDir = "ThirdParties\\PhysX\\physx\\"
-    print("build PhysX")
-    os.execute("cd " .. physxDir .. " && generate_projects.bat vc17win64")
-    os.execute(MSBuild .. " " .. physxDir .. "compiler/vc17win64/ALL_BUILD.vcxproj")
+    -- reflect-cpp
+    local rflDir = "ThirdParties\\reflect-cpp"
+    print("building reflect-cpp")
+    os.execute(cmake .. " -S " .. rflDir .. " -B " .. rflDir .. "\\build -DCMAKE_BUILD=Release")
+    -- os.execute(cmake .. " --build " .. rflDir .. "\\build -j 4") -- gcc, clang
+    os.execute(cmake .. " --build " .. rflDir .. "\\build --config Release -j 4") -- MSVC
 end

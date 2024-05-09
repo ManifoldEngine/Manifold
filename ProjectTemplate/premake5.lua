@@ -1,7 +1,7 @@
 include "locations.lua"
 include "Engine/BuildScripts/buildwebgl.lua"
 
-workspace "Mani"
+workspace "Manifold"
 
 configurations { "Debug", "Release", "Distribution" }
     platforms { "MacOSX", "WebGL", "Win64" }
