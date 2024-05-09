@@ -13,9 +13,6 @@
 [submodule "ThirdParties/assimp"]
 	path = ThirdParties/assimp
 	url = https://github.com/assimp/assimp.git
-[submodule "ThirdParties/PhysX"]
-	path = ThirdParties/PhysX
-	url = https://github.com/NVIDIA-Omniverse/PhysX.git
 [submodule "ThirdParties/emsdk"]
 	path = ThirdParties/emsdk
 	url = https://github.com/emscripten-core/emsdk.git
