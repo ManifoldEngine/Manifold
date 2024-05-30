@@ -7,9 +7,6 @@
 [submodule "ThirdParties/glm"]
 	path = ThirdParties/glm
 	url = https://github.com/g-truc/glm
-[submodule "ThirdParties/json"]
-	path = ThirdParties/json
-	url = https://github.com/nlohmann/json
 [submodule "ThirdParties/assimp"]
 	path = ThirdParties/assimp
 	url = https://github.com/assimp/assimp.git
@@ -28,3 +25,6 @@
 [submodule "ThirdParties/reflect-cpp"]
 	path = ThirdParties/reflect-cpp
 	url = https://github.com/getml/reflect-cpp/
+[submodule "ThirdParties/ManiZ"]
+	path = ThirdParties/ManiZ
+	url = https://github.com/ManifoldEngine/ManiZ
