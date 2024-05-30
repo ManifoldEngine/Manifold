@@ -22,9 +22,6 @@
 [submodule "ThirdParties/gl3w"]
 	path = ThirdParties/gl3w
 	url = https://github.com/skaslev/gl3w.git
-[submodule "ThirdParties/reflect-cpp"]
-	path = ThirdParties/reflect-cpp
-	url = https://github.com/getml/reflect-cpp/
 [submodule "ThirdParties/ManiZ"]
 	path = ThirdParties/ManiZ
 	url = https://github.com/ManifoldEngine/ManiZ
