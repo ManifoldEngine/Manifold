@@ -12,7 +12,7 @@ Some of the dependencies are provided with the engine submodule. This includes a
     * MSVC v142
     * MSVC v141
     * Windows 10 SDK (10.0.19041.0)
-    * Windows 11 SDK
+    * Windows 11 SDK (10.0.22621.0)
     * Windows Universal CRT SDK
 
 # Setup for a blank project
