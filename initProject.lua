@@ -115,13 +115,4 @@ if shouldBuildThirdParties then
     print("building glfw")
     os.execute(cmake .. " -S " .. glfwDir .. " -B " .. glfwDir .. " -D BUILD_SHARED_LIBS=OFF")
     os.execute(MSBuild .. " " .. glfwDir .. "ALL_BUILD.vcxproj")
-    
-    print("======================================")
-    
-    -- reflect-cpp
-    local rflDir = "ThirdParties\\reflect-cpp"
-    print("building reflect-cpp")
-    os.execute(cmake .. " -S " .. rflDir .. " -B " .. rflDir .. "\\build -DCMAKE_BUILD=Release")
-    -- os.execute(cmake .. " --build " .. rflDir .. "\\build -j 4") -- gcc, clang
-    os.execute(cmake .. " --build " .. rflDir .. "\\build --config Release -j 4") -- MSVC
 end
