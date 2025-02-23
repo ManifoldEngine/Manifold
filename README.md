@@ -9,10 +9,11 @@ Some of the dependencies are provided with the engine submodule. This includes a
     * Visual Studio core Editor
     * Game development with C++
     * MSVC v143
+    * MSVC v142
     * MSVC v141
+    * Windows 10 SDK (10.0.19041.0)
     * Windows 11 SDK
     * Windows Universal CRT SDK
-* Python 3
 
 # Setup for a blank project
 Manifold is provided as a static library. The recommended way to install it is through the git submodule feature
