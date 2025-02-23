@@ -5,7 +5,7 @@ using namespace Mani;
 class HelloWorldSystem : public SystemBase
 {
     virtual std::string_view getName() const override { return "HelloWorldSystem"; }
-    virtual void onInitialize(EntityRegistry& registry, SystemContainer& systemContainer)
+    virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
     {
         MANI_LOG(Log, "Hello world!");
     }

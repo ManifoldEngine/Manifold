@@ -10,7 +10,6 @@
 #include <Core/FileSystem.h>
 
 #include <ManiZ/ManiZ.h>
-#include <Core/GLMSerialization.h>
 
 #include <filesystem>
 #include <iostream>
