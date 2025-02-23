@@ -1,7 +1,8 @@
-#include "simpleTests.h"
 #include <Core/World/World.h>
 #include <Core/System/SystemContainer.h>
 #include <Events/Event.h>
+
+#include <ManiTests/ManiTests.h>
 
 using namespace Mani;
 
@@ -44,9 +45,9 @@ namespace Mani_Test
 	};
 }
 
-ST_SECTION_BEGIN(Core_World, "Core World")
+MANI_SECTION_BEGIN(Core_World, "Core World")
 {
-	ST_TEST(CreateAndInitializeAWorld, "should create and initialize a world with a single system.")
+	MANI_TEST(CreateAndInitializeAWorld, "should create and initialize a world with a single system.")
 	{	
 		using namespace Mani_Test;
 		
@@ -55,20 +56,20 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		SystemContainer& systemContainer = world.getSystemContainer();
 
 		systemContainer.createSystem<SomeSystem>();
-		ST_ASSERT(!systemContainer.getSystem<SomeSystem>().expired(), "Should return true when creating a system.");
+		MANI_TEST_ASSERT(!systemContainer.getSystem<SomeSystem>().expired(), "Should return true when creating a system.");
 
 		std::shared_ptr<SomeSystem> someSystem = world.getSystemContainer().getSystem<SomeSystem>().lock();
-		ST_ASSERT(someSystem != nullptr, "Should get a non nullptr system");
+		MANI_TEST_ASSERT(someSystem != nullptr, "Should get a non nullptr system");
 		if (someSystem == nullptr)
 		{
 			return;
 		}
 
-		ST_ASSERT(someSystem->onInitializeCalled, "onInitialize should have been called.");
+		MANI_TEST_ASSERT(someSystem->onInitializeCalled, "onInitialize should have been called.");
 
 		world.tick(.16f);
 	
-		ST_ASSERT(someSystem->tickCalled, "tick should have been called.");
+		MANI_TEST_ASSERT(someSystem->tickCalled, "tick should have been called.");
 
 		bool onDeinitializeCalled = false;
 		someSystem->assignOnDeinitializeCalled([&onDeinitializeCalled]() 
@@ -77,14 +78,14 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		});
 
 		world.getSystemContainer().destroySystem<SomeSystem>();
-		ST_ASSERT(systemContainer.getSystem<SomeSystem>().expired(), "Should return true when destroying a system.");
-		ST_ASSERT(onDeinitializeCalled, "onDeinitialize should have been called.");
+		MANI_TEST_ASSERT(systemContainer.getSystem<SomeSystem>().expired(), "Should return true when destroying a system.");
+		MANI_TEST_ASSERT(onDeinitializeCalled, "onDeinitialize should have been called.");
 
 		world.getSystemContainer().destroySystem<SomeSystem>();
 		world.deinitialize();
 	}
 
-	ST_TEST(InitializationOrder, "Should respect the flow of initialization when creating a world and its systems")
+	MANI_TEST(InitializationOrder, "Should respect the flow of initialization when creating a world and its systems")
 	{
 		using namespace Mani_Test;
 
@@ -93,15 +94,15 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 
 		systemContainer.createSystem<SomeSystem>();
 		std::shared_ptr<SomeSystem> someSystem = systemContainer.getSystem<SomeSystem>().lock();
-		ST_ASSERT(someSystem != nullptr, "SomeSystem should not be null");
+		MANI_TEST_ASSERT(someSystem != nullptr, "SomeSystem should not be null");
 		if (someSystem == nullptr)
 		{
 			return;
 		}
 
-		ST_ASSERT(!someSystem->onInitializeCalled, "System initialize should not have been called yet");
+		MANI_TEST_ASSERT(!someSystem->onInitializeCalled, "System initialize should not have been called yet");
 		systemContainer.tick(.16f);
-		ST_ASSERT(!someSystem->tickCalled, "system tick should not have been called yet, since the system isn't initialized");
+		MANI_TEST_ASSERT(!someSystem->tickCalled, "system tick should not have been called yet, since the system isn't initialized");
 
 		bool onDeinitializeCalled = false;
 		someSystem->assignOnDeinitializeCalled([&onDeinitializeCalled]() 
@@ -110,21 +111,21 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		});
 
 		systemContainer.deinitialize();
-		ST_ASSERT(!onDeinitializeCalled, "System should not have been deinitialized, since it was not initialized in the first place.");
+		MANI_TEST_ASSERT(!onDeinitializeCalled, "System should not have been deinitialized, since it was not initialized in the first place.");
 
 		systemContainer.initialize();
 	
-		ST_ASSERT(someSystem->onInitializeCalled, "System initialize should have been called");
+		MANI_TEST_ASSERT(someSystem->onInitializeCalled, "System initialize should have been called");
 		systemContainer.tick(.16f);
-		ST_ASSERT(someSystem->tickCalled, "System tick have been called, since the system is now initialized");
+		MANI_TEST_ASSERT(someSystem->tickCalled, "System tick have been called, since the system is now initialized");
 		systemContainer.deinitialize();
-		ST_ASSERT(onDeinitializeCalled, "System should have been deinitialized, since it was initialized.");
+		MANI_TEST_ASSERT(onDeinitializeCalled, "System should have been deinitialized, since it was initialized.");
 
 		world.getSystemContainer().destroySystem<SomeSystem>();
 		world.deinitialize();
 	}
 
-	ST_TEST(DeinitializationOrder, "Should deinitialize systems in the reversed order they were intialized")
+	MANI_TEST(DeinitializationOrder, "Should deinitialize systems in the reversed order they were intialized")
 	{
 		class InitHandle
 		{
@@ -179,38 +180,38 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 
 		world.initialize();
 
-		ST_ASSERT(someSystem1->initHandle.id == 0, "Should be the first one to be initialized");
-		ST_ASSERT(someSystem2->initHandle.id == 1, "Should be the second one to be initialized");
-		ST_ASSERT(someSystem3->initHandle.id == 2, "Should be the third one to be initialized");
+		MANI_TEST_ASSERT(someSystem1->initHandle.id == 0, "Should be the first one to be initialized");
+		MANI_TEST_ASSERT(someSystem2->initHandle.id == 1, "Should be the second one to be initialized");
+		MANI_TEST_ASSERT(someSystem3->initHandle.id == 2, "Should be the third one to be initialized");
 
 		bool wasOnDeinitCalled = false;
 		int onDeinitCounter = 0;
 		someSystem1->onDeinitialized.subscribe([&wasOnDeinitCalled, &onDeinitCounter]()
 		{
 			wasOnDeinitCalled = true;
-			ST_ASSERT(onDeinitCounter == 2, "Should be the third one to be deinitialized");
+			MANI_TEST_ASSERT(onDeinitCounter == 2, "Should be the third one to be deinitialized");
 			onDeinitCounter++;
 		});
 		
 		someSystem2->onDeinitialized.subscribe([&wasOnDeinitCalled, &onDeinitCounter]()
 		{
 			wasOnDeinitCalled = true;
-			ST_ASSERT(onDeinitCounter == 1, "Should be the second one to be deinitialized");
+			MANI_TEST_ASSERT(onDeinitCounter == 1, "Should be the second one to be deinitialized");
 			onDeinitCounter++;
 		});
 		
 		someSystem3->onDeinitialized.subscribe([&wasOnDeinitCalled, &onDeinitCounter]()
 		{
 			wasOnDeinitCalled = true;
-			ST_ASSERT(onDeinitCounter == 0, "Should be the first one to be deinitialized");
+			MANI_TEST_ASSERT(onDeinitCounter == 0, "Should be the first one to be deinitialized");
 			onDeinitCounter++;
 		});
 
 		world.deinitialize();
-		ST_ASSERT(wasOnDeinitCalled, "OnDeinit should have been called")
+		MANI_TEST_ASSERT(wasOnDeinitCalled, "OnDeinit should have been called")
 	}
 
-	ST_TEST(HandleSystemInheritance, "Should handle inheritance")
+	MANI_TEST(HandleSystemInheritance, "Should handle inheritance")
 	{
 		using namespace Mani_Test;
 
@@ -225,27 +226,27 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		systemContainer.createSystem<SomeExtendedSystem>();
 		if (systemContainer.getSystem<SomeExtendedSystem>().expired())
 		{
-			ST_ASSERT(false, "did not create the system, should have created the system");
+			MANI_TEST_ASSERT(false, "did not create the system, should have created the system");
 			return;
 		}
 
 		std::shared_ptr<SomeSystem> someSystem = systemContainer.getSystem<SomeSystem>().lock();
-		ST_ASSERT(someSystem != nullptr, "should retrieve the base system");
+		MANI_TEST_ASSERT(someSystem != nullptr, "should retrieve the base system");
 		if (someSystem == nullptr)
 		{
 			return;
 		}
 
 		size_t sizeBefore = systemContainer.size();
-		ST_ASSERT(someSystem->getName() == "SomeExtendedSystem", "Should return the extended name");
+		MANI_TEST_ASSERT(someSystem->getName() == "SomeExtendedSystem", "Should return the extended name");
 		systemContainer.createSystem<SomeSystem>();
-		ST_ASSERT(sizeBefore == systemContainer.size(), "should not have allowed creating a system of type SomeSystem");
+		MANI_TEST_ASSERT(sizeBefore == systemContainer.size(), "should not have allowed creating a system of type SomeSystem");
 
 		world.getSystemContainer().destroySystem<SomeExtendedSystem>();
 		world.deinitialize();
 	}
 
-	ST_TEST(SystemDependencyFlow, "Should create 2 systems with a dependency relationship")
+	MANI_TEST(SystemDependencyFlow, "Should create 2 systems with a dependency relationship")
 	{
 		class SomeSystem : public SystemBase
 		{
@@ -266,13 +267,13 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 				onInitializeCalled = true;
 				dependency = systemContainer.initializeDependency<SomeSystem>();
 			
-				ST_ASSERT(!dependency.expired(), "SomeSystem should have been initialized.");
+				MANI_TEST_ASSERT(!dependency.expired(), "SomeSystem should have been initialized.");
 				if (dependency.expired())
 				{
 					return;
 				}
 
-				ST_ASSERT(dependency.lock()->onInitializeCalled, "SomeSystem should have been initialized.");
+				MANI_TEST_ASSERT(dependency.lock()->onInitializeCalled, "SomeSystem should have been initialized.");
 			}
 
 			bool onInitializeCalled = false;
@@ -285,36 +286,36 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		systemContainer.createSystem<SomeOtherSystem>();
 		if (systemContainer.getSystem<SomeOtherSystem>().expired())
 		{
-			ST_ASSERT(false, "did not create the system, should have created the system");
+			MANI_TEST_ASSERT(false, "did not create the system, should have created the system");
 			return;
 		}
 
 		std::shared_ptr<SomeOtherSystem> someOtherSystem = systemContainer.getSystem<SomeOtherSystem>().lock();
 		if (someOtherSystem == nullptr)
 		{
-			ST_ASSERT(false, "did not create the system, should have created the system");
+			MANI_TEST_ASSERT(false, "did not create the system, should have created the system");
 			return;
 		}
 
-		ST_ASSERT(someOtherSystem->onInitializeCalled, "SomeOtherSystem should have been initialized.");
+		MANI_TEST_ASSERT(someOtherSystem->onInitializeCalled, "SomeOtherSystem should have been initialized.");
 
 		std::weak_ptr<SomeSystem> someSystem = systemContainer.getSystem<SomeSystem>();
 		if (someSystem.expired())
 		{
-			ST_ASSERT(false, "did not create the system, should have created the system");
+			MANI_TEST_ASSERT(false, "did not create the system, should have created the system");
 			return;
 		}
 
-		ST_ASSERT(someSystem.lock()->onInitializeCalled, "someSystem should have been initialized.");
+		MANI_TEST_ASSERT(someSystem.lock()->onInitializeCalled, "someSystem should have been initialized.");
 
 		systemContainer.destroySystem<SomeSystem>();
-		ST_ASSERT(someOtherSystem->dependency.expired(), "SomeSystem should have been destroyed and its shared_ptr reset.");
+		MANI_TEST_ASSERT(someOtherSystem->dependency.expired(), "SomeSystem should have been destroyed and its shared_ptr reset.");
 
 		world.getSystemContainer().destroySystem<SomeOtherSystem>();
 		world.deinitialize();
 	}
 
-	ST_TEST(DependencyInjection, "Should be able to refer to systems by interface")
+	MANI_TEST(DependencyInjection, "Should be able to refer to systems by interface")
 	{
 		class ISomeFunctionality
 		{
@@ -327,7 +328,7 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 		public:
 			virtual void DoFunctionality() override
 			{
-				ST_ASSERT(true, "Nice functionality!");
+				MANI_TEST_ASSERT(true, "Nice functionality!");
 			}
 		};
 
@@ -336,9 +337,9 @@ ST_SECTION_BEGIN(Core_World, "Core World")
 
 		systemContainer.createSystem<SomeCustomSystem>();
 		std::shared_ptr<ISomeFunctionality> someFunctionalitySystem = systemContainer.getSystem<ISomeFunctionality>().lock();
-		ST_ASSERT(someFunctionalitySystem != nullptr, "Should have been able to access SomeSystem");
+		MANI_TEST_ASSERT(someFunctionalitySystem != nullptr, "Should have been able to access SomeSystem");
 		
 		someFunctionalitySystem->DoFunctionality();
 	}
 }
-ST_SECTION_END(Core_World)
+MANI_SECTION_END(Core_World)

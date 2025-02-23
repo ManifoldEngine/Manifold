@@ -10,10 +10,11 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include <nlohmann/json.hpp>
+#include <ManiZ/ManiZ.h>
+#include <Core/GLMSerialization.h>
 
 using namespace Mani;
-using namespace nlohmann;
+
 
 bool MeshImporter::importFromPath(const std::filesystem::path& path, std::vector<std::shared_ptr<Mesh>>& outMeshes)
 {
@@ -43,7 +44,7 @@ bool MeshImporter::exportToPath(const std::filesystem::path& path, const std::sh
 {
 	MANI_ASSERT(mesh != nullptr, "provided mesh cannot be null");
 
-	return FileSystem::tryWriteFile(path, mesh->toJson());
+	return FileSystem::tryWriteFile(path, ManiZ::to::json(*mesh));
 }
 
 void MeshImporter::processNode(aiNode* node, const aiScene* scene, std::vector<const aiMesh*>& meshesAccumulator)

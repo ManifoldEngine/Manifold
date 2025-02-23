@@ -22,5 +22,5 @@ group "_TestLibs"
         
         links { "Events" }
         
-        includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir .. "/**" }
+        includedirs { moduledir .. "/**" }
 group ""

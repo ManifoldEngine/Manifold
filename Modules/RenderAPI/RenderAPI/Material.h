@@ -1,6 +1,5 @@
 #pragma once
 
-#include <Assets/IJsonAsset.h>
 #include <vector>
 #include <memory>
 #include <filesystem>
@@ -8,19 +7,16 @@
 
 namespace Mani
 {
-	struct Material : public IJsonAsset
+	struct Material
 	{
 		std::string name;
 
 		glm::vec4 color = glm::vec4(1.f);
 
-		std::filesystem::path shaderPath;
-		std::filesystem::path diffusePath;
-		std::filesystem::path specularPath;
+		std::string shaderPath;
+		std::string diffusePath;
+		std::string specularPath;
 
 		float shininess = 32.f;
-
-		virtual void parse(const std::string_view& content) override;
-		virtual std::string toJson() override;
 	};
 }

@@ -1,11 +1,11 @@
-#include "simpleTests.h"
+#include <ManiTests/ManiTests.h>
 
 extern "C" __declspec(dllexport) void runTests()
 {
-	SimpleTests::SimpleTestsRunner::runTests();
+	ManiTests::ManiTestsRunner::runTests();
 }
 
-ST_SECTION_BEGIN(Scene, "Scene")
+MANI_SECTION_BEGIN(Scene, "Scene")
 {
 }
-ST_SECTION_END(Scene)
+MANI_SECTION_END(Scene)

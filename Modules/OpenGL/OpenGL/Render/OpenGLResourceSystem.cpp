@@ -24,16 +24,31 @@ std::string_view OpenGLResourceSystem::getName() const
 void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
 	systemContainer.initializeDependency<AssetSystem>();
-	AssetDatabase* database = registry.getSingle<AssetDatabase>();
-	MANI_ASSERT(database != nullptr, "AssetSystem was not properly initialized");
-	onAssetLoadedHandle = database->onJsonAssetLoaded.subscribe(std::bind_front(&OpenGLResourceSystem::onJsonAssetLoaded, this));
+
+	AssetDatabase<Mesh>* meshDatabase = getOrAddDatabase<Mesh>(registry);
+	AssetDatabase<Material>* materialDatabase = getOrAddDatabase<Material>(registry);
+	AssetDatabase<Sprite>* spriteDatabase = getOrAddDatabase<Sprite>(registry);
+	
+	onMeshLoadedHandle		= meshDatabase->onAssetLoaded.subscribe(		std::bind_front(&OpenGLResourceSystem::onMeshLoaded, this));
+	onMaterialLoadedHandle	= materialDatabase->onAssetLoaded.subscribe(	std::bind_front(&OpenGLResourceSystem::onMaterialLoaded, this));
+	onSpriteLoadedHandle	= spriteDatabase->onAssetLoaded.subscribe(		std::bind_front(&OpenGLResourceSystem::onSpriteLoaded, this));
 }
 
 void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry)
 {
-	if (AssetDatabase* database = registry.getSingle<AssetDatabase>())
+	if (AssetDatabase<Mesh>* database = registry.getSingle<AssetDatabase<Mesh>>())
 	{
-		database->onJsonAssetLoaded.unsubscribe(onAssetLoadedHandle);
+		database->onAssetLoaded.unsubscribe(onMeshLoadedHandle);
+	}
+
+	if (AssetDatabase<Material>* database = registry.getSingle<AssetDatabase<Material>>())
+	{
+		database->onAssetLoaded.unsubscribe(onMaterialLoadedHandle);
+	}
+
+	if (AssetDatabase<Sprite>* database = registry.getSingle<AssetDatabase<Sprite>>())
+	{
+		database->onAssetLoaded.unsubscribe(onSpriteLoadedHandle);
 	}
 }
 
@@ -62,8 +77,15 @@ const std::shared_ptr<OpenGLSprite>& Mani::OpenGLResourceSystem::getSprite(const
 	return m_sprites[name];
 }
 
-void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, const std::shared_ptr<Mesh>& mesh)
+void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, const std::weak_ptr<Mesh>& meshPtr)
 {
+	if (meshPtr.expired())
+	{
+		return;
+	}
+
+	std::shared_ptr<Mesh> mesh = meshPtr.lock();
+
 	if (mesh == nullptr || mesh->vertices.empty() || mesh->indices.empty())
 	{
 		MANI_LOG_ERROR(LogOpenGL, "Received a null or empty mesh");
@@ -105,8 +127,15 @@ void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, const std::shar
 	m_vertexArrays[mesh->name] = vertexArray;
 }
 
-void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, const std::shared_ptr<Material>& material)
+void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, const std::weak_ptr<Material>& materialPtr)
 {
+	if (materialPtr.expired())
+	{
+		return;
+	}
+
+	std::shared_ptr<Material> material = materialPtr.lock();
+
 	if (material == nullptr)
 	{
 		MANI_LOG_ERROR(LogOpenGL, "Received a null material");
@@ -138,8 +167,15 @@ void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, const std::
 	m_materials[openGLMaterial->name] = openGLMaterial;
 }
 
-void Mani::OpenGLResourceSystem::onSpriteLoaded(ECS::Registry& registry, const std::shared_ptr<Sprite>& sprite)
+void Mani::OpenGLResourceSystem::onSpriteLoaded(ECS::Registry& registry, const std::weak_ptr<Sprite>& spritePtr)
 {
+	if (spritePtr.expired())
+	{
+		return;
+	}
+
+	std::shared_ptr<Sprite> sprite = spritePtr.lock();
+
 	if (sprite == nullptr)
 	{
 		MANI_LOG_ERROR(LogOpenGL, "Received a null sprite");
@@ -226,7 +262,7 @@ const std::string Mani::OpenGLResourceSystem::getOrAddShaderName(ECS::Registry& 
 	if (!m_shaders.contains(shaderName))
 	{
 		// make sure we load the shader
-		std::shared_ptr<Shader> shader = AssetSystem::loadJsonAsset<Shader>(registry, path).lock();
+		std::shared_ptr<Shader> shader = AssetSystem::loadAsset<Shader>(registry, path).lock();
 		MANI_ASSERT(shader != nullptr, "Could not load shader");
 		onShaderLoaded(shader);
 	}
@@ -245,28 +281,5 @@ void OpenGLResourceSystem::onShaderLoaded(const std::shared_ptr<Shader>& shaderA
 	if (shader->compile())
 	{
 		m_shaders[shaderAsset->name] = shader;
-	}
-}
-
-void OpenGLResourceSystem::onJsonAssetLoaded(ECS::Registry& registry, const std::weak_ptr<IJsonAsset>& jsonAsset)
-{
-	if (jsonAsset.expired())
-	{
-		return;
-	}
-
-	std::shared_ptr<IJsonAsset> asset = jsonAsset.lock();
-
-	if (const auto& mesh = std::dynamic_pointer_cast<Mesh>(asset))
-	{
-		onMeshLoaded(registry, mesh);
-	}
-	else if (const auto& material = std::dynamic_pointer_cast<Material>(asset))
-	{
-		onMaterialLoaded(registry, material);
-	}
-	else if (const auto& sprite = std::dynamic_pointer_cast<Sprite>(asset))
-	{
-		onSpriteLoaded(registry, sprite);
 	}
 }

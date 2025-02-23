@@ -43,15 +43,3 @@ group "Engine"
             removeincludedirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/include" }
             removelibdirs { thirdpartiesdir .. "/glfw-3.3.8.bin.WIN64/lib-vc2022/" }
 group ""
-
-group "_TestLibs"
-    project "OpenGLTests"
-        kind "SharedLib"
-        location (moduledir .. "/OpenGL/Tests")
-
-        files { moduledir .. "/OpenGL/Tests/**.h", moduledir .. "/OpenGL/Tests/**.cpp" }
-        
-        links { "OpenGL" }
-        
-        includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir .. "/**" }
-group ""

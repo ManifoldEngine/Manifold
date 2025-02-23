@@ -1,7 +1,5 @@
 #pragma once
 
-#include <Assets/IJsonAsset.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <memory>
@@ -12,13 +10,13 @@ namespace Mani
 {
     const std::string_view LogScene = "Scene";
 
-	struct Scene : public IJsonAsset
+	struct Scene
 	{
 		struct Node
 		{
 			size_t id = UINT64_MAX;
 
-			std::filesystem::path meshAsset;
+			std::string meshAsset;
 
 			glm::vec3 localPosition = glm::vec3(0.f);
 			glm::quat localRotation = glm::quat(1.0f, 0.f, 0.f, 0.f);
@@ -26,8 +24,5 @@ namespace Mani
 		};
 
 		std::vector<Node> nodes;
-
-		virtual void parse(const std::string_view& content) override;
-		virtual std::string toJson() override;
 	};
 }

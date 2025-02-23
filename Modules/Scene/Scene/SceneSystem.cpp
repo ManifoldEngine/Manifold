@@ -5,6 +5,9 @@
 
 #include <unordered_map>
 
+#include <ManiZ/ManiZ.h>
+#include <Core/GLMSerialization.h>
+
 using namespace Mani;
 
 std::string_view SceneSystem::getName() const
@@ -30,7 +33,7 @@ ECS::EntityId SceneSystem::spawnScene(ECS::Registry& registry, const std::filesy
 	}
 
 	std::shared_ptr<AssetSystem> assetSystem = m_assetSystem.lock();
-	std::shared_ptr<Scene> scene = AssetSystem::loadJsonAsset<Scene>(registry, path).lock();
+	std::shared_ptr<Scene> scene = AssetSystem::loadAsset<Scene>(registry, path).lock();
 	if (scene == nullptr)
 	{
 		return ECS::INVALID_ID;
@@ -66,13 +69,13 @@ ECS::EntityId SceneSystem::spawnNode(ECS::Registry& registry, const Scene::Node&
 
 	if (!node.meshAsset.empty())
 	{
-		std::shared_ptr<Mesh> mesh = assetSystem->loadJsonAsset<Mesh>(registry, node.meshAsset).lock();
+		std::shared_ptr<Mesh> mesh = assetSystem->loadAsset<Mesh>(registry, node.meshAsset).lock();
 		if (mesh == nullptr)
 		{
 			return ECS::INVALID_ID;
 		}
 
-		std::shared_ptr<Material> material = assetSystem->loadJsonAsset<Material>(registry, materialAssetPath).lock();
+		std::shared_ptr<Material> material = assetSystem->loadAsset<Material>(registry, materialAssetPath).lock();
 		if (mesh == nullptr)
 		{
 			return ECS::INVALID_ID;

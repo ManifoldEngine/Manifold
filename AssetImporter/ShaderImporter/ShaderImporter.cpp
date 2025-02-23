@@ -8,6 +8,7 @@
 
 #include <Utils/StringUtils.h>
 
+#include <ManiZ/ManiZ.h>
 #include <filesystem>
 
 using namespace Mani;
@@ -26,7 +27,7 @@ bool ShaderImporter::importFromPath(const std::filesystem::path& path, std::shar
 bool ShaderImporter::exportToPath(const std::filesystem::path& path, const std::shared_ptr<Shader>& shader)
 {
 	MANI_ASSERT(shader != nullptr, "provided shader cannot be null");
-	return FileSystem::tryWriteFile(path, shader->toJson());
+	return FileSystem::tryWriteFile(path, ManiZ::to::json(*shader));
 }
 
 bool ShaderImporter::parseShaderSourceFileFromPath(const std::filesystem::path& path, std::string& outFileName, std::string& outVertexSource, std::string& outFragmentSource)

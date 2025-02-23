@@ -22,5 +22,4 @@ group "_TestLibs"
         
         links { "Scene" }
         
-        includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir .. "/**" }
 group ""
