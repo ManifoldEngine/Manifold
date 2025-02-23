@@ -65,7 +65,7 @@ project "{{PROJECT_NAME}}"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
 
-    links { "Core", "OpenGL", "ECS", "Camera", "FloatingCamera", "Assets", "RenderAPI", "PhysX", "Inputs" }
+    links { "Core", "OpenGL", "ECS", "Camera", "FloatingCamera", "Assets", "RenderAPI", "Inputs" }
 
     includedirs { moduledir .. "/**", "%{prj.name}/Sources" }
 
