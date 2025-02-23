@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace Mani
 {
 	enum class ETextureFiltering : uint8_t

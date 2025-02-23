@@ -6,6 +6,9 @@
 
 #include <RenderAPI/Mesh.h>
 
+#include <ManiZ/ManiZ.h>
+#include <Core/GLMSerialization.h>
+
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -45,7 +48,7 @@ bool Mani::SceneImporter::exportToPath(const fs::path& path, const std::shared_p
 {
 	MANI_ASSERT(scene != nullptr, "provided scene cannot be null");
 
-	return FileSystem::tryWriteFile(path, scene->toJson());
+	return FileSystem::tryWriteFile(path, ManiZ::to::json(*scene));
 }
 
 void SceneImporter::processNode(aiNode* aiNode, const aiScene* aiScene, const fs::path path, const std::shared_ptr<Scene>& outScene)
@@ -84,7 +87,7 @@ void SceneImporter::processNode(aiNode* aiNode, const aiScene* aiScene, const fs
 			node.localScale.y = aiScaling.y;
 			node.localScale.z = aiScaling.z;
 
-			node.meshAsset = path;
+			node.meshAsset = path.native();
 			node.meshAsset.append(std::format("{}.mesh", aiMesh->mName.C_Str()));
 
 			outScene->nodes.push_back(node);

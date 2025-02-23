@@ -12,27 +12,15 @@
 
 #include <vector>
 #include <memory>
-#include <nlohmann/json.hpp>
 
 using namespace Mani;
-using namespace nlohmann;
+
 namespace fs = std::filesystem;
 
-struct AssetImporterConfig : public IJsonAsset
+struct AssetImporterConfig
 {
 	std::string engineAssetPath = "Engine/Assets";
 	std::string projectAssetPath = "";
-
-	virtual void parse(const std::string_view& content) override
-	{
-		json object = json::parse(content);
-
-
-		engineAssetPath = object["engineAssetPath"];
-		projectAssetPath = object["projectAssetPath"];
-	}
-
-	virtual std::string toJson() override { return ""; };
 };
 
 class AssetImporterSystem : public Mani::SystemBase
@@ -45,10 +33,9 @@ protected:
 	virtual void onInitialize(ECS::Registry& registry, Mani::SystemContainer& systemContainer) override
 	{
 		std::shared_ptr<AssetSystem> assetSystem = systemContainer.initializeDependency<AssetSystem>().lock();
-		std::weak_ptr<AssetImporterConfig> weakConfig = AssetSystem::loadJsonAsset<AssetImporterConfig>(registry, "Config/AssetImporter.json");
+		std::weak_ptr<AssetImporterConfig> weakConfig = AssetSystem::loadAsset<AssetImporterConfig>(registry, "Config/AssetImporter.json");
 		MANI_ASSERT(!weakConfig.expired(), "Could not find Config/AssetImporter.json");
 
-		
 		std::shared_ptr<AssetImporterConfig> config = weakConfig.lock();
 		fs::path rootPath;
 		MANI_ASSERT(FileSystem::tryGetRootPath(rootPath), "Could not get root path");

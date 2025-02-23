@@ -1,4 +1,4 @@
-#include "simpleTests.h"
+#include <ManiTests/ManiTests.h>
 #include <Inputs/InputSystem.h>
 #include <Inputs/Data/InputAction.h>
 #include <Inputs/Data/InputControl.h>
@@ -9,7 +9,7 @@
 #ifndef MANI_WEBGL
 extern "C" __declspec(dllexport) void runTests()
 {
-	SimpleTests::SimpleTestsRunner::runTests();
+	ManiTests::ManiTestsRunner::runTests();
 }
 #endif
 
@@ -155,9 +155,9 @@ protected:
 	}
 };
 
-ST_SECTION_BEGIN(Inputs, "Inputs")
+MANI_SECTION_BEGIN(Inputs, "Inputs")
 {
-	ST_TEST(CreateInputUser, "Should create an input user and assign an input generator to it.")
+	MANI_TEST(CreateInputUser, "Should create an input user and assign an input generator to it.")
 	{
 		SystemContainer systemContainer;
 		systemContainer.initialize();
@@ -176,7 +176,7 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 
 		systemContainer.tick(.0f);
 
-		ST_ASSERT(registeredActions.size() == 0, "Should not have registered an input.");
+		MANI_TEST_ASSERT(registeredActions.size() == 0, "Should not have registered an input.");
 
 		// create a user and assign them the virtual controller.
 		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
@@ -188,7 +188,7 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		// tick the system, consumes input buffers
 		systemContainer.tick(.0f);
 
-		ST_ASSERT(registeredActions.size() == 1, "Should have registered an input because the button was already pressed.");
+		MANI_TEST_ASSERT(registeredActions.size() == 1, "Should have registered an input because the button was already pressed.");
 
 		// left stick diagonal right+up
 		controller->setLeftStick(1.f, 1.f);
@@ -200,19 +200,19 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		// tick the system, consumes input buffers
 		systemContainer.tick(.0f);
 		
-		ST_ASSERT(registeredActions.size() == 3, "Should have registered an input");
+		MANI_TEST_ASSERT(registeredActions.size() == 3, "Should have registered an input");
 		
 		InputAction secondToLastAction = registeredActions[registeredActions.size() - 2];
-		ST_ASSERT(secondToLastAction.name == "Jump" && secondToLastAction.isPressed == false, "Last action should be Jump false");
+		MANI_TEST_ASSERT(secondToLastAction.name == "Jump" && secondToLastAction.isPressed == false, "Last action should be Jump false");
 
 		InputAction lastAction = registeredActions.back();
-		ST_ASSERT(lastAction.name == "Dodge" && lastAction.isPressed == true, "Last action should be Dodge true");
+		MANI_TEST_ASSERT(lastAction.name == "Dodge" && lastAction.isPressed == true, "Last action should be Dodge true");
 
 		inputSystem->onActionEvent.unsubscribe(handle);
 		systemContainer.deinitialize();
 	}
 
-	ST_TEST(MultiAxisInteraction, "Two opposite axis on the same direction should result in zero")
+	MANI_TEST(MultiAxisInteraction, "Two opposite axis on the same direction should result in zero")
 	{
 		SystemContainer systemContainer;
 		systemContainer.initialize();
@@ -245,12 +245,12 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		systemContainer.tick(.0f);
 
 		const InputAction& moveAction = inputUser->inputUser->actions["Move"];
-		ST_ASSERT(moveAction.x <= FLT_EPSILON, "Move X axis should be zero");
+		MANI_TEST_ASSERT(moveAction.x <= FLT_EPSILON, "Move X axis should be zero");
 
 		systemContainer.deinitialize();
 	}
 
-	ST_TEST(PressUnassignedButton, "Should press an unassigned button without side effects")
+	MANI_TEST(PressUnassignedButton, "Should press an unassigned button without side effects")
 	{
 		SystemContainer systemContainer;
 		systemContainer.initialize();
@@ -276,14 +276,14 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		// this should not crash.
 		systemContainer.tick(0.f);
 		
-		ST_ASSERT(bHasActionBeenTriggered == false, "Action should not have been triggered.");
+		MANI_TEST_ASSERT(bHasActionBeenTriggered == false, "Action should not have been triggered.");
 
 		inputSystem->onActionEvent.unsubscribe(handle);
 		
 		systemContainer.deinitialize();
 	}
 
-	ST_TEST(AssignControlToMultipleAction, "Should press receive multiple actions for a single control")
+	MANI_TEST(AssignControlToMultipleAction, "Should press receive multiple actions for a single control")
 	{
 		SystemContainer systemContainer;
 		systemContainer.initialize();
@@ -320,13 +320,13 @@ ST_SECTION_BEGIN(Inputs, "Inputs")
 		// this should not crash.
 		systemContainer.tick(0.f);
 
-		ST_ASSERT(actionEvents.size() == 2, "Should have registered 2 actions");
-		ST_ASSERT(actionEvents[0].name == "Jump", "First action should have been jump");
-		ST_ASSERT(actionEvents[1].name == "Dodge", "Second action should have been jump");
+		MANI_TEST_ASSERT(actionEvents.size() == 2, "Should have registered 2 actions");
+		MANI_TEST_ASSERT(actionEvents[0].name == "Jump", "First action should have been jump");
+		MANI_TEST_ASSERT(actionEvents[1].name == "Dodge", "Second action should have been jump");
 
 		inputSystem->onActionEvent.unsubscribe(handle);
 
 		systemContainer.deinitialize();
 	}
 }
-ST_SECTION_END(Inputs)
+MANI_SECTION_END(Inputs)

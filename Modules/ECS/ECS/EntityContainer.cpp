@@ -12,7 +12,7 @@ ECS::EntityContainer::ComponentPool::ComponentPool(size_t inElementsSize)
 	data = std::vector<unsigned char>(capacity * elementSize, 0);
 }
 
-void* ECS::EntityContainer::ComponentPool::Get(size_t index)
+void* ECS::EntityContainer::ComponentPool::get(size_t index)
 {
 	if (index >= capacity)
 	{
@@ -121,7 +121,7 @@ void* ECS::EntityContainer::addComponent(ECS::EntityId entityId, ComponentId com
 	Entity& entity = m_entities[entityId];
 	entity.setComponentBit(componentId);
 
-	return m_componentPools[componentId]->Get(entityId);	
+	return m_componentPools[componentId]->get(entityId);	
 }
 
 void* ECS::EntityContainer::getComponent(ECS::EntityId entityId, ComponentId componentId) const
@@ -142,7 +142,7 @@ void* ECS::EntityContainer::getComponent(ECS::EntityId entityId, ComponentId com
 		return nullptr;
 	}
 
-	return m_componentPools[componentId]->Get(entityId);
+	return m_componentPools[componentId]->get(entityId);
 }
 
 bool ECS::EntityContainer::removeComponent(ECS::EntityId entityId, ComponentId componentId)

@@ -1,11 +1,11 @@
-#include "simpleTests.h"
+#include <ManiTests/ManiTests.h>
 #include <Core/CoreFwd.h>
 #include <Collision/Algorithms/GJK.h>
 #include <Collision/Algorithms/EPA.h>
 
 extern "C" __declspec(dllexport) void runTests()
 {
-	SimpleTests::SimpleTestsRunner::runTests();
+	ManiTests::ManiTestsRunner::runTests();
 }
 
 using namespace Mani;
@@ -30,11 +30,11 @@ void addIfUnique(std::vector<glm::vec3>& vectors, const glm::vec3& v)
 	vectors.push_back(v);
 }
 /*
-ST_SECTION_BEGIN(Collision, "Collision")
+MANI_SECTION_BEGIN(Collision, "Collision")
 {
-	ST_SECTION_BEGIN(GJKTest, "GJK")
+	MANI_SECTION_BEGIN(GJKTest, "GJK")
 	{
-		ST_TEST(SimpleNoCollision, "simple case with no collision")
+		MANI_TEST(SimpleNoCollision, "simple case with no collision")
 		{
 			std::vector<glm::vec3> shape1 = {
 				{ 0.f, 0.f, 0.f },
@@ -67,17 +67,17 @@ ST_SECTION_BEGIN(Collision, "Collision")
 
 			Simplex simplex;
 			const bool result = GJK::solve(shape1, &transform1, shape2, &transform2, simplex);
-			ST_ASSERT(result == false, "Shape aren't colliding");
+			MANI_TEST_ASSERT(result == false, "Shape aren't colliding");
 
 			std::vector<glm::vec3> set;
 			addIfUnique(set, simplex.a);
 			addIfUnique(set, simplex.b);
 			addIfUnique(set, simplex.c);
 			addIfUnique(set, simplex.d);
-			ST_ASSERT(set.size() == 4, "all simplex points must be unique");
+			MANI_TEST_ASSERT(set.size() == 4, "all simplex points must be unique");
 		}
 
-		ST_TEST(SimpleYesCollision, "simple case with collision")
+		MANI_TEST(SimpleYesCollision, "simple case with collision")
 		{
 			std::vector<glm::vec3> shape1 = {
 				{ 0.f, 0.f, 0.f },
@@ -110,17 +110,17 @@ ST_SECTION_BEGIN(Collision, "Collision")
 			
 			Simplex simplex;
 			const bool result = GJK::solve(shape1, &transform1, shape2, &transform2, simplex);
-			ST_ASSERT(result == true, "Shape are colliding");
+			MANI_TEST_ASSERT(result == true, "Shape are colliding");
 
 			std::vector<glm::vec3> set;
 			addIfUnique(set, simplex.a);
 			addIfUnique(set, simplex.b);
 			addIfUnique(set, simplex.c);
 			addIfUnique(set, simplex.d);
-			ST_ASSERT(set.size() == 4, "all simplex points must be unique");
+			MANI_TEST_ASSERT(set.size() == 4, "all simplex points must be unique");
 		}
 
-		ST_TEST(SimpleYesCollisionAtOrigin, "simple case with collision, but at world origin")
+		MANI_TEST(SimpleYesCollisionAtOrigin, "simple case with collision, but at world origin")
 		{
 			std::vector<glm::vec3> shape1 = {
 				{ 0.f, 0.f, 0.f },
@@ -153,17 +153,17 @@ ST_SECTION_BEGIN(Collision, "Collision")
 
 			Simplex simplex;
 			const bool result = GJK::solve(shape1, &transform1, shape2, &transform2, simplex);
-			ST_ASSERT(result == true, "Shape are colliding");
+			MANI_TEST_ASSERT(result == true, "Shape are colliding");
 
 			std::vector<glm::vec3> set;
 			addIfUnique(set, simplex.a);
 			addIfUnique(set, simplex.b);
 			addIfUnique(set, simplex.c);
 			addIfUnique(set, simplex.d);
-			ST_ASSERT(set.size() == 4, "all simplex points must be unique");
+			MANI_TEST_ASSERT(set.size() == 4, "all simplex points must be unique");
 		}
 
-		ST_TEST(SimpleYesCollisionWithRotation, "simple case with collision, with rotation")
+		MANI_TEST(SimpleYesCollisionWithRotation, "simple case with collision, with rotation")
 		{
 			std::vector<glm::vec3> shape1 = {
 				{ 0.f, 0.f, 0.f },
@@ -197,21 +197,21 @@ ST_SECTION_BEGIN(Collision, "Collision")
 
 			Simplex simplex;
 			const bool result = GJK::solve(shape1, &transform1, shape2, &transform2, simplex);
-			ST_ASSERT(result == true, "Shape are colliding");
+			MANI_TEST_ASSERT(result == true, "Shape are colliding");
 
 			std::vector<glm::vec3> set;
 			addIfUnique(set, simplex.a);
 			addIfUnique(set, simplex.b);
 			addIfUnique(set, simplex.c);
 			addIfUnique(set, simplex.d);
-			ST_ASSERT(set.size() == 4, "all simplex points must be unique");
+			MANI_TEST_ASSERT(set.size() == 4, "all simplex points must be unique");
 		}
 	}
-	ST_SECTION_END(GJKTest)
+	MANI_SECTION_END(GJKTest)
 
-	ST_SECTION_BEGIN(EPATest, "EPA")
+	MANI_SECTION_BEGIN(EPATest, "EPA")
 	{
-		/*ST_TEST(SimpleWithCollisionEPA, "Simple case with collision")
+		/*MANI_TEST(SimpleWithCollisionEPA, "Simple case with collision")
 		{
 			std::vector<glm::vec3> shape1 = {
 				{ 0.f, 0.f, 0.f },
@@ -244,17 +244,17 @@ ST_SECTION_BEGIN(Collision, "Collision")
 
 			Simplex simplex;
 			const bool GJKResult = GJK::solve(shape1, &transform1, shape2, &transform2, simplex);
-			ST_ASSERT(GJKResult == true, "Shape are colliding");
+			MANI_TEST_ASSERT(GJKResult == true, "Shape are colliding");
 
 			HitResult hitResult;
 			const bool EPAResult = EPA::solve(shape1, &transform1, shape2, &transform2, simplex, hitResult);
-			ST_ASSERT(EPAResult == true, "Shape are penetrating");
-			ST_ASSERT(hitResult.isHit == true, "it is a hit");
-			ST_ASSERT(glm::length2(hitResult.normal - glm::normalize((transform2.position - transform1.position))) < FLT_EPSILON, "it is penetrating in the correct direction");
-			ST_ASSERT(hitResult.penetrationDepth > FLT_EPSILON, "the penetration depth is by the correct amount");
+			MANI_TEST_ASSERT(EPAResult == true, "Shape are penetrating");
+			MANI_TEST_ASSERT(hitResult.isHit == true, "it is a hit");
+			MANI_TEST_ASSERT(glm::length2(hitResult.normal - glm::normalize((transform2.position - transform1.position))) < FLT_EPSILON, "it is penetrating in the correct direction");
+			MANI_TEST_ASSERT(hitResult.penetrationDepth > FLT_EPSILON, "the penetration depth is by the correct amount");
 		}*//*
 	}
-	ST_SECTION_END(EPATest)
+	MANI_SECTION_END(EPATest)
 }
-ST_SECTION_END(Collision)
+MANI_SECTION_END(Collision)
 */

@@ -1,14 +1,15 @@
-#include "simpleTests.h"
 #include <Core/Application.h>
 #include <Core/System/SystemContainer.h>
 #include <Core/World/WorldSystem.h>
 #include <Events/Event.h>
 
+#include <ManiTests/ManiTests.h>
+
 using namespace Mani;
 
-ST_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
+MANI_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 {
-	ST_TEST(WorldSystemCreate, "Should create an Application and setup a world")
+	MANI_TEST(WorldSystemCreate, "Should create an Application and setup a world")
 	{
 		bool hasTicked = false;
 		class SomeWorldSystem : public SystemBase
@@ -33,21 +34,21 @@ ST_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 		
 		if (world == nullptr)
 		{
-			ST_ASSERT(false, "World should not be null");
+			MANI_TEST_ASSERT(false, "World should not be null");
 			return;
 		}
 
-		ST_ASSERT(world->isInitialized(), "World shoudl be initialized");
+		MANI_TEST_ASSERT(world->isInitialized(), "World shoudl be initialized");
 		
 		std::shared_ptr<SomeWorldSystem> someWorlSystem = world->getSystemContainer().initializeDependency<SomeWorldSystem>().lock();
 		someWorlSystem->onTick.subscribe([&hasTicked](float deltaTime) 
 		{ 
-			ST_ASSERT(deltaTime < 1.192092896e-07F, "Should have ticked with the same delta time than the application's tick");
+			MANI_TEST_ASSERT(deltaTime < 1.192092896e-07F, "Should have ticked with the same delta time than the application's tick");
 			hasTicked = true;
 		});
 
 		app.tick(0.f);
-		ST_ASSERT(hasTicked, "World should have ticked.");
+		MANI_TEST_ASSERT(hasTicked, "World should have ticked.");
 	}
 }
-ST_SECTION_END(WorldSystemSection)
+MANI_SECTION_END(WorldSystemSection)

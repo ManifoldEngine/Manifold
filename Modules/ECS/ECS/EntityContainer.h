@@ -37,7 +37,7 @@ namespace Mani
 			{
 				ComponentPool(size_t inElementsSize);
 
-				inline void* Get(size_t index);
+				inline void* get(size_t index);
 			
 				std::vector<unsigned char> data;
 				size_t capacity;

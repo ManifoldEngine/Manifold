@@ -1,9 +1,9 @@
-#include "simpleTests.h"
 #include <Core/CoreFwd.h>
+#include <ManiTests/ManiTests.h>
 
 using namespace Mani;
 
-ST_SECTION_BEGIN(TransformSystemSection, "TransformSystem")
+MANI_SECTION_BEGIN(TransformSystemSection, "TransformSystem")
 {
 	class TestSystemBase : public SystemBase
 	{
@@ -41,7 +41,7 @@ ST_SECTION_BEGIN(TransformSystemSection, "TransformSystem")
 		}
 	};
 
-	ST_TEST(UpdateTransformLocalPosition, "Should properly parent two transforms")
+	MANI_TEST(UpdateTransformLocalPosition, "Should properly parent two transforms")
 	{
 		class TestSystem : public TestSystemBase
 		{
@@ -60,13 +60,13 @@ ST_SECTION_BEGIN(TransformSystemSection, "TransformSystem")
 
 		world.tick(.16f);
 
-		ST_ASSERT(glm::length2(testSystem->parentTransform->position - glm::vec3(0.f, 5.f, 0.f)) <= FLT_EPSILON, "parent transform should be at (0, 5, 0)");
-		ST_ASSERT(glm::length2(testSystem->childTransform->position - glm::vec3(5.f, 5.f, 0.f)) <= FLT_EPSILON, "child transform should be at (5, 5, 0)");
+		MANI_TEST_ASSERT(glm::length2(testSystem->parentTransform->position - glm::vec3(0.f, 5.f, 0.f)) <= FLT_EPSILON, "parent transform should be at (0, 5, 0)");
+		MANI_TEST_ASSERT(glm::length2(testSystem->childTransform->position - glm::vec3(5.f, 5.f, 0.f)) <= FLT_EPSILON, "child transform should be at (5, 5, 0)");
 
 		world.tick(.16f);
 
-		ST_ASSERT(glm::length2(testSystem->parentTransform->position - glm::vec3(0.f, 10.f, 0.f)) <= FLT_EPSILON, "parent transform should be at (0, 10, 0)");
-		ST_ASSERT(glm::length2(testSystem->childTransform->position - glm::vec3(5.f, 10.f, 0.f)) <= FLT_EPSILON, "child transform should be at (5, 10, 0)");
+		MANI_TEST_ASSERT(glm::length2(testSystem->parentTransform->position - glm::vec3(0.f, 10.f, 0.f)) <= FLT_EPSILON, "parent transform should be at (0, 10, 0)");
+		MANI_TEST_ASSERT(glm::length2(testSystem->childTransform->position - glm::vec3(5.f, 10.f, 0.f)) <= FLT_EPSILON, "child transform should be at (5, 10, 0)");
 	}
 }
-ST_SECTION_END(TransformSystemSection)
+MANI_SECTION_END(TransformSystemSection)

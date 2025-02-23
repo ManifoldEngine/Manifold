@@ -15,12 +15,10 @@ configurations { "Debug", "Release", "Distribution" }
     --glm
     includedirs { thirdpartiesdir .. "/glm" }
     defines { "GLM_ENABLE_EXPERIMENTAL" }
-    --json
-    includedirs { thirdpartiesdir .. "/json/include"}
-    --physx
-    includedirs { thirdpartiesdir .. "/PhysX/physx/include"}
-    --SimpleTests
-    includedirs { thirdpartiesdir .. "/SimpleTests/include" }
+    -- ManiTests
+    includedirs { thirdpartiesdir .. "/ManiTests/include" }
+    -- ManiZ
+    includedirs { thirdpartiesdir .. "/ManiZ/include"}
     
     filter "configurations:Debug"
         defines { "MANI_DEBUG" }

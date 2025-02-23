@@ -1,20 +1,20 @@
-#include "simpleTests.h"
-#include "ECS/Registry.h"
-#include "ECS/View.h"
-#include "ECS/Bitset.h"
+#include <ManiTests/ManiTests.h>
+#include <ECS/Registry.h>
+#include <ECS/View.h>
+#include <ECS/Bitset.h>
 
 #ifndef MANI_WEBGL
 extern "C" __declspec(dllexport) void runTests()
 {
-	SimpleTests::SimpleTestsRunner::runTests();
+	ManiTests::ManiTestsRunner::runTests();
 }
 #endif
 
 using namespace Mani;
 
-ST_SECTION_BEGIN(ECS, "ECS")
+MANI_SECTION_BEGIN(ECS, "ECS")
 {
-	ST_TEST(CreateEditDestroyEntities, "Should create a registry, create an entity, add a component, edit the component, then destroy the entity")
+	MANI_TEST(CreateEditDestroyEntities, "Should create a registry, create an entity, add a component, edit the component, then destroy the entity")
 	{
 		struct DataComponent 
 		{
@@ -27,13 +27,13 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		// create an entity
 		ECS::EntityId entityId = registry.create();
 	
-		ST_ASSERT(entityId == 1, "Entity should have the first id.");
-		ST_ASSERT(registry.isValid(entityId), "Entity should be valid.");
+		MANI_TEST_ASSERT(entityId == 1, "Entity should have the first id.");
+		MANI_TEST_ASSERT(registry.isValid(entityId), "Entity should be valid.");
 	
 		// add a DataComponent
 		auto* component = registry.add<DataComponent>(entityId);
 	
-		ST_ASSERT(component != nullptr, "Component should not be a nullptr.");
+		MANI_TEST_ASSERT(component != nullptr, "Component should not be a nullptr.");
 		if (component == nullptr)
 		{
 			return;
@@ -45,24 +45,24 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		// get the component again to verify the pointer points to the correct location.
 		auto* componentFromRegistry = registry.get<DataComponent>(entityId);
 	
-		ST_ASSERT(componentFromRegistry != nullptr, "Component should not be a nullptr.");
+		MANI_TEST_ASSERT(componentFromRegistry != nullptr, "Component should not be a nullptr.");
 		if (componentFromRegistry == nullptr)
 		{
 			return;
 		}
 
-		ST_ASSERT(component->someData == componentFromRegistry->someData, "We should be able to retrieve our component data");
+		MANI_TEST_ASSERT(component->someData == componentFromRegistry->someData, "We should be able to retrieve our component data");
 	
 		// destroy the entity, should destroy the component too.
-		ST_ASSERT(registry.destroy(entityId), "The Entity should have been destroyed");
+		MANI_TEST_ASSERT(registry.destroy(entityId), "The Entity should have been destroyed");
 	
-		ST_ASSERT(!registry.isValid(entityId), "Entity should not be valid anymore");
+		MANI_TEST_ASSERT(!registry.isValid(entityId), "Entity should not be valid anymore");
 
 		auto* componentFromRegistryAfterDelete = registry.get<DataComponent>(entityId);
-		ST_ASSERT(componentFromRegistryAfterDelete == nullptr, "Entity's component should be nullptr after delete.");
+		MANI_TEST_ASSERT(componentFromRegistryAfterDelete == nullptr, "Entity's component should be nullptr after delete.");
 	}
 
-	ST_TEST(AddAndRemoveComponents, "Should create a registry and an entity, then add and remove a component")
+	MANI_TEST(AddAndRemoveComponents, "Should create a registry and an entity, then add and remove a component")
 	{
 		struct DataComponent
 		{
@@ -77,20 +77,20 @@ ST_SECTION_BEGIN(ECS, "ECS")
 	
 		// add a DataComponent
 		DataComponent* dataComponent = registry.add<DataComponent>(entityId);
-		ST_ASSERT(dataComponent != nullptr, "Component should not be a nullptr.");
+		MANI_TEST_ASSERT(dataComponent != nullptr, "Component should not be a nullptr.");
 		if (dataComponent == nullptr)
 		{
 			return;
 		}
 
 		const bool didRemoveDataComponent = registry.remove<DataComponent>(entityId);
-		ST_ASSERT(didRemoveDataComponent, "Should have removed the Data component");
+		MANI_TEST_ASSERT(didRemoveDataComponent, "Should have removed the Data component");
 
 		dataComponent = registry.get<DataComponent>(entityId);
-		ST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
+		MANI_TEST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
 	}
 
-	ST_TEST(RecycleEntities, "Should create a registry and an entity, then properly recycle the entity and its components")
+	MANI_TEST(RecycleEntities, "Should create a registry and an entity, then properly recycle the entity and its components")
 	{
 		struct DataComponent
 		{
@@ -109,7 +109,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		// add a DataComponent
 		DataComponent* dataComponent = registry.add<DataComponent>(entityId);
-		ST_ASSERT(dataComponent != nullptr, "Component should not be a nullptr.");
+		MANI_TEST_ASSERT(dataComponent != nullptr, "Component should not be a nullptr.");
 		if (dataComponent == nullptr)
 		{
 			return;
@@ -117,21 +117,21 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		// destroy the entity, which should be added to the entity pool
 		const bool didDestroy = registry.destroy(entityId);
-		ST_ASSERT(didDestroy, "Should have detroyed entity");
+		MANI_TEST_ASSERT(didDestroy, "Should have detroyed entity");
 
 		dataComponent = registry.get<DataComponent>(entityId);
-		ST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
+		MANI_TEST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
 
 		// we expect the entity to be recycled
 		entityId = registry.create();
-		ST_ASSERT(entityId == 1, "Should be the first entity addded.");
+		MANI_TEST_ASSERT(entityId == 1, "Should be the first entity addded.");
 
 		// Entity should not have a DataComponent
 		dataComponent = registry.get<DataComponent>(entityId);
-		ST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
+		MANI_TEST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
 
 		OtherDataComponent* otherDataComponent = registry.add<OtherDataComponent>(entityId);
-		ST_ASSERT(otherDataComponent != nullptr, "Component should not be a nullptr.");
+		MANI_TEST_ASSERT(otherDataComponent != nullptr, "Component should not be a nullptr.");
 		if (otherDataComponent == nullptr)
 		{
 			return;
@@ -140,16 +140,16 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		otherDataComponent->someOtherData += 10;
 
 		OtherDataComponent* otherOtherDataComponent = registry.get<OtherDataComponent>(entityId);
-		ST_ASSERT(otherOtherDataComponent != nullptr, "Other Component should not be a nullptr.");
+		MANI_TEST_ASSERT(otherOtherDataComponent != nullptr, "Other Component should not be a nullptr.");
 		if (otherOtherDataComponent == nullptr)
 		{
 			return;
 		}
 
-		ST_ASSERT(otherOtherDataComponent->someOtherData == otherDataComponent->someOtherData, "we should be able to mutate a component of a recycled entity.");
+		MANI_TEST_ASSERT(otherOtherDataComponent->someOtherData == otherDataComponent->someOtherData, "we should be able to mutate a component of a recycled entity.");
 	}
 
-	ST_TEST(CreateRegistryView, "Should create a registry view and iterate through it")
+	MANI_TEST(CreateRegistryView, "Should create a registry view and iterate through it")
 	{
 		struct DataComponent {
 			int someData = 5;
@@ -174,7 +174,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 			}
 		}
 
-		ST_ASSERT(registry.size() == entityCount, "should have created 10 entities");
+		MANI_TEST_ASSERT(registry.size() == entityCount, "should have created 10 entities");
 
 		int entityCounter = 1;
 		for (ECS::EntityId entityId : ECS::View<DataComponent, OtherDataComponent>(registry))
@@ -182,12 +182,12 @@ ST_SECTION_BEGIN(ECS, "ECS")
 			entityCounter++;
 
 			auto* component = registry.get<DataComponent>(entityId);
-			ST_ASSERT(component != nullptr, "should have a DataComponent");
+			MANI_TEST_ASSERT(component != nullptr, "should have a DataComponent");
 
 			auto* otherComponent = registry.get<OtherDataComponent>(entityId);
-			ST_ASSERT(otherComponent != nullptr, "should have a OtherDataComponent");
+			MANI_TEST_ASSERT(otherComponent != nullptr, "should have a OtherDataComponent");
 		}
-		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent and OtherDataComponent in the registry view");
+		MANI_TEST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent and OtherDataComponent in the registry view");
 
 		// iterate over the entities with DataComponent
 		entityCounter = 1;
@@ -195,18 +195,18 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		{
 			entityCounter++;
 			auto* component = registry.get<DataComponent>(entityId);
-			ST_ASSERT(component != nullptr, "should have a DataComponent");
+			MANI_TEST_ASSERT(component != nullptr, "should have a DataComponent");
 		}
-		ST_ASSERT(entityCounter == entityCount, "There should be 10 entities with DataComponent in the registry view");
+		MANI_TEST_ASSERT(entityCounter == entityCount, "There should be 10 entities with DataComponent in the registry view");
 
 		entityCounter = 1;
 		for (ECS::EntityId entityId : ECS::View<OtherDataComponent>(registry))
 		{
 			entityCounter++;
 			auto* otherComponent = registry.get<OtherDataComponent>(entityId);
-			ST_ASSERT(otherComponent != nullptr, "should have a OtherDataComponent");
+			MANI_TEST_ASSERT(otherComponent != nullptr, "should have a OtherDataComponent");
 		}
-		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with OtherDataComponent in the registry view");
+		MANI_TEST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with OtherDataComponent in the registry view");
 
 
 		entityCounter = 0;
@@ -214,10 +214,10 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		{
 			entityCounter++;
 		}
-		ST_ASSERT(entityCounter == 10, "Should iterate over all entities");
+		MANI_TEST_ASSERT(entityCounter == 10, "Should iterate over all entities");
 	}
 
-	ST_TEST(ChaoticEntityCreation, "We should be able to create entities, some without component, and some with components")
+	MANI_TEST(ChaoticEntityCreation, "We should be able to create entities, some without component, and some with components")
 	{
 		struct DataComponent {
 			int someData = 5;
@@ -238,7 +238,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 			}
 		}
 
-		ST_ASSERT(registry.size() == entityCount, "should have created 10 entities");
+		MANI_TEST_ASSERT(registry.size() == entityCount, "should have created 10 entities");
 
 		// iterate over the entities with DataComponent
 		int entityCounter = 1;
@@ -246,12 +246,12 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		{
 			entityCounter++;
 			auto* component = registry.get<DataComponent>(entityId);
-			ST_ASSERT(component != nullptr, "should have a DataComponent");
+			MANI_TEST_ASSERT(component != nullptr, "should have a DataComponent");
 		}
-		ST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent in the registry view");
+		MANI_TEST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent in the registry view");
 	}
 
-	ST_TEST(ComponentIdAssignation, "ComponentIds should be consecutive")
+	MANI_TEST(ComponentIdAssignation, "ComponentIds should be consecutive")
 	{	
 		struct Component0 {};
 		struct Component1 {};
@@ -262,11 +262,11 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		const ECS::ComponentId componentId1 = registry.getComponentId<Component1>();
 		const ECS::ComponentId componentId2 = registry.getComponentId<Component2>();
 		
-		ST_ASSERT(componentId1 - componentId0 == 1, "The second componentid should follow the first one");
-		ST_ASSERT(componentId2 - componentId1 == 1, "The third componentid should follow the second one");
+		MANI_TEST_ASSERT(componentId1 - componentId0 == 1, "The second componentid should follow the first one");
+		MANI_TEST_ASSERT(componentId2 - componentId1 == 1, "The third componentid should follow the second one");
 	}
 
-	ST_TEST(Spawn1000000Entities, "Should spawn 1'000'000 entities with a transform")
+	MANI_TEST(Spawn1000000Entities, "Should spawn 1'000'000 entities with a transform")
 	{
 		struct Transform
 		{
@@ -293,10 +293,10 @@ ST_SECTION_BEGIN(ECS, "ECS")
 			transform->scale[2] = 1.f;
 		}
 
-		ST_ASSERT(registry.size() == 1'000'000, "Should have spawned 1'000'000 entities.");
+		MANI_TEST_ASSERT(registry.size() == 1'000'000, "Should have spawned 1'000'000 entities.");
 	}
 
-	ST_TEST(PlayWithDynamicAllocation, "Should allow dynamic allocation")
+	MANI_TEST(PlayWithDynamicAllocation, "Should allow dynamic allocation")
 	{
 		struct DynamicComponent
 		{
@@ -314,12 +314,12 @@ ST_SECTION_BEGIN(ECS, "ECS")
 			component1->vector.push_back(i + 1 * 1000.f);
 		}
 
-		ST_ASSERT(component2->vector[0] - 1.f <= 1.192092896e-07F, "first vector element should be equal to the original value");
-		ST_ASSERT(component2->vector[1] - 2.f <= 1.192092896e-07F, "second vector element should be equal to the original value");
-		ST_ASSERT(component2->vector[2] - 3.f <= 1.192092896e-07F, "third vector element should be equal to the original value");
+		MANI_TEST_ASSERT(component2->vector[0] - 1.f <= 1.192092896e-07F, "first vector element should be equal to the original value");
+		MANI_TEST_ASSERT(component2->vector[1] - 2.f <= 1.192092896e-07F, "second vector element should be equal to the original value");
+		MANI_TEST_ASSERT(component2->vector[2] - 3.f <= 1.192092896e-07F, "third vector element should be equal to the original value");
 	}
 
-	ST_TEST(EntityHasComponent, "Should return true if the entity has the component or not")
+	MANI_TEST(EntityHasComponent, "Should return true if the entity has the component or not")
 	{
 		struct Component {};
 
@@ -327,14 +327,14 @@ ST_SECTION_BEGIN(ECS, "ECS")
 
 		const ECS::EntityId entityId = registry.create();
 
-		ST_ASSERT(registry.has<Component>(entityId) == false, "Should not have the component yet");
+		MANI_TEST_ASSERT(registry.has<Component>(entityId) == false, "Should not have the component yet");
 
 		registry.add<Component>(entityId);
 
-		ST_ASSERT(registry.has<Component>(entityId) == true, "Should now have the component");
+		MANI_TEST_ASSERT(registry.has<Component>(entityId) == true, "Should now have the component");
 	}
 
-	ST_TEST(EntityRegistryEvents, "Should subscribe to all events and confirm that a callback was received")
+	MANI_TEST(EntityRegistryEvents, "Should subscribe to all events and confirm that a callback was received")
 	{
 		struct Component {};
 
@@ -368,33 +368,33 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		registry.destroy(entityId);
 
 		std::pair<ECS::EntityId, ECS::ComponentId> pair = { entityId, componentId };
-		ST_ASSERT(entityIdCreated.size() == 1 && entityIdCreated[0] == entityId, "ECS::EntityId should have been created");
-		ST_ASSERT((componentIdCreated.size() == 1 && componentIdCreated[0] == pair), "ECS::ComponentId should have been added to ECS::EntityId");
-		ST_ASSERT((componentIdDestroyed.size() == 1 && componentIdDestroyed[0] == pair), "ECS::ComponentId should have been removed from ECS::EntityId");
-		ST_ASSERT(entityIdDestroyed.size() == 1 && entityIdDestroyed[0] == entityId, "ECS::EntityId should have been destroyed");
+		MANI_TEST_ASSERT(entityIdCreated.size() == 1 && entityIdCreated[0] == entityId, "ECS::EntityId should have been created");
+		MANI_TEST_ASSERT((componentIdCreated.size() == 1 && componentIdCreated[0] == pair), "ECS::ComponentId should have been added to ECS::EntityId");
+		MANI_TEST_ASSERT((componentIdDestroyed.size() == 1 && componentIdDestroyed[0] == pair), "ECS::ComponentId should have been removed from ECS::EntityId");
+		MANI_TEST_ASSERT(entityIdDestroyed.size() == 1 && entityIdDestroyed[0] == entityId, "ECS::EntityId should have been destroyed");
 	}
 
-	ST_TEST(BitsetTests, "Should set, test and reset a bitset properly")
+	MANI_TEST(BitsetTests, "Should set, test and reset a bitset properly")
 	{
 		Bitset<64> bitset;
-		ST_ASSERT(bitset.any() == false, "fresh bitset should not be set");
+		MANI_TEST_ASSERT(bitset.any() == false, "fresh bitset should not be set");
 		bitset.set(0);
-		ST_ASSERT(bitset.test(0) == true, "bit 0 should have been set");
-		ST_ASSERT(bitset.test(1) == false, "bit 0 should not have been set");
+		MANI_TEST_ASSERT(bitset.test(0) == true, "bit 0 should have been set");
+		MANI_TEST_ASSERT(bitset.test(1) == false, "bit 0 should not have been set");
 		bitset.reset();
-		ST_ASSERT(bitset.any() == false, "fresh bitset should not be set");
+		MANI_TEST_ASSERT(bitset.any() == false, "fresh bitset should not be set");
 		
 
 		bitset.set(5);
 		Bitset<64> otherBitset;
 		otherBitset.set(5);
-		ST_ASSERT(bitset == otherBitset, "bitsets should be equal");
+		MANI_TEST_ASSERT(bitset == otherBitset, "bitsets should be equal");
 		otherBitset.reset();
-		ST_ASSERT(bitset != otherBitset, "Bitsets should not be equal anymore");
+		MANI_TEST_ASSERT(bitset != otherBitset, "Bitsets should not be equal anymore");
 
 		bitset.reset();
 		bitset.set(56);
-		ST_ASSERT(bitset.test(56) == true, "bit 56 should have been set");
+		MANI_TEST_ASSERT(bitset.test(56) == true, "bit 56 should have been set");
 
 		bitset.reset();
 		bitset.set(1);
@@ -406,7 +406,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		otherBitset.set(5);
 		otherBitset.set(56);
 
-		ST_ASSERT(bitset == (bitset & otherBitset), "should be able to mask bitsets");
+		MANI_TEST_ASSERT(bitset == (bitset & otherBitset), "should be able to mask bitsets");
 
 		bitset.reset();
 		bitset.set(1);
@@ -426,10 +426,10 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		resultBitset.set(15);
 		resultBitset.set(64);
 
-		ST_ASSERT(resultBitset == (bitset | otherBitset), "should be able to add bitsets");
+		MANI_TEST_ASSERT(resultBitset == (bitset | otherBitset), "should be able to add bitsets");
 	}
 	
-	ST_TEST(DoNotAssumeRegistrySizeContainsAllIndices, "Should iterate over all the entities")
+	MANI_TEST(DoNotAssumeRegistrySizeContainsAllIndices, "Should iterate over all the entities")
 	{
 		struct Component {};
 
@@ -446,7 +446,7 @@ ST_SECTION_BEGIN(ECS, "ECS")
 			count++;
 		}
 
-		ST_ASSERT(count == 2, "All entities should have been visited");
+		MANI_TEST_ASSERT(count == 2, "All entities should have been visited");
 
 		registry.destroy(entity1);
 
@@ -456,10 +456,10 @@ ST_SECTION_BEGIN(ECS, "ECS")
 			count++;
 		}
 
-		ST_ASSERT(count == 1, "All entities should have been visited");
+		MANI_TEST_ASSERT(count == 1, "All entities should have been visited");
 	}
 
-	ST_TEST(CreateEntitiesDuringIteration, "Should be able to create entities during ECS::View iteration without fail")
+	MANI_TEST(CreateEntitiesDuringIteration, "Should be able to create entities during ECS::View iteration without fail")
 	{
 		struct Component {};
 		struct CommonComponent {};
@@ -477,12 +477,36 @@ ST_SECTION_BEGIN(ECS, "ECS")
 		for (const ECS::EntityId entityId : view)
 		{
 			Component* comp = registry.get<Component>(entityId);
-			ST_ASSERT(comp != nullptr && registry.isValid(entityId), "Entity should be valid");
+			MANI_TEST_ASSERT(comp != nullptr && registry.isValid(entityId), "Entity should be valid");
 
 			const ECS::EntityId newId = registry.create();
 			registry.add<CommonComponent>(newId);
 			registry.add<OtherComponent>(newId);
 		}
 	}
+	
+	MANI_SECTION_BEGIN(TemplatedComponents, "tests on templated components")
+	{
+		template<typename T>
+		struct Component
+		{
+			T data;
+		};
+
+		MANI_TEST(TemplatedComponents, "Should store templated components appropriatly")
+		{
+			ECS::Registry registry;
+
+			{
+				const ECS::EntityId entityId = registry.create();
+				auto* component = registry.add<Component<int>>(entityId);
+				component->data = 5;
+
+				auto* retrieved = registry.get<Component<int>>(entityId);
+				MANI_TEST_ASSERT(retrieved != nullptr && retrieved->data == 5, "Should create and retrieve templated component");
+			}
+		}
+	}
+	MANI_SECTION_END(TemplatedComponents)
 }
-ST_SECTION_END(ECS)
+MANI_SECTION_END(ECS)

@@ -1,8 +1,8 @@
-#include <simpleTests.h>
+#include <ManiTests/ManiTests.h>
 
 #ifndef MANI_WEBGL
 extern "C" __declspec(dllexport) void runTests()
 {
-	SimpleTests::SimpleTestsRunner::runTests();
+	ManiTests::ManiTestsRunner::runTests();
 }
 #endif

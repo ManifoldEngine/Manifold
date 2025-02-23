@@ -24,5 +24,5 @@ group "_TestLibs"
         
         links { "Collision", "Core" }
         
-        includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir .. "/**" }
+        includedirs { moduledir .. "/**" }
 group ""

@@ -1,9 +1,6 @@
 include "../../../locations.lua"
 
 group "Engine"
-    -- reflect-cpp    
-    includedirs { thirdpartiesdir .. "/reflect-cpp/include" }
-    
     project "Assets"
         kind "StaticLib"
         location (moduledir .. "/%{prj.name}")
@@ -14,8 +11,4 @@ group "Engine"
         }
 
         includedirs { moduledir .. "/**" }
-
-        -- reflect-cpp    
-        libdirs { thirdpartiesdir .. "/reflect-cpp/build/Release" }
-        links { "reflectcpp" }
 group ""
