@@ -1,9 +1,6 @@
 [submodule "ThirdParties/stb"]
 	path = ThirdParties/stb
 	url = https://github.com/nothings/stb
-[submodule "ThirdParties/glm"]
-	path = ThirdParties/glm
-	url = https://github.com/g-truc/glm
 [submodule "ThirdParties/assimp"]
 	path = ThirdParties/assimp
 	url = https://github.com/assimp/assimp.git
@@ -25,3 +22,6 @@
 [submodule "ThirdParties/ManiTests"]
 	path = ThirdParties/ManiTests
 	url = https://github.com/ManifoldEngine/ManiTests.git
+[submodule "ThirdParties/ManiMaths"]
+	path = ThirdParties/ManiMaths
+	url = https://github.com/ManifoldEngine/ManiMaths.git
