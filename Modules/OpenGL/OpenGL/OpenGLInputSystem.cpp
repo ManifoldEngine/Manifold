@@ -4,12 +4,12 @@
 
 #include <GLFW/glfw3.h>
 #include <OpenGLSystem.h>
-#include <algorithm>
+#include <ManiMaths/Fwd.h>
 
 using namespace Mani;
 
 // OpenGL callbacks BEGIN
-glm::vec2 OpenGLInputSystem::s_mouse = glm::vec2(0.f);
+Vec2f OpenGLInputSystem::s_mouse = VEC2F::ZERO;
 
 void OpenGLInputSystem::glfwCallback_onMouseMoved(GLFWwindow* window, double x, double y)
 {

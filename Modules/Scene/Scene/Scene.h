@@ -1,10 +1,8 @@
 #pragma once
 
-#include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
-#include <memory>
-#include <filesystem>
-#include <string_view>
+#include <string>
+#include <vector>
+#include <ManiMaths/Fwd.h>
 
 namespace Mani
 {
@@ -18,9 +16,9 @@ namespace Mani
 
 			std::string meshAsset;
 
-			glm::vec3 localPosition = glm::vec3(0.f);
-			glm::quat localRotation = glm::quat(1.0f, 0.f, 0.f, 0.f);
-			glm::vec3 localScale = glm::vec3(1.f);
+			Vec3f localPosition = VEC3F::ZERO;
+			Quatf localRotation = QUATF::IDENTITY;
+			Vec3f localScale = VEC3F::ONE;
 		};
 
 		std::vector<Node> nodes;

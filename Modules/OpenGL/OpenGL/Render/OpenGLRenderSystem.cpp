@@ -25,11 +25,6 @@
 #include <OpenGL/Render/OpenGLShader.h>
 #include <OpenGL/Render/OpenGLSprite.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
-#include <glm/gtc/type_ptr.hpp>
-
 #include <GL/gl3w.h>
 
 using namespace Mani;
@@ -69,9 +64,9 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 
 	std::shared_ptr<OpenGLResourceSystem> resourceSystem = m_resourceSystem.lock();
 	
-	glm::mat4 viewMatrix;
-	glm::mat4 projectionMatrix;
-	glm::vec3 cameraPosition;
+	Mat4f viewMatrix;
+	Mat4f projectionMatrix;
+	Vec3f cameraPosition;
 	{
 		std::shared_ptr<CameraSystem> cameraSystem = m_cameraSystem.lock();
 		const Transform* cameraTransform = cameraSystem->getCameraTransform(registry);
@@ -151,14 +146,14 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 
 		shader->use();
 
-		glm::mat4 modelMatrix = transform->calculateModelMatrix();
-		glm::mat3 normalMatrix = glm::inverseTranspose(glm::mat3(modelMatrix));
+		Mat4f modelMatrix = transform->calculateModelMatrix();
+		Mat3f normalMatrix = static_cast<Mat3f>(modelMatrix).inverse().transpose();
 
 		// set vertex uniforms
-		shader->setFloatMatrix4("model", glm::value_ptr(modelMatrix));
-		shader->setFloatMatrix3("normalMatrix", glm::value_ptr(normalMatrix));
-		shader->setFloatMatrix4("view", glm::value_ptr(viewMatrix));
-		shader->setFloatMatrix4("projection", glm::value_ptr(projectionMatrix));
+		shader->setFloatMatrix4("model", &(modelMatrix._00));
+		shader->setFloatMatrix3("normalMatrix", &(normalMatrix._00));
+		shader->setFloatMatrix4("view", &(viewMatrix._00));
+		shader->setFloatMatrix4("projection", &(projectionMatrix._00));
 
 		// set fragment uniforms
 		shader->setFloat3("viewPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
@@ -229,7 +224,7 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 		{
 			const Transform* transform = registry.get<Transform>(entityId);
 			const SpotlightComponent* light = registry.get<SpotlightComponent>(entityId);
-			const glm::vec3 forward = transform->forward();
+			const Vec3f forward = transform->forward();
 
 			const std::string spotlightsArray = std::format("spotlights[{}]", spotlightIndex);
 			shader->setFloat3(std::format("{}.position", spotlightsArray).c_str(), transform->position.x, transform->position.y, transform->position.z);
@@ -321,7 +316,7 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 
 		//Transform scaledTransform = *transform;
 		Transform transformCopy = *transform;
-		const glm::vec2& pivot = spriteComponent->pivot;
+		const Vec2f& pivot = spriteComponent->pivot;
 		
 		// since we know the quad is 1x1, we can assume that the scale is the actual world size.
 		transformCopy.position.x += pivot.x * transformCopy.scale.x;
@@ -339,11 +334,11 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 			transformCopy.scale.x *= width / height;
 		}
 			
-		glm::mat4 modelMatrix = transformCopy.calculateModelMatrix();
+		Mat4f modelMatrix = transformCopy.calculateModelMatrix();
 		
-		shader->setFloatMatrix4("model", glm::value_ptr(modelMatrix));
-		shader->setFloatMatrix4("view", glm::value_ptr(viewMatrix));
-		shader->setFloatMatrix4("projection", glm::value_ptr(projectionMatrix));
+		shader->setFloatMatrix4("model", &(modelMatrix._00));
+		shader->setFloatMatrix4("view", &(viewMatrix._00));
+		shader->setFloatMatrix4("projection", &(projectionMatrix._00));
 
 		int textureIndex = 0;
 		texture->bind(textureIndex);
@@ -374,7 +369,7 @@ void Mani::OpenGLRenderSystem::getViewport(uint32_t& x, uint32_t& y, uint32_t& w
 	height = context.height;
 }
 
-void Mani::OpenGLRenderSystem::setClearColor(const glm::vec4& color)
+void Mani::OpenGLRenderSystem::setClearColor(const Vec4f& color)
 {
 	m_clearColor = color;
 }

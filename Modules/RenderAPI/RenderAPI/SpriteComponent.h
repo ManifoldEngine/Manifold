@@ -2,16 +2,17 @@
 
 #include <RenderAPI/Sprite.h>
 #include <RenderAPI/Texture.h>
+#include <ManiMaths/Fwd.h>
 
 namespace Mani
 {
 	struct SpriteComponent
 	{
-		glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+		Vec4f color = VEC4F::ONE;
 		// todo: sprite component should not keep hard references
 		std::shared_ptr<Sprite> sprite;
 		uint16_t repeatAmount = 1;
-		glm::vec2 pivot = glm::vec2(0.5f, 0.5f);
+		Vec2f pivot = { 0.5f, 0.5f };
 		ETextureFiltering filteringMode = ETextureFiltering::NEAREST;
 	};
 }

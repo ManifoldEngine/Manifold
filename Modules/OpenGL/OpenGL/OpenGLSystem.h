@@ -3,7 +3,6 @@
 #include "OpenGL.h"
 #include <Core/System/System.h>
 #include <Events/Event.h>
-#include <glm/glm.hpp>
 #include <memory>
 
 namespace Mani

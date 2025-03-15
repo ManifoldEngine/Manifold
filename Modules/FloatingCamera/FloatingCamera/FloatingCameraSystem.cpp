@@ -3,6 +3,7 @@
 #include <FloatingCamera/FloatingCamera.h>
 #include <Camera/CameraSystem.h>
 #include <Inputs/Data/InputUser.h>
+#include <ManiMaths/Fwd.h>
 
 using namespace Mani;
 
@@ -55,7 +56,7 @@ void FloatingCameraSystem::tick(float deltaTime, ECS::Registry& registry)
 		const float deltaX = floatingCamera->previousCameraX - aimX;
 		const float deltaY = floatingCamera->previousCameraY - aimY;
 
-		if (std::abs(deltaX) <= FLT_EPSILON || std::abs(deltaX) <= FLT_EPSILON)
+		if (Math::abs(deltaX) <= FLT_EPSILON || Math::abs(deltaX) <= FLT_EPSILON)
 		{
 			continue;
 		}
@@ -63,8 +64,8 @@ void FloatingCameraSystem::tick(float deltaTime, ECS::Registry& registry)
 		const float yaw = deltaX * floatingCamera->sensitivity;
 		const float pitch = deltaY * floatingCamera->sensitivity;
 
-		glm::quat quatPitch = glm::angleAxis(glm::radians(-pitch), glm::vec3(1.f, 0.f, 0.f));
-		glm::quat quatYaw = glm::angleAxis(glm::radians(yaw), glm::vec3(0.f, 1.f, 0.f));
+		Quatf quatPitch = Quatf::axisAngleDeg(-pitch, VEC3F::RIGHT);
+		Quatf quatYaw = Quatf::axisAngleDeg(yaw, VEC3F::UP);
 
 		// it is crucial to respect this order of operation to avoid unintended roll.
 		transform->rotation = quatYaw * transform->rotation * quatPitch;

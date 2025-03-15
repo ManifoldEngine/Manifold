@@ -2,29 +2,20 @@
 
 #include <Core/Core.h>
 #include <ECS/Entity.h>
-#include <glm/glm.hpp>
-#include <glm/gtx/quaternion.hpp>
+#include <ManiMaths/Fwd.h>
 
 namespace Mani
 {
 	struct Transform
 	{
-		glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f);
-		glm::quat rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-		glm::vec3 scale = glm::vec3(1.0f, 1.0f, 1.0f);
+		Vec3f position	= VEC3F::ZERO;
+		Quatf rotation	= QUATF::IDENTITY;
+		Vec3f scale		= VEC3F::ONE;
+		
+		Mat4f calculateModelMatrix() const;
 
-		glm::vec3 localPosition = glm::vec3(0.0f, 0.0f, 0.0f);
-		glm::quat localRotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-		glm::vec3 localScale = glm::vec3(1.0f, 1.0f, 1.0f);
-
-		ECS::EntityId parentId = ECS::INVALID_ID;
-
-		bool hasParent() const;
-
-		glm::mat4 calculateModelMatrix() const;
-
-		glm::vec3 forward() const;
-		glm::vec3 up() const;
-		glm::vec3 right() const;
+		Vec3f forward() const;
+		Vec3f up() const;
+		Vec3f right() const;
 	};
 }

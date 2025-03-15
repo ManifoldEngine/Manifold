@@ -1,1 +1,43 @@
-{"fragmentSource":"#version 100\r\n\r\nprecision mediump float;\r\n\r\nvarying vec3 fragmentPosition;\r\nvarying vec3 normal;\r\nvarying vec2 textureCoordinate;\r\n\r\nuniform vec4 color;\r\n\r\nvoid main()\r\n{\r\n    gl_FragColor = color;\r\n}\r\n","name":"webgl_flatColor","vertexSource":"#version 100\r\n\r\nprecision mediump float;\r\n\r\nattribute vec3 aPosition;\r\nattribute vec3 aNormal;\r\nattribute vec2 aTextureCoordinate;\r\n\r\nuniform mat4 model;\r\nuniform mat4 view;\r\nuniform mat4 projection;\r\n\r\nvarying vec3 fragmentPosition;\r\nvarying vec3 normal;\r\nvarying vec2 textureCoordinate;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = projection* view * model * vec4(aPosition, 1.0);\r\n    fragmentPosition = vec3(model * vec4(aPosition, 1.0));\r\n    normal = aNormal;\r\n    textureCoordinate = aTextureCoordinate;\r\n}\r\n\r\n"}
+{
+	"name": "webgl_flatColor",
+	"vertexSource": "#version 100
+
+precision mediump float;
+
+attribute vec3 aPosition;
+attribute vec3 aNormal;
+attribute vec2 aTextureCoordinate;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+varying vec3 fragmentPosition;
+varying vec3 normal;
+varying vec2 textureCoordinate;
+
+void main()
+{
+    gl_Position = projection* view * model * vec4(aPosition, 1.0);
+    fragmentPosition = vec3(model * vec4(aPosition, 1.0));
+    normal = aNormal;
+    textureCoordinate = aTextureCoordinate;
+}
+
+",
+	"fragmentSource": "#version 100
+
+precision mediump float;
+
+varying vec3 fragmentPosition;
+varying vec3 normal;
+varying vec2 textureCoordinate;
+
+uniform vec4 color;
+
+void main()
+{
+    gl_FragColor = color;
+}
+",
+}

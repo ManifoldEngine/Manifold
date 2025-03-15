@@ -1,14 +1,14 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <ManiMaths/Fwd.h>
 
 namespace Mani
 {
 	struct PointLightComponent
 	{
-        glm::vec3 ambient = glm::vec3(0.2f);
-        glm::vec3 diffuse = glm::vec3(0.5f);
-        glm::vec3 specular = glm::vec3(1.0f);
+        Vec3f ambient = { 0.2f, 0.2f, 0.2f };
+        Vec3f diffuse = { 0.5f, 0.5f, 0.5f };
+        Vec3f specular = { 1.0f, 1.0f, 1.0f };
 
         float constant = 1.0f;
         float linear = 0.09f;
