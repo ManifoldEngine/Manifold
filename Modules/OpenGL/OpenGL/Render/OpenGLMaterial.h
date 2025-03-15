@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <glm/glm.hpp>
+#include <ManiMaths/Fwd.h>
 
 
 namespace Mani
@@ -10,7 +10,7 @@ namespace Mani
 	{
 		std::string name;
 
-		glm::vec4 color;
+		Vec4f color = VEC4F::ONE;
 
 		std::string shader;
 		std::string diffuse;

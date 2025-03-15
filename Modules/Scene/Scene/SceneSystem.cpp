@@ -6,7 +6,6 @@
 #include <unordered_map>
 
 #include <ManiZ/ManiZ.h>
-#include <Core/GLMSerialization.h>
 
 using namespace Mani;
 
@@ -47,7 +46,7 @@ ECS::EntityId SceneSystem::spawnScene(ECS::Registry& registry, const std::filesy
 		const ECS::EntityId nodeEntityId = spawnNode(registry, node, assetSystem, materialAssetPath);
 		
 		Transform* nodeTransform = registry.get<Transform>(nodeEntityId);
-		nodeTransform->parentId = rootNodeEntityId;
+		// nodeTransform->parentId = rootNodeEntityId; deprecated
 	}
 
 	return rootNodeEntityId;
@@ -63,10 +62,10 @@ ECS::EntityId SceneSystem::spawnNode(ECS::Registry& registry, const Scene::Node&
 	ECS::EntityId entityId = registry.create();
 
 	Transform* transform = registry.add<Transform>(entityId);
-	transform->localPosition = node.localPosition;
+	/*transform->localPosition = node.localPosition;
 	transform->localRotation = node.localRotation;
-	transform->localScale = node.localScale;
-
+	transform->localScale = node.localScale;*/
+	// deprecated
 	if (!node.meshAsset.empty())
 	{
 		std::shared_ptr<Mesh> mesh = assetSystem->loadAsset<Mesh>(registry, node.meshAsset).lock();

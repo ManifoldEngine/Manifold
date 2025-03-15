@@ -7,7 +7,6 @@
 #include <RenderAPI/Mesh.h>
 
 #include <ManiZ/ManiZ.h>
-#include <Core/GLMSerialization.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -87,7 +86,7 @@ void SceneImporter::processNode(aiNode* aiNode, const aiScene* aiScene, const fs
 			node.localScale.y = aiScaling.y;
 			node.localScale.z = aiScaling.z;
 
-			node.meshAsset = path.native();
+			node.meshAsset = path.string();
 			node.meshAsset.append(std::format("{}.mesh", aiMesh->mName.C_Str()));
 
 			outScene->nodes.push_back(node);

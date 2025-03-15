@@ -6,10 +6,6 @@
 #include <ECS/Registry.h>
 #include <ECS/View.h>
 
-#include <glm/ext/matrix_clip_space.hpp>
-#include <algorithm>
-#include <glm/ext/matrix_transform.hpp>
-
 using namespace Mani;
 
 std::string_view CameraSystem::getName() const
@@ -26,7 +22,7 @@ void CameraSystem::onInitialize(ECS::Registry& registry, SystemContainer& system
 {
     m_cameraId = registry.create();
     Transform* transform = registry.add<Transform>(m_cameraId);
-    transform->position = glm::vec3(0.0f, 0.0f, -3.0f);
+    transform->position = Vec3f(0.0f, 0.0f, -3.0f);
     registry.add<CameraComponent>(m_cameraId);
 }
 
@@ -52,14 +48,14 @@ void CameraSystem::tick(float deltaTime, ECS::Registry& registry)
             continue;
         }
 
-        cameraComponent->view = glm::lookAt(transform->position, transform->position + transform->forward(), transform->up());
+        cameraComponent->view = Mat4f::lookAt(transform->position, transform->position + transform->forward(), transform->up());
         
         const CameraConfig& config = cameraComponent->config;
-        MANI_ASSERT(std::abs(config.height) > FLT_EPSILON, "Height of a camera cannot be 0.");
-        cameraComponent->projection = glm::perspective(glm::radians(config.fov), 
-                                                        config.width / config.height,
-                                                        config.nearClipPlane, 
-                                                        config.farClipPlane);
+        MANI_ASSERT(Math::abs(config.height) > FLT_EPSILON, "Height of a camera cannot be 0.");
+        cameraComponent->projection = Mat4f::perspective(Math::degToRad(config.fov), 
+                                                         config.width / config.height,
+                                                         config.nearClipPlane, 
+                                                         config.farClipPlane);
     }
 }
 
@@ -81,27 +77,26 @@ void CameraSystem::setCameraConfig(ECS::Registry& registry, const CameraConfig& 
     }
 }
 
-glm::vec2 CameraSystem::worldToScreenSpace(glm::vec3 position, const ECS::Registry& registry) const
+Vec2f CameraSystem::worldToScreenSpace(const Vec3f& position, const ECS::Registry& registry) const
 {
     const CameraComponent* cameraComponent = getCameraComponent(registry);
     if (cameraComponent == nullptr)
     {
-        return glm::vec2();
+        return VEC2F::ZERO;
     }
 
-    glm::vec4 position4 = glm::vec4(position, 1.0f);
-    glm::vec4 projectedPosition = position4 * cameraComponent->view;
+    Vec4f projectedPosition = position.homogenous() * cameraComponent->view;
     
-    if (std::abs(projectedPosition.w) <= FLT_EPSILON)
+    if (abs(projectedPosition.w) <= FLT_EPSILON)
     {
-        return glm::vec2();
+        return VEC2F::ZERO;
     }
 
-    return glm::vec2(projectedPosition.x / projectedPosition.w, projectedPosition.y / projectedPosition.w);
+    return Vec2f(projectedPosition.x / projectedPosition.w, projectedPosition.y / projectedPosition.w);
 }
 
 float Mani::CameraConfig::getAspectRatio() const
 {
-    MANI_ASSERT(std::abs(height) > FLT_EPSILON, "height cannot be zero");
+    MANI_ASSERT(Math::abs(height) > FLT_EPSILON, "height cannot be zero");
     return width / height;
 }

@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 #include <filesystem>
-#include <glm/glm.hpp>
+#include <ManiMaths/Fwd.h>
 
 namespace Mani
 {
@@ -11,7 +11,7 @@ namespace Mani
 	{
 		std::string name;
 
-		glm::vec4 color = glm::vec4(1.f);
+		Vec4f color = VEC4F::ONE;
 
 		std::string shaderPath;
 		std::string diffusePath;

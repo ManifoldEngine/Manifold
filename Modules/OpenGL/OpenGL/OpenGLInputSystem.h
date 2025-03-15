@@ -9,7 +9,7 @@ struct GLFWwindow;
 namespace Mani
 {
 	class OpenGLSystem;
-
+	
 	class OpenGLInputSystem: public SystemBase
 	{
 	public:
@@ -26,7 +26,7 @@ namespace Mani
 	private:
 		std::weak_ptr<OpenGLSystem> m_openGLSystem;
 		
-		static glm::vec2 s_mouse;
+		static Vec2f s_mouse;
 		static void glfwCallback_onMouseMoved(GLFWwindow* window, double x, double y);
 	};
 }

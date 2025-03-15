@@ -1,19 +1,16 @@
 #include "World.h"
 #include <Core/System/SystemContainer.h>
-#include <Core/TransformSystem.h>
 
 using namespace Mani;
 
 World::World()
 {
 	m_systemContainer = new SystemContainer();
-	m_systemContainer->createSystem<TransformSystem>();
 }
 
 World::~World()
 {
 	deinitialize();
-	m_systemContainer->destroySystem<TransformSystem>();
 	delete m_systemContainer;
 }
 

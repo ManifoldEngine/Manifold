@@ -1,16 +1,16 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <vector>
 #include <string>
+#include <ManiMaths/Fwd.h>
 
 namespace Mani
 {
 	struct Vertex
 	{
-		glm::vec3 position;
-		glm::vec3 normal;
-		glm::vec2 textureCoordinate;
+		Vec3f position;
+		Vec3f normal;
+		Vec2f textureCoordinate;
 	};
 
 	struct Mesh

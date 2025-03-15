@@ -1,1 +1,41 @@
-{"fragmentSource":"#version 330 core\r\n\r\nin vec3 fragmentPosition;\r\nin vec3 normal;\r\nin vec2 textureCoordinate;\r\n\r\nuniform vec4 color;\r\n\r\nout vec4 FragColor;\r\n\r\nvoid main()\r\n{\r\n    FragColor = color;\r\n}\r\n","name":"flatColor","vertexSource":"#version 330 core\r\n\r\nlayout(location = 0) in vec3 aPosition;\r\nlayout(location = 1) in vec3 aNormal;\r\nlayout(location = 2) in vec2 aTextureCoordinate;\r\n\r\nuniform mat4 model;\r\nuniform mat4 view;\r\nuniform mat4 projection;\r\n\r\nout vec3 fragmentPosition;\r\nout vec3 normal;\r\nout vec2 textureCoordinate;\r\n\r\nvoid main()\r\n{\r\n    gl_Position = projection* view * model * vec4(aPosition, 1.0);\r\n    fragmentPosition = vec3(model * vec4(aPosition, 1.0));\r\n    normal = aNormal;\r\n    textureCoordinate = aTextureCoordinate;\r\n}\r\n\r\n"}
+{
+	"name": "flatColor",
+	"vertexSource": "#version 330 core
+
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec3 aNormal;
+layout(location = 2) in vec2 aTextureCoordinate;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+out vec3 fragmentPosition;
+out vec3 normal;
+out vec2 textureCoordinate;
+
+void main()
+{
+    gl_Position = projection* view * model * vec4(aPosition, 1.0);
+    fragmentPosition = vec3(model * vec4(aPosition, 1.0));
+    normal = aNormal;
+    textureCoordinate = aTextureCoordinate;
+}
+
+",
+	"fragmentSource": "#version 330 core
+
+in vec3 fragmentPosition;
+in vec3 normal;
+in vec2 textureCoordinate;
+
+uniform vec4 color;
+
+out vec4 FragColor;
+
+void main()
+{
+    FragColor = color;
+}
+",
+}

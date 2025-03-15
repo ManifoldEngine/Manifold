@@ -3,15 +3,14 @@
 #include <Camera/Camera.h>
 #include <Core/System/System.h>
 #include <ECS/Entity.h>
-#include <glm/glm.hpp>
-#include <memory>
+#include <ManiMaths/Fwd.h>
 
 namespace Mani
 {
 	class EntityRegistry;
 	class SystemContainer;
 	struct Transform;
-
+	
 	struct CameraConfig
 	{
 		float fov = 45.f;
@@ -27,8 +26,8 @@ namespace Mani
 	{
 		CameraConfig config;
 
-		glm::mat4 projection;
-		glm::mat4 view;
+		Mat4f projection;
+		Mat4f view;
 	};
 
 	class CameraSystem : public SystemBase
@@ -47,7 +46,7 @@ namespace Mani
 
 		void setCameraConfig(ECS::Registry& registry, const CameraConfig& config);
 
-		glm::vec2 worldToScreenSpace(glm::vec3 position, const ECS::Registry& registry) const;
+		Vec2f worldToScreenSpace(const Vec3f& position, const ECS::Registry& registry) const;
 		
 	private:
 		ECS::EntityId m_cameraId;
