@@ -1,8 +1,9 @@
 #include "OpenGLRenderSystem.h"
 #include <Core/Log.h>
 #include <Core/ManiAssert.h>
-
+#include <Core/Debug/Profiling.h>
 #include <Core/Components/Transform.h>
+
 
 #include <ECS/Registry.h>
 #include <ECS/View.h>
@@ -47,6 +48,8 @@ void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, SystemContainer& 
 
 void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 {
+	MANI_TIME_SCOPE(OpenGLRenderSystemtick);
+
 	if (m_resourceSystem.expired() || m_cameraSystem.expired())
 	{
 		return;
