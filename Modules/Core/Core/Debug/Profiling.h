@@ -21,10 +21,13 @@ namespace Mani
 			{
 				end = std::clock();
 				Mani::ProfilingSystem::onTimerDestroyed(*this);
-				MANI_LOG_VERBOSE("Timer", "{}: {}ms", name, elapsed());
 			}
 
-			std::clock_t elapsed() const { return (end - start) / CLOCKS_PER_SEC; };
+			double elapsed() const 
+			{
+				constexpr double secondsToMs = 1000.0;
+				return secondsToMs * (static_cast<double>(end - start) / static_cast<double>(CLOCKS_PER_SEC));
+			};
 
 			std::string name;
 			std::clock_t start;

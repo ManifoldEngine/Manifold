@@ -6,6 +6,7 @@
 #include <Core/Application.h>
 #include <Core/Log.h>
 #include <Core/ManiAssert.h>
+#include <Core/Debug/Profiling.h>
 
 #include <Camera/CameraSystem.h>
 
@@ -159,6 +160,8 @@ void OpenGLSystem::onDeinitialize(ECS::Registry& entityRegistry)
 
 void OpenGLSystem::tick(float deltaTime, ECS::Registry& entityRegistry)
 {
+    MANI_TIME_SCOPE(OpenGLSystemtick);
+
     glfwSwapBuffers(m_context.window);
     glfwPollEvents();
 
