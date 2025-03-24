@@ -25,3 +25,7 @@
 [submodule "ThirdParties/ManiMaths"]
 	path = ThirdParties/ManiMaths
 	url = https://github.com/ManifoldEngine/ManiMaths.git
+[submodule "ThirdParties/ImGui"]
+	path = ThirdParties/ImGui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking

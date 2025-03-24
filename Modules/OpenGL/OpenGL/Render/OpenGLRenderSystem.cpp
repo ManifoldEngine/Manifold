@@ -17,7 +17,7 @@
 #include <RenderAPI/Light/SpotlightComponent.h>
 
 #include <OpenGL/OpenGL.h>
-#include <OpenGL/OpenGLSystem.h>
+#include <OpenGL/OpenGLWindowContext.h>
 #include <OpenGL/Render/OpenGLResourceSystem.h>
 #include <OpenGL/Render/OpenGLBuffer.h>
 #include <OpenGL/Render/OpenGLVertexArray.h>
@@ -25,8 +25,9 @@
 #include <OpenGL/Render/OpenGLMaterial.h>
 #include <OpenGL/Render/OpenGLShader.h>
 #include <OpenGL/Render/OpenGLSprite.h>
+#include <OpenGL/Render/OpenGLClearColor.h>
 
-#include <GL/gl3w.h>
+#include <GLFW/glfw3.h>
 
 using namespace Mani;
 
@@ -43,26 +44,34 @@ bool OpenGLRenderSystem::shouldTick(ECS::Registry& registry) const
 void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
 	m_resourceSystem = systemContainer.initializeDependency<OpenGLResourceSystem>();
-	m_cameraSystem = systemContainer.initializeDependency<CameraSystem>();
+	systemContainer.initializeDependency<CameraSystem>();
+
+	registry.addSingle<OpenGLClearColor>();
+}
+
+void Mani::OpenGLRenderSystem::onDeinitialize(ECS::Registry& registry)
+{
+	registry.removeSingle<OpenGLClearColor>();
 }
 
 void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 {
 	MANI_TIME_SCOPE(OpenGLRenderSystemtick);
 
-	if (m_resourceSystem.expired() || m_cameraSystem.expired())
+	if (m_resourceSystem.expired())
 	{
 		return;
 	}
 
-	uint32_t x, y, width, height;
-	getViewport(x, y, width, height);
-	ECS::View<CameraComponent> cameraView(registry);
+	OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
+	MANI_ASSERT(context != nullptr, "We expect the window context to be accessible. If the window is owned by a parent registry, make sure to forward it to this registry.");
+
+	ECS::View<Camera> cameraView(registry);
 	for (const auto& entityId : cameraView)
 	{
-		CameraComponent* cameraComponent = registry.get<CameraComponent>(entityId);
-		cameraComponent->config.width = static_cast<float>(width);
-		cameraComponent->config.height = static_cast<float>(height);
+		Camera* camera = registry.get<Camera>(entityId);
+		camera->width = static_cast<float>(context->width);
+		camera->height = static_cast<float>(context->height);
 	}
 
 	std::shared_ptr<OpenGLResourceSystem> resourceSystem = m_resourceSystem.lock();
@@ -71,29 +80,23 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 	Mat4f projectionMatrix;
 	Vec3f cameraPosition;
 	{
-		std::shared_ptr<CameraSystem> cameraSystem = m_cameraSystem.lock();
-		const Transform* cameraTransform = cameraSystem->getCameraTransform(registry);
-		if (cameraTransform == nullptr)
-		{
-			return;
-		}
+		ECS::View<Transform, Camera> cameraView(registry);
+		auto it = cameraView.begin();
+		MANI_ASSERT(it != cameraView.end(), "Trying to render without a camera");
 
-		cameraPosition = cameraTransform->position;
+		const Transform& cameraTransform = *registry.get<Transform>(*it);
+		cameraPosition = cameraTransform.position;
 
-		const CameraComponent* cameraComponent = cameraSystem->getCameraComponent(registry);
-		if (cameraComponent == nullptr)
-		{
-			return;
-		}
-
-		viewMatrix = cameraComponent->view;
-		projectionMatrix = cameraComponent->projection;
+		const Camera& camera = *registry.get<Camera>(*it);
+		viewMatrix = camera.view;
+		projectionMatrix = camera.projection;
 	}
 
 	glEnable(GL_DEPTH_TEST);
 	
 	// setting color state.
-	glClearColor(m_clearColor.x, m_clearColor.y, m_clearColor.z, m_clearColor.w);
+	const OpenGLClearColor& clearColor = *registry.getSingle<OpenGLClearColor>();
+	glClearColor(clearColor.color.x, clearColor.color.y, clearColor.color.z, clearColor.color.w);
 
 	// consuming color state.
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -360,19 +363,6 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 
 		texture->unbind();
 	}
-}
 
-void Mani::OpenGLRenderSystem::getViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t& height)
-{
-	const OpenGLSystem::WindowContext& context = OpenGLSystem::get().getWindowContext();
-
-	x = 0;
-	y = 0;
-	width = context.width;
-	height = context.height;
-}
-
-void Mani::OpenGLRenderSystem::setClearColor(const Vec4f& color)
-{
-	m_clearColor = color;
+	glfwSwapBuffers(context->window);
 }

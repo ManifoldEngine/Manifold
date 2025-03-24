@@ -47,7 +47,6 @@ void InputSystem::tick(float deltaTime, ECS::Registry& registry)
 					{
 						MANI_LOG_VERBOSE(LogInputs, "Action {} state changed to {}", action.name, action.isPressed);
 						action.isPressed = control.isPressed;
-						onActionEvent.broadcast(entityId, action);
 					}
 				}
 			}

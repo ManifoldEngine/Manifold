@@ -1,38 +1,27 @@
 #pragma once
 
-#include <Core/System/System.h>
-#include <RenderAPI/IRenderSystem.h>
+#include <Core/CoreFwd.h>
 #include <ManiMaths/Fwd.h>
-#include <map>
-#include <memory>
 
 namespace Mani
 {
-	class EntityRegistry;
-	class SystemContainer;
 	class OpenGLResourceSystem;
-	class CameraSystem;
-	
-	class OpenGLRenderSystem : public SystemBase, public IRenderSystem
+
+	class OpenGLRenderSystem : public SystemBase
 	{
 	public:
 		virtual std::string_view getName() const override;
 		virtual bool shouldTick(ECS::Registry& registry) const override;
+		virtual ETickGroup getTickGroup() const override { return ETickGroup::PostTick; }
 
 		virtual void tick(float deltaTime, ECS::Registry& registry) override;
 
-		// IRenderSystem
-		virtual void getViewport(uint32_t& x, uint32_t& y, uint32_t& width, uint32_t& height) override;
-		virtual void setClearColor(const Vec4f& color) override;
-
 	protected:
 		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
-		
+		virtual void onDeinitialize(ECS::Registry& registry) override;
+
 	private:
 		std::weak_ptr<OpenGLResourceSystem> m_resourceSystem;
-		std::weak_ptr<CameraSystem> m_cameraSystem;
-
-		Vec4f m_clearColor = { .1f, .1f, .1f, 1.f };
 	};
 }
 
