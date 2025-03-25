@@ -14,12 +14,14 @@ void InputSystem::tick(float deltaTime, ECS::Registry& registry)
 	{
 		InputUser* inputUser = registry.get<InputUser>(entityId);
 		
-		// axis are reset each tick.
 		for (auto& [name, action] : inputUser->actions)
 		{
+			// axis are reset each tick.
 			action.x = 0.f;
 			action.y = 0.f;
 			action.z = 0.f;
+
+			action.wasPressed = action.isPressed;
 		}
 
 		// consume assigned input device

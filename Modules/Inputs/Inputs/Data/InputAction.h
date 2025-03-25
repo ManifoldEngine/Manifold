@@ -15,7 +15,10 @@ namespace Mani
 		double y = 0.f;
 		double z = 0.f;
 		
+		bool wasPressed = false;
 		bool isPressed = false;
 		bool isEnabled = true;
+
+		[[nodiscard]] bool changed() const { return isPressed != wasPressed; }
 	};
 }

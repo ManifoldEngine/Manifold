@@ -37,6 +37,9 @@ namespace Mani
 			// destroys an entity and its components
 			bool destroy(ECS::EntityId entityId);
 			
+			// destroys at the end of the tick.
+			void deferDestroy(ECS::EntityId entityId); 
+
 			// returs an entity object
 			const Entity* getEntity(ECS::EntityId entityId) const;
 
@@ -95,6 +98,12 @@ namespace Mani
 			// Converts a TComponent type into a numerical identifier.
 			template<typename TComponent>
 			ComponentId getComponentId() const;
+
+			// returns true if the entity will be destroyed when handleDeferredDestroy is called
+			bool isMarkedForDestroy(ECS::EntityId entityId) const;
+			
+			// destroy all entities marked for destroy
+			void handleDeferredDestroy();
 
 		private:
 			ECS::EntityId m_singletonId;
@@ -215,6 +224,11 @@ namespace Mani
 			return false;
 		}
 
+		inline void Registry::deferDestroy(ECS::EntityId entityId)
+		{
+			m_entityContainer.deferDestroy(entityId);
+		}
+
 		inline const Entity* Registry::getEntity(ECS::EntityId entityId) const
 		{
 			return m_entityContainer.getEntity(entityId);
@@ -233,6 +247,16 @@ namespace Mani
 		inline bool Registry::isValid(ECS::EntityId entityId) const
 		{
 			return m_entityContainer.isValid(entityId);
+		}
+
+		inline bool Registry::isMarkedForDestroy(ECS::EntityId entityId) const
+		{
+			return m_entityContainer.isMarkedForDestroy(entityId);
+		}
+
+		inline void Registry::handleDeferredDestroy()
+		{
+			m_entityContainer.handleDeferredDestroy();
 		}
 	}
 }

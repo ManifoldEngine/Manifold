@@ -180,6 +180,8 @@ namespace Mani
 				system->tick(deltaTime, m_registry);
 			}
 		}
+
+		m_registry.handleDeferredDestroy();
 	}
 
 	inline size_t SystemContainer::size() const
