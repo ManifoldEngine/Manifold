@@ -13,10 +13,10 @@ void FloatingCameraSystem::onInitialize(ECS::Registry& registry, SystemContainer
 	registry.add<FloatingCamera>(entityId);
 	
 	InputUser& inputUser = *registry.add<InputUser>(entityId);
-	InputUtils::setAction(inputUser, MOVE_ACTION);
-	InputUtils::setAction(inputUser, AIM_ACTION);
-	InputUtils::addBinding(inputUser, "WASD", MOVE_ACTION);
-	InputUtils::addBinding(inputUser, "Mouse", AIM_ACTION);
+	inputUser.setAction(MOVE_ACTION);
+	inputUser.setAction(AIM_ACTION);
+	inputUser.addBinding("WASD", MOVE_ACTION);
+	inputUser.addBinding("Mouse", AIM_ACTION);
 }
 
 void FloatingCameraSystem::tick(float deltaTime, ECS::Registry& registry)

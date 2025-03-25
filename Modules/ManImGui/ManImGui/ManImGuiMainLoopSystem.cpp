@@ -20,11 +20,15 @@ void Mani::ManImGuiMainLoopSystem::tick(float deltaTime, Mani::ECS::Registry& re
 	const ECS::EntityId entityId = view.first();
 	
 	IsManImGuiDisplayed& isManImGuiDisplayed = *registry.get<IsManImGuiDisplayed>(entityId);
-	InputUser& inputUser = *registry.get<InputUser>(entityId);
-	InputAction& toggleManImGui = inputUser.actions[TOGGLE_MANIMGUI];
-	if (toggleManImGui.changed() && toggleManImGui.isPressed)
+	
 	{
-		isManImGuiDisplayed.value = !isManImGuiDisplayed.value;
+		InputUser& inputUser = *registry.get<InputUser>(entityId);
+		InputAction& toggleManImGui = inputUser.actions[TOGGLE_MANIMGUI];
+
+		if (toggleManImGui.changed() && toggleManImGui.isPressed)
+		{
+			isManImGuiDisplayed.value = !isManImGuiDisplayed.value;
+		}
 	}
 
 	if (!isManImGuiDisplayed.value)
@@ -48,8 +52,8 @@ void Mani::ManImGuiMainLoopSystem::onInitialize(ECS::Registry& registry, SystemC
 		registry.add<IsManImGuiDisplayed>(entityId);
 
 		InputUser& inputUser = *registry.add<InputUser>(entityId);
-		InputUtils::setAction(inputUser, TOGGLE_MANIMGUI);
-		InputUtils::addBinding(inputUser, "F7", TOGGLE_MANIMGUI);
+		inputUser.setAction(TOGGLE_MANIMGUI);
+		inputUser.addBinding("F7", TOGGLE_MANIMGUI);
 
 		for (const auto deviceId : ECS::View<InputDevice>(registry))
 		{
