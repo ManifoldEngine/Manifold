@@ -363,6 +363,4 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 
 		texture->unbind();
 	}
-
-	glfwSwapBuffers(context->window);
 }

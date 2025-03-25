@@ -1,6 +1,5 @@
 #include "ManImGuiSystem.h"
 
-#if MANI_DEBUG
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
@@ -29,14 +28,3 @@ void Mani::ManImGuiSystem::onDeinitialize(ECS::Registry& registry)
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 }
-
-void Mani::ManImGuiSystem::tick(float deltaTime, Mani::ECS::Registry& registry)
-{
-	ImGui_ImplOpenGL3_NewFrame();
-	ImGui_ImplGlfw_NewFrame();
-	ImGui::NewFrame();
-	ImGui::ShowDemoWindow();
-	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-}
-#endif
