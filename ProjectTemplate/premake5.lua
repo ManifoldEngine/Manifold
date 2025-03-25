@@ -4,7 +4,7 @@ include "Engine/BuildScripts/buildwebgl.lua"
 workspace "Manifold"
 
 configurations { "Debug", "Release", "Distribution" }
-    platforms { "MacOSX", "WebGL", "Win64" }
+    platforms { "Win64", "WebGL" }
     startproject "Sandbox"
     language "C++"
     cppdialect "C++20"
@@ -33,10 +33,6 @@ configurations { "Debug", "Release", "Distribution" }
         defines { "MANI_DISTRIBUTION" }
         optimize "On"
 
-    filter "platforms:MacOS"
-        architecture "x64"
-        system "macosx"
-
     filter "platforms:Win64"
         architecture "x64"
         system "windows"
@@ -45,21 +41,20 @@ configurations { "Debug", "Release", "Distribution" }
         defines { "MANI_WEBGL" }
         linkoptions { "-sUSE_GLFW=3", "-sMAX_WEBGL_VERSION=2" }
         system "windows"
-    
-    filter "system:macosx"
-        defines { "MANI_MACOSX" }
-            
+        
     filter "system:windows"
         defines { "MANI_WINDOWS" }
 
+    filter "kind:ConsoleApp"
+        defines { "MANI_CONSOLE_APP" }
+
 group "Engine"
     include "Engine"
-
 group ""
 
 -- Executables
 project "{{PROJECT_NAME}}"
-    kind "ConsoleApp"
+    kind "WindowedApp"
     location "%{prj.name}"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
@@ -68,3 +63,5 @@ project "{{PROJECT_NAME}}"
 
     includedirs { moduledir .. "/**", "%{prj.name}/Sources" }
 
+    filter "configurations:Debug"
+    links { "ManImGui" }

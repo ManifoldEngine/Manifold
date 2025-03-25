@@ -1,63 +1,31 @@
 #include "WorldSystem.h"
 #include <Core/World/World.h>
-#include <vector>
+#include <ECS/View.h>
 
 using namespace Mani;
 
-void WorldSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+ECS::EntityId Mani::WorldSystem::createWorld(ECS::Registry& registry)
 {
-	if (isInitialized())
+	ECS::EntityId worldId = registry.create();
+	World* world = registry.add<World>(worldId);
+	world->systemContainer.initialize();
+	return worldId;
+}
+
+void Mani::WorldSystem::destroyWorld(ECS::Registry& registry, ECS::EntityId entityId)
+{
+	if (World* world = registry.get<World>(entityId))
 	{
-		return;
+		world->systemContainer.deinitialize();
+		registry.destroy(entityId);
 	}
-
-	for (auto& world : m_worlds)
-	{
-		world->initialize();
-	}
-}
-
-void WorldSystem::onDeinitialize(ECS::Registry& registry)
-{
-	if (!isInitialized())
-	{
-		return;
-	}
-
-	for (auto& world : m_worlds)
-	{
-		world->deinitialize();
-	}
-}
-
-std::shared_ptr<World> WorldSystem::createWorld()
-{
-	std::shared_ptr<World> world = std::make_shared<World>();
-	m_worlds.push_back(world);
-	world->initialize();
-	return world;
-}
-
-bool WorldSystem::destroyWorld(const std::shared_ptr<World>& world)
-{
-	auto it = m_worlds.erase(std::find(m_worlds.begin(), m_worlds.end(), world));
-	return it != m_worlds.end();
-}
-
-void WorldSystem::setRelevantWorld(const std::shared_ptr<World>& world)
-{
-	m_relevantWorld = world;
-}
-
-std::shared_ptr<World> WorldSystem::getRelevantWorld() const
-{
-	return m_relevantWorld;
 }
 
 void WorldSystem::tick(float deltaTime, ECS::Registry& registry)
 {
-	for (auto& world : m_worlds)
+	for (const ECS::EntityId entityId : ECS::View<World>(registry))
 	{
-		world->tick(deltaTime);
+		World& world = *registry.get<World>(entityId);
+		world.systemContainer.tick(deltaTime);
 	}
 }

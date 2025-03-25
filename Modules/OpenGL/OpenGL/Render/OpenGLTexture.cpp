@@ -13,11 +13,18 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string_view& path)
     m_width(0),
     m_height(0),
     m_channels(0),
-    m_boundSlot(-1)
+    m_boundSlot(-1),
+    m_filteringMode(0)
 {
     stbi_set_flip_vertically_on_load(1);
 
     stbi_uc* imageData = stbi_load(path.data(), &m_width, &m_height, &m_channels, 0);
+    if (stbi_failure_reason())
+    {
+        MANI_LOG_ERROR(LogOpenGL, "Could not load texture at {}, reason {}", path, stbi_failure_reason());
+        return;
+    }
+
     if (imageData != nullptr)
     {
         GLenum internalFormat;
@@ -55,7 +62,8 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string_view& path)
         glTexParameteri(m_textureId, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(m_textureId, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        GLint filteringMode = toOpenGLTextureFiltering(mode);
+        GLint filteringMode = 
+(mode);
         glTexParameteri(m_textureId, GL_TEXTURE_MIN_FILTER, filteringMode);
         glTexParameteri(m_textureId, GL_TEXTURE_MAG_FILTER, filteringMode);
 
@@ -83,7 +91,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string_view& path)
         glTextureParameteri(m_textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTextureParameteri(m_textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-        filteringMode = GL_LINEAR;
+        m_filteringMode = GL_LINEAR;
 
         // generate texture from image data.
         glTextureSubImage2D(
@@ -141,11 +149,11 @@ void Mani::OpenGLTexture2D::unbind()
 void Mani::OpenGLTexture2D::setFilteringMode(ETextureFiltering mode)
 {
     GLint glMode = toOpenGLTextureFiltering(mode);
-    if (glMode != filteringMode)
+    if (glMode != m_filteringMode)
     {
         glTextureParameteri(m_textureId, GL_TEXTURE_MIN_FILTER, glMode);
         glTextureParameteri(m_textureId, GL_TEXTURE_MAG_FILTER, glMode);
-        filteringMode = glMode;
+        m_filteringMode = glMode;
     }
 }
 

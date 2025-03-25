@@ -92,6 +92,16 @@ namespace Mani
                 return Iterator(m_registry, m_registry->unadjustedSize(), m_componentMask, m_bisAll);
             }
 
+            ECS::EntityId first() const
+            {
+                return *begin();
+            }
+
+            ECS::EntityId last() const
+            {
+                return *end();
+            }
+
         private:
             const Registry* m_registry = nullptr;
             Bitset<ECS::MAX_COMPONENTS> m_componentMask;

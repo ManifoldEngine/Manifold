@@ -139,10 +139,32 @@ class InputUserMockSystem : public SystemBase
 public:
 	virtual std::string_view getName() const override { return "VirtualControllerSystem"; }
 	virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
-	virtual ETickGroup getTickGroup() const override { return ETickGroup::PreTick; }
+	virtual ETickGroup getTickGroup() const override { return ETickGroup::PostTick; }
 
 	// never do this!
 	InputUser* inputUser = nullptr;
+	InputUser previousInputUser;
+	std::vector<InputAction> registeredActions;
+
+	virtual void tick(float deltaTime, ECS::Registry& registry) override
+	{
+		for (const auto& [name, inputAction] : inputUser->actions)
+		{
+			
+			bool hasChanged = false;
+			hasChanged |= previousInputUser.actions[name].x != inputAction.x;
+			hasChanged |= previousInputUser.actions[name].y != inputAction.y;
+			hasChanged |= previousInputUser.actions[name].z != inputAction.z;
+			hasChanged |= previousInputUser.actions[name].isPressed != inputAction.isPressed;
+			hasChanged |= previousInputUser.actions[name].isEnabled != inputAction.isEnabled;
+			if (hasChanged)
+			{
+				registeredActions.push_back(inputAction);
+			}
+		}
+
+		previousInputUser = *inputUser;
+	}
 
 protected:
 	virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override
@@ -162,26 +184,19 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		SystemContainer systemContainer;
 		systemContainer.initialize();
 
-		std::vector<InputAction> registeredActions;
 		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
 		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
-
-		EventHandle handle = inputSystem->onActionEvent.subscribe([&registeredActions](ECS::EntityId entityId, const InputAction& action) 
-		{
-			registeredActions.push_back(action);
-		});
 				
 		// press A button before pluging in the virtual controller
 		controller->setAButton(true);
 
 		systemContainer.tick(.0f);
 
-		MANI_TEST_ASSERT(registeredActions.size() == 0, "Should not have registered an input.");
-
 		// create a user and assign them the virtual controller.
 		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
 		inputUser->inputUser->actions = actionTemplate;
 		inputUser->inputUser->bindings = inputBindingsTemplate;
+		std::vector<InputAction>& registeredActions = inputUser->registeredActions;
 
 		// press A button again
 		controller->setAButton(true);
@@ -200,15 +215,17 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		// tick the system, consumes input buffers
 		systemContainer.tick(.0f);
 		
-		MANI_TEST_ASSERT(registeredActions.size() == 3, "Should have registered an input");
+		MANI_TEST_ASSERT(registeredActions.size() == 4, "Should have registered an input");
 		
+		InputAction thirdToLastAction = registeredActions[registeredActions.size() - 3];
+		MANI_TEST_ASSERT(thirdToLastAction.name == "Jump" && thirdToLastAction.isPressed == false, "Last action should be Jump false");
+
 		InputAction secondToLastAction = registeredActions[registeredActions.size() - 2];
-		MANI_TEST_ASSERT(secondToLastAction.name == "Jump" && secondToLastAction.isPressed == false, "Last action should be Jump false");
+		MANI_TEST_ASSERT(secondToLastAction.name == "Dodge" && secondToLastAction.isPressed == true, "Last action should be Jump false");
 
 		InputAction lastAction = registeredActions.back();
-		MANI_TEST_ASSERT(lastAction.name == "Dodge" && lastAction.isPressed == true, "Last action should be Dodge true");
+		MANI_TEST_ASSERT(lastAction.name == "Move" && lastAction.x > 0 && lastAction.y > 0, "Last action should be Dodge true");
 
-		inputSystem->onActionEvent.unsubscribe(handle);
 		systemContainer.deinitialize();
 	}
 
@@ -288,16 +305,12 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		SystemContainer systemContainer;
 		systemContainer.initialize();
 
-		std::vector<InputAction> actionEvents;
 
 		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
 		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
 		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
-		EventHandle handle = inputSystem->onActionEvent.subscribe([&actionEvents](ECS::EntityId entityId, const InputAction& inputAction)
-			{
-				actionEvents.push_back(inputAction);
-			});
-
+		std::vector<InputAction>& actionEvents = inputUser->registeredActions;
+		
 		// create a user and assign them the virtual controller.
 		inputUser->inputUser->actions =
 		{
@@ -323,8 +336,6 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		MANI_TEST_ASSERT(actionEvents.size() == 2, "Should have registered 2 actions");
 		MANI_TEST_ASSERT(actionEvents[0].name == "Jump", "First action should have been jump");
 		MANI_TEST_ASSERT(actionEvents[1].name == "Dodge", "Second action should have been jump");
-
-		inputSystem->onActionEvent.unsubscribe(handle);
 
 		systemContainer.deinitialize();
 	}

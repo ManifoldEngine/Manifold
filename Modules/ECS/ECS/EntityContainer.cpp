@@ -66,6 +66,11 @@ bool ECS::EntityContainer::destroy(ECS::EntityId entityId)
 	return true;
 }
 
+void ECS::EntityContainer::deferDestroy(ECS::EntityId entityId)
+{
+	m_markedForDestroy.insert(entityId);
+}
+
 const ECS::Entity* ECS::EntityContainer::getEntity(ECS::EntityId entityId) const
 {
 	if (!isValid(entityId))
@@ -171,6 +176,20 @@ bool ECS::EntityContainer::hasComponent(ECS::EntityId entityId, ComponentId comp
 	}
 
 	return m_entities[entityId].hasComponent(componentId);
+}
+
+bool Mani::ECS::EntityContainer::isMarkedForDestroy(ECS::EntityId entityId) const
+{
+	return m_markedForDestroy.contains(entityId);
+}
+
+void Mani::ECS::EntityContainer::handleDeferredDestroy()
+{
+	for (const auto entityId : m_markedForDestroy)
+	{
+		destroy(entityId);
+	}
+	m_markedForDestroy.clear();
 }
 
 ECS::ComponentId ECS::EntityContainer::getComponentId(const std::type_index& typeIndex) const
