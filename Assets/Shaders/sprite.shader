@@ -1,1 +1,41 @@
-{"fragmentSource":"#version 330 core\r\n\r\nin vec2 textureCoordinate;\r\n\r\nuniform sampler2D sprite;\r\nuniform vec4 color;\r\n\r\nout vec4 FragColor;\r\n\r\nvoid main()\r\n{\r\n    vec4 textureColor = texture(sprite, textureCoordinate);\r\n    if (textureColor.w < .001)\r\n    {\r\n        discard;\r\n    }\r\n\r\n    FragColor = color * textureColor;\r\n}\r\n","name":"sprite","vertexSource":"#version 330 core\r\n\r\nlayout(location = 0) in vec3 aPosition;\r\nlayout(location = 1) in vec2 aTextureCoordinate;\r\n\r\nuniform mat4 model;\r\nuniform mat4 view;\r\nuniform mat4 projection;\r\n\r\nout vec2 textureCoordinate;\r\n\r\nvoid main()\r\n{\r\n    textureCoordinate = aTextureCoordinate.xy;\r\n    gl_Position = projection * view * model * vec4(aPosition.xyz, 1.0);\r\n}\r\n\r\n"}
+{
+	"name": "sprite",
+	"vertexSource": "#version 330 core
+
+layout(location = 0) in vec3 aPosition;
+layout(location = 1) in vec2 aTextureCoordinate;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+out vec2 textureCoordinate;
+
+void main()
+{
+    textureCoordinate = aTextureCoordinate.xy;
+    gl_Position = projection * view * model * vec4(aPosition.xyz, 1.0);
+}
+
+",
+	"fragmentSource": "#version 330 core
+
+in vec2 textureCoordinate;
+
+uniform sampler2D sprite;
+uniform vec4 color;
+
+out vec4 FragColor;
+
+void main()
+{
+    vec4 textureColor = texture(sprite, textureCoordinate);
+    if (textureColor.w < .001)
+    {
+        discard;
+    }
+
+    FragColor = color * textureColor;
+}
+",
+}

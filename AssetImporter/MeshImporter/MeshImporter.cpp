@@ -11,7 +11,6 @@
 #include <assimp/postprocess.h>
 
 #include <ManiZ/ManiZ.h>
-#include <Core/GLMSerialization.h>
 
 using namespace Mani;
 

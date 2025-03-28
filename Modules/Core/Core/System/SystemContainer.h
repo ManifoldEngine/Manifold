@@ -48,6 +48,9 @@ namespace Mani
 		// returns the amount of systems
 		size_t size() const;
 
+		const ECS::Registry& getRegistry() const { return m_registry; }
+		ECS::Registry& getMutableRegistry() { return m_registry; }
+
 	private:
 		ECS::Registry m_registry;
 		std::vector<std::shared_ptr<SystemBase>> m_systems;
@@ -177,6 +180,8 @@ namespace Mani
 				system->tick(deltaTime, m_registry);
 			}
 		}
+
+		m_registry.handleDeferredDestroy();
 	}
 
 	inline size_t SystemContainer::size() const

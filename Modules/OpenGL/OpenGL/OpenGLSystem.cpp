@@ -6,10 +6,14 @@
 #include <Core/Application.h>
 #include <Core/Log.h>
 #include <Core/ManiAssert.h>
+#include <Core/Debug/Profiling.h>
 
 #include <Camera/CameraSystem.h>
 
 #include <OpenGLDebug.h>
+#include <OpenGLWindowContext.h>
+
+#include <ManiMaths/Fwd.h>
 
 #include <iostream>
 #include <vector>
@@ -21,57 +25,6 @@
 
 using namespace Mani;
 
-OpenGLSystem* OpenGLSystem::s_openGLSystem = nullptr;
-
-void OpenGLSystem::destroyWindow(WindowContext& context)
-{
-    if (context.window != nullptr)
-    {
-        glfwDestroyWindow(context.window);
-        context.window = nullptr;
-    }
-}
-
-void OpenGLSystem::terminate()
-{
-    destroyWindow(m_context);
-    glfwTerminate();
-}
-
-// glfw callbacks begin
-void OpenGLSystem::glfwCallback_onWindowClosed(GLFWwindow* window)
-{
-    if (auto* openGlSystem = (OpenGLSystem*)glfwGetWindowUserPointer(window))
-    {
-        openGlSystem->onWindowClosed.broadcast(openGlSystem->m_context);
-        Application::get().stop();
-    }
-}
-
-void OpenGLSystem::glfwCallback_onWindowResized(GLFWwindow* window, int newWidth, int newHeight)
-{
-    if (auto* openGlSystem = (OpenGLSystem*)glfwGetWindowUserPointer(window))
-    {
-        openGlSystem->m_context.width = newWidth;
-        openGlSystem->m_context.height = newHeight;
-    }
-
-    glViewport(0, 0, newWidth, newHeight);
-}
-// glfw callbacks begin
-
-Mani::OpenGLSystem::OpenGLSystem()
-{
-    // there should be only one OpenGLSystem instance.
-    MANI_ASSERT(s_openGLSystem == nullptr, "an OpenGLSystem instance already exists.");
-    s_openGLSystem = this;
-}
-
-OpenGLSystem& Mani::OpenGLSystem::get()
-{
-    return *s_openGLSystem;
-}
-
 std::string_view OpenGLSystem::getName() const
 {
     return "OpenGLSystem";
@@ -79,12 +32,7 @@ std::string_view OpenGLSystem::getName() const
 
 bool OpenGLSystem::shouldTick(ECS::Registry& registry) const
 {
-    return true;
-}
-
-const OpenGLSystem::WindowContext& OpenGLSystem::getWindowContext() const
-{
-    return m_context;
+    return false;
 }
 
 void OpenGLSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
@@ -104,42 +52,44 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, SystemContainer& system
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
+    OpenGLWindowContext& context = *registry.addSingle<OpenGLWindowContext>();
     // create the window
-    m_context.window = glfwCreateWindow(m_context.width, m_context.height, m_context.name.data(), NULL, NULL);
-    if (m_context.window == nullptr)
+    context.window = glfwCreateWindow(context.width, context.height, context.name.data(), NULL, NULL);
+
+    if (context.window == nullptr)
     {
         MANI_LOG_ERROR(LogOpenGL, "failed to create glfwwindow");
-        terminate();
+        terminate(registry);
         return;
     }
 
-    glfwGetWindowSize(m_context.window, &m_context.width, &m_context.height);
-    glfwSetInputMode(m_context.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwGetWindowSize(context.window, &context.width, &context.height);
+    glfwSetInputMode(context.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // set this as the window's user pointer. This allows us to retrieve this pointer from the window pointer provided in glfw's callbacks.
-    glfwSetWindowUserPointer(m_context.window, this);
-    glfwMakeContextCurrent(m_context.window);
+    glfwSetWindowUserPointer(context.window, &context);
+    glfwMakeContextCurrent(context.window);
 
     // set glfw callbacks
-    glfwSetWindowCloseCallback(m_context.window, &OpenGLSystem::glfwCallback_onWindowClosed);
-    glfwSetFramebufferSizeCallback(m_context.window, &OpenGLSystem::glfwCallback_onWindowResized);
+    glfwSetWindowCloseCallback(context.window, &OpenGLSystem::glfwCallback_onWindowClosed);
+    glfwSetFramebufferSizeCallback(context.window, &OpenGLSystem::glfwCallback_onWindowResized);
 
     // init gl3w to load the correct opengl runtime
     if (gl3wInit() != GL3W_OK)
     {
         MANI_LOG_ERROR(LogOpenGL, "failed to init glew");
-        terminate();
+        terminate(registry);
         return;
     }
     if (!gl3wIsSupported(3, 2))
     {
         MANI_LOG_ERROR(LogOpenGL, "OpenGL 3.2 is not supported");
-        terminate();
+        terminate(registry);
         return;
     }
 
     // set the view port to the window's size.
-    glViewport(0, 0, m_context.width, m_context.height);
+    glViewport(0, 0, context.width, context.height);
     
 #ifndef MANI_WEBGL
     #if MANI_OPENGL_DEBUG
@@ -149,18 +99,42 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, SystemContainer& system
 #endif
 }
 
-void OpenGLSystem::onDeinitialize(ECS::Registry& entityRegistry)
+void OpenGLSystem::onDeinitialize(ECS::Registry& registry)
 {
-    SystemBase::onDeinitialize(entityRegistry);
-    terminate();
+    terminate(registry);
 }
 
-void OpenGLSystem::tick(float deltaTime, ECS::Registry& entityRegistry)
+void OpenGLSystem::tick(float deltaTime, ECS::Registry& registry)
 {
-    glfwSwapBuffers(m_context.window);
-    glfwPollEvents();
-
 #ifdef __EMSCRIPTEN__
     emscripten_sleep(100);
 #endif
 }
+
+void OpenGLSystem::terminate(ECS::Registry& registry)
+{
+    if (OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>())
+    {
+        glfwDestroyWindow(context->window);
+        context->window = nullptr;
+    }
+    glfwTerminate();
+}
+
+// glfw callbacks begin
+void OpenGLSystem::glfwCallback_onWindowClosed(GLFWwindow* window)
+{
+    Application::get().stop();
+}
+
+void OpenGLSystem::glfwCallback_onWindowResized(GLFWwindow* window, int newWidth, int newHeight)
+{
+    if (auto* context = (OpenGLWindowContext*)glfwGetWindowUserPointer(window))
+    {
+        context->width = newWidth;
+        context->height = newHeight;
+    }
+
+    glViewport(0, 0, newWidth, newHeight);
+}
+// glfw callbacks begin

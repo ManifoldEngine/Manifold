@@ -247,7 +247,10 @@ const std::string OpenGLResourceSystem::getOrAddTextureName(const std::filesyste
 		if (path.is_relative())
 		{
 			std::filesystem::path rootPath;
-			MANI_ASSERT(FileSystem::tryGetRootPath(rootPath), "we should be able to recover root path at this point.");
+			if (!FileSystem::tryGetRootPath(rootPath))
+			{
+				MANI_ASSERT(false, "we should be able to recover root path at this point.");
+			}
 			path = rootPath.append(path.string());
 		}
 		m_textures[textureName] = std::make_shared<OpenGLTexture2D>(path.string());

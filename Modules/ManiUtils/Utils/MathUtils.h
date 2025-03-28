@@ -1,38 +1,29 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <ManiMaths/Fwd.h>
 
 namespace Mani
 {
 	class MathUtils
 	{
 	public:
-		static glm::vec3 normalize(const glm::vec3& v)
+		static Vec3f clampLenght(const Vec3f& v, float min, float max)
 		{
-			if (glm::length2(v) < FLT_EPSILON)
-			{
-				return glm::vec3(0.f);
-			}
-			return glm::normalize(v);
-		}
-
-		static glm::vec3 clampLenght(const glm::vec3& v, float min, float max)
-		{
-			const float length = glm::length(v);
+			const float length = v.length();
 			if (length < min)
 			{
-				return normalize(v) * min;
+				return v.normalize() * min;
 			}
 			if (length > max)
 			{
-				return normalize(v) * max;
+				return v.normalize() * max;
 			}
 			return v;
 		}
 
 		static float mapRanges(float value, float minX, float maxX, float minY, float maxY)
 		{
-			MANI_ASSERT(std::abs(maxX - minX) > FLT_EPSILON, "Do not divide by zero.");
+			MANI_ASSERT(Math::abs(maxX - minX) > FLT_EPSILON, "Do not divide by zero.");
 			const float slope = (maxY - maxX) / (maxX - minX);
 			return minY + slope * (value - minX);
 		}

@@ -25,7 +25,7 @@ namespace Mani
 		int m_height;
 		int m_channels;
 		int m_boundSlot;
-		int filteringMode;
+		int m_filteringMode;
 
 		static int toOpenGLTextureFiltering(Mani::ETextureFiltering mode);
 	};

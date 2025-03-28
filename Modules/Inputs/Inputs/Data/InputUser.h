@@ -15,28 +15,25 @@ namespace Mani
 		std::unordered_map<std::string, std::unordered_set<std::string>> bindings;
 		
 		std::vector<ECS::EntityId> inputDevices;
+
+		inline void setAction(const std::string& action)
+		{
+			actions[action] = { action };
+		}
+
+		inline void unsetAction(const std::string& action)
+		{
+			actions.erase(action);
+		}
+
+		inline void addBinding(const std::string& control, const std::string& action)
+		{
+			bindings[control].insert(action);
+		}
+
+		inline void removeBinding(const std::string& control, const std::string& action)
+		{
+			bindings[control].erase(action);
+		}
 	};
-
-	namespace InputUtils
-	{
-		inline void setAction(InputUser& inputUser, const std::string& action)
-		{
-			inputUser.actions[action] = { action };
-		}
-
-		inline void unsetAction(InputUser& inputUser, const std::string& action)
-		{
-			inputUser.actions.erase(action);
-		}
-
-		inline void addBinding(InputUser& inputUser, const std::string& control, const std::string& action)
-		{
-			inputUser.bindings[control].insert(action);
-		}
-
-		inline void removeBinding(InputUser& inputUser, const std::string& control, const std::string& action)
-		{
-			inputUser.bindings[control].erase(action);
-		}
-	}
 }

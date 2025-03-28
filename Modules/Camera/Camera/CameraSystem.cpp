@@ -3,12 +3,9 @@
 #include <Core/Components/Transform.h>
 #include <Core/ManiAssert.h>
 
+#include <ECS/Entity.h>
 #include <ECS/Registry.h>
 #include <ECS/View.h>
-
-#include <glm/ext/matrix_clip_space.hpp>
-#include <algorithm>
-#include <glm/ext/matrix_transform.hpp>
 
 using namespace Mani;
 
@@ -24,20 +21,25 @@ bool CameraSystem::shouldTick(ECS::Registry& registry) const
 
 void CameraSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
-    m_cameraId = registry.create();
-    Transform* transform = registry.add<Transform>(m_cameraId);
-    transform->position = glm::vec3(0.0f, 0.0f, -3.0f);
-    registry.add<CameraComponent>(m_cameraId);
+    ECS::EntityId cameraId = registry.create();
+    Transform* transform = registry.add<Transform>(cameraId);
+    transform->position = Vec3f(0.0f, 0.0f, -3.0f);
+    registry.add<Camera>(cameraId);
 }
 
 void CameraSystem::onDeinitialize(ECS::Registry& registry)
 {
-    registry.destroy(m_cameraId);
+    ECS::View<Transform, Camera> cameraView(registry);
+    auto it = cameraView.begin();
+    if (it != cameraView.end())
+    {
+        registry.destroy(*it);
+    }
 }
 
 void CameraSystem::tick(float deltaTime, ECS::Registry& registry)
 {
-    ECS::View<Transform, CameraComponent> view(registry);
+    ECS::View<Transform, Camera> view(registry);
     for (const ECS::EntityId& entityId : view)
     {
         Transform* transform = registry.get<Transform>(entityId);
@@ -46,62 +48,18 @@ void CameraSystem::tick(float deltaTime, ECS::Registry& registry)
             continue;
         }
 
-        CameraComponent* cameraComponent = registry.get<CameraComponent>(entityId);
-        if (cameraComponent == nullptr)
+        Camera* camera = registry.get<Camera>(entityId);
+        if (camera == nullptr)
         {
             continue;
         }
 
-        cameraComponent->view = glm::lookAt(transform->position, transform->position + transform->forward(), transform->up());
+        camera->view = Mat4f::lookAt(transform->position, transform->position + transform->forward(), transform->up());
         
-        const CameraConfig& config = cameraComponent->config;
-        MANI_ASSERT(std::abs(config.height) > FLT_EPSILON, "Height of a camera cannot be 0.");
-        cameraComponent->projection = glm::perspective(glm::radians(config.fov), 
-                                                        config.width / config.height,
-                                                        config.nearClipPlane, 
-                                                        config.farClipPlane);
+        MANI_ASSERT(Math::abs(camera->height) > FLT_EPSILON, "Height of a camera cannot be 0.");
+        camera->projection = Mat4f::perspective(Math::degToRad(camera->fov),
+                                                         camera->width / camera->height,
+                                                         camera->nearClipPlane, 
+                                                         camera->farClipPlane);
     }
-}
-
-const CameraComponent* CameraSystem::getCameraComponent(const ECS::Registry& registry) const
-{
-    return registry.get<CameraComponent>(m_cameraId);
-}
-
-Transform* CameraSystem::getCameraTransform(ECS::Registry& registry) const
-{
-    return registry.get<Transform>(m_cameraId);
-}
-
-void CameraSystem::setCameraConfig(ECS::Registry& registry, const CameraConfig& config)
-{
-    if (auto* cameraComponent = registry.get<CameraComponent>(m_cameraId))
-    {
-        cameraComponent->config = config;
-    }
-}
-
-glm::vec2 CameraSystem::worldToScreenSpace(glm::vec3 position, const ECS::Registry& registry) const
-{
-    const CameraComponent* cameraComponent = getCameraComponent(registry);
-    if (cameraComponent == nullptr)
-    {
-        return glm::vec2();
-    }
-
-    glm::vec4 position4 = glm::vec4(position, 1.0f);
-    glm::vec4 projectedPosition = position4 * cameraComponent->view;
-    
-    if (std::abs(projectedPosition.w) <= FLT_EPSILON)
-    {
-        return glm::vec2();
-    }
-
-    return glm::vec2(projectedPosition.x / projectedPosition.w, projectedPosition.y / projectedPosition.w);
-}
-
-float Mani::CameraConfig::getAspectRatio() const
-{
-    MANI_ASSERT(std::abs(height) > FLT_EPSILON, "height cannot be zero");
-    return width / height;
 }

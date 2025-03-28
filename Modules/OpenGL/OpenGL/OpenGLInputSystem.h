@@ -9,7 +9,7 @@ struct GLFWwindow;
 namespace Mani
 {
 	class OpenGLSystem;
-
+	
 	class OpenGLInputSystem: public SystemBase
 	{
 	public:
@@ -24,10 +24,8 @@ namespace Mani
 		virtual void onDeinitialize(ECS::Registry& registry) override;
 
 	private:
-		std::weak_ptr<OpenGLSystem> m_openGLSystem;
-		
-		static glm::vec2 s_mouse;
 		static void glfwCallback_onMouseMoved(GLFWwindow* window, double x, double y);
+		static Vec2f s_mouse;
 	};
 }
 

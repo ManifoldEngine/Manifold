@@ -4,6 +4,7 @@
 #include "Entity.h"
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <typeindex>
 
 namespace Mani 
@@ -16,10 +17,10 @@ namespace Mani
 	#define INITIAL_COMPONENT_COUNT 1000
 
 		public:
-			// IEntityContainer begin
 			virtual ~EntityContainer() = default;
 			ECS::EntityId create();
 			bool destroy(ECS::EntityId entityId);
+			void deferDestroy(ECS::EntityId entityId); // destroys at the end of the tick.
 			const Entity* getEntity(ECS::EntityId entityId) const;
 			size_t size() const;
 			size_t unadjustedSize() const;
@@ -30,8 +31,9 @@ namespace Mani
 			ComponentId getComponentId(const std::type_index& typeIndex) const;
 			bool removeComponent(ECS::EntityId entityId, ComponentId componentId);
 			bool hasComponent(ECS::EntityId entityId, ComponentId componentId) const;
-			// IEntityContainer end
 
+			bool isMarkedForDestroy(ECS::EntityId entityId) const;
+			void handleDeferredDestroy();
 		private:
 			struct ComponentPool 
 			{
@@ -47,6 +49,7 @@ namespace Mani
 			std::vector<ComponentPool*> m_componentPools;
 			std::vector<Entity> m_entities;
 			std::vector<ECS::EntityId> m_entityPool;
+			std::unordered_set<ECS::EntityId> m_markedForDestroy;
 			std::unordered_map<std::type_index, ComponentId> m_componentIds;
 		};
 	}

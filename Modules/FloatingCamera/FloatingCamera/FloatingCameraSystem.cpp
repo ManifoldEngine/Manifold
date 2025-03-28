@@ -3,6 +3,7 @@
 #include <FloatingCamera/FloatingCamera.h>
 #include <Camera/CameraSystem.h>
 #include <Inputs/Data/InputUser.h>
+#include <ManiMaths/Fwd.h>
 
 using namespace Mani;
 
@@ -12,10 +13,10 @@ void FloatingCameraSystem::onInitialize(ECS::Registry& registry, SystemContainer
 	registry.add<FloatingCamera>(entityId);
 	
 	InputUser& inputUser = *registry.add<InputUser>(entityId);
-	InputUtils::setAction(inputUser, MOVE_ACTION);
-	InputUtils::setAction(inputUser, AIM_ACTION);
-	InputUtils::addBinding(inputUser, "WASD", MOVE_ACTION);
-	InputUtils::addBinding(inputUser, "Mouse", AIM_ACTION);
+	inputUser.setAction(MOVE_ACTION);
+	inputUser.setAction(AIM_ACTION);
+	inputUser.addBinding("WASD", MOVE_ACTION);
+	inputUser.addBinding("Mouse", AIM_ACTION);
 }
 
 void FloatingCameraSystem::tick(float deltaTime, ECS::Registry& registry)
@@ -29,7 +30,7 @@ void FloatingCameraSystem::tick(float deltaTime, ECS::Registry& registry)
 		const InputAction& moveAction = inputUser->actions[MOVE_ACTION];
 		const InputAction& aimAction = inputUser->actions[AIM_ACTION];
 
-		ECS::View<Transform, CameraComponent> cameraView(registry);
+		ECS::View<Transform, Camera> cameraView(registry);
 		if (cameraView.begin() == cameraView.end())
 		{
 			MANI_LOG_ERROR(LogFloatingCamera, "Could not find a camera in the world");
@@ -55,7 +56,7 @@ void FloatingCameraSystem::tick(float deltaTime, ECS::Registry& registry)
 		const float deltaX = floatingCamera->previousCameraX - aimX;
 		const float deltaY = floatingCamera->previousCameraY - aimY;
 
-		if (std::abs(deltaX) <= FLT_EPSILON || std::abs(deltaX) <= FLT_EPSILON)
+		if (Math::abs(deltaX) <= FLT_EPSILON || Math::abs(deltaX) <= FLT_EPSILON)
 		{
 			continue;
 		}
@@ -63,8 +64,8 @@ void FloatingCameraSystem::tick(float deltaTime, ECS::Registry& registry)
 		const float yaw = deltaX * floatingCamera->sensitivity;
 		const float pitch = deltaY * floatingCamera->sensitivity;
 
-		glm::quat quatPitch = glm::angleAxis(glm::radians(-pitch), glm::vec3(1.f, 0.f, 0.f));
-		glm::quat quatYaw = glm::angleAxis(glm::radians(yaw), glm::vec3(0.f, 1.f, 0.f));
+		Quatf quatPitch = Quatf::axisAngleDeg(-pitch, VEC3F::RIGHT);
+		Quatf quatYaw = Quatf::axisAngleDeg(yaw, VEC3F::UP);
 
 		// it is crucial to respect this order of operation to avoid unintended roll.
 		transform->rotation = quatYaw * transform->rotation * quatPitch;

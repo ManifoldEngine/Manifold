@@ -1,4 +1,5 @@
 #include "Application.h"
+#include <Debug/ProfilingSystem.h>
 #include <Core/System/SystemContainer.h>
 #include <Core/World/WorldSystem.h>
 #include <Core/CoreTime.h>
@@ -19,11 +20,20 @@ Application::Application()
 	m_systemContainer->initialize();
 	m_systemContainer->createSystem<LogSystem>()
 		.createSystem<WorldSystem>();
+
+#if MANI_DEBUG
+	m_systemContainer->createSystem<ProfilingSystem>();
+#endif
 }
 
 Application::~Application()
 {
 	m_systemContainer->deinitialize();
+
+#if MANI_DEBUG
+	m_systemContainer->destroySystem<ProfilingSystem>();
+#endif
+
 	m_systemContainer->destroySystem<WorldSystem>()
 		.destroySystem<LogSystem>();
 	delete m_systemContainer;
