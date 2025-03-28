@@ -1,11 +1,22 @@
 #include "InputSystem.h"
 
 #include <Inputs/Inputs.h>
+#include <Inputs/Cursor.h>
 
 #include <Inputs/Data/InputUser.h>
 #include <Inputs/Data/InputDevice.h>
 
 using namespace Mani;
+
+void Mani::InputSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+{
+	registry.addSingle<Cursor>();
+}
+
+void Mani::InputSystem::onDeinitialize(ECS::Registry& registry)
+{
+	registry.removeSingle<Cursor>();
+}
 
 void InputSystem::tick(float deltaTime, ECS::Registry& registry)
 {

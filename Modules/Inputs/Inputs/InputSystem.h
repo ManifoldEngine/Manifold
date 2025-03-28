@@ -4,8 +4,6 @@
 
 namespace Mani
 {
-    DECLARE_EVENT(ActionEvent, ECS::EntityId /*userId*/, const struct InputAction& /*inputAction*/)
-
     class InputSystem : public SystemBase
     {
     public:
@@ -15,6 +13,8 @@ namespace Mani
 
         virtual void tick(float deltaTime, ECS::Registry& registry) override;
 
-        ActionEvent onActionEvent;
+    protected:
+        virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer);
+        virtual void onDeinitialize(ECS::Registry& registry);
     };
 }

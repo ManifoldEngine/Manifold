@@ -9,6 +9,11 @@
 
 using namespace Mani;
 
+struct CameraSystemCache
+{
+    ECS::EntityId cameraId; 
+};
+
 std::string_view CameraSystem::getName() const
 {
     return "CameraSystem";
@@ -21,20 +26,21 @@ bool CameraSystem::shouldTick(ECS::Registry& registry) const
 
 void CameraSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
-    ECS::EntityId cameraId = registry.create();
-    Transform* transform = registry.add<Transform>(cameraId);
+    CameraSystemCache& cache = *registry.addSingle<CameraSystemCache>();
+
+    cache.cameraId = registry.create();
+    Transform* transform = registry.add<Transform>(cache.cameraId);
     transform->position = Vec3f(0.0f, 0.0f, -3.0f);
-    registry.add<Camera>(cameraId);
+    registry.add<Camera>(cache.cameraId);
 }
 
 void CameraSystem::onDeinitialize(ECS::Registry& registry)
 {
-    ECS::View<Transform, Camera> cameraView(registry);
-    auto it = cameraView.begin();
-    if (it != cameraView.end())
+    if (const CameraSystemCache* cache = registry.getSingle<CameraSystemCache>())
     {
-        registry.destroy(*it);
+        registry.destroy(cache->cameraId);
     }
+    registry.removeSingle<CameraSystemCache>();
 }
 
 void CameraSystem::tick(float deltaTime, ECS::Registry& registry)

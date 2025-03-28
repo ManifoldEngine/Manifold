@@ -48,9 +48,6 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, SystemContainer& system
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#ifdef MANI_MACOSX
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
 
     OpenGLWindowContext& context = *registry.addSingle<OpenGLWindowContext>();
     // create the window
@@ -64,7 +61,6 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, SystemContainer& system
     }
 
     glfwGetWindowSize(context.window, &context.width, &context.height);
-    glfwSetInputMode(context.window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // set this as the window's user pointer. This allows us to retrieve this pointer from the window pointer provided in glfw's callbacks.
     glfwSetWindowUserPointer(context.window, &context);
