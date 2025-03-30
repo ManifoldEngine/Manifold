@@ -15,6 +15,8 @@ namespace Mani
 
         virtual void tick(float deltaTime, ECS::Registry& registry) override;
 
+        static bool isDisplayed(const ECS::Registry& registry);
+
     protected:
         virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer);
         virtual void onDeinitialize(ECS::Registry& registry);

@@ -84,7 +84,8 @@ void LogSystem::logImpl(const std::string_view& channel, ELogLevel level, const 
 {
 #if MANI_CONSOLE_APP
 	std::cout << LEVEL_TO_COLOR_MAP[level] << "[" << Time::getTimeFormatted() << "]" << "[" << channel << "]: " << log << RESET << std::endl;
-#elif MANI_WINDOWS
+#else
+#if MANI_WINDOWS
 	std::stringstream ss;
 	ss << LEVEL_TO_COLOR_MAP[level];
 	ss << "[" << Time::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
@@ -92,6 +93,7 @@ void LogSystem::logImpl(const std::string_view& channel, ELogLevel level, const 
 	std::string s = ss.str();
 	std::wstring ws(s.begin(), s.end());
 	OutputDebugStringW(ws.c_str());
+#endif
 #endif
 }
 

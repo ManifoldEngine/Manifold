@@ -72,7 +72,18 @@ void Mani::ManImGuiMainLoopSystem::tick(float deltaTime, Mani::ECS::Registry& re
 	ImGui_ImplGlfw_NewFrame();
 
 	ImGui::NewFrame();
-	ImGui::ShowDemoWindow();
+}
+
+bool ManImGuiMainLoopSystem::isDisplayed(const ECS::Registry& registry)
+{
+	const ECS::View<IsManImGuiDisplayed> view(registry);
+	const ECS::EntityId entityId = view.first();
+
+	if (const IsManImGuiDisplayed* isManImGuiDisplayed = registry.get<IsManImGuiDisplayed>(entityId))
+	{
+		return isManImGuiDisplayed->value;
+	}
+	return false;
 }
 
 void ManImGuiMainLoopSystem::handleInputs(ECS::Registry& registry, IsManImGuiDisplayed& isManImGuiDisplayed, const InputAction& toggleManImGui)
