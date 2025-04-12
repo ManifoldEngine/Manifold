@@ -20,7 +20,7 @@ configurations { "Debug", "Release", "Distribution" }
     includedirs { thirdpartiesdir .. "/ManiZ/include"}
     
     filter "configurations:Debug"
-        defines { "MANI_DEBUG" }
+        defines { "MANI_DEBUG", "MANI_CONSOLE_APP" }
         defines { "MANI_PROJECTROOT_PATH=\"".. _MAIN_SCRIPT_DIR .. "\"" }
         symbols "On"
     
@@ -54,7 +54,6 @@ group ""
 
 -- Executables
 project "{{PROJECT_NAME}}"
-    kind "WindowedApp"
     location "%{prj.name}"
 
     files { "%{prj.name}/**.h", "%{prj.name}/**.cpp" }
@@ -64,4 +63,11 @@ project "{{PROJECT_NAME}}"
     includedirs { moduledir .. "/**", "%{prj.name}/Sources" }
 
     filter "configurations:Debug"
-    links { "ManImGui" }
+        links { "ManImGui" }
+
+    filter "configurations:Debug"
+        kind "ConsoleApp"
+    filter "configurations:Release"
+        kind "WindowedApp"
+    filter "configurations:Distribution"
+        kind "WindowedApp"

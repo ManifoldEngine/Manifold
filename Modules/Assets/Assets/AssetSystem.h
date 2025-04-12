@@ -6,7 +6,7 @@
 
 #include <Assets/AssetDatabase.h>
 
-#include <Utils/TemplateUtils.h>
+#include <Core/ManiTraits.h>
 #include <Core/FileSystem.h>
 
 #include <ManiZ/ManiZ.h>

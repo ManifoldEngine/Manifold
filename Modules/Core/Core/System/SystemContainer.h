@@ -3,7 +3,7 @@
 #include "System.h"
 #include <Core/ManiAssert.h>
 #include <ECS/Registry.h>
-#include <Utils/TemplateUtils.h>
+#include <Core/ManiTraits.h>
 #include <vector>
 #include <memory>
 
@@ -29,7 +29,7 @@ namespace Mani
 		// if a system of type TSystem already exists, a new system will not be created.
 		// after this is called, a TSystem is guarranteed to live in the container.
 		// returns true if a system was created.
-		template<Derived<SystemBase> TSystem>
+		template<IsDerived<SystemBase> TSystem>
 		SystemContainer& createSystem();
 		
 		template<typename TSystem>
@@ -38,13 +38,13 @@ namespace Mani
 		// creates, initializes then return a shared pointer to the TSystem
 		// this is most notably useful to allow a system to initialize a dependency and receive a pointer to it
 		// returns a weak pointer to a TSystem
-		template<Derived<SystemBase> TSystem>
+		template<IsDerived<SystemBase> TSystem>
 		std::weak_ptr<TSystem> initializeDependency();
 
 		// destroys a system of type TSystem.
 		// after this is called, no TSystem remains in the container.
 		// returns true if a system was destroyed
-		template<Derived<SystemBase> TSystem>
+		template<IsDerived<SystemBase> TSystem>
 		SystemContainer& destroySystem();
 
 		// returns the amount of systems
@@ -59,7 +59,7 @@ namespace Mani
 		bool m_isInitialized = false;
 	};
 
-	template<Derived<SystemBase> TSystem>
+	template<IsDerived<SystemBase> TSystem>
 	inline SystemContainer& SystemContainer::createSystem()
 	{
 		// check if a system of this type exists already.
@@ -105,7 +105,7 @@ namespace Mani
 		return std::weak_ptr<TSystem>();
 	}
 
-	template<Derived<SystemBase> TSystem>
+	template<IsDerived<SystemBase> TSystem>
 	inline std::weak_ptr<TSystem> SystemContainer::initializeDependency()
 	{
 		createSystem<TSystem>();
@@ -117,7 +117,7 @@ namespace Mani
 		return system;
 	}
 
-	template<Derived<SystemBase> TSystem>
+	template<IsDerived<SystemBase> TSystem>
 	inline SystemContainer& SystemContainer::destroySystem()
 	{
 		for (auto it = m_systems.begin(); it != m_systems.end(); it++)
