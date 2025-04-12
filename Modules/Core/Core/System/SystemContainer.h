@@ -9,6 +9,8 @@
 
 namespace Mani
 {
+	class SystemBase;
+
 	// System container class. It manages unique systems. It also owns an EntityRegistry and is in charge
 	// of distributing the registry to systems.
 	class SystemContainer

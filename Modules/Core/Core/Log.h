@@ -1,8 +1,7 @@
 #pragma once
 
-#include <Core/Application.h>
-#include <Core/System/SystemContainer.h>
 #include <Core/Log/LogSystem.h>
+#include <string_view>
 #include <format>
 
 namespace Mani 
