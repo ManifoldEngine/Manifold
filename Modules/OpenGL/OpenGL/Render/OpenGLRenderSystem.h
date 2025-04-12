@@ -17,11 +17,8 @@ namespace Mani
 		virtual void tick(float deltaTime, ECS::Registry& registry) override;
 
 	protected:
-		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
+		virtual void onInitialize(ECS::Registry& registry, World& world) override;
 		virtual void onDeinitialize(ECS::Registry& registry) override;
-
-	private:
-		std::weak_ptr<OpenGLResourceSystem> m_resourceSystem;
 	};
 }
 

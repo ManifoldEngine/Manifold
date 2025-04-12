@@ -18,7 +18,7 @@ namespace Mani
 		virtual std::string_view getName() const override { return "FloatingCameraSystem"; }
 		virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
 
-		void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
+		void onInitialize(ECS::Registry& registry, World& world) override;
 
 		virtual void tick(float deltaTime, ECS::Registry& registry) override;
 

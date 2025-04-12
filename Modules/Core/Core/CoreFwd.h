@@ -5,7 +5,6 @@
 #include <Core/ManiAssert.h>
 
 #include <Core/System/System.h>
-#include <Core/System/SystemContainer.h>
 
 #include <ECS/View.h>
 

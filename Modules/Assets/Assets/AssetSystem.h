@@ -31,7 +31,7 @@ namespace Mani
 		static bool unloadAsset(ECS::Registry& registry, const std::filesystem::path& relativePath);
 
 	protected:
-		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
+		virtual void onInitialize(ECS::Registry& registry, World& world) override;
 		virtual void onDeinitialize(ECS::Registry& registry) override;
 
 		static bool tryGetFullPath(const std::filesystem::path& relativePath, std::filesystem::path& outPath);

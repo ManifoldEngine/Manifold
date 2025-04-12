@@ -20,9 +20,9 @@ struct CursorModeCache
 	Cursor::EMode mode = Cursor::EMode::DISABLED;
 };
 
-void Mani::ManImGuiMainLoopSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void Mani::ManImGuiMainLoopSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-	systemContainer.initializeDependency<InputSystem>();
+	world.initializeDependency<InputSystem>();
 
 	{
 		const ECS::EntityId entityId = registry.create();

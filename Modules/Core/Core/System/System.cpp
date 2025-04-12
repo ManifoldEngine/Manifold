@@ -1,4 +1,5 @@
 #include "System.h"
+#include <Core/World/World.h>
 #include <ECS/Registry.h>
 #include <Log.h>
 
@@ -19,7 +20,7 @@ ETickGroup SystemBase::getTickGroup() const
     return ETickGroup::Tick;
 }
 
-void SystemBase::initialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void SystemBase::initialize(ECS::Registry& registry, World& world)
 {
     if (m_isInitialized)
     {
@@ -27,7 +28,7 @@ void SystemBase::initialize(ECS::Registry& registry, SystemContainer& systemCont
     }
 
     MANI_LOG(LogCore, "Initialized {}", getName());
-    onInitialize(registry, systemContainer);
+    onInitialize(registry, world);
     m_isInitialized = true;
 }
 
@@ -43,28 +44,6 @@ void SystemBase::deinitialize(ECS::Registry& registry)
     MANI_LOG(LogCore, "Deinitialized {}", getName());
 }
 
-void SystemBase::enable()
-{
-    if (m_isEnabled)
-    {
-        return;
-    }
-
-    m_isEnabled = true;
-    onEnabled();
-}
-
-void SystemBase::disable()
-{
-    if (!m_isEnabled)
-    {
-        return;
-    }
-
-    m_isEnabled = false;
-    onDisabled();
-}
-
 void SystemBase::tick(float deltaTime, ECS::Registry& registry)
 {
 }
@@ -74,23 +53,10 @@ bool SystemBase::isInitialized() const
     return m_isInitialized;
 }
 
-bool Mani::SystemBase::isEnabled() const
-{
-    return m_isEnabled;
-}
-
-void SystemBase::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void SystemBase::onInitialize(ECS::Registry& registry, World& world)
 {
 }
 
 void SystemBase::onDeinitialize(ECS::Registry& registry)
-{
-}
-
-void SystemBase::onEnabled()
-{
-}
-
-void SystemBase::onDisabled()
 {
 }

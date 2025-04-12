@@ -334,46 +334,6 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 		MANI_TEST_ASSERT(registry.has<Component>(entityId) == true, "Should now have the component");
 	}
 
-	MANI_TEST(EntityRegistryEvents, "Should subscribe to all events and confirm that a callback was received")
-	{
-		struct Component {};
-
-		ECS::Registry registry;
-
-		std::vector<ECS::EntityId> entityIdCreated;
-		std::vector<ECS::EntityId> entityIdDestroyed;
-		std::vector<std::pair<ECS::EntityId, ECS::ComponentId>> componentIdCreated;
-		std::vector<std::pair<ECS::EntityId, ECS::ComponentId>> componentIdDestroyed;
-
-		registry.onEntityCreated.subscribe([&entityIdCreated](ECS::Registry& registry, ECS::EntityId entityId) {
-			entityIdCreated.push_back(entityId);
-		});
-
-		registry.onEntityDestroyed.subscribe([&entityIdDestroyed](ECS::Registry& registry, ECS::EntityId entityId) {
-			entityIdDestroyed.push_back(entityId);
-		});
-
-		registry.onComponentAdded.subscribe([&componentIdCreated](ECS::Registry& registry, ECS::EntityId entityId, ECS::ComponentId componentId) {
-			componentIdCreated.push_back({ entityId, componentId });
-		});
-
-		registry.onComponentRemoved.subscribe([&componentIdDestroyed](ECS::Registry& registry, ECS::EntityId entityId, ECS::ComponentId componentId) {
-			componentIdDestroyed.push_back({ entityId, componentId });
-		});
-
-		ECS::EntityId entityId = registry.create();
-		ECS::ComponentId componentId = registry.getComponentId<Component>();
-		registry.add<Component>(entityId);
-		registry.remove<Component>(entityId);
-		registry.destroy(entityId);
-
-		std::pair<ECS::EntityId, ECS::ComponentId> pair = { entityId, componentId };
-		MANI_TEST_ASSERT(entityIdCreated.size() == 1 && entityIdCreated[0] == entityId, "ECS::EntityId should have been created");
-		MANI_TEST_ASSERT((componentIdCreated.size() == 1 && componentIdCreated[0] == pair), "ECS::ComponentId should have been added to ECS::EntityId");
-		MANI_TEST_ASSERT((componentIdDestroyed.size() == 1 && componentIdDestroyed[0] == pair), "ECS::ComponentId should have been removed from ECS::EntityId");
-		MANI_TEST_ASSERT(entityIdDestroyed.size() == 1 && entityIdDestroyed[0] == entityId, "ECS::EntityId should have been destroyed");
-	}
-
 	MANI_TEST(BitsetTests, "Should set, test and reset a bitset properly")
 	{
 		Bitset<64> bitset;

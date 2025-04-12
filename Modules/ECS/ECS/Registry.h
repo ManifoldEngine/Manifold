@@ -3,7 +3,6 @@
 #include "ECS.h"
 #include "EntityContainer.h"
 #include "Entity.h"
-#include <Events/Event.h>
 
 namespace Mani
 {
@@ -18,15 +17,6 @@ namespace Mani
 		public:
 			template<typename ...TComponents>
 			friend class View;
-
-			DECLARE_EVENT(EntityEvent, Registry& /*registry*/, EntityId /*entityId*/);
-			DECLARE_EVENT(EntityComponentEvent, Registry& /*registry*/, EntityId /*entityId*/, ComponentId /*componentId*/);
-
-			EntityEvent onEntityCreated;
-			EntityEvent onBeforeEntityDestroyed;
-			EntityEvent onEntityDestroyed;
-			EntityComponentEvent onComponentAdded;
-			EntityComponentEvent onComponentRemoved;
 
 			Registry();
 			~Registry();
@@ -123,7 +113,6 @@ namespace Mani
 
 			// this is a placement new
 			TComponent* component = new (buffer) TComponent();
-			onComponentAdded.broadcast(*this, entityId, componentId);
 			return component;
 		}
 
@@ -152,12 +141,7 @@ namespace Mani
 		inline bool Registry::remove(ECS::EntityId entityId)
 		{
 			const ComponentId componentId = m_entityContainer.getComponentId(typeid(TComponent));
-			if (m_entityContainer.removeComponent(entityId, componentId))
-			{
-				onComponentRemoved.broadcast(*this, entityId, componentId);
-				return true;
-			}
-			return false;
+			return m_entityContainer.removeComponent(entityId, componentId);
 		}
 
 		template<typename TComponent>
@@ -208,20 +192,12 @@ namespace Mani
 
 		inline ECS::EntityId Registry::create()
 		{
-			const ECS::EntityId entityId = m_entityContainer.create();
-			onEntityCreated.broadcast(*this, entityId);
-			return entityId;
+			return m_entityContainer.create();
 		}
 
 		inline bool Registry::destroy(ECS::EntityId entityId)
 		{
-			onBeforeEntityDestroyed.broadcast(*this, entityId);
-			if (m_entityContainer.destroy(entityId))
-			{
-				onEntityDestroyed.broadcast(*this, entityId);
-				return true;
-			}
-			return false;
+			return m_entityContainer.destroy(entityId);
 		}
 
 		inline void Registry::deferDestroy(ECS::EntityId entityId)

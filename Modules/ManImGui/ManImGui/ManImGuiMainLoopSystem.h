@@ -18,7 +18,7 @@ namespace Mani
         static bool isDisplayed(const ECS::Registry& registry);
 
     protected:
-        virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer);
+        virtual void onInitialize(ECS::Registry& registry, World& world);
         virtual void onDeinitialize(ECS::Registry& registry);
 
     private:

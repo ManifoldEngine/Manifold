@@ -18,12 +18,10 @@ namespace Mani
 		ECS::EntityId spawnScene(ECS::Registry& registry, const std::filesystem::path& path, const std::filesystem::path& materialAssetPath);
 
 	protected:
-		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
+		virtual void onInitialize(ECS::Registry& registry, World& world) override;
 	
 	private:
-		std::weak_ptr<AssetSystem> m_assetSystem;
-		
 		// todo #14: remove the material asset parameter.
-		ECS::EntityId spawnNode(ECS::Registry& registry, const Scene::Node& node, const std::shared_ptr<AssetSystem>& assetSystem, const std::filesystem::path& materialAssetPath);
+		ECS::EntityId spawnNode(ECS::Registry& registry, const Scene::Node& node, const std::filesystem::path& materialAssetPath);
 	};
 }

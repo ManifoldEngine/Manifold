@@ -30,9 +30,9 @@ public:
 	virtual bool shouldTick(ECS::Registry& registry) const override { return false; }
 
 protected:
-	virtual void onInitialize(ECS::Registry& registry, Mani::SystemContainer& systemContainer) override
+	virtual void onInitialize(ECS::Registry& registry, Mani::World& systemContainer) override
 	{
-		std::shared_ptr<AssetSystem> assetSystem = systemContainer.initializeDependency<AssetSystem>().lock();
+		systemContainer.initializeDependency<AssetSystem>();
 		std::weak_ptr<AssetImporterConfig> weakConfig = AssetSystem::loadAsset<AssetImporterConfig>(registry, "Config/AssetImporter.json");
 		MANI_ASSERT(!weakConfig.expired(), "Could not find Config/AssetImporter.json");
 
@@ -138,7 +138,7 @@ private:
 int main(int argc, char** argv)
 {
 	Application app;
-	app.getSystemContainer().createSystem<AssetImporterSystem>();
+	app.getWorld().createSystem<AssetImporterSystem>();
 
 	return EXIT_SUCCESS;
 }

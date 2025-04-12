@@ -11,9 +11,9 @@ using namespace Mani;
 
 Vec2f OpenGLInputSystem::s_mouse = VEC2F::ZERO;
 
-void Mani::OpenGLInputSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void Mani::OpenGLInputSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-    systemContainer.initializeDependency<InputSystem>();
+    world.initializeDependency<InputSystem>();
 
     OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
     MANI_ASSERT(context != nullptr, "We expect the window context to be accessible. If the window is owned by a parent registry, make sure to forward it to this registry.");

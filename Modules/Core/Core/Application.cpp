@@ -21,25 +21,25 @@ Application::Application()
 	MANI_ASSERT(s_application == nullptr, "an Application instance already exists.");
 	s_application = this;
 
-	m_systemContainer.initialize();
-	m_systemContainer.createSystem<LogSystem>()
-					 .createSystem<WorldSystem>();
+	m_world.initialize();
+	m_world.createSystem<LogSystem>()
+		.createSystem<WorldSystem>();
 
 #if MANI_DEBUG
-	m_systemContainer.createSystem<ProfilingSystem>();
+	m_world.createSystem<ProfilingSystem>();
 #endif
 }
 
 Application::~Application()
 {
-	m_systemContainer.deinitialize();
+	m_world.deinitialize();
 
 #if MANI_DEBUG
-	m_systemContainer.destroySystem<ProfilingSystem>();
+	m_world.destroySystem<ProfilingSystem>();
 #endif
 
-	m_systemContainer.destroySystem<WorldSystem>()
-					 .destroySystem<LogSystem>();
+	m_world.destroySystem<WorldSystem>()
+		.destroySystem<LogSystem>();
 
 	s_application = nullptr;
 }
@@ -52,7 +52,7 @@ Application& Mani::Application::get()
 void Application::run()
 {
 	Time::onApplicationStart();
-	m_systemContainer.initialize();
+	m_world.initialize();
 	m_isRunning = true;
 
 	while (m_isRunning)
@@ -60,7 +60,7 @@ void Application::run()
 		Time::onNewFrame();
 		tick(Time::getDeltaTime());
 	}
-	m_systemContainer.deinitialize();
+	m_world.deinitialize();
 }
 
 void Application::stop()
@@ -70,5 +70,5 @@ void Application::stop()
 
 void Application::tick(float deltaTime)
 {
-	m_systemContainer.tick(deltaTime);
+	m_world.tick(deltaTime);
 }

@@ -12,7 +12,7 @@ namespace Mani
 		virtual std::string_view getName() const override;
 		virtual bool shouldTick(ECS::Registry& registry) const override;
 
-		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
+		virtual void onInitialize(ECS::Registry& registry, World& world) override;
 		virtual void onDeinitialize(ECS::Registry& registry) override;
 
 		virtual void tick(float deltaTime, ECS::Registry& registry) override;

@@ -1,4 +1,3 @@
-#include <Core/System/SystemContainer.h>
 #include <Core/Application.h>
 #include <Core/World/WorldSystem.h>
 #include <Events/Event.h>
@@ -11,6 +10,9 @@ MANI_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 {
 	MANI_TEST(WorldSystemCreate, "Should create an Application and setup a world")
 	{
+		static bool SomeWorldSystemTicked = false;
+		
+
 		class SomeWorldSystem : public SystemBase
 		{
 		public:
@@ -19,16 +21,16 @@ MANI_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 
 			virtual void tick(float deltaTime, ECS::Registry& registry) override
 			{
-				hasTicked = true;
+				SomeWorldSystemTicked = true;
 			}
-
-			bool hasTicked = false;
 		};
+
+		static bool SomeAppSystemInitialized = false;
 
 		class SomeAppSystem : public SystemBase
 		{
 		public:
-			virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+			virtual void onInitialize(ECS::Registry& registry, World& world)
 			{
 				m_worldId = WorldSystem::createWorld(registry);
 				m_world = registry.get<World>(m_worldId);
@@ -39,8 +41,8 @@ MANI_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 					return;
 				}
 
-				m_world->systemContainer.createSystem<SomeWorldSystem>();
-				hasBeenInitialized = true;
+				m_world->createSystem<SomeWorldSystem>();
+				SomeAppSystemInitialized = true;
 			}
 
 			virtual void onDeinitialize(ECS::Registry& registry)
@@ -51,17 +53,15 @@ MANI_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 			// don't do this, this is for brievety's sake
 			ECS::EntityId m_worldId; 
 			World* m_world = nullptr;
-			bool hasBeenInitialized = false;
 		};
 
 		Application app;
-		std::shared_ptr<SomeAppSystem> sysApp = app.getSystemContainer().initializeDependency<SomeAppSystem>().lock();
-		MANI_TEST_ASSERT(sysApp->hasBeenInitialized == true, "should intialized SomeAppSystem");
+		app.getWorld().createSystem<SomeAppSystem>();
+		MANI_TEST_ASSERT(SomeAppSystemInitialized, "should intialized SomeAppSystem");
 		
 		app.tick(0.f);
 
-		std::shared_ptr<SomeWorldSystem> sysWorld = sysApp->m_world->systemContainer.getSystem<SomeWorldSystem>().lock();
-		MANI_TEST_ASSERT(sysWorld->hasTicked, "World should have ticked.");
+		MANI_TEST_ASSERT(SomeWorldSystemTicked, "World should have ticked.");
 	}
 }
 MANI_SECTION_END(WorldSystemSection)

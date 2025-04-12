@@ -14,7 +14,7 @@ namespace Mani
         virtual void tick(float deltaTime, ECS::Registry& registry) override;
 
     protected:
-        virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer);
+        virtual void onInitialize(ECS::Registry& registry, World& world);
         virtual void onDeinitialize(ECS::Registry& registry);
     };
 }

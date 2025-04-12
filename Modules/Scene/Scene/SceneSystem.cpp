@@ -19,31 +19,25 @@ bool SceneSystem::shouldTick(ECS::Registry& registry) const
 	return false;
 }
 
-void SceneSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void SceneSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-	m_assetSystem = systemContainer.initializeDependency<AssetSystem>();
+	world.initializeDependency<AssetSystem>();
 }
 
 ECS::EntityId SceneSystem::spawnScene(ECS::Registry& registry, const std::filesystem::path& path, const std::filesystem::path& materialAssetPath)
 {
-	if (m_assetSystem.expired())
-	{
-		return ECS::INVALID_ID;
-	}
-
-	std::shared_ptr<AssetSystem> assetSystem = m_assetSystem.lock();
 	std::shared_ptr<Scene> scene = AssetSystem::loadAsset<Scene>(registry, path).lock();
 	if (scene == nullptr)
 	{
 		return ECS::INVALID_ID;
 	}
 
-	const ECS::EntityId rootNodeEntityId = spawnNode(registry, Scene::Node(), assetSystem, materialAssetPath);
+	const ECS::EntityId rootNodeEntityId = spawnNode(registry, Scene::Node(), materialAssetPath);
 
 	for (const auto& node : scene->nodes)
 	{
 
-		const ECS::EntityId nodeEntityId = spawnNode(registry, node, assetSystem, materialAssetPath);
+		const ECS::EntityId nodeEntityId = spawnNode(registry, node, materialAssetPath);
 		
 		Transform* nodeTransform = registry.get<Transform>(nodeEntityId);
 		// nodeTransform->parentId = rootNodeEntityId; deprecated
@@ -52,13 +46,8 @@ ECS::EntityId SceneSystem::spawnScene(ECS::Registry& registry, const std::filesy
 	return rootNodeEntityId;
 }
 
-ECS::EntityId SceneSystem::spawnNode(ECS::Registry& registry, const Scene::Node& node, const std::shared_ptr<AssetSystem>& assetSystem, const std::filesystem::path& materialAssetPath)
+ECS::EntityId SceneSystem::spawnNode(ECS::Registry& registry, const Scene::Node& node, const std::filesystem::path& materialAssetPath)
 {
-	if (assetSystem == nullptr)
-	{
-		return ECS::INVALID_ID;
-	}
-
 	ECS::EntityId entityId = registry.create();
 
 	Transform* transform = registry.add<Transform>(entityId);
@@ -68,13 +57,13 @@ ECS::EntityId SceneSystem::spawnNode(ECS::Registry& registry, const Scene::Node&
 	// deprecated
 	if (!node.meshAsset.empty())
 	{
-		std::shared_ptr<Mesh> mesh = assetSystem->loadAsset<Mesh>(registry, node.meshAsset).lock();
+		std::shared_ptr<Mesh> mesh = AssetSystem::loadAsset<Mesh>(registry, node.meshAsset).lock();
 		if (mesh == nullptr)
 		{
 			return ECS::INVALID_ID;
 		}
 
-		std::shared_ptr<Material> material = assetSystem->loadAsset<Material>(registry, materialAssetPath).lock();
+		std::shared_ptr<Material> material = AssetSystem::loadAsset<Material>(registry, materialAssetPath).lock();
 		if (mesh == nullptr)
 		{
 			return ECS::INVALID_ID;

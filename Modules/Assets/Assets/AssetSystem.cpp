@@ -12,7 +12,7 @@ bool AssetSystem::shouldTick(ECS::Registry& registry) const
 	return false;
 }
 
-void Mani::AssetSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void Mani::AssetSystem::onInitialize(ECS::Registry& registry, World& systemContainer)
 {
 }
 

@@ -11,7 +11,7 @@ namespace Mani
         virtual bool shouldTick(ECS::Registry& registry) const override { return false; }
 
     protected:
-        virtual void onInitialize(ECS::Registry& registry, Mani::SystemContainer& systemContainer) override;
+        virtual void onInitialize(ECS::Registry& registry, Mani::World& systemContainer) override;
         virtual void onDeinitialize(ECS::Registry& registry) override;
     };
 }

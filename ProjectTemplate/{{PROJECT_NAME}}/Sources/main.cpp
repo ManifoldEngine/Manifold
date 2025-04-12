@@ -16,7 +16,7 @@ class HelloWorldSystem : public SystemBase
 };
 
 #if MANI_CONSOLE_APP
-int main((int argc, char** argv)
+int main(int argc, char** argv)
 #else
 int WinMain(
     _In_        HINSTANCE   hInstance, 

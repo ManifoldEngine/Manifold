@@ -24,7 +24,7 @@ bool CameraSystem::shouldTick(ECS::Registry& registry) const
     return true;
 }
 
-void CameraSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void CameraSystem::onInitialize(ECS::Registry& registry, World& world)
 {
     CameraSystemCache& cache = *registry.addSingle<CameraSystemCache>();
 

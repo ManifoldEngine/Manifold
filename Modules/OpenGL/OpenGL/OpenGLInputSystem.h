@@ -21,7 +21,7 @@ namespace Mani
 		
 		static int maniToGLFWCursorMode(Cursor::EMode mode);
 	protected:
-		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
+		virtual void onInitialize(ECS::Registry& registry, World& world) override;
 		virtual void onDeinitialize(ECS::Registry& registry) override;
 
 	private:

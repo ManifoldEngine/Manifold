@@ -21,9 +21,9 @@ std::string_view OpenGLResourceSystem::getName() const
     return "OpenGLResourceSystem";
 }
 
-void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-	systemContainer.initializeDependency<AssetSystem>();
+	world.initializeDependency<AssetSystem>();
 
 	AssetDatabase<Mesh>* meshDatabase = getOrAddDatabase<Mesh>(registry);
 	AssetDatabase<Material>* materialDatabase = getOrAddDatabase<Material>(registry);

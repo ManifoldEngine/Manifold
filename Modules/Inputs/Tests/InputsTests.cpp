@@ -4,7 +4,7 @@
 #include <Inputs/Data/InputControl.h>
 #include <Inputs/Data/InputDevice.h>
 #include <Inputs/Data/InputUser.h>
-#include <Core/System/SystemContainer.h>
+#include <Core/World/World.h>
 
 #ifndef MANI_WEBGL
 extern "C" __declspec(dllexport) void runTests()
@@ -34,7 +34,7 @@ public:
 	}
 
 protected:
-	virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override
+	virtual void onInitialize(ECS::Registry& registry, World& world) override
 	{
 		deviceId = registry.create();
 		InputDevice* inputDevice = registry.add<InputDevice>(deviceId);
@@ -43,6 +43,16 @@ protected:
 	virtual void onDeinitialize(ECS::Registry& registry) override
 	{
 		registry.destroy(deviceId);
+		deviceId = ECS::INVALID_ID;
+		buffer.clear();
+
+		m_aButton = { "AButton" };
+		m_bButton = { "BButton" };
+
+		m_leftStick = { "LeftStick" };
+		m_rightStick = { "LeftStick" };
+		m_rightBumper = { "RightBumper" };
+		m_leftBumper = { "LeftBumper" };
 	}
 
 public:
@@ -68,53 +78,77 @@ public:
 		return true;
 	}
 
-	ECS::EntityId getDeviceId() const { return deviceId; }
+	static ECS::EntityId getDeviceId() { return deviceId; }
 
-	void setLeftStick(float x, float y)
+	static void setLeftStick(float x, float y)
 	{
+		if (getDeviceId() == ECS::INVALID_ID)
+		{
+			return;
+		}
 		m_leftStick.x = x;
 		m_leftStick.y = y;
 	}
 
-	void setRightStick(float x, float y)
+	static void setRightStick(float x, float y)
 	{
+		if (getDeviceId() == ECS::INVALID_ID)
+		{
+			return;
+		}
 		m_rightStick.x = x;
 		m_rightStick.y = y;
 	}
 
-	void setAButton(bool isPressed)
+	static void setAButton(bool isPressed)
 	{
+		if (getDeviceId() == ECS::INVALID_ID)
+		{
+			return;
+		}
 		m_aButton.isPressed = isPressed;
 		buffer.push_back(m_aButton);
 	}
 
-	void setBButton(bool isPressed)
+	static void setBButton(bool isPressed)
 	{
+		if (getDeviceId() == ECS::INVALID_ID)
+		{
+			return;
+		}
 		m_bButton.isPressed = isPressed;
 		buffer.push_back(m_bButton);
 	}
 
-	void setLeftBumper(float x)
+	static void setLeftBumper(float x)
 	{
+		if (getDeviceId() == ECS::INVALID_ID)
+		{
+			return;
+		}
 		m_leftBumper.x = x;
 	}
 
-	void setRightBumper(float x)
+	static void setRightBumper(float x)
 	{
+		if (getDeviceId() == ECS::INVALID_ID)
+		{
+			return;
+		}
 		m_rightBumper.x = x;
 	}
 
-	std::vector<ButtonControl> buffer;
+	inline static std::vector<ButtonControl> buffer;
 private:
-	ECS::EntityId deviceId;
+	inline static ECS::EntityId deviceId = ECS::INVALID_ID;
 
-	ButtonControl m_aButton = { "AButton" };
-	ButtonControl m_bButton = { "BButton" };
+	inline static ButtonControl m_aButton = { "AButton" };
+	inline static ButtonControl m_bButton = { "BButton" };
 
-	AxisControl m_leftStick = { "LeftStick" };
-	AxisControl m_rightStick = { "LeftStick" };
-	AxisControl m_rightBumper = { "RightBumper" };
-	AxisControl m_leftBumper = { "LeftBumper" };
+	inline static AxisControl m_leftStick = { "LeftStick" };
+	inline static AxisControl m_rightStick = { "LeftStick" };
+	inline static AxisControl m_rightBumper = { "RightBumper" };
+	inline static AxisControl m_leftBumper = { "LeftBumper" };
 };
 
 std::unordered_map<std::string, InputAction> actionTemplate =
@@ -142,9 +176,9 @@ public:
 	virtual ETickGroup getTickGroup() const override { return ETickGroup::PostTick; }
 
 	// never do this!
-	InputUser* inputUser = nullptr;
-	InputUser previousInputUser;
-	std::vector<InputAction> registeredActions;
+	inline static InputUser* inputUser = nullptr;
+	inline static InputUser previousInputUser;
+	inline static std::vector<InputAction> registeredActions;
 
 	virtual void tick(float deltaTime, ECS::Registry& registry) override
 	{
@@ -167,13 +201,20 @@ public:
 	}
 
 protected:
-	virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override
+	virtual void onInitialize(ECS::Registry& registry, World& world) override
 	{
-		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
+		world.initializeDependency<VirtualControllerSystem>();
 
 		ECS::EntityId entityId = registry.create();
 		inputUser = registry.add<InputUser>(entityId);
-		inputUser->inputDevices.push_back(controller->getDeviceId());
+		inputUser->inputDevices.push_back(VirtualControllerSystem::getDeviceId());
+	}
+
+	virtual void onDeinitialize(ECS::Registry& registry) override
+	{
+		inputUser = nullptr;
+		previousInputUser = InputUser();
+		registeredActions.clear();
 	}
 };
 
@@ -181,39 +222,39 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 {
 	MANI_TEST(CreateInputUser, "Should create an input user and assign an input generator to it.")
 	{
-		SystemContainer systemContainer;
-		systemContainer.initialize();
+		World world;
+		world.initialize();
 
-		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
-		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
+		world.createSystem<VirtualControllerSystem>();
+		world.createSystem<InputSystem>();
 				
 		// press A button before pluging in the virtual controller
-		controller->setAButton(true);
+		VirtualControllerSystem::setAButton(true);
 
-		systemContainer.tick(.0f);
+		world.tick(.0f);
 
 		// create a user and assign them the virtual controller.
-		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
-		inputUser->inputUser->actions = actionTemplate;
-		inputUser->inputUser->bindings = inputBindingsTemplate;
-		std::vector<InputAction>& registeredActions = inputUser->registeredActions;
+		world.initializeDependency<InputUserMockSystem>();
+		InputUserMockSystem::inputUser->actions = actionTemplate;
+		InputUserMockSystem::inputUser->bindings = inputBindingsTemplate;
+		std::vector<InputAction>& registeredActions = InputUserMockSystem::registeredActions;
 
 		// press A button again
-		controller->setAButton(true);
+		VirtualControllerSystem::setAButton(true);
 		// tick the system, consumes input buffers
-		systemContainer.tick(.0f);
+		world.tick(.0f);
 
 		MANI_TEST_ASSERT(registeredActions.size() == 1, "Should have registered an input because the button was already pressed.");
 
 		// left stick diagonal right+up
-		controller->setLeftStick(1.f, 1.f);
+		VirtualControllerSystem::setLeftStick(1.f, 1.f);
 		// release A button
-		controller->setAButton(false);
+		VirtualControllerSystem::setAButton(false);
 		// then press B button
-		controller->setBButton(true);
+		VirtualControllerSystem::setBButton(true);
 
 		// tick the system, consumes input buffers
-		systemContainer.tick(.0f);
+		world.tick(.0f);
 		
 		MANI_TEST_ASSERT(registeredActions.size() == 4, "Should have registered an input");
 		
@@ -226,89 +267,88 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		InputAction lastAction = registeredActions.back();
 		MANI_TEST_ASSERT(lastAction.name == "Move" && lastAction.x > 0 && lastAction.y > 0, "Last action should be Dodge true");
 
-		systemContainer.deinitialize();
+		world.deinitialize();
 	}
 
 	MANI_TEST(MultiAxisInteraction, "Two opposite axis on the same direction should result in zero")
 	{
-		SystemContainer systemContainer;
-		systemContainer.initialize();
+		World world;
+		world.initialize();
 
-		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
-		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
-		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
+		world.createSystem<VirtualControllerSystem>();
+		world.createSystem<InputSystem>();
+		world.createSystem<InputUserMockSystem>();
 
 		// create a user and assign them the virtual controller.
-		inputUser->inputUser->actions =
+		InputUserMockSystem::inputUser->actions =
 		{
 			{ "Move", { "Move" }}
 		};
 		
-		inputUser->inputUser->bindings =
+		InputUserMockSystem::inputUser->bindings =
 		{
 			{ "LeftStick", { "Move" }},
 			{ "RightStick", { "Move" }}
 		};
 
 		// tick the system, consumes input buffers
-		systemContainer.tick(.0f);
+		world.tick(.0f);
 
 		// left stick full left
-		controller->setLeftStick(-1.f, 0.f);
+		VirtualControllerSystem::setLeftStick(-1.f, 0.f);
 		// right stick full right
-		controller->setRightStick(1.f, 0.f);
+		VirtualControllerSystem::setRightStick(1.f, 0.f);
 
 		// tick the system, consumes input buffers
-		systemContainer.tick(.0f);
+		world.tick(.0f);
 
-		const InputAction& moveAction = inputUser->inputUser->actions["Move"];
+		const InputAction& moveAction = InputUserMockSystem::inputUser->actions["Move"];
 		MANI_TEST_ASSERT(moveAction.x <= FLT_EPSILON, "Move X axis should be zero");
 
-		systemContainer.deinitialize();
+		world.deinitialize();
 	}
 
 	MANI_TEST(PressUnassignedButton, "Should press an unassigned button without side effects")
 	{
-		SystemContainer systemContainer;
-		systemContainer.initialize();
+		World world;
+		world.initialize();
 
-		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
-		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
-		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
+		world.createSystem<VirtualControllerSystem>();
+		world.createSystem<InputSystem>();
+		world.createSystem<InputUserMockSystem>();
 
-		controller->setAButton(true);
-		controller->setBButton(true);
-		controller->setLeftStick(-1.f, 1.f);
-		controller->setRightStick(1.f, -1.f);
-		controller->setLeftBumper(1.f);
-		controller->setRightBumper(1.f);
+		VirtualControllerSystem::setAButton(true);
+		VirtualControllerSystem::setBButton(true);
+		VirtualControllerSystem::setLeftStick(-1.f, 1.f);
+		VirtualControllerSystem::setRightStick(1.f, -1.f);
+		VirtualControllerSystem::setLeftBumper(1.f);
+		VirtualControllerSystem::setRightBumper(1.f);
 
 		// this should not crash.
-		systemContainer.tick(0.f);
+		world.tick(0.f);
 		
-		MANI_TEST_ASSERT(inputUser->registeredActions.empty(), "Action should not have been triggered.");
+		MANI_TEST_ASSERT(InputUserMockSystem::registeredActions.empty(), "Action should not have been triggered.");
 	
-		systemContainer.deinitialize();
+		world.deinitialize();
 	}
 
 	MANI_TEST(AssignControlToMultipleAction, "Should press receive multiple actions for a single control")
 	{
-		SystemContainer systemContainer;
-		systemContainer.initialize();
+		World world;
+		world.initialize();
 
-
-		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
-		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
-		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
-		std::vector<InputAction>& actionEvents = inputUser->registeredActions;
+		world.createSystem<VirtualControllerSystem>();
+		world.createSystem<InputSystem>();
+		world.createSystem<InputUserMockSystem>();
+		std::vector<InputAction>& actionEvents = InputUserMockSystem::registeredActions;
 		
 		// create a user and assign them the virtual controller.
-		inputUser->inputUser->actions =
+		InputUserMockSystem::inputUser->actions =
 		{
 			{ "Jump",{ "Jump" } },
 			{ "Dodge",{ "Dodge" } }
 		};
-		inputUser->inputUser->bindings =
+		InputUserMockSystem::inputUser->bindings =
 		{
 			{
 				"AButton",
@@ -319,16 +359,16 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 			}
 		};
 
-		controller->setAButton(true);
+		VirtualControllerSystem::setAButton(true);
 		
 		// this should not crash.
-		systemContainer.tick(0.f);
+		world.tick(0.f);
 
 		MANI_TEST_ASSERT(actionEvents.size() == 2, "Should have registered 2 actions");
 		MANI_TEST_ASSERT(actionEvents[0].name == "Jump", "First action should have been jump");
 		MANI_TEST_ASSERT(actionEvents[1].name == "Dodge", "Second action should have been jump");
 
-		systemContainer.deinitialize();
+		world.deinitialize();
 	}
 }
 MANI_SECTION_END(Inputs)

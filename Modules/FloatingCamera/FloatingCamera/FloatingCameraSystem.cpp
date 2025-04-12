@@ -7,7 +7,7 @@
 
 using namespace Mani;
 
-void FloatingCameraSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void FloatingCameraSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	ECS::EntityId entityId = registry.create();
 	registry.add<FloatingCamera>(entityId);

@@ -15,7 +15,7 @@ void ManImGuiProfilingStatsSystem::tick(float deltaTime, Mani::ECS::Registry& re
 	}
 
 	// this system might not be in the application's registry, but below it.
-	const ECS::Registry& appRegistry = Application::get().getSystemContainer().getRegistry();
+	const ECS::Registry& appRegistry = Application::get().getWorld().getRegistry();
 	const ScopedTimerDatabase* database = appRegistry.getSingle<ScopedTimerDatabase>();
 	if (database == nullptr)
 	{

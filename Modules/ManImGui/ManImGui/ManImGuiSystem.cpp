@@ -6,7 +6,7 @@
 
 #include "OpenGL/OpenGLWindowContext.h"
 
-void Mani::ManImGuiSystem::onInitialize(ECS::Registry& registry, Mani::SystemContainer& systemContainer)
+void Mani::ManImGuiSystem::onInitialize(ECS::Registry& registry, Mani::World& systemContainer)
 {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();

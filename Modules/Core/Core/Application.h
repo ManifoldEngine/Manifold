@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Core/Core.h>
-#include <Core/System/SystemContainer.h>
+#include <Core/World/World.h>
 #include <Core/Thread/ThreadPool.h>
 
 namespace Mani
@@ -19,7 +19,7 @@ namespace Mani
 
 		void tick(float deltaTime);
 	
-		SystemContainer& getSystemContainer() { return m_systemContainer; }
+		World& getWorld() { return m_world; }
 		ThreadPool& getThreadPool() { return m_threadPool; }
 
 		bool isRunning() const { return m_isRunning; }
@@ -29,7 +29,7 @@ namespace Mani
 
 		bool m_isRunning = false;
 		
-		SystemContainer m_systemContainer;
+		World m_world;
 		ThreadPool m_threadPool;
 	};
 }

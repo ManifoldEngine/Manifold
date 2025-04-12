@@ -35,7 +35,7 @@ bool OpenGLSystem::shouldTick(ECS::Registry& registry) const
     return false;
 }
 
-void OpenGLSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
 {
     // initialize glfw
     if (!glfwInit())

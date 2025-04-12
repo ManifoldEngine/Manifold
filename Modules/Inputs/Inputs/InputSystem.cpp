@@ -8,7 +8,7 @@
 
 using namespace Mani;
 
-void Mani::InputSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void Mani::InputSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	registry.addSingle<Cursor>();
 }

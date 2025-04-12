@@ -8,7 +8,7 @@ ECS::EntityId Mani::WorldSystem::createWorld(ECS::Registry& registry)
 {
 	ECS::EntityId worldId = registry.create();
 	World* world = registry.add<World>(worldId);
-	world->systemContainer.initialize();
+	world->initialize();
 	return worldId;
 }
 
@@ -16,7 +16,7 @@ void Mani::WorldSystem::destroyWorld(ECS::Registry& registry, ECS::EntityId enti
 {
 	if (World* world = registry.get<World>(entityId))
 	{
-		world->systemContainer.deinitialize();
+		world->deinitialize();
 		registry.destroy(entityId);
 	}
 }
@@ -26,6 +26,6 @@ void WorldSystem::tick(float deltaTime, ECS::Registry& registry)
 	for (const ECS::EntityId entityId : ECS::View<World>(registry))
 	{
 		World& world = *registry.get<World>(entityId);
-		world.systemContainer.tick(deltaTime);
+		world.tick(deltaTime);
 	}
 }

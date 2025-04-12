@@ -6,7 +6,7 @@
 
 #include <RenderAPI/Shader.h>
 
-#include <Utils/StringUtils.h>
+#include <Core/ManiString.h>
 
 #include <ManiZ/ManiZ.h>
 #include <filesystem>
@@ -58,8 +58,8 @@ bool ShaderImporter::parseShaderSourceFileFromPath(const std::filesystem::path& 
 		const size_t typeNameBeginIndex = typeTokenIndex + typeToken.size();
 
 		// extract the type name
-		const std::string typeName = StringUtils::removeWhiteSpace(
-			StringUtils::toLower(
+		const std::string typeName = removeWhiteSpace(
+			toLower(
 				source.substr(typeNameBeginIndex, endOfLineIndex - typeNameBeginIndex)
 			));
 
