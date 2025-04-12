@@ -12,13 +12,13 @@ namespace Mani
 		PostTick = 2,
 	};
 
+	class SystemContainer;
+
 	namespace ECS
 	{
 		class Registry;
 	}
-
-	class SystemContainer;
-	
+		
 	class SystemBase
 	{
 	public:

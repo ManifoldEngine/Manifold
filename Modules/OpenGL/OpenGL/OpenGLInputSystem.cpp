@@ -1,5 +1,6 @@
 #include "OpenGLInputSystem.h"
 
+#include <Inputs/InputSystem.h>
 #include <Inputs/Data/InputDevice.h>
 
 #include <GLFW/glfw3.h>
@@ -12,6 +13,8 @@ Vec2f OpenGLInputSystem::s_mouse = VEC2F::ZERO;
 
 void Mani::OpenGLInputSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
 {
+    systemContainer.initializeDependency<InputSystem>();
+
     OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
     MANI_ASSERT(context != nullptr, "We expect the window context to be accessible. If the window is owned by a parent registry, make sure to forward it to this registry.");
     glfwSetCursorPosCallback(context->window, &OpenGLInputSystem::glfwCallback_onMouseMoved);
@@ -48,8 +51,15 @@ void Mani::OpenGLInputSystem::tick(float deltaTime, ECS::Registry& registry)
     mouse.x = s_mouse.x;
     mouse.y = s_mouse.y;
 
+
     const OpenGLWindowContext& context = *registry.getSingle<OpenGLWindowContext>();
     
+    {
+        // handle cursord mode.
+        Cursor& cursor = *registry.getSingle<Cursor>();
+        glfwSetInputMode(context.window, GLFW_CURSOR, maniToGLFWCursorMode(cursor.mode));
+    }
+
     // W
     if (glfwGetKey(context.window, GLFW_KEY_W) == GLFW_PRESS)
     {
@@ -144,6 +154,23 @@ void Mani::OpenGLInputSystem::tick(float deltaTime, ECS::Registry& registry)
     if (glfwGetKey(context.window, GLFW_KEY_SPACE) == GLFW_RELEASE)
     {
         inputDevice.buttonBuffer.emplace_back(ButtonControl{ "Space", false });
+    }
+}
+
+int Mani::OpenGLInputSystem::maniToGLFWCursorMode(Cursor::EMode mode)
+{
+    switch (mode)
+    {
+        case Cursor::EMode::HIDDEN:
+            return GLFW_CURSOR_HIDDEN;
+        case Cursor::EMode::NORMAL:
+            return GLFW_CURSOR_NORMAL;
+        case Cursor::EMode::DISABLED:
+            return GLFW_CURSOR_DISABLED;
+        case Cursor::EMode::CAPTURED:
+            return GLFW_CURSOR_CAPTURED;
+        default:
+            return 0;
     }
 }
 

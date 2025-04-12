@@ -51,12 +51,16 @@ namespace Mani
                 ECS::EntityId operator*() const;
                 bool operator==(const Iterator& other) const;
                 bool operator!=(const Iterator& other) const;
+                bool operator>(const Iterator& other) const;
+                bool operator<(const Iterator& other) const;
+                bool operator>=(const Iterator& other) const;
+                bool operator<=(const Iterator& other) const;
                 Iterator& operator++();
 
             private:
-                ECS::EntityId m_currentEntityId;
-                const Registry* m_registry;
-                size_t m_size;
+                ECS::EntityId m_currentEntityId = ECS::INVALID_ID;
+                const Registry* m_registry = nullptr;
+                size_t m_size = 0;
                 Bitset<Mani::ECS::MAX_COMPONENTS> m_componentMask;
                 bool m_isAll = false;
 
@@ -146,6 +150,34 @@ namespace Mani
             return m_registry != other.m_registry ||
                 m_size != other.m_size ||
                 m_currentEntityId != other.m_currentEntityId;
+        }
+
+        template<typename ...TComponents>
+        inline bool View<TComponents...>::Iterator::operator>(const Iterator& other) const
+        {
+            assert(m_registry == other.m_registry);
+            return m_currentEntityId > other.m_currentEntityId;
+        }
+
+        template<typename ...TComponents>
+        inline bool View<TComponents...>::Iterator::operator<(const Iterator& other) const
+        {
+            assert(m_registry == other.m_registry);
+            return m_currentEntityId < other.m_currentEntityId;
+        }
+
+        template<typename ...TComponents>
+        inline bool View<TComponents...>::Iterator::operator>=(const Iterator& other) const
+        {
+            assert(m_registry == other.m_registry);
+            return m_currentEntityId >= other.m_currentEntityId;
+        }
+
+        template<typename ...TComponents>
+        inline bool View<TComponents...>::Iterator::operator<=(const Iterator& other) const
+        {
+            assert(m_registry == other.m_registry);
+            return m_currentEntityId <= other.m_currentEntityId;
         }
 
         template<typename ...TComponents>

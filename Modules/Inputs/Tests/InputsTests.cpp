@@ -272,16 +272,9 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		SystemContainer systemContainer;
 		systemContainer.initialize();
 
-		bool bHasActionBeenTriggered = false;
-
 		std::shared_ptr<VirtualControllerSystem> controller = systemContainer.initializeDependency<VirtualControllerSystem>().lock();
 		std::shared_ptr<InputSystem> inputSystem = systemContainer.initializeDependency<InputSystem>().lock();
 		std::shared_ptr<InputUserMockSystem> inputUser = systemContainer.initializeDependency<InputUserMockSystem>().lock();
-
-		EventHandle handle = inputSystem->onActionEvent.subscribe([&bHasActionBeenTriggered](ECS::EntityId entityId, const InputAction& action)
-		{
-			bHasActionBeenTriggered = true;
-		});
 
 		controller->setAButton(true);
 		controller->setBButton(true);
@@ -293,10 +286,8 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		// this should not crash.
 		systemContainer.tick(0.f);
 		
-		MANI_TEST_ASSERT(bHasActionBeenTriggered == false, "Action should not have been triggered.");
-
-		inputSystem->onActionEvent.unsubscribe(handle);
-		
+		MANI_TEST_ASSERT(inputUser->registeredActions.empty(), "Action should not have been triggered.");
+	
 		systemContainer.deinitialize();
 	}
 

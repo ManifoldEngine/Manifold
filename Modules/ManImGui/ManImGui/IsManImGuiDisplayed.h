@@ -1,6 +1,9 @@
 #pragma once
 
-struct IsManImGuiDisplayed
+namespace Mani
 {
-	bool value = false;
-};
+	struct IsManImGuiDisplayed
+	{
+		bool value = false;
+	};
+}

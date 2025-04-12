@@ -2,7 +2,7 @@
 
 #include <OpenGL/OpenGL.h>
 #include <Core/CoreFwd.h>
-#include <memory>
+#include <Inputs/Cursor.h>
 
 struct GLFWwindow;
 
@@ -19,6 +19,7 @@ namespace Mani
 
 		virtual void tick(float deltaTime, ECS::Registry& registry) override;
 		
+		static int maniToGLFWCursorMode(Cursor::EMode mode);
 	protected:
 		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
 		virtual void onDeinitialize(ECS::Registry& registry) override;

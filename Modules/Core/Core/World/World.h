@@ -5,8 +5,6 @@
 
 namespace Mani
 {
-	class SystemContainer;
-
 	struct World
 	{
 		SystemContainer systemContainer;

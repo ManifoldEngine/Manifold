@@ -34,6 +34,20 @@ namespace Mani
 			std::clock_t end;
 		};
 	}
+
+	struct ScopedTimerStats
+	{
+		unsigned long count = 0;
+		double accumulator = 0;
+		double min = 0;
+		double max = 0;
+		double lastValue = 0;
+	};
+
+	struct ScopedTimerDatabase
+	{
+		std::unordered_map<std::string, ScopedTimerStats> scopedTimers;
+	};
 }
 
 #if MANI_DEBUG

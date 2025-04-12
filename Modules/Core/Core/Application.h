@@ -1,11 +1,11 @@
 #pragma once
 
 #include <Core/Core.h>
+#include <Core/System/SystemContainer.h>
+#include <Core/Thread/ThreadPool.h>
 
 namespace Mani
 {
-	class SystemContainer;
-
 	class Application
 	{
 	public:
@@ -17,10 +17,11 @@ namespace Mani
 		void run();
 		void stop();
 
-		// Inherited via ITickable
 		void tick(float deltaTime);
 	
-		SystemContainer& getSystemContainer();
+		SystemContainer& getSystemContainer() { return m_systemContainer; }
+		ThreadPool& getThreadPool() { return m_threadPool; }
+
 		bool isRunning() const { return m_isRunning; }
 
 	private:
@@ -28,6 +29,7 @@ namespace Mani
 
 		bool m_isRunning = false;
 		
-		SystemContainer* m_systemContainer = nullptr;
+		SystemContainer m_systemContainer;
+		ThreadPool m_threadPool;
 	};
 }
