@@ -4,6 +4,7 @@
 #include "Registry.h"
 #include "Entity.h"
 #include "Bitset.h"
+#include <ManiMaths/Maths.h>
 #include <cassert>
 
 namespace Mani
@@ -19,7 +20,7 @@ namespace Mani
         public:
             View() = default;
 
-            View(const Registry& registry)
+            View(Registry& registry)
                 : m_registry(&registry)
             {
                 if (sizeof...(TComponents) == 0)
@@ -96,6 +97,24 @@ namespace Mani
                 return Iterator(m_registry, m_registry->unadjustedSize(), m_componentMask, m_bisAll);
             }
 
+            const Iterator at(ECS::EntityId entityId) const
+            {
+                assert(m_registry != nullptr);
+                if (entityId >= m_registry->unadjustedSize())
+                {
+                    return end();
+                }
+
+                Iterator it(m_registry, entityId, m_componentMask, m_bisAll);
+                if (m_registry->isValid(entityId) && m_registry->getEntity(entityId)->hasComponents(m_componentMask))
+                {
+                    return it;
+                }
+
+                ++it;
+                return it;
+            }
+
             ECS::EntityId first() const
             {
                 return *begin();
@@ -106,8 +125,26 @@ namespace Mani
                 return *end();
             }
 
+            size_t size() const 
+            {
+                assert(m_registry != nullptr);
+                return m_registry->size();
+            }
+
+            size_t unadjustedSize() const
+            {
+                assert(m_registry != nullptr);
+                return m_registry->unadjustedSize();
+            }
+
+            Registry& getRegistry()
+            {
+                assert(m_registry != nullptr);
+                return *m_registry;
+            }
+
         private:
-            const Registry* m_registry = nullptr;
+            Registry* m_registry = nullptr;
             Bitset<ECS::MAX_COMPONENTS> m_componentMask;
             bool m_bisAll = false;
         };

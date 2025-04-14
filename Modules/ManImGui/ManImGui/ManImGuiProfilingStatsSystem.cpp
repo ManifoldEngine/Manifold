@@ -1,6 +1,6 @@
 #include "ManImGuiProfilingStatsSystem.h"
 
-#include "ManImGuiMainLoopSystem.h"
+#include "ManImGuiBeginFrameSystem.h"
 
 #include <Core/Debug/Profiling.h>
 #include "imgui.h"
@@ -9,7 +9,7 @@ using namespace Mani;
 
 void ManImGuiProfilingStatsSystem::tick(float deltaTime, Mani::ECS::Registry& registry)
 {
-	if (!ManImGuiMainLoopSystem::isDisplayed(registry))
+	if (!ManImGuiBeginFrameSystem::isDisplayed(registry))
 	{
 		return;
 	}

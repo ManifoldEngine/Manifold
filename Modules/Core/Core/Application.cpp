@@ -8,8 +8,6 @@
 #include <Debug/ProfilingSystem.h>
 #endif
 
-constexpr size_t THREAD_COUNT = 10; // todo make this configurable ??
-
 using namespace Mani;
 
 Application* Application::s_application = nullptr;

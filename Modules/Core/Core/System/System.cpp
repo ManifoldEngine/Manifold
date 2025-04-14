@@ -17,7 +17,7 @@ bool SystemBase::shouldTick(ECS::Registry& registry) const
 
 ETickGroup SystemBase::getTickGroup() const
 {
-    return ETickGroup::Tick;
+    return ETickGroup::Update;
 }
 
 void SystemBase::initialize(ECS::Registry& registry, World& world)

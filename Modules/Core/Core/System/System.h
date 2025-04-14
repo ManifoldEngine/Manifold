@@ -7,9 +7,11 @@ namespace Mani
 {
 	enum class ETickGroup : uint8_t
 	{
-		PreTick = 0,
-		Tick = 1,
-		PostTick = 2,
+		Begin = 0,
+		Input = 1,
+		Update = 2,
+		Render = 3,
+		End = 4,
 	};
 
 	class World;

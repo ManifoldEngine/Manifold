@@ -20,7 +20,7 @@ class VirtualControllerSystem : public SystemBase
 public:
 	virtual std::string_view getName() const override { return "VirtualControllerSystem"; }
 	virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
-	virtual ETickGroup getTickGroup() const override { return ETickGroup::PreTick; }
+	virtual ETickGroup getTickGroup() const override { return ETickGroup::Input; }
 
 	virtual void tick(float deltaTime, ECS::Registry& registry)
 	{
@@ -173,7 +173,7 @@ class InputUserMockSystem : public SystemBase
 public:
 	virtual std::string_view getName() const override { return "VirtualControllerSystem"; }
 	virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
-	virtual ETickGroup getTickGroup() const override { return ETickGroup::PostTick; }
+	virtual ETickGroup getTickGroup() const override { return ETickGroup::Update; }
 
 	// never do this!
 	inline static InputUser* inputUser = nullptr;

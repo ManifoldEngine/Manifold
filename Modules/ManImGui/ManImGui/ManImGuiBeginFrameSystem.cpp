@@ -1,4 +1,4 @@
-#include "ManImGuiMainLoopSystem.h"
+#include "ManImGuiBeginFrameSystem.h"
 
 #include "IsManImGuiDisplayed.h"
 
@@ -20,7 +20,7 @@ struct CursorModeCache
 	Cursor::EMode mode = Cursor::EMode::DISABLED;
 };
 
-void Mani::ManImGuiMainLoopSystem::onInitialize(ECS::Registry& registry, World& world)
+void Mani::ManImGuiBeginFrameSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<InputSystem>();
 
@@ -42,7 +42,7 @@ void Mani::ManImGuiMainLoopSystem::onInitialize(ECS::Registry& registry, World& 
 	registry.addSingle<CursorModeCache>();
 }
 
-void Mani::ManImGuiMainLoopSystem::onDeinitialize(ECS::Registry& registry)
+void Mani::ManImGuiBeginFrameSystem::onDeinitialize(ECS::Registry& registry)
 {
 	for (const auto entityId : ECS::View<IsManImGuiDisplayed>(registry))
 	{
@@ -52,7 +52,7 @@ void Mani::ManImGuiMainLoopSystem::onDeinitialize(ECS::Registry& registry)
 	registry.removeSingle<CursorModeCache>();
 }
 
-void Mani::ManImGuiMainLoopSystem::tick(float deltaTime, Mani::ECS::Registry& registry)
+void Mani::ManImGuiBeginFrameSystem::tick(float deltaTime, Mani::ECS::Registry& registry)
 {
 	const ECS::View<IsManImGuiDisplayed, InputUser> view(registry);
 	const ECS::EntityId entityId = view.first();
@@ -74,7 +74,7 @@ void Mani::ManImGuiMainLoopSystem::tick(float deltaTime, Mani::ECS::Registry& re
 	ImGui::NewFrame();
 }
 
-bool ManImGuiMainLoopSystem::isDisplayed(const ECS::Registry& registry)
+bool ManImGuiBeginFrameSystem::isDisplayed(const ECS::Registry& registry)
 {
 	const ECS::View<IsManImGuiDisplayed> view(registry);
 	const ECS::EntityId entityId = view.first();
@@ -86,7 +86,7 @@ bool ManImGuiMainLoopSystem::isDisplayed(const ECS::Registry& registry)
 	return false;
 }
 
-void ManImGuiMainLoopSystem::handleInputs(ECS::Registry& registry, IsManImGuiDisplayed& isManImGuiDisplayed, const InputAction& toggleManImGui)
+void ManImGuiBeginFrameSystem::handleInputs(ECS::Registry& registry, IsManImGuiDisplayed& isManImGuiDisplayed, const InputAction& toggleManImGui)
 {
 	if (!toggleManImGui.changed() || !toggleManImGui.isPressed)
 	{

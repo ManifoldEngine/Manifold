@@ -9,6 +9,8 @@ namespace Mani
 	class Application
 	{
 	public:
+		static constexpr size_t THREAD_COUNT = 10;
+
 		Application();
 		~Application();
 

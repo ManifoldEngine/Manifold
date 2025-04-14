@@ -7,7 +7,7 @@ namespace Mani
     struct IsManImGuiDisplayed;
     struct InputAction;
 
-    class ManImGuiMainLoopSystem : public Mani::SystemBase
+    class ManImGuiBeginFrameSystem : public Mani::SystemBase
     {
     public:
         virtual std::string_view getName() const override { return "ManImGuiSystem"; }

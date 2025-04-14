@@ -50,7 +50,7 @@ namespace Mani
 			std::vector<Entity> m_entities;
 			std::vector<ECS::EntityId> m_entityPool;
 			std::unordered_set<ECS::EntityId> m_markedForDestroy;
-			std::unordered_map<std::type_index, ComponentId> m_componentIds;
+			std::vector<std::pair<std::type_index, ComponentId>> m_componentIds;
 		};
 	}
 }

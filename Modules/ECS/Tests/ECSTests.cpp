@@ -444,7 +444,42 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			registry.add<OtherComponent>(newId);
 		}
 	}
-	
+
+	MANI_TEST(RegistryViewAt, "should be able to construct a view iterator at a specific position")
+	{
+		struct MyComponent {};
+		{
+			ECS::Registry registry;
+
+			for (int i = 0; i < 6; ++i)
+			{
+				const ECS::EntityId entityId = registry.create();
+				registry.add<MyComponent>(entityId);
+			}
+
+			auto it = ECS::View<MyComponent>(registry).at(3);
+			MANI_TEST_ASSERT(*it == 3, "Should be entity #3");
+		}
+
+		struct MyOtherComponent {};
+		{
+			ECS::Registry registry;
+
+			for (int i = 0; i < 6; ++i)
+			{
+				const ECS::EntityId entityId = registry.create();
+				registry.add<MyComponent>(entityId);
+			}
+			{
+				const ECS::EntityId entityId = registry.create();
+				registry.add<MyOtherComponent>(entityId);
+				
+				auto it = ECS::View<MyOtherComponent>(registry).at(3);
+				MANI_TEST_ASSERT(*it == entityId, "Should have iterated over to the entity that has MyOtherComponent");
+			}
+		}
+	}
+
 	MANI_SECTION_BEGIN(TemplatedComponents, "tests on templated components")
 	{
 		template<typename T>
@@ -467,6 +502,6 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 		}
 	}
-	MANI_SECTION_END(TemplatedComponents)
+	MANI_SECTION_END(TemplatedComponents);
 }
 MANI_SECTION_END(ECS)
