@@ -1,288 +1,244 @@
 #include "OpenGLResourceSystem.h"
 
-#include <Assets/AssetSystem.h>
+#include <Resources/ResourceSystem.h>
 
-#include <OpenGL/Render/OpenGLBuffer.h>
-#include <OpenGL/Render/OpenGLVertexArray.h>
-#include <OpenGL/Render/OpenGLTexture.h>
-#include <OpenGL/Render/OpenGLShader.h>
-#include <OpenGL/Render/OpenGLMaterial.h>
-#include <OpenGL/Render/OpenGLSprite.h>
+#include <ECS/Entity.h>
+
+#include <OpenGL/Render/OpenGLResource.h>
+#include <OpenGL/Data/OpenGLBuffer.h>
+#include <OpenGL/Data/OpenGLVertexArray.h>
+#include <OpenGL/Data/OpenGLTexture.h>
+#include <OpenGL/Data/OpenGLShader.h>
+#include <OpenGL/Data/OpenGLMaterial.h>
+#include <OpenGL/Data/OpenGLSprite.h>
+#include <OpenGL/Data/STBITexture.h>
 
 #include <RenderAPI/Mesh.h>
 #include <RenderAPI/Material.h>
-#include <RenderAPI/Shader.h>
 #include <RenderAPI/Sprite.h>
+#include <RenderAPI/Shader.h>
 
 using namespace Mani;
 
-std::string_view OpenGLResourceSystem::getName() const
+void OpenGLResourceSystemExtension::onResourceCreated(ECS::Registry& registry, ECS::EntityId entityId) const
 {
-    return "OpenGLResourceSystem";
+	const ECS::Entity* entity = registry.getEntity(entityId);
+	if (entity == nullptr)
+	{
+		return;
+	}
+
+	const ECS::ComponentId meshId = registry.getComponentId<Resource<Mesh>>();
+	if (entity->hasComponent(meshId))
+	{
+		OpenGLResourceSystem::onMeshLoaded(registry, entityId);
+		return;
+	}
+
+	const ECS::ComponentId materialId = registry.getComponentId<Resource<Material>>();
+	if (entity->hasComponent(materialId))
+	{
+		OpenGLResourceSystem::onMaterialLoaded(registry, entityId);
+		return;
+	}
+
+	const ECS::ComponentId spriteId = registry.getComponentId<Resource<Sprite>>();
+	if (entity->hasComponent(spriteId))
+	{
+		OpenGLResourceSystem::onSpriteLoaded(registry, entityId);
+		return;
+	}
+
+	const ECS::ComponentId shaderId = registry.getComponentId<Resource<Shader>>();
+	if (entity->hasComponent(shaderId))
+	{
+		OpenGLResourceSystem::onShaderLoaded(registry, entityId);
+		return;
+	}
 }
+
+void OpenGLResourceSystemExtension::onResourceDestroyed(ECS::Registry& registry, ECS::EntityId entityId) const
+{
+	const ECS::Entity* entity = registry.getEntity(entityId);
+	if (entity == nullptr)
+	{
+		return;
+	}
+
+	const ECS::ComponentId meshId = registry.getComponentId<Resource<Mesh>>();
+	if (entity->hasComponent(meshId))
+	{
+		OpenGLResourceSystem::onMeshUnloaded(registry, entityId);
+		return;
+	}
+
+	const ECS::ComponentId materialId = registry.getComponentId<Resource<Material>>();
+	if (entity->hasComponent(materialId))
+	{
+		OpenGLResourceSystem::onMaterialUnloaded(registry, entityId);
+		return;
+	}
+
+	const ECS::ComponentId spriteId = registry.getComponentId<Resource<Sprite>>();
+	if (entity->hasComponent(spriteId))
+	{
+		OpenGLResourceSystem::onSpriteUnloaded(registry, entityId);
+		return;
+	}
+}
+
+struct OpenGLResourceSystem::Storage
+{
+	ECS::EntityId extensionHandle = ECS::INVALID_ID;
+
+	std::unordered_map<ECS::EntityId, ECS::EntityId> resourceMap = {};
+	std::mutex resourceMutex;
+};
 
 void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-	world.initializeDependency<AssetSystem>();
+	world.initializeDependency<ResourceSystem>();
 
-	AssetDatabase<Mesh>* meshDatabase = getOrAddDatabase<Mesh>(registry);
-	AssetDatabase<Material>* materialDatabase = getOrAddDatabase<Material>(registry);
-	AssetDatabase<Sprite>* spriteDatabase = getOrAddDatabase<Sprite>(registry);
-	
-	onMeshLoadedHandle		= meshDatabase->onAssetLoaded.subscribe(		std::bind_front(&OpenGLResourceSystem::onMeshLoaded, this));
-	onMaterialLoadedHandle	= materialDatabase->onAssetLoaded.subscribe(	std::bind_front(&OpenGLResourceSystem::onMaterialLoaded, this));
-	onSpriteLoadedHandle	= spriteDatabase->onAssetLoaded.subscribe(		std::bind_front(&OpenGLResourceSystem::onSpriteLoaded, this));
+	OpenGLResourceSystem::Storage& storage = *registry.addSingle<OpenGLResourceSystem::Storage>();
+	auto ext = std::make_shared<OpenGLResourceSystemExtension>();
+	storage.extensionHandle = ResourceSystem::addExtension(registry, ext);
 }
 
 void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry)
 {
-	if (AssetDatabase<Mesh>* database = registry.getSingle<AssetDatabase<Mesh>>())
-	{
-		database->onAssetLoaded.unsubscribe(onMeshLoadedHandle);
-	}
+	OpenGLResourceSystem::Storage& storage = *registry.getSingle<OpenGLResourceSystem::Storage>();
+	ResourceSystem::removeExtension(registry, storage.extensionHandle);
 
-	if (AssetDatabase<Material>* database = registry.getSingle<AssetDatabase<Material>>())
-	{
-		database->onAssetLoaded.unsubscribe(onMaterialLoadedHandle);
-	}
-
-	if (AssetDatabase<Sprite>* database = registry.getSingle<AssetDatabase<Sprite>>())
-	{
-		database->onAssetLoaded.unsubscribe(onSpriteLoadedHandle);
-	}
+	registry.removeSingle<OpenGLResourceSystem::Storage>();
 }
 
-const std::shared_ptr<OpenGLVertexArray>& OpenGLResourceSystem::getVertexArray(const std::string& name) 
+ECS::EntityId OpenGLResourceSystem::getOpenGLResourceId(ECS::Registry& registry, ECS::EntityId entityId)
 {
-	return m_vertexArrays[name];
-}
-
-const std::shared_ptr<OpenGLTexture2D>& OpenGLResourceSystem::getTexture(const std::string& name)
-{
-	return m_textures[name];
-}
-
-const std::shared_ptr<OpenGLMaterial>& OpenGLResourceSystem::getMaterial(const std::string& name)
-{
-	return m_materials[name];
-}
-
-const std::shared_ptr<OpenGLShader>& OpenGLResourceSystem::getShader(const std::string& name)
-{
-	return m_shaders[name];
-}
-
-const std::shared_ptr<OpenGLSprite>& Mani::OpenGLResourceSystem::getSprite(const std::string& name)
-{
-	return m_sprites[name];
-}
-
-void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, const std::weak_ptr<Mesh>& meshPtr)
-{
-	if (meshPtr.expired())
+	OpenGLResourceSystem::Storage& storage = *registry.getSingle<OpenGLResourceSystem::Storage>();
 	{
-		return;
-	}
-
-	std::shared_ptr<Mesh> mesh = meshPtr.lock();
-
-	if (mesh == nullptr || mesh->vertices.empty() || mesh->indices.empty())
-	{
-		MANI_LOG_ERROR(LogOpenGL, "Received a null or empty mesh");
-		return;
-	}
-
-	std::vector<float> vertices;
-	vertices.reserve((3 + 3 + 2) * mesh->vertices.size());
-
-	size_t index = 0;
-	for (const Vertex& vertex : mesh->vertices)
-	{
-		vertices.push_back(vertex.position.x);
-		vertices.push_back(vertex.position.y);
-		vertices.push_back(vertex.position.z);
-
-		vertices.push_back(vertex.normal.x);
-		vertices.push_back(vertex.normal.y);
-		vertices.push_back(vertex.normal.z);
-
-		vertices.push_back(vertex.textureCoordinate.x);
-		vertices.push_back(vertex.textureCoordinate.y);
-	}
-
-	std::shared_ptr<OpenGLVertexBuffer> vertexBuffer = std::make_shared<OpenGLVertexBuffer>(&vertices[0], (int)(sizeof(float) * vertices.size()));
-	vertexBuffer->layout =
-	{
-		{ EShaderDataType::Float3, false },
-		{ EShaderDataType::Float3, true  },
-		{ EShaderDataType::Float2, false }
-	};
-
-	std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(&mesh->indices[0], (int)sizeof(uint32_t) * mesh->indices.size());
-
-	std::shared_ptr<OpenGLVertexArray> vertexArray = std::make_shared<OpenGLVertexArray>();
-	vertexArray->addVertexBuffer(vertexBuffer);
-	vertexArray->setIndexBuffer(indexBuffer);
-
-	m_vertexArrays[mesh->name] = vertexArray;
-}
-
-void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, const std::weak_ptr<Material>& materialPtr)
-{
-	if (materialPtr.expired())
-	{
-		return;
-	}
-
-	std::shared_ptr<Material> material = materialPtr.lock();
-
-	if (material == nullptr)
-	{
-		MANI_LOG_ERROR(LogOpenGL, "Received a null material");
-		return;
-	}
-	std::shared_ptr<OpenGLMaterial> openGLMaterial = std::make_shared<OpenGLMaterial>();
-	openGLMaterial->name = material->name;
-	openGLMaterial->color = material->color;
-	openGLMaterial->shininess = material->shininess;
-
-	// shader
-	if (!material->shaderPath.empty())
-	{
-		openGLMaterial->shader = getOrAddShaderName(registry, material->shaderPath);
-	}
-
-	// diffuse
-	if (!material->diffusePath.empty())
-	{
-		openGLMaterial->diffuse = getOrAddTextureName(material->diffusePath);
-	}
-
-	// specular
-	if (!material->specularPath.empty())
-	{
-		openGLMaterial->diffuse = getOrAddTextureName(material->specularPath);
-	}
-
-	m_materials[openGLMaterial->name] = openGLMaterial;
-}
-
-void Mani::OpenGLResourceSystem::onSpriteLoaded(ECS::Registry& registry, const std::weak_ptr<Sprite>& spritePtr)
-{
-	if (spritePtr.expired())
-	{
-		return;
-	}
-
-	std::shared_ptr<Sprite> sprite = spritePtr.lock();
-
-	if (sprite == nullptr)
-	{
-		MANI_LOG_ERROR(LogOpenGL, "Received a null sprite");
-		return;
-	}
-
-	std::shared_ptr<OpenGLSprite> openGLSprite = std::make_shared<OpenGLSprite>();
-	openGLSprite->name = sprite->name;
-
-	if (!sprite->shaderPath.empty())
-	{
-		openGLSprite->shaderName = getOrAddShaderName(registry, sprite->shaderPath);
-	}
-
-	if (!sprite->texturePath.empty())
-	{
-		openGLSprite->textureName = getOrAddTextureName(sprite->texturePath);
-	}
-
-	m_sprites[openGLSprite->name] = openGLSprite;
-}
-
-const std::shared_ptr<OpenGLVertexArray>& Mani::OpenGLResourceSystem::getQuad(uint16_t repeatAmount)
-{
-	auto it = m_quadVertexArrays.find(repeatAmount);
-	if (it != m_quadVertexArrays.end())
-	{
+		std::lock_guard<std::mutex> lock(storage.resourceMutex);
+		auto it = storage.resourceMap.find(entityId);
+		if (it == storage.resourceMap.end())
+		{
+			return ECS::INVALID_ID;
+		}
 		return it->second;
 	}
-
-	const float repeatAmountF = static_cast<float>(repeatAmount);
-
-	// hardcoded 2d quad. We flip the X axis because OpenGL is right handed.
-	std::vector<float> vertices =
-	{
-		//    vertex		//        texture
-		0.0f, 0.0f, 1.0f,	0.0f,			repeatAmountF,
-		-1.0f, 0.0f, 0.0f,	repeatAmountF,	0.0f,
-		0.0f, 0.0f, 0.0f,	0.0f,			0.0f,
-		0.0f, 0.0f, 1.0f,	0.0f,			repeatAmountF,
-		-1.0f, 0.0f, 1.0f,	repeatAmountF,	repeatAmountF,
-		-1.0f, 0.0f, 0.0f,	repeatAmountF,	0.0f,
-	};
-
-	std::shared_ptr<OpenGLVertexBuffer> vertexBuffer = std::make_shared<OpenGLVertexBuffer>(&vertices[0], (int)(sizeof(float) * vertices.size()));
-	vertexBuffer->layout =
-	{
-		{ EShaderDataType::Float3, false },
-		{ EShaderDataType::Float2, false }
-	};
-
-	m_quadVertexArrays[repeatAmount] = std::make_shared<OpenGLVertexArray>();
-	const std::shared_ptr<OpenGLVertexArray>& vertexArray = m_quadVertexArrays[repeatAmount];
-	vertexArray->addVertexBuffer(vertexBuffer);
-
-	std::vector<unsigned int> indices = { 0, 1, 2, 3, 4, 5 };
-	std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(&indices[0], (int)sizeof(uint32_t) * indices.size());
-	vertexArray->setIndexBuffer(indexBuffer);
-
-	return vertexArray;
 }
 
-const std::string OpenGLResourceSystem::getOrAddTextureName(const std::filesystem::path& originalPath)
+void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, ECS::EntityId meshId) 
 {
-	const std::string textureName = originalPath.filename().string();
-	if (!m_textures.contains(textureName))
+	const ECS::EntityId openglResourceId = registry.create();
+	registry.add<Resource<OpenGLVertexArray>>(openglResourceId);
+	
+	OpenGLResourceSystem::Storage& storage = *registry.getSingle<OpenGLResourceSystem::Storage>();
 	{
-		std::filesystem::path path = originalPath;
-		if (path.is_relative())
+		std::lock_guard<std::mutex> lock(storage.resourceMutex);
+		storage.resourceMap[meshId] = openglResourceId;
+	}
+}
+
+void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, ECS::EntityId materialId) 
+{
+	const ECS::EntityId openglMaterialId = registry.create();
+	Resource<OpenGLMaterial>* openglMaterialRes = registry.add<Resource<OpenGLMaterial>>(openglMaterialId);
+
+	OpenGLResourceSystem::Storage& storage = *registry.getSingle<OpenGLResourceSystem::Storage>();
+	{
+		std::lock_guard<std::mutex> lock(storage.resourceMutex);
+		storage.resourceMap[materialId] = openglMaterialId;
+	}
+
+	const ECS::EntityId diffuseId = registry.create();
+	registry.add<Resource<STBITexture>>(diffuseId);
+	registry.add<Resource<OpenGLTexture2D>>(diffuseId);
+
+	const ECS::EntityId specularId = registry.create();
+	registry.add<Resource<STBITexture>>(specularId);
+	registry.add<Resource<OpenGLTexture2D>>(specularId);
+
+	Resource<Material>* materialRes = registry.get<Resource<Material>>(materialId);
+	Mani::enqueueTask([&registry, materialRes, openglMaterialRes, diffuseId, specularId]
+	{
+		while (!materialRes->isReady)
 		{
-			std::filesystem::path rootPath;
-			if (!FileSystem::tryGetRootPath(rootPath))
-			{
-				MANI_ASSERT(false, "we should be able to recover root path at this point.");
-			}
-			path = rootPath.append(path.string());
+			std::this_thread::yield();
 		}
-		m_textures[textureName] = std::make_shared<OpenGLTexture2D>(path.string());
-	}
 
-	return textureName;
+		const Material& material = materialRes->get();
+		openglMaterialRes->value = std::make_unique<OpenGLMaterial>();
+		openglMaterialRes->value->name = material.name;
+		openglMaterialRes->value->color = material.color;
+		openglMaterialRes->value->shininess = material.shininess;
+
+		// shader
+		const ECS::EntityId shaderId = ResourceSystem::loadResourceSync<Shader>(registry, material.shaderPath);
+		openglMaterialRes->value->shaderId = OpenGLResourceSystem::getOpenGLResourceId(registry, shaderId);
+
+		// diffuse
+		Resource<STBITexture>* diffuse = registry.get<Resource<STBITexture>>(diffuseId);
+		if (!material.diffusePath.empty())
+		{
+			diffuse->value = std::make_unique<STBITexture>(material.diffusePath);
+			openglMaterialRes->value->diffuseId = diffuseId;
+			diffuse->isReady = true;
+		}
+		else
+		{
+			registry.deferDestroy(diffuseId);
+		}
+
+		// specular
+		Resource<STBITexture>* specular = registry.get<Resource<STBITexture>>(specularId);
+		if (!material.specularPath.empty())
+		{
+			specular->value = std::make_unique<STBITexture>(material.specularPath);
+			openglMaterialRes->value->specularId = specularId;
+			specular->isReady = true;
+		}
+		else
+		{
+			registry.deferDestroy(specularId);
+		}
+
+		openglMaterialRes->isReady = true;
+	});
 }
 
-const std::string Mani::OpenGLResourceSystem::getOrAddShaderName(ECS::Registry& registry, const std::filesystem::path& path)
-{
-	const std::string shaderName = path.stem().string();
-	if (!m_shaders.contains(shaderName))
-	{
-		// make sure we load the shader
-		std::shared_ptr<Shader> shader = AssetSystem::loadAsset<Shader>(registry, path).lock();
-		MANI_ASSERT(shader != nullptr, "Could not load shader");
-		onShaderLoaded(shader);
-	}
+void OpenGLResourceSystem::onSpriteLoaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onSpriteLoaded called"); }
 
-	return shaderName;
+void Mani::OpenGLResourceSystem::onShaderLoaded(ECS::Registry& registry, ECS::EntityId shaderId)
+{
+	Resource<Shader>* shaderRes = registry.get<Resource<Shader>>(shaderId);
+	MANI_ASSERT(shaderRes != nullptr, "Shader loading flow should be synchronous");
+	MANI_ASSERT(shaderRes->isReady, "Shader loading flow should be synchronous");
+
+	const Shader& shader = shaderRes->get();
+	// compile
+	std::unique_ptr<OpenGLShader> openglShader = std::make_unique<OpenGLShader>(
+		shader.name,
+		shader.vertexSource,
+		shader.fragmentSource
+	);
+	openglShader->compile();
+
+	if (openglShader->isCompiled())
+	{
+		// if compiled, inject the shader in the resource system
+		ECS::EntityId openGLShaderId = ResourceSystem::injectResource<OpenGLShader>(registry, std::move(openglShader));
+
+		OpenGLResourceSystem::Storage& storage = *registry.getSingle<OpenGLResourceSystem::Storage>();
+		{
+			std::lock_guard<std::mutex> lock(storage.resourceMutex);
+			storage.resourceMap[shaderId] = openGLShaderId;
+		}
+	}
 }
-void OpenGLResourceSystem::onShaderLoaded(const std::shared_ptr<Shader>& shaderAsset)
-{
-	if (shaderAsset == nullptr)
-	{
-		MANI_LOG_ERROR(LogOpenGL, "Received null shader");
-		return;
-	}
 
-	std::shared_ptr<OpenGLShader> shader = std::make_shared<OpenGLShader>(shaderAsset->name, shaderAsset->vertexSource, shaderAsset->fragmentSource);
-	if (shader->compile())
-	{
-		m_shaders[shaderAsset->name] = shader;
-	}
+void OpenGLResourceSystem::onMeshUnloaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onMeshUnloaded called"); }
+void OpenGLResourceSystem::onMaterialUnloaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onMaterialUnloaded called"); }
+void OpenGLResourceSystem::onSpriteUnloaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onSpriteUnloaded called"); }
+
+void Mani::OpenGLResourceSystem::onShaderUnloaded(ECS::Registry& registry, ECS::EntityId entityId)
+{
 }

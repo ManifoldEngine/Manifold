@@ -1,8 +1,14 @@
 #include "Application.h"
-#include <Core/World/WorldSystem.h>
 #include <Core/CoreTime.h>
+#include <Core/CoreConfig.h>
 #include <Core/ManiAssert.h>
+
+#include <Core/World/WorldSystem.h>
+#include <Core/Log.h>
 #include <Core/Log/LogSystem.h>
+
+#include <Core/FileSystem.h>
+#include <ManiZ/Json.h>
 
 #if MANI_DEBUG
 #include <Debug/ProfilingSystem.h>
@@ -10,14 +16,34 @@
 
 using namespace Mani;
 
+CoreConfig loadConfig()
+{
+	CoreConfig config;
+	const std::filesystem::path path = FileSystem::getConfigPath().append(Mani::CONFIG_FILENAME);
+	std::string content;
+	if (FileSystem::readFile(path, content))
+	{
+		config = ManiZ::from::json<CoreConfig>(content);
+		MANI_LOG(Log, "Loaded CoreConfig from {}", path.string());
+	}
+	else
+	{
+		MANI_LOG_ERROR(Log, "Could not find [{}], using default config instead", path.string());
+	}
+	return config;
+}
+
 Application* Application::s_application = nullptr;
 
 Application::Application()
-	: m_threadPool(THREAD_COUNT)
 {
 	// there should be only one application instance.
 	MANI_ASSERT(s_application == nullptr, "an Application instance already exists.");
 	s_application = this;
+
+	m_config = loadConfig();
+
+	m_threadPool.start(m_config.threadPoolSize);
 
 	m_world.initialize();
 	m_world.createSystem<LogSystem>()
@@ -38,6 +64,8 @@ Application::~Application()
 
 	m_world.destroySystem<WorldSystem>()
 		.destroySystem<LogSystem>();
+
+	m_threadPool.stop();
 
 	s_application = nullptr;
 }

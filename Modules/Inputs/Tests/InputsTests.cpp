@@ -15,7 +15,7 @@ extern "C" __declspec(dllexport) void runTests()
 
 using namespace Mani;
 
-class VirtualControllerSystem : public SystemBase
+class VirtualControllerSystem : public ECS::System
 {
 public:
 	virtual std::string_view getName() const override { return "VirtualControllerSystem"; }
@@ -168,7 +168,7 @@ std::unordered_map<std::string, std::unordered_set<std::string>> inputBindingsTe
 	{ "RightBumper", { "Shoot" }},
 };
 
-class InputUserMockSystem : public SystemBase
+class InputUserMockSystem : public ECS::System
 {
 public:
 	virtual std::string_view getName() const override { return "VirtualControllerSystem"; }

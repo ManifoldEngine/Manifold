@@ -4,7 +4,7 @@
 
 namespace Mani
 {
-    class OpenGLBufferSwapSystem : public SystemBase
+    class OpenGLBufferSwapSystem : public ECS::System
     {
     public:
         virtual std::string_view getName() const override { return "OpenGLBufferSwapSystem"; }

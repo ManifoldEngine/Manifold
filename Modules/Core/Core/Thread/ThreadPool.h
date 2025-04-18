@@ -15,14 +15,11 @@ namespace Mani
 	class ThreadPool
 	{
 	public:
-		ThreadPool(size_t size) : m_threads(std::vector<std::thread>(size))
+		ThreadPool() = default;
+
+		ThreadPool(size_t size)
 		{
-			m_busyThreads = size;
-			m_stopRequested = false;
-			for (size_t i = 0; i < size; ++i)
-			{
-				m_threads.emplace_back([this]() { worker(); });
-			}
+			start(size);
 		}
 
 		~ThreadPool()
@@ -34,6 +31,19 @@ namespace Mani
 		ThreadPool(ThreadPool&) = delete;
 		ThreadPool& operator=(const ThreadPool&) = delete;
 		ThreadPool& operator=(ThreadPool&&) = delete;
+
+		void start(size_t size)
+		{
+			MANI_ASSERT(!isRunning(), "Trying to start a thread pool that is already running.");
+
+			m_threads = std::vector<std::thread>(size);
+			m_busyThreads = size;
+			m_stopRequested = false;
+			for (size_t i = 0; i < size; ++i)
+			{
+				m_threads.emplace_back([this]() { worker(); });
+			}
+		}
 
 		void stop()
 		{
@@ -51,6 +61,8 @@ namespace Mani
 				}
 			}
 		}
+
+		bool isRunning() const { return !m_threads.empty(); }
 
 		template<typename TFunctor, typename... TArgs>
 		auto enqueue(TFunctor&& f, TArgs&&... args)
@@ -92,6 +104,7 @@ namespace Mani
 			}
 		};
 
+		size_t m_size = 0;
 		size_t m_busyThreads = 0;
 		bool m_stopRequested = false;
 

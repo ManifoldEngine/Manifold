@@ -4,7 +4,7 @@
 
 namespace Mani
 {
-    class ManImGuiSystem : public Mani::SystemBase
+    class ManImGuiSystem : public Mani::ECS::System
     {
     public:
         virtual std::string_view getName() const override { return "ManImGuiSystem"; }

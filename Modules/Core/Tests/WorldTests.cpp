@@ -1,5 +1,5 @@
 #include <Core/World/World.h>
-#include <Core/System/System.h>
+#include <Core/ECS/System.h>
 #include <Events/Event.h>
 
 #include <ManiTests/ManiTests.h>
@@ -8,7 +8,7 @@ using namespace Mani;
 
 namespace Mani_Test
 {
-	class SomeSystem : public SystemBase
+	class SomeSystem : public ECS::System
 	{
 	public:
 		virtual void onInitialize(ECS::Registry& registry, World& world) override
@@ -127,7 +127,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 
 		DECLARE_EVENT(OnDeinitializedEvent, );
 		
-		class SomeSystem1 : public SystemBase
+		class SomeSystem1 : public ECS::System
 		{
 		public:
 			virtual std::string_view getName() const override { return "SomeSystem1"; }
@@ -135,7 +135,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 			virtual void onDeinitialize(ECS::Registry& registry) override { someSystem1DeInitialized = true; }
 		};
 
-		class SomeSystem2 : public SystemBase
+		class SomeSystem2 : public ECS::System
 		{
 		public:
 			virtual std::string_view getName() const override { return "SomeSystem2"; }
@@ -143,7 +143,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 			virtual void onDeinitialize(ECS::Registry& registry) override { someSystem2DeInitialized = true; }
 		};
 
-		class SomeSystem3 : public SystemBase
+		class SomeSystem3 : public ECS::System
 		{
 		public:
 			virtual std::string_view getName() const override { return "SomeSystem3"; }
@@ -205,7 +205,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 		static bool someSystemInitialized = false;
 		static bool someOtherSystemInitialized = false;
 
-		class SomeSystem : public SystemBase
+		class SomeSystem : public ECS::System
 		{
 		public:
 			virtual void onInitialize(ECS::Registry& registry, World& world) override
@@ -214,7 +214,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 			}
 		};
 
-		class SomeOtherSystem : public SystemBase
+		class SomeOtherSystem : public ECS::System
 		{
 		public:
 			virtual void onInitialize(ECS::Registry& registry, World& world) override

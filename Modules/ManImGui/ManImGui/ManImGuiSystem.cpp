@@ -6,6 +6,8 @@
 
 #include "OpenGL/OpenGLWindowContext.h"
 
+#include <GLFW/glfw3.h>
+
 void Mani::ManImGuiSystem::onInitialize(ECS::Registry& registry, Mani::World& systemContainer)
 {
 	IMGUI_CHECKVERSION();

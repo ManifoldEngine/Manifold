@@ -1,7 +1,6 @@
 #include <Core/Application.h>
 #include <Core/Thread/Parallel.h>
-
-#include <ECS/Registry.h>
+#include <Core/ECS/Registry.h>
 
 #include <ManiTests/ManiTests.h>
 
@@ -30,7 +29,7 @@ MANI_SECTION_BEGIN(Thread, "Thread")
 		}
 
 		ECS::View<MyComponent> view(registry);
-		Mani::parallelFor(view, [](ECS::Registry& registry, const ECS::EntityId entityId)
+		Mani::parallelFor(view, [&registry](ECS::EntityId entityId, size_t threadIndex)
 		{
 			MyComponent& comp = *registry.get<MyComponent>(entityId);
 			comp.value += 10;

@@ -1,12 +1,12 @@
 #pragma once
 
 #include <Core/Application.h>
-
-#include <ECS/Registry.h>
-#include <ECS/View.h>
+#include <Core/ECS/Registry.h>
+#include <Core/ECS/View.h>
 
 #include <ManiMaths/Maths.h>
 #include <latch>
+#include <type_traits>
 
 namespace Mani
 {
@@ -29,16 +29,24 @@ namespace Mani
 			ECS::EntityId start = threadIndex * chunkSize;
 			ECS::EntityId end = start + chunkSize;
 
-			threadPool.enqueue([&latch, &view, start, end, &f] {
+			threadPool.enqueue([&latch, &view, threadIndex, start, end, &f] 
+			{
 				const auto viewEnd = view.end();
 				for (auto it = view.at(start); *it < end && it != viewEnd; ++it)
 				{
-					f(view.getRegistry(), *it);
+					f(*it, threadIndex);
 				}
 				latch.count_down();
 			});
 		}
 
 		latch.wait();
+	}
+
+	template<typename TFunctor, typename... TArgs>
+	auto enqueueTask(TFunctor&& f, TArgs&&... args)
+	{
+		ThreadPool& threadPool = Application::get().getThreadPool();
+		return threadPool.enqueue(std::forward<TFunctor>(f), std::forward<TArgs>(args)...);
 	}
 }

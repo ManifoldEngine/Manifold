@@ -10,7 +10,7 @@ namespace Mani
 {
 	class OpenGLSystem;
 	
-	class OpenGLInputSystem: public SystemBase
+	class OpenGLInputSystem: public ECS::System
 	{
 	public:
 		virtual std::string_view getName() const override { return "OpenGLInputSystem"; }

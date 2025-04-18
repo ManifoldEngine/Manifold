@@ -1,6 +1,6 @@
 #include "WorldSystem.h"
 #include <Core/World/World.h>
-#include <ECS/View.h>
+#include <Core/ECS/View.h>
 
 using namespace Mani;
 

@@ -6,7 +6,7 @@
 
 namespace Mani
 {
-	class CameraSystem : public SystemBase
+	class CameraSystem : public ECS::System
 	{
 	public:
 		virtual std::string_view getName() const override;
@@ -23,6 +23,6 @@ namespace Mani
 
 	private:
 		static const Camera* getCamera(const ECS::Registry& registry);
-		static const Transform* getTransform(const ECS::Registry& registry);
+		static std::tuple<const Position*, const Rotation*> getTransform(const ECS::Registry& registry);
 	};
 }

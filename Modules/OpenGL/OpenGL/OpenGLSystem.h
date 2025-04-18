@@ -1,14 +1,14 @@
 #pragma once
 
 #include "OpenGL.h"
-#include <Core/System/System.h>
+#include <Core/ECS/System.h>
 
 struct GLFWwindow;
 
 namespace Mani
 {
 	// manages the opengl implementation using glfw and glew.
-	class OpenGLSystem : public SystemBase
+	class OpenGLSystem : public ECS::System
 	{
 	public:
 		virtual std::string_view getName() const override;
@@ -25,5 +25,7 @@ namespace Mani
 
 		static void glfwCallback_onWindowClosed(GLFWwindow* window);
 		static void glfwCallback_onWindowResized(GLFWwindow* window, int newWidth, int newHeight);
+
+		void loadAndCompileShadersSync(ECS::Registry& registry, World& world);
 	};
 }

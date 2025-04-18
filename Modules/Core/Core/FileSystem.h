@@ -6,22 +6,36 @@
 
 namespace Mani
 {
-	class FileSystem
+	namespace FileSystem
 	{
-	public:
 		// dumps a file to a string
-		static bool tryReadFile(const std::filesystem::path& filePath, std::string& outResult);
+		bool readFile(const std::filesystem::path& filePath, std::string& outResult);
 
 		// dumps a string to a file
-		static bool tryWriteFile(const std::filesystem::path& filePath, const std::string& content);
+		bool writeFile(const std::filesystem::path& filePath, const std::string& content);
 		
 		// returns a path to the root of the project
-		static bool tryGetRootPath(std::filesystem::path& outPath);
+		std::filesystem::path getRootPath();
 		// returns a path to {root}/Engine
-		static bool tryGetEnginePath(std::filesystem::path& outPath);
+		std::filesystem::path getEnginePath();
+		// returns a path to {root}/Config
+		std::filesystem::path getConfigPath();
+		// returns an absolute path from a root relative path
+		std::filesystem::path getAbsolutePath(const std::filesystem::path& relativePath);
 
-		// finds all files with extension in a directory
-		// returns their absolute path.
-		static std::vector<std::filesystem::path> getAllFilesWithExtension(const std::filesystem::path& directoryPath, const std::string& extension);
+		void foreach(const std::filesystem::path& path, auto&& f)
+		{
+			namespace fs = std::filesystem;
+			for (const auto& entry : fs::recursive_directory_iterator(path))
+			{
+				if (entry.is_directory() || !entry.is_regular_file())
+				{
+					continue;
+				}
+				const fs::path& entryPath = entry.path();
+				const fs::path extension = entryPath.extension();
+				f(entryPath, extension);
+			}
+		}
 	};
 }

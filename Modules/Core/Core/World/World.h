@@ -4,9 +4,9 @@
 
 #include <Core/ManiAssert.h>
 #include <Core/ManiTraits.h>
-#include <Core/System/System.h>
 
-#include <ECS/Registry.h>
+#include <Core/ECS/Registry.h>
+#include <Core/ECS/System.h>
 
 #include <vector>
 #include <memory>
@@ -25,18 +25,18 @@ namespace Mani
 
 		void tick(float deltaTime);
 
-		// creates a new TSystem : public SystemBase
+		// creates a new TSystem : public ECS::System
 		// if the container is initialized, the system will be initialized as well
 		// if a system of type TSystem already exists, a new system will not be created.
 		// after this is called, a TSystem is guarranteed to live in the container.
 		// returns true if a system was created.
-		template<IsDerived<SystemBase> TSystem>
+		template<IsDerived<ECS::System> TSystem>
 		World& createSystem();
 		
 		// creates, initializes then return a shared pointer to the TSystem
 		// this is most notably useful to allow a system to initialize a dependency and receive a pointer to it
 		// returns a weak pointer to a TSystem
-		template<IsDerived<SystemBase> TSystem>
+		template<IsDerived<ECS::System> TSystem>
 		void initializeDependency();
 
 		// returns true if TSystem was created in this world.
@@ -46,7 +46,7 @@ namespace Mani
 		// destroys a system of type TSystem.
 		// after this is called, no TSystem remains in the container.
 		// returns true if a system was destroyed
-		template<IsDerived<SystemBase> TSystem>
+		template<IsDerived<ECS::System> TSystem>
 		World& destroySystem();
 
 		// returns the amount of systems
@@ -57,11 +57,11 @@ namespace Mani
 
 	private:
 		ECS::Registry m_registry;
-		std::vector<std::shared_ptr<SystemBase>> m_systems;
+		std::vector<std::shared_ptr<ECS::System>> m_systems;
 		bool m_isInitialized = false;
 	};
 
-	template<IsDerived<SystemBase> TSystem>
+	template<IsDerived<ECS::System> TSystem>
 	inline World& World::createSystem()
 	{
 		// check if a system of this type exists already.
@@ -94,7 +94,7 @@ namespace Mani
 		return *this;
 	}
 
-	template<IsDerived<SystemBase> TSystem>
+	template<IsDerived<ECS::System> TSystem>
 	inline void World::initializeDependency()
 	{
 		createSystem<TSystem>();
@@ -120,12 +120,12 @@ namespace Mani
 		return false;
 	}
 
-	template<IsDerived<SystemBase> TSystem>
+	template<IsDerived<ECS::System> TSystem>
 	inline World& World::destroySystem()
 	{
 		for (auto it = m_systems.begin(); it != m_systems.end(); it++)
 		{
-			std::shared_ptr<SystemBase> system = *it;
+			std::shared_ptr<ECS::System> system = *it;
 			if (std::dynamic_pointer_cast<TSystem>(system) != nullptr)
 			{
 				if (m_isInitialized)

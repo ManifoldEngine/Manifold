@@ -13,7 +13,7 @@ MANI_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 		static bool SomeWorldSystemTicked = false;
 		
 
-		class SomeWorldSystem : public SystemBase
+		class SomeWorldSystem : public ECS::System
 		{
 		public:
 			virtual std::string_view getName() const override { return "SomeWorldSystem"; }
@@ -27,7 +27,7 @@ MANI_SECTION_BEGIN(WorldSystemSection, "WorldSytem")
 
 		static bool SomeAppSystemInitialized = false;
 
-		class SomeAppSystem : public SystemBase
+		class SomeAppSystem : public ECS::System
 		{
 		public:
 			virtual void onInitialize(ECS::Registry& registry, World& world)

@@ -27,13 +27,13 @@ bool ShaderImporter::importFromPath(const std::filesystem::path& path, std::shar
 bool ShaderImporter::exportToPath(const std::filesystem::path& path, const std::shared_ptr<Shader>& shader)
 {
 	MANI_ASSERT(shader != nullptr, "provided shader cannot be null");
-	return FileSystem::tryWriteFile(path, ManiZ::to::json(*shader));
+	return FileSystem::writeFile(path, ManiZ::to::json(*shader));
 }
 
 bool ShaderImporter::parseShaderSourceFileFromPath(const std::filesystem::path& path, std::string& outFileName, std::string& outVertexSource, std::string& outFragmentSource)
 {
 	std::string source;
-	if (!FileSystem::tryReadFile(path, source))
+	if (!FileSystem::readFile(path, source))
 	{
 		MANI_LOG_ERROR(LogShaderImporter, "Could not read source from {}", path.string());
 		return false;

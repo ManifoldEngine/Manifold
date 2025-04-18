@@ -12,7 +12,7 @@ namespace Mani
 		float sensitivity = 0.1f;
 	};
 
-	class FloatingCameraSystem : public SystemBase
+	class FloatingCameraSystem : public ECS::System
 	{
 	public:
 		virtual std::string_view getName() const override { return "FloatingCameraSystem"; }

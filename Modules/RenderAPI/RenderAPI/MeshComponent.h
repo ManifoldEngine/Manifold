@@ -1,15 +1,12 @@
 #pragma once
 
-#include <RenderAPI/Mesh.h>
-#include <RenderAPI/Material.h>
-#include <memory>
-#include <vector>
+#include <ECS/Entity.h>
 
 namespace Mani
 {
 	struct MeshComponent
 	{
-		std::shared_ptr<Mesh> mesh;
-		std::shared_ptr<Material> material;
+		ECS::EntityId meshHandle;
+		ECS::EntityId materialHandle;
 	};
 }

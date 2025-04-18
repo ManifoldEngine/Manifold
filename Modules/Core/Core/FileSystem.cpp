@@ -5,7 +5,7 @@
 
 using namespace Mani;
 
-bool FileSystem::tryReadFile(const std::filesystem::path& filePath, std::string& outResult)
+bool FileSystem::readFile(const std::filesystem::path& filePath, std::string& outResult)
 {
 	std::ifstream in(filePath, std::ios::in | std::ios::binary);
 	if (in.is_open())
@@ -24,7 +24,7 @@ bool FileSystem::tryReadFile(const std::filesystem::path& filePath, std::string&
 	return false;
 }
 
-bool FileSystem::tryWriteFile(const std::filesystem::path& filePath, const std::string& content)
+bool FileSystem::writeFile(const std::filesystem::path& filePath, const std::string& content)
 {
 	std::ofstream out(filePath);
 	if (out.is_open())
@@ -35,46 +35,28 @@ bool FileSystem::tryWriteFile(const std::filesystem::path& filePath, const std::
 	return false;
 }
 
-bool FileSystem::tryGetRootPath(std::filesystem::path& outPath)
+std::filesystem::path FileSystem::getRootPath()
 {
 #ifdef MANI_WEBGL
 #elif MANI_DISTRIBUTION
-	std::error_code errorCode;
-	outPath = std::filesystem::current_path(errorCode);
-	if (errorCode.value() != 0)
-	{
-		return false;
-	}
+	return std::filesystem::current_path();
+	
 #else
-	outPath = std::filesystem::path(MANI_PROJECTROOT_PATH);
+	return std::filesystem::path(MANI_PROJECTROOT_PATH);
 #endif
-	return true;
 }
 
-bool FileSystem::tryGetEnginePath(std::filesystem::path& outPath)
+std::filesystem::path FileSystem::getEnginePath()
 {
-	if (tryGetRootPath(outPath))
-	{
-		outPath += "/Engine";
-		return true;
-	}
-	return false;
+	return getRootPath().append("Engine");
 }
 
-std::vector<std::filesystem::path> FileSystem::getAllFilesWithExtension(const std::filesystem::path& directoryPath, const std::string& extension)
+std::filesystem::path Mani::FileSystem::getConfigPath()
 {
-	namespace fs = std::filesystem;
+	return getRootPath().append("Config");
+}
 
-	std::vector<fs::path> paths;
-	if (fs::exists(directoryPath) && fs::is_directory(directoryPath))
-	{
-		for (const auto& entry : fs::directory_iterator(directoryPath))
-		{
-			if (fs::is_regular_file(entry) && entry.path().extension() == extension)
-			{
-				paths.push_back(entry.path());
-			}
-		}
-	}
-	return paths;
+std::filesystem::path Mani::FileSystem::getAbsolutePath(const std::filesystem::path& relativePath)
+{
+	return getRootPath().append(relativePath.string());
 }

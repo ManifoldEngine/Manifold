@@ -2,6 +2,7 @@
 
 #include <Core/Core.h>
 #include <Core/World/World.h>
+#include <Core/CoreConfig.h>
 #include <Core/Thread/ThreadPool.h>
 
 namespace Mani
@@ -23,6 +24,7 @@ namespace Mani
 	
 		World& getWorld() { return m_world; }
 		ThreadPool& getThreadPool() { return m_threadPool; }
+		const CoreConfig& getConfig() const { return m_config; }
 
 		bool isRunning() const { return m_isRunning; }
 
@@ -33,5 +35,6 @@ namespace Mani
 		
 		World m_world;
 		ThreadPool m_threadPool;
+		CoreConfig m_config;
 	};
 }

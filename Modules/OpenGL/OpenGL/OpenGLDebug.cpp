@@ -63,7 +63,7 @@ void Mani::OpenGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum s
 
         default:
         {
-            MANI_LOG(LogOpenGLAPI, "{}", ss.str());
+            MANI_LOG_VERBOSE(LogOpenGLAPI, "{}", ss.str());
             break;
         }
     }

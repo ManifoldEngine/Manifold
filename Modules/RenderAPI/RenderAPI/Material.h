@@ -1,8 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <memory>
-#include <filesystem>
 #include <ManiMaths/Fwd.h>
 
 namespace Mani

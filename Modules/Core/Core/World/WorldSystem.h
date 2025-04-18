@@ -1,15 +1,15 @@
 #pragma once
 
 #include <Core/Core.h>
-#include <Core/System/System.h>
-#include <ECS/Entity.h>
+#include <Core/ECS/System.h>
+#include <Core/ECS/Entity.h>
 
 // forwarding World header for convenience
 #include <Core/World/World.h>
 
 namespace Mani
 {
-	class WorldSystem : public SystemBase
+	class WorldSystem : public ECS::System
 	{
 	public:
 
