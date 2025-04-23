@@ -14,8 +14,12 @@
 
 #include <OpenGLDebug.h>
 #include <OpenGLWindowContext.h>
+#include <OpenGL/OpenGLInputSystem.h>
 #include <OpenGL/Data/OpenGLShader.h>
 #include <OpenGL/Render/OpenGLResourceSystem.h>
+#include <OpenGL/Render/OpenGLCameraUpdateSystem.h>
+#include <OpenGL/Render/OpenGLCommandBufferSystem.h>
+#include <OpenGL/Render/OpenGLRenderSystem.h>
 
 #include <ManiMaths/Fwd.h>
 
@@ -88,6 +92,7 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
         return;
     }
 
+    glfwSwapInterval(1); // vsync
     loadAndCompileShadersSync(registry, world);
 
     // set the view port to the window's size.
@@ -96,11 +101,18 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
 #ifndef MANI_WEBGL
     #if MANI_OPENGL_DEBUG
         glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(OpenGLMessageCallback, nullptr);
     #endif
 #endif
 
     glfwMakeContextCurrent(nullptr);
+
+    world.createSystem<OpenGLResourceSystem>()
+        .createSystem<OpenGLInputSystem>()
+        .createSystem<OpenGLCameraUpdateSystem>()
+        .createSystem<OpenGLCommandBufferSystem>()
+        .createSystem<OpenGLRenderSystem>();
 }
 
 void OpenGLSystem::onDeinitialize(ECS::Registry& registry)

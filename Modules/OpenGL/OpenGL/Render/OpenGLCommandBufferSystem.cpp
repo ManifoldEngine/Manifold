@@ -3,8 +3,12 @@
 #include <Core/Debug/Profiling.h>
 #include <Core/Thread/Parallel.h>
 
+#include <Resources/Resource.h>
+
 #include <OpenGL/OpenGL.h>
+#include <OpenGL/Data/OpenGLMaterial.h>
 #include <OpenGL/Render/OpenGLCommand.h>
+#include <OpenGL/Render/OpenGLResourceSystem.h>
 
 #include <RenderAPI/MeshComponent.h>
 
@@ -36,12 +40,57 @@ void OpenGLCommandBufferSystem::tick(float deltaTime, ECS::Registry& registry)
 
 		// todo: camera frustrum culling
 	
-		threadBuffers[threadIndex].emplace_back(OpenGLCommand3D 
+		Resource<Mesh>* meshRes = registry.get<Resource<Mesh>>(meshComponent.meshHandle);
+		if (meshRes == nullptr || !meshRes->isReady)
 		{
+			// resource is not ready yet.
+			return;
+		}
+
+		Resource<Material>* materialRes = registry.get<Resource<Material>>(meshComponent.materialHandle);
+		if (materialRes == nullptr || !materialRes->isReady)
+		{
+			// resource is not ready yet.
+			return;
+		}
+
+		const ECS::EntityId openGLMaterialHandle = OpenGLResourceSystem::getOpenGLResourceId(registry, meshComponent.materialHandle);
+		Resource<OpenGLMaterial>* openGLMaterialRes = registry.get<Resource<OpenGLMaterial>>(openGLMaterialHandle);
+		if (openGLMaterialRes == nullptr || !openGLMaterialRes->isReady)
+		{
+			// resource is not ready yet.
+			return;
+		}
+
+		const OpenGLMaterial& openGLMaterial = openGLMaterialRes->get();
+		Resource<OpenGLShader>* shaderRes = registry.get<Resource<OpenGLShader>>(openGLMaterial.shaderId);
+		MANI_ASSERT(shaderRes != nullptr, "We expect the shader to exist at this point.");
+
+		OpenGLCommand3D command = {
 			.model = Transform::model(*position, *rotation, *scale),
-			.mesh = meshComponent.meshHandle,
-			.material = meshComponent.materialHandle
-		});
+
+			.meshId = meshComponent.meshHandle,
+			.materialId = meshComponent.materialHandle,
+			.shaderId = openGLMaterial.shaderId,
+
+			.mesh = meshRes->value,
+			.material = materialRes->value,
+			.shader = shaderRes->value,
+		};
+
+		if (Resource<STBITexture>* diffuseRes = registry.get<Resource<STBITexture>>(openGLMaterial.diffuseId))
+		{
+			command.diffuseId = openGLMaterial.diffuseId;
+			command.diffuse = diffuseRes->value;
+		}
+
+		if (Resource<STBITexture>* specularRes = registry.get<Resource<STBITexture>>(openGLMaterial.specularId))
+		{
+			command.specularId = openGLMaterial.specularId;
+			command.specular = specularRes->value;
+		}
+
+		threadBuffers[threadIndex].emplace_back(command);
 	});
 
 	// merge all thread buffers into the command buffer.

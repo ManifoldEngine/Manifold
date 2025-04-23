@@ -26,6 +26,6 @@ namespace Mani
 		static void glfwCallback_onWindowClosed(GLFWwindow* window);
 		static void glfwCallback_onWindowResized(GLFWwindow* window, int newWidth, int newHeight);
 
-		void loadAndCompileShadersSync(ECS::Registry& registry, World& world);
+		static void loadAndCompileShadersSync(ECS::Registry& registry, World& world);
 	};
 }

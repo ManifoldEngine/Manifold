@@ -92,72 +92,72 @@ uint32_t OpenGLShader::compile(const std::string_view& inSource, int shaderType)
     return id;
 }
 
-void OpenGLShader::setFloat(const std::string_view& name, float value)
+void OpenGLShader::setFloat(const std::string_view& name, float value) const
 {
     const int location = glGetUniformLocation(shaderProgramId, name.data());
     glUniform1f(location, value);
 }
 
-void OpenGLShader::setFloat2(const std::string_view& name, float x, float y)
+void OpenGLShader::setFloat2(const std::string_view& name, float x, float y) const
 {
     const int location = glGetUniformLocation(shaderProgramId, name.data());
     glUniform2f(location, x, y);
 }
 
-void OpenGLShader::setFloat3(const std::string_view& name, float x, float y, float z)
+void OpenGLShader::setFloat3(const std::string_view& name, float x, float y, float z) const
 {
     const int location = glGetUniformLocation(shaderProgramId, name.data());
     glUniform3f(location, x, y, z);
 }
 
-void OpenGLShader::setFloat4(const std::string_view& name, float x, float y, float z, float w)
+void OpenGLShader::setFloat4(const std::string_view& name, float x, float y, float z, float w) const
 {
     const int location = glGetUniformLocation(shaderProgramId, name.data());
     glUniform4f(location, x, y, z, w);
 }
 
-void OpenGLShader::setInt(const std::string_view& name, int value)
+void OpenGLShader::setInt(const std::string_view& name, int value) const
 {
     const int location = glGetUniformLocation(shaderProgramId, name.data());
     glUniform1i(location, value);
 }
 
-void OpenGLShader::setInt2(const std::string_view& name, int x, int y)
+void OpenGLShader::setInt2(const std::string_view& name, int x, int y) const
 {
     const int location = glGetUniformLocation(shaderProgramId, name.data());
     glUniform2i(location, x, y);
 }
 
-void OpenGLShader::setInt3(const std::string_view& name, int x, int y, int z)
+void OpenGLShader::setInt3(const std::string_view& name, int x, int y, int z) const
 {
     const int location = glGetUniformLocation(shaderProgramId, name.data());
     glUniform3i(location, x, y, z);
 }
 
-void OpenGLShader::setInt4(const std::string_view& name, int x, int y, int z, int w)
+void OpenGLShader::setInt4(const std::string_view& name, int x, int y, int z, int w) const
 {
     const int location = glGetUniformLocation(shaderProgramId, name.data());
     glUniform4i(location, x, y, z, w);
 }
 
-void OpenGLShader::setFloatMatrix3(const std::string_view& name, const float* value)
+void OpenGLShader::setFloatMatrix3(const std::string_view& name, const float* value) const
 {
     const int location = glGetUniformLocation(shaderProgramId, name.data());
     glUniformMatrix3fv(location, 1, GL_FALSE, value);
 }
 
-void OpenGLShader::setFloatMatrix4(const std::string_view& name, const float* value)
+void OpenGLShader::setFloatMatrix4(const std::string_view& name, const float* value) const
 {
     const int location = glGetUniformLocation(shaderProgramId, name.data());
     glUniformMatrix4fv(location, 1, GL_FALSE, value);
 }
 
-void OpenGLShader::setBool(const std::string_view& name, bool value)
+void OpenGLShader::setBool(const std::string_view& name, bool value) const
 {
     setInt(name, value);
 }
 
-void OpenGLShader::setTextureSlot(const std::string_view& name, uint32_t slot)
+void OpenGLShader::setTextureSlot(const std::string_view& name, uint32_t slot) const
 {
     setInt(name, slot);
 }

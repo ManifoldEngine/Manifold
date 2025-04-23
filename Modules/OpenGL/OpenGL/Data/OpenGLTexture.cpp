@@ -19,27 +19,27 @@ OpenGLTexture2D::OpenGLTexture2D(const STBITexture& texture)
         GLenum imageDataFormat;
         switch (m_channels)
         {
-            case 3:
-            {
-                // internal format should use the 8 bytes format
-                internalFormat = GL_RGB8;
-                // stb_image uses legacy format
-                imageDataFormat = GL_RGB;
-                break;
-            }
-            case 4:
-            {
-                // internal format should use the 8 bytes format
-                internalFormat = GL_RGBA8;
-                // stb_image uses legacy format
-                imageDataFormat = GL_RGBA;
-                break;
-            }
-            default:
-            {
-                MANI_ASSERT(false, "Unspported texture format");
-                break;
-            }
+        case 3:
+        {
+            // internal format should use the 8 bytes format
+            internalFormat = GL_RGB8;
+            // stb_image uses legacy format
+            imageDataFormat = GL_RGB;
+            break;
+        }
+        case 4:
+        {
+            // internal format should use the 8 bytes format
+            internalFormat = GL_RGBA8;
+            // stb_image uses legacy format
+            imageDataFormat = GL_RGBA;
+            break;
+        }
+        default:
+        {
+            MANI_ASSERT(false, "Unspported texture format");
+            break;
+        }
         }
 
 #ifdef MANI_WEBGL
@@ -50,8 +50,8 @@ OpenGLTexture2D::OpenGLTexture2D(const STBITexture& texture)
         glTexParameteri(m_textureId, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(m_textureId, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        GLint filteringMode = 
-(mode);
+        GLint filteringMode =
+            (mode);
         glTexParameteri(m_textureId, GL_TEXTURE_MIN_FILTER, filteringMode);
         glTexParameteri(m_textureId, GL_TEXTURE_MAG_FILTER, filteringMode);
 
@@ -71,7 +71,7 @@ OpenGLTexture2D::OpenGLTexture2D(const STBITexture& texture)
         // create texture data
         glCreateTextures(GL_TEXTURE_2D, 1, &m_textureId);
         glTextureStorage2D(m_textureId, 1, internalFormat, m_width, m_height);
-        
+
         // set texture parameters
         glTextureParameteri(m_textureId, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(m_textureId, GL_TEXTURE_WRAP_T, GL_REPEAT);

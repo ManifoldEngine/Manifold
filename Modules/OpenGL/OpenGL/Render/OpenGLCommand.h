@@ -4,6 +4,12 @@
 
 #include <ECS/Entity.h>
 
+#include <OpenGL/Data/OpenGLShader.h>
+#include <OpenGL/Data/STBITexture.h>
+
+#include <RenderAPI/Mesh.h>
+#include <RenderAPI/Material.h>
+
 #include <memory>
 #include <vector>
 #include <array>
@@ -19,8 +25,18 @@ namespace Mani
 	struct OpenGLCommand3D
 	{
 		Mat4f model;
-		ECS::EntityId mesh;
-		ECS::EntityId material;
+
+		ECS::EntityId meshId;
+		ECS::EntityId materialId;
+		ECS::EntityId shaderId;
+		ECS::EntityId diffuseId;
+		ECS::EntityId specularId;
+
+		std::shared_ptr<Mesh> mesh;
+		std::shared_ptr<Material> material;
+		std::shared_ptr<OpenGLShader> shader;
+		std::shared_ptr<STBITexture> diffuse;
+		std::shared_ptr<STBITexture> specular;
 	};
 
 	struct OpenGLCommand2D

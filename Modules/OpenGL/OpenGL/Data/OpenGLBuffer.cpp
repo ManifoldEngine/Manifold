@@ -10,7 +10,7 @@ OpenGLVertexBuffer::OpenGLVertexBuffer()
 	create();
 }
 
-OpenGLVertexBuffer::OpenGLVertexBuffer(float* data, size_t size)
+OpenGLVertexBuffer::OpenGLVertexBuffer(const float* data, size_t size)
 	: m_size(size), m_vertexBufferObjectId(UINT32_MAX)
 {
 	create();
@@ -22,7 +22,7 @@ OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	glDeleteBuffers(1, &m_vertexBufferObjectId);
 }
 
-void OpenGLVertexBuffer::set(float* data, size_t count)
+void OpenGLVertexBuffer::set(const float* data, size_t count)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferObjectId);
 	glBufferData(GL_ARRAY_BUFFER, m_size, data, GL_STATIC_DRAW);
@@ -110,7 +110,7 @@ OpenGLIndexBuffer::OpenGLIndexBuffer()
 	create();
 }
 
-OpenGLIndexBuffer::OpenGLIndexBuffer(unsigned int* indices, size_t size)
+OpenGLIndexBuffer::OpenGLIndexBuffer(const unsigned int* indices, size_t size)
 	: m_size(size), m_indexBufferObjectId(UINT32_MAX)
 {
 	create();
@@ -121,7 +121,7 @@ OpenGLIndexBuffer::~OpenGLIndexBuffer()
 	glDeleteBuffers(1, &m_indexBufferObjectId);
 }
 
-void OpenGLIndexBuffer::set(unsigned int* indices, size_t size)
+void OpenGLIndexBuffer::set(const unsigned int* indices, size_t size)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, m_indexBufferObjectId);
 	glBufferData(GL_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);

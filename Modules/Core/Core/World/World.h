@@ -74,10 +74,6 @@ namespace Mani
 		}
 
 		auto system = std::make_shared<TSystem>();
-		if (m_isInitialized)
-		{
-			system->initialize(m_registry, *this);
-		}
 
 		ETickGroup targetTickGroup = system->getTickGroup();
 		auto insertIt = m_systems.end();
@@ -91,6 +87,11 @@ namespace Mani
 		}
 
 		m_systems.insert(insertIt, system);
+
+		if (m_isInitialized)
+		{
+			system->initialize(m_registry, *this);
+		}
 		return *this;
 	}
 

@@ -31,13 +31,13 @@ namespace Mani
 	{
 	public:
 		OpenGLVertexBuffer();
-		OpenGLVertexBuffer(float* data, size_t size);
+		OpenGLVertexBuffer(const float* data, size_t size);
 		~OpenGLVertexBuffer();
 		
 		// buffers can't be copied implicitely.
 		OpenGLVertexBuffer(const OpenGLVertexBuffer&) = delete;
 
-		void set(float* data, size_t size);
+		void set(const float* data, size_t size);
 
 		void bind() const;
 		size_t getStrideCount() const;
@@ -58,13 +58,13 @@ namespace Mani
 	{
 	public:
 		OpenGLIndexBuffer();
-		OpenGLIndexBuffer(unsigned int* indices, size_t size);
+		OpenGLIndexBuffer(const unsigned int* indices, size_t size);
 		~OpenGLIndexBuffer();
 
 		// buffers can't be copied implicitely.
 		OpenGLIndexBuffer(const OpenGLVertexBuffer&) = delete;
 
-		void set(unsigned int* indices, size_t size);
+		void set(const unsigned int* indices, size_t size);
 
 		void bind() const;
 		size_t getStrideCount() const;

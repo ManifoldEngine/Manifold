@@ -28,8 +28,8 @@ void ECS::System::initialize(ECS::Registry& registry, World& world)
     }
 
     MANI_LOG(LogCore, "Initialized {}", getName());
-    onInitialize(registry, world);
     m_isInitialized = true;
+    onInitialize(registry, world);
 }
 
 void ECS::System::deinitialize(ECS::Registry& registry)

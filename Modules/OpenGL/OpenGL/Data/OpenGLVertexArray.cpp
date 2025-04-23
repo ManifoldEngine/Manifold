@@ -35,8 +35,8 @@ OpenGLVertexArray::OpenGLVertexArray()
 
 OpenGLVertexArray::~OpenGLVertexArray()
 {
-	glDeleteVertexArrays(1, &m_vertexArrayObjectId);
-}
+		glDeleteVertexArrays(1, &m_vertexArrayObjectId);
+	}
 
 void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buffer)
 {
@@ -88,26 +88,6 @@ void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buff
 				m_attributeCount++;
 				break;
 			}
-
-			// todo: understand wtf is glVertexAttribDivisor.
-			//case EShaderDataType::Mat3:
-			//case EShaderDataType::Mat4:
-			//{
-			//	const int componentCount = OpenGLVertexBuffer::getComponentCount(layoutElement.shaderType);
-			//	for (int i = 0; i < componentCount; ++i)
-			//	{
-			//		glEnableVertexAttribArray(m_attributeCount);
-			//		glVertexAttribPointer(
-			//			m_attributeCount, // GLuint index, 
-			//			componentCount, // GLint size,
-			//			toOpenGLType(layoutElement.shaderType), // GLenum type, 
-			//			layoutElement.isNormalized, // GLboolean normalized,
-			//			buffer->getStrideSize(), // GLsizei stride,
-			//			(const void*)(accumulatedOffset + sizeof(float) * i) // const void* pointer
-			//		);
-			//	}
-			//	break;
-			//}
 
 			default:
 				MANI_ASSERT(false, "Unknown EShaderDataType");

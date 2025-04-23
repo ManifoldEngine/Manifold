@@ -75,6 +75,8 @@ struct RenderContext
 	Mat4f view = MAT4F::IDENTITY;
 	Mat4f projection = MAT4F::IDENTITY;
 	Vec3f cameraPosition = VEC3F::ZERO;
+	int width = 0;
+	int height = 0;
 
 	Vec4f clearColor = { 0.f, 0.f, 0.f, 1.f };
 
@@ -82,16 +84,24 @@ struct RenderContext
 	std::vector<DirectionalLight> directionalLights;
 	std::vector<std::tuple<PointLight, Position>> pointLights;
 	std::vector<std::tuple<Spotlight, Position, Rotation>> spotlights;
+
+	OpenGLRenderSystem::Storage* storage;
 };
 
 RenderContext createContext(const ECS::Registry& registry);
-void render(ECS::Registry& registry, const OpenGLCommand3D& command, const RenderContext& context);
-void loadOpenGLVertexArray(const Resource<Mesh>& meshRes, Resource<OpenGLVertexArray>& vertexArrayRes);
-Resource<OpenGLTexture2D>* loadOpenGLTexture(ECS::Registry& registry, ECS::EntityId entityId);
+
+void render(const OpenGLCommand3D& command, RenderContext& context);
+void loadOpenGLVertexArray(const Mesh& meshRes, Resource<OpenGLVertexArray>& res);
+void loadOpenGLTexture(const STBITexture& stbiTexture, Resource<OpenGLTexture2D>& res);
 
 struct OpenGLRenderSystem::Storage
 {
 	ThreadPool renderThread{ 1 };
+
+	std::unordered_map<ECS::EntityId, Resource<OpenGLVertexArray>> vaos;
+	std::unordered_map<ECS::EntityId, Resource<OpenGLTexture2D>> textures;
+
+	std::mutex resourceMutex;
 };
 
 void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, World& world)
@@ -128,11 +138,17 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 		return;
 	}
 
-	RenderContext context = createContext(registry);
 	OpenGLRenderSystem::Storage& storage = *registry.getSingle<OpenGLRenderSystem::Storage>();
+	RenderContext context = createContext(registry);
+	context.storage = &storage;
+	
+#if MANI_DEBUG
+	const float fps = Math::isEqual(deltaTime, 0.f) ? 0.f : 1 / deltaTime;
+	glfwSetWindowTitle(context.openglContext->window, std::format("{} ({}fps)", context.openglContext->name, fps).c_str());
+#endif
 
 	const unsigned int readBuffer = cbs->readBuffer;
-	storage.renderThread.enqueue([&registry, cbs, readBuffer, context = std::move(context)]
+	storage.renderThread.enqueue([&registry, cbs, readBuffer, context = std::move(context)]() mutable
 	{
 		MANI_TIME_SCOPE(OpenGLRenderSystemtickrenderthread);
 		glfwMakeContextCurrent(context.openglContext->window);
@@ -148,9 +164,11 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 		// consuming color state.
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glViewport(0, 0, context.width, context.height);
+
 		for (const auto& command : commands)
 		{
-			render(registry, command, context);
+			render(command, context);
 		}
 
 		// render extension if any
@@ -162,6 +180,7 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 
 		cbs->renderFrame++;
 		glfwMakeContextCurrent(nullptr);
+		glfwSwapBuffers(context.openglContext->window);
 	});
 }
 
@@ -184,6 +203,8 @@ RenderContext createContext(const ECS::Registry& registry)
 		const Camera& camera = *registry.get<Camera>(*it);
 		context.view = camera.view;
 		context.projection = camera.projection;
+		context.width = static_cast<int>(camera.width);
+		context.height = static_cast<int>(camera.height);
 	}
 
 	{
@@ -217,48 +238,23 @@ RenderContext createContext(const ECS::Registry& registry)
 	return context;
 }
 
-void render(ECS::Registry& registry, const OpenGLCommand3D& command, const RenderContext& context)
+void render(const OpenGLCommand3D& command, RenderContext& context)
 {
 	MANI_TIME_SCOPE(OpenGLRenderSystemtickrenderthreadrender);
-	namespace fs = std::filesystem;
 
-	const ECS::EntityId vaoid = OpenGLResourceSystem::getOpenGLResourceId(registry, command.mesh);
-	Resource<OpenGLVertexArray>* vaoRes = registry.get<Resource<OpenGLVertexArray>>(vaoid);
-	if (vaoRes == nullptr)
+	Resource<OpenGLVertexArray>* vaoRes = nullptr;
 	{
-		return;
+		std::lock_guard<std::mutex> lock(context.storage->resourceMutex);
+		vaoRes = &(context.storage->vaos[command.meshId]);
 	}
 
 	if (!vaoRes->isReady)
 	{
-		Resource<Mesh>* meshRes = registry.get<Resource<Mesh>>(command.mesh);
-		loadOpenGLVertexArray(*meshRes, *vaoRes);
-		if (!vaoRes->isReady)
-		{
-			return;
-		}
+		loadOpenGLVertexArray(*command.mesh, *vaoRes);
 	}
 
-	const ECS::EntityId materialId = OpenGLResourceSystem::getOpenGLResourceId(registry, command.material);
-	Resource<OpenGLMaterial>* materialRes = registry.get<Resource<OpenGLMaterial>>(materialId);
-	if (materialRes == nullptr)
-	{
-		return;
-	}
-
-	if (!materialRes->isReady)
-	{
-		return;
-	}
-
-	const OpenGLMaterial& material = materialRes->get();
-	Resource<OpenGLShader>* shaderRes = registry.get<Resource<OpenGLShader>>(material.shaderId);
-	if (shaderRes == nullptr)
-	{
-		return;
-	}
-
-	OpenGLShader& shader = shaderRes->getMutable();
+	const Material& material = *command.material;
+	const OpenGLShader& shader = *command.shader;
 
 	const Mat3f normalMatrix = static_cast<Mat3f>(command.model).inverse().transpose();
 
@@ -277,21 +273,34 @@ void render(ECS::Registry& registry, const OpenGLCommand3D& command, const Rende
 
 	int textureIndex = 0;
 	Resource<OpenGLTexture2D>* diffuseRes = nullptr;
-	if (diffuseRes = loadOpenGLTexture(registry, material.diffuseId))
+	if (command.diffuse != nullptr)
 	{
+		{
+			std::lock_guard<std::mutex> lock(context.storage->resourceMutex);
+			diffuseRes = &(context.storage->textures[command.diffuseId]);
+		}
+
+		loadOpenGLTexture(*command.diffuse, *diffuseRes);
+		
 		OpenGLTexture2D& texture = diffuseRes->getMutable();
 		texture.bind(textureIndex);
 		shader.setTextureSlot(MATERIAL_DIFFUSE, textureIndex);
 	}
 
 	Resource<OpenGLTexture2D>* specularRes = nullptr;
-	if (specularRes = loadOpenGLTexture(registry, material.specularId))
+	if (command.specular != nullptr)
 	{
+		{
+			std::lock_guard<std::mutex> lock(context.storage->resourceMutex);
+			specularRes = &(context.storage->textures[command.specularId]);
+		}
+
+		loadOpenGLTexture(*command.specular, *specularRes);
+
 		OpenGLTexture2D& texture = specularRes->getMutable();
 		texture.bind(textureIndex);
 		shader.setTextureSlot(MATERIAL_SPECULAR, textureIndex);
 	}
-
 
 	// set lights
 	int directionalLightIndex = 0;
@@ -367,20 +376,10 @@ void render(ECS::Registry& registry, const OpenGLCommand3D& command, const Rende
 	}
 }
 
-void loadOpenGLVertexArray(const Resource<Mesh>& meshRes, Resource<OpenGLVertexArray>& vertexArrayRes)
+void loadOpenGLVertexArray(const Mesh& mesh, Resource<OpenGLVertexArray>& res)
 {
-	Mesh* mesh = meshRes.value.get();
-	if (!meshRes.isReady)
-	{
-		return;
-	}
-
-	if (vertexArrayRes.isReady)
-	{
-		return;
-	}
 	constexpr size_t vertexSize = 3 + 3 + 2;
-	std::shared_ptr<OpenGLVertexBuffer> vertexBuffer = std::make_shared<OpenGLVertexBuffer>(&mesh->vertices[0].position.x, (int)(sizeof(float) * (mesh->vertices.size() * vertexSize)));;
+	std::shared_ptr<OpenGLVertexBuffer> vertexBuffer = std::make_shared<OpenGLVertexBuffer>(&mesh.vertices[0].position.x, (int)(sizeof(float) * (mesh.vertices.size() * vertexSize)));;
 	vertexBuffer->layout =
 	{
 		{ EShaderDataType::Float3, false },
@@ -388,33 +387,19 @@ void loadOpenGLVertexArray(const Resource<Mesh>& meshRes, Resource<OpenGLVertexA
 		{ EShaderDataType::Float2, false }
 	};
 
-	std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(&mesh->indices[0], (int)sizeof(uint32_t) * mesh->indices.size());
+	std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(&mesh.indices[0], (int)sizeof(uint32_t) * mesh.indices.size());
 
-	vertexArrayRes.value = std::make_unique<OpenGLVertexArray>();
-	vertexArrayRes.value->addVertexBuffer(vertexBuffer);
-	vertexArrayRes.value->setIndexBuffer(indexBuffer);
+	res.value = std::make_unique<OpenGLVertexArray>();
+	res.value->addVertexBuffer(vertexBuffer);
+	res.value->setIndexBuffer(indexBuffer);
 
-	vertexArrayRes.isReady = true;
+	res.isReady = true;
 }
 
-Resource<OpenGLTexture2D>* loadOpenGLTexture(ECS::Registry& registry, ECS::EntityId entityId)
+void loadOpenGLTexture(const STBITexture& stbiTexture, Resource<OpenGLTexture2D>& res)
 {
-	Resource<OpenGLTexture2D>* textureRes = registry.get<Resource<OpenGLTexture2D>>(entityId);
-	if (textureRes == nullptr)
-	{
-		return nullptr;
-	}
-
-	if (!textureRes->isReady)
-	{
-		Resource<STBITexture>* stbiTextureRes = registry.get<Resource<STBITexture>>(entityId);
-		MANI_ASSERT(stbiTextureRes->isReady, "Should be ready if the material is ready");
-		textureRes->value = std::make_unique<OpenGLTexture2D>(stbiTextureRes->get());
-		textureRes->isReady = true;
-
-		stbiTextureRes->value.reset(); // free the stbi texture, we don't need it anymore.
-	}
-	return textureRes;
+	res.value = std::make_shared<OpenGLTexture2D>(stbiTexture);
+	res.isReady = true;
 }
 
 

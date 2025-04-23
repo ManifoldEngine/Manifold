@@ -9,6 +9,8 @@ namespace Mani
     class OpenGLRenderSystem : public ECS::System
     {
     public:
+        struct Storage;
+
         virtual std::string_view getName() const override { return "OpenGLRenderSystem"; }
         virtual ETickGroup getTickGroup() const override { return ETickGroup::Render; }
         virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
@@ -21,8 +23,5 @@ namespace Mani
     protected:
         virtual void onInitialize(ECS::Registry& registry, World& world) override;
         virtual void onDeinitialize(ECS::Registry& registry) override;
-
-    private:
-        struct Storage;
     };
 }

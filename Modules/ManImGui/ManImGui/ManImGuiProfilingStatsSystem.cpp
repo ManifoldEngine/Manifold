@@ -1,6 +1,5 @@
 #include "ManImGuiProfilingStatsSystem.h"
 
-#include "ManImGuiBeginFrameSystem.h"
 #include "ManImGuiWindowContext.h"
 #include "ManImGuiSystem.h"
 

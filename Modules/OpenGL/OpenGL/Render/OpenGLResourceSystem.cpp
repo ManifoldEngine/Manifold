@@ -4,7 +4,6 @@
 
 #include <ECS/Entity.h>
 
-#include <OpenGL/Render/OpenGLResource.h>
 #include <OpenGL/Data/OpenGLBuffer.h>
 #include <OpenGL/Data/OpenGLVertexArray.h>
 #include <OpenGL/Data/OpenGLTexture.h>
@@ -132,7 +131,7 @@ void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, ECS::EntityId m
 {
 	const ECS::EntityId openglResourceId = registry.create();
 	registry.add<Resource<OpenGLVertexArray>>(openglResourceId);
-	
+
 	OpenGLResourceSystem::Storage& storage = *registry.getSingle<OpenGLResourceSystem::Storage>();
 	{
 		std::lock_guard<std::mutex> lock(storage.resourceMutex);
@@ -153,12 +152,10 @@ void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, ECS::Entity
 
 	const ECS::EntityId diffuseId = registry.create();
 	registry.add<Resource<STBITexture>>(diffuseId);
-	registry.add<Resource<OpenGLTexture2D>>(diffuseId);
-
+	
 	const ECS::EntityId specularId = registry.create();
 	registry.add<Resource<STBITexture>>(specularId);
-	registry.add<Resource<OpenGLTexture2D>>(specularId);
-
+	
 	Resource<Material>* materialRes = registry.get<Resource<Material>>(materialId);
 	Mani::enqueueTask([&registry, materialRes, openglMaterialRes, diffuseId, specularId]
 	{
