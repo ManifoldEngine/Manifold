@@ -143,7 +143,7 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 	context.storage = &storage;
 	
 #if MANI_DEBUG
-	const float fps = Math::isEqual(deltaTime, 0.f) ? 0.f : 1 / deltaTime;
+	const int fps = Math::isEqual(deltaTime, 0.f) ? 0 : static_cast<int>(1 / deltaTime);
 	glfwSetWindowTitle(context.openglContext->window, std::format("{} ({}fps)", context.openglContext->name, fps).c_str());
 #endif
 
