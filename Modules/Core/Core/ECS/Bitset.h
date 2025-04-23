@@ -4,7 +4,9 @@
 
 namespace Mani
 {
-	template<unsigned int TBits>
+	using BitsetIndexType = unsigned int;
+
+	template<BitsetIndexType TBits>
 	requires (TBits > 0)
 	class Bitset
 	{
@@ -16,7 +18,7 @@ namespace Mani
 
 		bool any() const
 		{
-			for (unsigned int i = 0; i < wordCount(); ++i)
+			for (BitsetIndexType i = 0; i < wordCount(); ++i)
 			{
 				if (m_bits[i] > 0)
 				{
@@ -26,7 +28,7 @@ namespace Mani
 			return false;
 		};
 
-		bool test(const unsigned int index) const
+		bool test(const BitsetIndexType index) const
 		{
 			if (index >= TBits)
 			{
@@ -35,16 +37,16 @@ namespace Mani
 			return (m_bits[index / wordSize()] & (1 << index % wordSize())) > 0;
 		};
 
-		Bitset& set(const unsigned int index, bool value = true)
+		Bitset& set(const BitsetIndexType index, bool value = true)
 		{
 			if (index >= TBits)
 			{
 				return *this;
 			}
 
-			const unsigned int wordIndex = index / wordSize();
-			unsigned int& word = m_bits[wordIndex];
-			const unsigned int bit = 1 << index % wordSize();
+			const BitsetIndexType wordIndex = index / wordSize();
+			BitsetIndexType& word = m_bits[wordIndex];
+			const BitsetIndexType bit = 1 << index % wordSize();
 
 			if (value)
 			{
@@ -60,7 +62,7 @@ namespace Mani
 
 		Bitset& reset()
 		{
-			for (unsigned int i = 0; i < wordCount(); ++i)
+			for (BitsetIndexType i = 0; i < wordCount(); ++i)
 			{
 				m_bits[i] = 0;
 			}
@@ -69,7 +71,7 @@ namespace Mani
 
 		bool operator==(const Bitset& rhs) const
 		{
-			for (unsigned int i = 0; i < wordCount(); ++i)
+			for (BitsetIndexType i = 0; i < wordCount(); ++i)
 			{
 				if (m_bits[i] != rhs.m_bits[i])
 				{
@@ -81,7 +83,7 @@ namespace Mani
 
 		Bitset& operator&=(const Bitset& rhs)
 		{
-			for (unsigned int i = 0; i < wordCount(); ++i)
+			for (BitsetIndexType i = 0; i < wordCount(); ++i)
 			{
 				m_bits[i] &= rhs.m_bits[i];
 			}
@@ -90,7 +92,7 @@ namespace Mani
 
 		Bitset& operator|=(const Bitset& rhs)
 		{
-			for (unsigned int i = 0; i < wordCount(); ++i)
+			for (BitsetIndexType i = 0; i < wordCount(); ++i)
 			{
 				m_bits[i] |= rhs.m_bits[i];
 			}
@@ -99,7 +101,7 @@ namespace Mani
 
 		Bitset& operator^=(const Bitset& rhs)
 		{
-			for (unsigned int i = 0; i < wordCount(); ++i)
+			for (BitsetIndexType i = 0; i < wordCount(); ++i)
 			{
 				m_bits[i] ^= rhs.m_bits[i];
 			}
@@ -107,12 +109,12 @@ namespace Mani
 		};
 
 	private:
-		constexpr unsigned int wordSize() const { return sizeof(unsigned int) * 8; };
-		constexpr unsigned int wordCount() const { return (TBits / wordSize()) + 1; };
-		std::array<unsigned int, (TBits / (sizeof(unsigned int) * 8)) + 1> m_bits;
+		constexpr BitsetIndexType wordSize() const { return sizeof(BitsetIndexType) * 8; };
+		constexpr BitsetIndexType wordCount() const { return (TBits / wordSize()) + 1; };
+		std::array<BitsetIndexType, (TBits / (sizeof(BitsetIndexType) * 8)) + 1> m_bits;
 	};
 
-	template<unsigned int TBits>
+	template<BitsetIndexType TBits>
 	requires (TBits > 0)
 	Bitset<TBits> operator|(const Bitset<TBits>& lhs, const Bitset<TBits>& rhs)
 	{
@@ -121,7 +123,7 @@ namespace Mani
 		return result;
 	};
 
-	template<unsigned int TBits>
+	template<BitsetIndexType TBits>
 	requires (TBits > 0)
 	Bitset<TBits> operator&(const Bitset<TBits>& lhs, const Bitset<TBits>& rhs)
 	{
@@ -130,7 +132,7 @@ namespace Mani
 		return result;
 	};
 
-	template<unsigned int TBits>
+	template<BitsetIndexType TBits>
 	requires (TBits > 0)
 	Bitset<TBits> operator^(const Bitset<TBits>& lhs, const Bitset<TBits>& rhs)
 	{

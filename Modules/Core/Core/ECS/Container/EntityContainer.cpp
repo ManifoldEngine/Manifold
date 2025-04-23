@@ -195,23 +195,3 @@ void Mani::ECS::EntityContainer::handleDeferredDestroy()
 	m_markedForDestroy.clear();
 }
 
-ECS::ComponentId ECS::EntityContainer::getComponentId(const std::type_index& typeIndex) const
-{
-	std::vector<std::pair<std::type_index, ComponentId>>* componentIds = const_cast<std::vector<std::pair<std::type_index, ComponentId>>*>(&m_componentIds);
-	auto it = std::find_if(componentIds->begin(), componentIds->end(), [&typeIndex](const auto& e)
-	{
-		return e.first == typeIndex;
-	});
-
-	if (it != componentIds->end())
-	{
-		return it->second;
-	}
-	else
-	{
-		assert(componentIds->size() <= MAX_COMPONENTS);
-		ComponentId componentId = static_cast<ComponentId>(componentIds->size());
-		componentIds->emplace_back(std::pair<std::type_index, ComponentId>{ typeIndex, componentId });
-		return componentId;
-	}
-}

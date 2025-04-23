@@ -1,7 +1,5 @@
 #include "ManImGuiBeginFrameSystem.h"
 
-#include "IsManImGuiDisplayed.h"
-
 #include <Inputs/Data/InputDevice.h>
 #include <Inputs/Data/InputUser.h>
 #include <Inputs/InputSystem.h>
@@ -11,23 +9,58 @@
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
+#include <ManImGui/ManImGuiSystem.h>
+#include <ManImGui/ManImGuiWindowContext.h>
+
+#include <GLFW/glfw3.h>
+
 using namespace Mani;
 
 const std::string TOGGLE_MANIMGUI = "TOGGLE_MANIMGUI";
 
-struct CursorModeCache
+struct ManImGuiUser
 {
-	Cursor::EMode mode = Cursor::EMode::DISABLED;
+	Cursor::EMode modeCache = Cursor::EMode::Disabled;
 };
+
+void handleInputs(ECS::Registry& registry, ManImGuiWindowContext& context, ManImGuiUser& manImguiUser, const InputAction& toggleManImGui)
+{
+	if (!toggleManImGui.changed() || !toggleManImGui.isPressed)
+	{
+		return;
+	}
+
+	Cursor& cursor = *registry.getSingle<Cursor>();
+
+	switch (context.mode)
+	{
+		case EManImGuiMode::Show: 
+		{
+			context.mode = EManImGuiMode::Hidden;
+			cursor.mode = manImguiUser.modeCache;
+			break;
+		}
+
+		case EManImGuiMode::Hidden: 
+		{
+			context.mode = EManImGuiMode::Show; 
+			manImguiUser.modeCache = cursor.mode;
+			cursor.mode = Cursor::EMode::Normal;
+			break;
+		}
+		default: break;
+	}
+}
 
 void Mani::ManImGuiBeginFrameSystem::onInitialize(ECS::Registry& registry, World& world)
 {
+	world.initializeDependency<ManImGuiSystem>();
 	world.initializeDependency<InputSystem>();
 
 	{
 		const ECS::EntityId entityId = registry.create();
 
-		registry.add<IsManImGuiDisplayed>(entityId);
+		registry.add<ManImGuiUser>(entityId);
 
 		InputUser& inputUser = *registry.add<InputUser>(entityId);
 		inputUser.setAction(TOGGLE_MANIMGUI);
@@ -38,74 +71,36 @@ void Mani::ManImGuiBeginFrameSystem::onInitialize(ECS::Registry& registry, World
 			inputUser.inputDevices.push_back(deviceId);
 		}
 	}
-
-	registry.addSingle<CursorModeCache>();
 }
 
 void Mani::ManImGuiBeginFrameSystem::onDeinitialize(ECS::Registry& registry)
 {
-	for (const auto entityId : ECS::View<IsManImGuiDisplayed>(registry))
+	for (const auto entityId : ECS::View<ManImGuiUser, InputUser>(registry))
 	{
 		registry.deferDestroy(entityId);
 	}
-
-	registry.removeSingle<CursorModeCache>();
 }
 
 void Mani::ManImGuiBeginFrameSystem::tick(float deltaTime, Mani::ECS::Registry& registry)
 {
-	const ECS::View<IsManImGuiDisplayed, InputUser> view(registry);
-	const ECS::EntityId entityId = view.first();
+	ManImGuiWindowContext& context = *registry.getSingle<ManImGuiWindowContext>();
+	for (const auto entityId : ECS::View<ManImGuiUser, InputUser>(registry))
+	{
+		auto [imguiUser, inputUser] = registry.getMany<ManImGuiUser, InputUser>(entityId);
+		const InputAction& toggleManImGui = inputUser->actions.at(TOGGLE_MANIMGUI);
+		handleInputs(registry, context, *imguiUser, toggleManImGui);
+		break;
+	}
 	
-	IsManImGuiDisplayed& isManImGuiDisplayed = *registry.get<IsManImGuiDisplayed>(entityId);
-	const InputUser& inputUser = *registry.get<InputUser>(entityId);
-	const InputAction& toggleManImGui = inputUser.actions.at(TOGGLE_MANIMGUI);
-
-	handleInputs(registry, isManImGuiDisplayed, toggleManImGui);
-	
-	if (!isManImGuiDisplayed.value)
+	if (context.mode == EManImGuiMode::Hidden)
 	{
 		return;
 	}
 
+	glfwMakeContextCurrent(context.window);
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 
 	ImGui::NewFrame();
-}
-
-bool ManImGuiBeginFrameSystem::isDisplayed(const ECS::Registry& registry)
-{
-	const ECS::View<IsManImGuiDisplayed> view(registry);
-	const ECS::EntityId entityId = view.first();
-
-	if (const IsManImGuiDisplayed* isManImGuiDisplayed = registry.get<IsManImGuiDisplayed>(entityId))
-	{
-		return isManImGuiDisplayed->value;
-	}
-	return false;
-}
-
-void ManImGuiBeginFrameSystem::handleInputs(ECS::Registry& registry, IsManImGuiDisplayed& isManImGuiDisplayed, const InputAction& toggleManImGui)
-{
-	if (!toggleManImGui.changed() || !toggleManImGui.isPressed)
-	{
-		return;
-	}
-
-	isManImGuiDisplayed.value = !isManImGuiDisplayed.value;
-	
-	const bool isDisplayed = isManImGuiDisplayed.value;
-	Cursor& cursor = *registry.getSingle<Cursor>();
-	CursorModeCache& cache = *registry.getSingle<CursorModeCache>();
-
-	if (isDisplayed)
-	{
-		cache.mode = cursor.mode;
-		cursor.mode = Cursor::EMode::NORMAL;
-	}
-	else
-	{
-		cursor.mode = cache.mode;
-	}
+	glfwMakeContextCurrent(nullptr);
 }

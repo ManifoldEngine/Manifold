@@ -4,13 +4,14 @@ group "Engine"
     project "ManImGui"
         kind "StaticLib"
         location (moduledir .. "/%{prj.name}")
+        ignoredefaultlibraries { "MSVCRTD" }
         
         files { 
             moduledir .. "/%{prj.name}/**.h",
             moduledir .. "/%{prj.name}/**.cpp" 
         }
 
-        links { "Core", "Events", "Inputs", "OpenGL" }
+        links { "Core", "Inputs", "OpenGL" }
 
         includedirs { moduledir .. "/**" }
 

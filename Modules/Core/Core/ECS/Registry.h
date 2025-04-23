@@ -125,7 +125,7 @@ namespace Mani
 		template<typename TComponent>
 		inline TComponent* Registry::add(ECS::EntityId entityId)
 		{
-			const ComponentId componentId = m_entityContainer.getComponentId(typeid(TComponent));
+			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
 
 			void* buffer = m_entityContainer.addComponent(entityId, componentId, sizeof(TComponent));
 			if (buffer == nullptr)
@@ -153,21 +153,21 @@ namespace Mani
 		template<typename TComponent>
 		inline TComponent* Registry::get(ECS::EntityId entityId)
 		{
-			const ComponentId componentId = m_entityContainer.getComponentId(typeid(TComponent));
+			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
 			return static_cast<TComponent*>(m_entityContainer.getComponent(entityId, componentId));
 		}
 
 		template<typename TComponent>
 		inline bool Registry::has(ECS::EntityId entityId) const
 		{
-			const ComponentId componentId = m_entityContainer.getComponentId(typeid(TComponent));
+			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
 			return m_entityContainer.hasComponent(entityId, componentId);
 		}
 
 		template<typename TComponent>
 		inline const TComponent* Registry::get(ECS::EntityId entityId) const
 		{
-			const ComponentId componentId = m_entityContainer.getComponentId(typeid(TComponent));
+			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
 			return static_cast<const TComponent*>(m_entityContainer.getComponent(entityId, componentId));
 		}
 
@@ -186,7 +186,7 @@ namespace Mani
 		template<typename TComponent>
 		inline bool Registry::remove(ECS::EntityId entityId)
 		{
-			const ComponentId componentId = m_entityContainer.getComponentId(typeid(TComponent));
+			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
 			return m_entityContainer.removeComponent(entityId, componentId);
 		}
 
@@ -223,7 +223,7 @@ namespace Mani
 		template<typename TComponent>
 		inline ComponentId Registry::getComponentId() const
 		{
-			return m_entityContainer.getComponentId(typeid(TComponent));
+			return m_entityContainer.getComponentId<TComponent>();
 		}
 
 		inline Registry::Registry()

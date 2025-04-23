@@ -1,15 +1,24 @@
 #include "ManImGuiProfilingStatsSystem.h"
 
 #include "ManImGuiBeginFrameSystem.h"
+#include "ManImGuiWindowContext.h"
+#include "ManImGuiSystem.h"
 
 #include <Core/Debug/Profiling.h>
 #include "imgui.h"
 
 using namespace Mani;
 
+void ManImGuiProfilingStatsSystem::onInitialize(ECS::Registry& registry, World& world)
+{
+	world.initializeDependency<ManImGuiSystem>();
+}
+
 void ManImGuiProfilingStatsSystem::tick(float deltaTime, Mani::ECS::Registry& registry)
 {
-	if (!ManImGuiBeginFrameSystem::isDisplayed(registry))
+	ManImGuiWindowContext* context = registry.getSingle<ManImGuiWindowContext>();
+	MANI_ASSERT(context != nullptr, "We expect the context to be accessible");
+	if (context->mode < EManImGuiMode::Show)
 	{
 		return;
 	}

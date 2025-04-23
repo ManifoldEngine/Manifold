@@ -56,8 +56,6 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
     OpenGLWindowContext& context = *registry.addSingle<OpenGLWindowContext>();
     // create the window
     context.window = glfwCreateWindow(context.width, context.height, context.name.data(), NULL, NULL);
-    //glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-    //context.render = glfwCreateWindow(context.width, context.height, context.name.data(), NULL, context.window);
     
     if (context.window == nullptr)
     {

@@ -8,10 +8,16 @@ namespace Mani
 	enum class ETickGroup : uint8_t
 	{
 		Begin = 0,
-		Input = 1,
-		Update = 2,
-		Render = 3,
-		End = 4,
+		PreInput = 1,
+		Input = 2,
+		PostInput = 3,
+		PreUpdate = 4,
+		Update = 5,
+		PostUpdate = 6,
+		PreRender = 7,
+		Render = 8,
+		PostRender = 9,
+		End = 10,
 	};
 
 	class World;

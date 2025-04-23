@@ -114,16 +114,18 @@ void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry)
 
 ECS::EntityId OpenGLResourceSystem::getOpenGLResourceId(ECS::Registry& registry, ECS::EntityId entityId)
 {
-	OpenGLResourceSystem::Storage& storage = *registry.getSingle<OpenGLResourceSystem::Storage>();
+	// we could be accessing this while we're shutting down the application from the render thread
+	if (OpenGLResourceSystem::Storage* storage = registry.getSingle<OpenGLResourceSystem::Storage>())
 	{
-		std::lock_guard<std::mutex> lock(storage.resourceMutex);
-		auto it = storage.resourceMap.find(entityId);
-		if (it == storage.resourceMap.end())
+		std::lock_guard<std::mutex> lock(storage->resourceMutex);
+		auto it = storage->resourceMap.find(entityId);
+		if (it == storage->resourceMap.end())
 		{
 			return ECS::INVALID_ID;
 		}
 		return it->second;
 	}
+	return ECS::INVALID_ID;
 }
 
 void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, ECS::EntityId meshId) 

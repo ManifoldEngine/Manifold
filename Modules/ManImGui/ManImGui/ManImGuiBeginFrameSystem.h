@@ -15,13 +15,8 @@ namespace Mani
 
         virtual void tick(float deltaTime, ECS::Registry& registry) override;
 
-        static bool isDisplayed(const ECS::Registry& registry);
-
     protected:
         virtual void onInitialize(ECS::Registry& registry, World& world);
         virtual void onDeinitialize(ECS::Registry& registry);
-
-    private:
-        void handleInputs(ECS::Registry& registry, IsManImGuiDisplayed& isManImGuiDisplayed, const InputAction& toggleManImGui);
     };
 }

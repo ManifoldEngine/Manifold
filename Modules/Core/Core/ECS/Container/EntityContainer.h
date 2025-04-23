@@ -13,7 +13,6 @@ namespace Mani
 	{
 		class EntityContainer
 		{
-
 	#define INITIAL_COMPONENT_COUNT 1000
 
 		public:
@@ -28,7 +27,8 @@ namespace Mani
 
 			void* addComponent(ECS::EntityId entityId, ComponentId componentId, size_t componentSize);
 			void* getComponent(ECS::EntityId entityId, ComponentId componentId) const;
-			ComponentId getComponentId(const std::type_index& typeIndex) const;
+			template<typename T>
+			ComponentId getComponentId() const { return TYPE_ID<T>; }
 			bool removeComponent(ECS::EntityId entityId, ComponentId componentId);
 			bool hasComponent(ECS::EntityId entityId, ComponentId componentId) const;
 
@@ -51,7 +51,10 @@ namespace Mani
 			std::vector<ECS::EntityId> m_entityPool;
 			std::unordered_set<ECS::EntityId> m_markedForDestroy;
 			mutable std::mutex m_markedForDestroyMutex;
-			std::vector<std::pair<std::type_index, ComponentId>> m_componentIds;
+			
+			inline static ComponentId TYPE_ID_SEQUENCE = 0;
+			template<typename T>
+			inline static ComponentId TYPE_ID = TYPE_ID_SEQUENCE++;
 		};
 	}
 }

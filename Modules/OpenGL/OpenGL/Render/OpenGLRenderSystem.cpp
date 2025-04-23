@@ -22,6 +22,7 @@
 #include <OpenGL/Render/OpenGLResourceSystem.h>
 #include <OpenGL/Render/OpenGLCameraUpdateSystem.h>
 #include <OpenGL/Render/OpenGLCommand.h>
+#include <OpenGL/Render/IOpenGLRenderExtension.h>
 
 #include <RenderAPI/Mesh.h>
 #include <RenderAPI/Material.h>
@@ -104,6 +105,9 @@ void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 
 void OpenGLRenderSystem::onDeinitialize(ECS::Registry& registry)
 {
+	OpenGLRenderSystem::Storage& storage = *registry.getSingle<OpenGLRenderSystem::Storage>();
+	storage.renderThread.stop();
+
 	registry.removeSingle<OpenGLClearColor>();
 	registry.removeSingle<OpenGLRenderSystem::Storage>();
 }
@@ -149,8 +153,13 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 			render(registry, command, context);
 		}
 
-		// clear read command buffer
-		commands.clear();
+		// render extension if any
+		for (const auto entityId : ECS::View<OpenGLRenderExtension>(registry))
+		{
+			OpenGLRenderExtension& ext = *registry.get<OpenGLRenderExtension>(entityId);
+			ext.obj->onPostRender(registry);
+		}
+
 		cbs->renderFrame++;
 		glfwMakeContextCurrent(nullptr);
 	});
@@ -217,7 +226,6 @@ void render(ECS::Registry& registry, const OpenGLCommand3D& command, const Rende
 	Resource<OpenGLVertexArray>* vaoRes = registry.get<Resource<OpenGLVertexArray>>(vaoid);
 	if (vaoRes == nullptr)
 	{
-		MANI_LOG_ERROR(LogOpenGL, "Missing VAO for resource {}", command.mesh);
 		return;
 	}
 
@@ -235,7 +243,6 @@ void render(ECS::Registry& registry, const OpenGLCommand3D& command, const Rende
 	Resource<OpenGLMaterial>* materialRes = registry.get<Resource<OpenGLMaterial>>(materialId);
 	if (materialRes == nullptr)
 	{
-		MANI_LOG_ERROR(LogOpenGL, "Missing material for resource {}", command.material);
 		return;
 	}
 
@@ -248,7 +255,6 @@ void render(ECS::Registry& registry, const OpenGLCommand3D& command, const Rende
 	Resource<OpenGLShader>* shaderRes = registry.get<Resource<OpenGLShader>>(material.shaderId);
 	if (shaderRes == nullptr)
 	{
-		MANI_LOG_WARNING(LogOpenGL, "Attempting to draw without a shader");
 		return;
 	}
 
@@ -409,4 +415,18 @@ Resource<OpenGLTexture2D>* loadOpenGLTexture(ECS::Registry& registry, ECS::Entit
 		stbiTextureRes->value.reset(); // free the stbi texture, we don't need it anymore.
 	}
 	return textureRes;
+}
+
+
+ECS::EntityId OpenGLRenderSystem::addExtension(ECS::Registry& registry, std::shared_ptr<IOpenGLRenderExtension> extension)
+{
+	ECS::EntityId entityId = registry.create();
+	OpenGLRenderExtension& ext = *registry.add<OpenGLRenderExtension>(entityId);
+	ext.obj = extension;
+	return entityId;
+}
+
+void OpenGLRenderSystem::removeExtension(ECS::Registry& registry, ECS::EntityId entityId)
+{
+	registry.destroy(entityId);
 }

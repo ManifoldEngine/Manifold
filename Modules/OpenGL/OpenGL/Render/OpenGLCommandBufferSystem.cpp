@@ -56,22 +56,20 @@ void OpenGLCommandBufferSystem::tick(float deltaTime, ECS::Registry& registry)
 	// update command buffers
 	OpenGLCommandBuffer3D& cbs = *registry.getSingle<OpenGLCommandBuffer3D>();
 	cbs.resetReadBuffer();
+	cbs.frame++;
 
-	const unsigned long long renderFrame = cbs.renderFrame;
-	const unsigned long long delta = (cbs.frame + 1) - renderFrame; // we want the delta for the buffer we're about to write
-	MANI_LOG_VERBOSE(LogOpenGL, "Read and write buffer frame delta: {}", delta);
-	if (delta >= OpenGL::COMMAND_BUFFER_AMOUNT)
+	MANI_LOG_VERBOSE(LogOpenGL, "Read and write buffer frame delta: {}", cbs.frame - cbs.renderFrame);
+	while ((cbs.frame - cbs.renderFrame) >= OpenGL::COMMAND_BUFFER_AMOUNT)
 	{
-		// todo: we could potentially sleep instead of just dropping the frame
-		MANI_LOG_ERROR(LogOpenGL, "Write buffer has caught up with the read buffer, we're dropping frames.");
-		return;
+		std::this_thread::yield();
 	}
-
+	// clear read command buffer
+	std::vector<OpenGLCommand3D>& writeBuffer = cbs.buffers[cbs.writeBuffer];
 	// write to the current write buffer
-	cbs.buffers[cbs.writeBuffer] = std::move(commandBuffer);
+	writeBuffer.clear();
+	writeBuffer = std::move(commandBuffer);
 
 	// mark the next read buffer as ready.
 	cbs.writeBuffer = (cbs.writeBuffer + 1) % OpenGL::COMMAND_BUFFER_AMOUNT;
 	cbs.readBuffer = cbs.writeBuffer;
-	cbs.frame++;
 }

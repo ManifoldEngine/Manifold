@@ -161,13 +161,13 @@ int Mani::OpenGLInputSystem::maniToGLFWCursorMode(Cursor::EMode mode)
 {
     switch (mode)
     {
-        case Cursor::EMode::HIDDEN:
+        case Cursor::EMode::Hidden:
             return GLFW_CURSOR_HIDDEN;
-        case Cursor::EMode::NORMAL:
+        case Cursor::EMode::Normal:
             return GLFW_CURSOR_NORMAL;
-        case Cursor::EMode::DISABLED:
+        case Cursor::EMode::Disabled:
             return GLFW_CURSOR_DISABLED;
-        case Cursor::EMode::CAPTURED:
+        case Cursor::EMode::Captured:
             return GLFW_CURSOR_CAPTURED;
         default:
             return 0;

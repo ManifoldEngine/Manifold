@@ -56,6 +56,8 @@ Application::Application()
 
 Application::~Application()
 {
+	m_threadPool.stop();
+
 	m_world.deinitialize();
 
 #if MANI_DEBUG
@@ -64,8 +66,6 @@ Application::~Application()
 
 	m_world.destroySystem<WorldSystem>()
 		.destroySystem<LogSystem>();
-
-	m_threadPool.stop();
 
 	s_application = nullptr;
 }

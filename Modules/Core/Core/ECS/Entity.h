@@ -17,7 +17,7 @@ namespace Mani
 		const EntityId INVALID_ID = UINT64_MAX;
 #endif
 
-		using ComponentId = unsigned int;
+		using ComponentId = BitsetIndexType;
 
 		bool isValid(EntityId entityId);
 

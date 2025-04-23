@@ -36,7 +36,7 @@ namespace Mani
 		{
 			MANI_ASSERT(!isRunning(), "Trying to start a thread pool that is already running.");
 
-			m_threads = std::vector<std::thread>(size);
+			m_threads.reserve(size);
 			m_busyThreads = size;
 			m_stopRequested = false;
 			for (size_t i = 0; i < size; ++i)
