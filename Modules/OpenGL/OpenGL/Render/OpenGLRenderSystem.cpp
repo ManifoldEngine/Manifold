@@ -1,7 +1,7 @@
 #include "OpenGLRenderSystem.h"
 
 #include <Core/Debug/Profiling.h>
-#include <Core/Thread/ThreadPool.h>
+#include <Core/Async/ThreadPool.h>
 
 #include <Camera/CameraSystem.h>
 
@@ -85,14 +85,19 @@ struct RenderContext
 	std::vector<std::tuple<PointLight, Position>> pointLights;
 	std::vector<std::tuple<Spotlight, Position, Rotation>> spotlights;
 
+	unsigned int readBuffer3D = 0;
+	unsigned int readBuffer2D = 0;
+
 	OpenGLRenderSystem::Storage* storage;
 };
 
 RenderContext createContext(const ECS::Registry& registry);
 
-void render(const OpenGLCommand3D& command, RenderContext& context);
+void render3d(const OpenGLCommand3D& command, RenderContext& context);
+void render2d(const OpenGLCommand2D& command, RenderContext& context);
 void loadOpenGLVertexArray(const Mesh& meshRes, Resource<OpenGLVertexArray>& res);
 void loadOpenGLTexture(const STBITexture& stbiTexture, Resource<OpenGLTexture2D>& res);
+void loadQuad(uint32_t repeatAmount, Resource<OpenGLVertexArray>& res);
 
 struct OpenGLRenderSystem::Storage
 {
@@ -100,6 +105,7 @@ struct OpenGLRenderSystem::Storage
 
 	std::unordered_map<ECS::EntityId, Resource<OpenGLVertexArray>> vaos;
 	std::unordered_map<ECS::EntityId, Resource<OpenGLTexture2D>> textures;
+	std::unordered_map<uint32_t, Resource<OpenGLVertexArray>> quadVaos;
 
 	std::mutex resourceMutex;
 };
@@ -126,14 +132,21 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 {
 	MANI_TIME_SCOPE(OpenGLRenderSystemtick);
 
-	OpenGLCommandBuffer3D* cbs = registry.getSingle<OpenGLCommandBuffer3D>();
-	if (cbs == nullptr)
+	OpenGLCommandBuffer3D* cbs3d = registry.getSingle<OpenGLCommandBuffer3D>();
+	if (cbs3d == nullptr)
 	{
 		MANI_LOG_WARNING(LogOpenGL, "Trying to push opengl commands without a command buffer");
 		return;
 	}
 
-	if (!cbs->isReadBufferValid())
+	/*OpenGLCommandBuffer2D* cbs2d = registry.getSingle<OpenGLCommandBuffer2D>();
+	if (cbs2d == nullptr)
+	{
+		MANI_LOG_WARNING(LogOpenGL, "Trying to push opengl commands without a command buffer");
+		return;
+	}*/
+
+	if (!cbs3d->isReadBufferValid() /* || !cbs2d->isReadBufferValid()*/)
 	{
 		return;
 	}
@@ -141,20 +154,19 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 	OpenGLRenderSystem::Storage& storage = *registry.getSingle<OpenGLRenderSystem::Storage>();
 	RenderContext context = createContext(registry);
 	context.storage = &storage;
-	
+	context.readBuffer3D = cbs3d->readBuffer;
+
 #if MANI_DEBUG
 	const int fps = Math::isEqual(deltaTime, 0.f) ? 0 : static_cast<int>(1 / deltaTime);
 	glfwSetWindowTitle(context.openglContext->window, std::format("{} ({}fps)", context.openglContext->name, fps).c_str());
 #endif
 
-	const unsigned int readBuffer = cbs->readBuffer;
-	storage.renderThread.enqueue([&registry, cbs, readBuffer, context = std::move(context)]() mutable
+	storage.renderThread.enqueue([&registry, cbs3d, context = std::move(context)]() mutable
 	{
 		MANI_TIME_SCOPE(OpenGLRenderSystemtickrenderthread);
 		glfwMakeContextCurrent(context.openglContext->window);
 
-		std::vector<OpenGLCommand3D>& commands = cbs->buffers[readBuffer];
-
+		std::vector<OpenGLCommand3D>& commands3d = cbs3d->buffers[context.readBuffer3D];
 		glEnable(GL_DEPTH_TEST);
 
 		// setting color state.
@@ -166,10 +178,15 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 
 		glViewport(0, 0, context.width, context.height);
 
-		for (const auto& command : commands)
+		for (const auto& command3d : commands3d)
 		{
-			render(command, context);
+			render3d(command3d, context);
 		}
+
+		//for (const auto& command2d : commands2d)
+		//{
+		//	render2d(command2d, context);
+		//}
 
 		// render extension if any
 		for (const auto entityId : ECS::View<OpenGLRenderExtension>(registry))
@@ -178,7 +195,7 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 			ext.obj->onPostRender(registry);
 		}
 
-		cbs->renderFrame++;
+		cbs3d->renderFrame++;
 		glfwMakeContextCurrent(nullptr);
 		glfwSwapBuffers(context.openglContext->window);
 	});
@@ -238,7 +255,7 @@ RenderContext createContext(const ECS::Registry& registry)
 	return context;
 }
 
-void render(const OpenGLCommand3D& command, RenderContext& context)
+void render3d(const OpenGLCommand3D& command, RenderContext& context)
 {
 	MANI_TIME_SCOPE(OpenGLRenderSystemtickrenderthreadrender);
 
@@ -376,6 +393,11 @@ void render(const OpenGLCommand3D& command, RenderContext& context)
 	}
 }
 
+void render2d(const OpenGLCommand2D& command, RenderContext& context)
+{
+
+}
+
 void loadOpenGLVertexArray(const Mesh& mesh, Resource<OpenGLVertexArray>& res)
 {
 	constexpr size_t vertexSize = 3 + 3 + 2;
@@ -402,6 +424,37 @@ void loadOpenGLTexture(const STBITexture& stbiTexture, Resource<OpenGLTexture2D>
 	res.isReady = true;
 }
 
+void loadQuad(uint32_t repeatAmount, Resource<OpenGLVertexArray>& res)
+{
+	const float repeatAmountF = static_cast<float>(repeatAmount);
+
+	// hardcoded 2d quad. We flip the X axis because OpenGL is right handed.
+	const std::vector<float> vertices =
+	{
+		//    vertex		//        texture
+		0.0f, 0.0f, 1.0f,	0.0f,			repeatAmountF,
+		-1.0f, 0.0f, 0.0f,	repeatAmountF,	0.0f,
+		0.0f, 0.0f, 0.0f,	0.0f,			0.0f,
+		0.0f, 0.0f, 1.0f,	0.0f,			repeatAmountF,
+		-1.0f, 0.0f, 1.0f,	repeatAmountF,	repeatAmountF,
+		-1.0f, 0.0f, 0.0f,	repeatAmountF,	0.0f,
+	};
+
+	std::shared_ptr<OpenGLVertexBuffer> vertexBuffer = std::make_shared<OpenGLVertexBuffer>(&vertices[0], (int)(sizeof(float) * vertices.size()));
+	vertexBuffer->layout =
+	{
+		{ EShaderDataType::Float3, false },
+		{ EShaderDataType::Float2, false }
+	};
+
+	std::vector<unsigned int> indices = { 0, 1, 2, 3, 4, 5 };
+	std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(&indices[0], (int)sizeof(uint32_t) * indices.size());
+
+	res.value = std::make_shared<OpenGLVertexArray>();
+	res.value->addVertexBuffer(vertexBuffer);
+	res.value->setIndexBuffer(indexBuffer);
+	res.isReady = true;
+}
 
 ECS::EntityId OpenGLRenderSystem::addExtension(ECS::Registry& registry, std::shared_ptr<IOpenGLRenderExtension> extension)
 {

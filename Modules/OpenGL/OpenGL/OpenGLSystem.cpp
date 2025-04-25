@@ -106,7 +106,8 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
     #endif
 #endif
 
-    glfwMakeContextCurrent(nullptr);
+    // we leave this context current on the main thread.
+    glfwMakeContextCurrent(context.resource);
 
     world.createSystem<OpenGLResourceSystem>()
         .createSystem<OpenGLInputSystem>()

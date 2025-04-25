@@ -6,6 +6,6 @@ namespace Mani
 
 	struct CoreConfig
 	{
-		size_t threadPoolSize = 10;
+		size_t threadPoolSize = 0;
 	};
 }

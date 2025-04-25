@@ -1,9 +1,10 @@
 #pragma once
 
 #include <Core/Core.h>
-#include <Core/World/World.h>
+#include <Core/World.h>
 #include <Core/CoreConfig.h>
-#include <Core/Thread/ThreadPool.h>
+#include <Core/Async/ThreadPool.h>
+#include <Core/Async/Defer.h>
 
 namespace Mani
 {
@@ -24,6 +25,7 @@ namespace Mani
 	
 		World& getWorld() { return m_world; }
 		ThreadPool& getThreadPool() { return m_threadPool; }
+		Deferred& getDeferred() { return m_deferred; }
 		const CoreConfig& getConfig() const { return m_config; }
 
 		bool isRunning() const { return m_isRunning; }
@@ -35,6 +37,7 @@ namespace Mani
 		
 		World m_world;
 		ThreadPool m_threadPool;
+		Deferred m_deferred;
 		CoreConfig m_config;
 	};
 }

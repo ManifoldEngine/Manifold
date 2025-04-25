@@ -67,6 +67,8 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 	// we create a shared context for Imgui so it can create resources on the main thread and share them with the render thread.
 	ManImGuiWindowContext& context = *registry.addSingle<ManImGuiWindowContext>();
 	glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+
+	GLFWwindow* previousContext = glfwGetCurrentContext();
 	context.window = glfwCreateWindow(openglContext->width, openglContext->height, "imgui", NULL, openglContext->window);
 
 	// setup imgui
@@ -81,7 +83,7 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 	constexpr bool install_callback = true;
 	ImGui_ImplGlfw_InitForOpenGL(openglContext->window, install_callback);
 	ImGui_ImplOpenGL3_Init();
-	glfwMakeContextCurrent(nullptr);
+	glfwMakeContextCurrent(previousContext);
 
 	// create manimgui systems
 	world.createSystem<ManImGuiRenderSystem>();
@@ -133,10 +135,11 @@ void ManImGuiSystem::tick(float deltaTime, ECS::Registry& registry)
 		return;
 	}
 
+	GLFWwindow* previousContext = glfwGetCurrentContext();
 	glfwMakeContextCurrent(context.window);
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 
 	ImGui::NewFrame();
-	glfwMakeContextCurrent(nullptr);
+	glfwMakeContextCurrent(previousContext);
 }

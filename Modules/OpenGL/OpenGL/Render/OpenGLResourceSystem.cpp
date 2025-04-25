@@ -237,7 +237,4 @@ void Mani::OpenGLResourceSystem::onShaderLoaded(ECS::Registry& registry, ECS::En
 void OpenGLResourceSystem::onMeshUnloaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onMeshUnloaded called"); }
 void OpenGLResourceSystem::onMaterialUnloaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onMaterialUnloaded called"); }
 void OpenGLResourceSystem::onSpriteUnloaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onSpriteUnloaded called"); }
-
-void Mani::OpenGLResourceSystem::onShaderUnloaded(ECS::Registry& registry, ECS::EntityId entityId)
-{
-}
+void OpenGLResourceSystem::onShaderUnloaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onShaderUnloaded called"); }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Core/CoreFwd.h>
-#include <Core/Thread/Parallel.h>
+#include <Core/Async/Parallel.h>
 
 #include <Resources/Resources.h>
 #include <Resources/Resource.h>

@@ -27,8 +27,6 @@ namespace Mani
 		Mat4f model;
 
 		ECS::EntityId meshId;
-		ECS::EntityId materialId;
-		ECS::EntityId shaderId;
 		ECS::EntityId diffuseId;
 		ECS::EntityId specularId;
 
@@ -41,7 +39,17 @@ namespace Mani
 
 	struct OpenGLCommand2D
 	{
+		Mat4f model;
 
+		ECS::EntityId meshId;
+		ECS::EntityId materialId;
+		ECS::EntityId shaderId;
+		ECS::EntityId diffuseId;
+		ECS::EntityId specularId;
+
+		std::shared_ptr<Material> material;
+		std::shared_ptr<OpenGLShader> shader;
+		std::shared_ptr<STBITexture> texture;		
 	};
 
 	template<typename T>

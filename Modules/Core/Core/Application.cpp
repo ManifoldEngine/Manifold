@@ -3,7 +3,6 @@
 #include <Core/CoreConfig.h>
 #include <Core/ManiAssert.h>
 
-#include <Core/World/WorldSystem.h>
 #include <Core/Log.h>
 #include <Core/Log/LogSystem.h>
 
@@ -28,7 +27,7 @@ CoreConfig loadConfig()
 	}
 	else
 	{
-		MANI_LOG_ERROR(Log, "Could not find [{}], using default config instead", path.string());
+		MANI_LOG(Log, "Could not find [{}], using default config instead", path.string());
 	}
 	return config;
 }
@@ -46,8 +45,7 @@ Application::Application()
 	m_threadPool.start(m_config.threadPoolSize);
 
 	m_world.initialize();
-	m_world.createSystem<LogSystem>()
-		.createSystem<WorldSystem>();
+	m_world.createSystem<LogSystem>();
 
 #if MANI_DEBUG
 	m_world.createSystem<ProfilingSystem>();
@@ -63,9 +61,7 @@ Application::~Application()
 #if MANI_DEBUG
 	m_world.destroySystem<ProfilingSystem>();
 #endif
-
-	m_world.destroySystem<WorldSystem>()
-		.destroySystem<LogSystem>();
+	m_world.destroySystem<LogSystem>();
 
 	s_application = nullptr;
 }
@@ -97,4 +93,5 @@ void Application::stop()
 void Application::tick(float deltaTime)
 {
 	m_world.tick(deltaTime);
+	m_deferred.resolve();
 }

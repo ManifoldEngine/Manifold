@@ -7,8 +7,6 @@
 #include <Core/ECS/System.h>
 #include <Core/ECS/View.h>
 
-#include <Core/World/WorldSystem.h>
-
 #include <Core/Components/Transform.h>
 
 #include <Core/Application.h>

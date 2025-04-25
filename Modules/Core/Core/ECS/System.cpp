@@ -1,5 +1,5 @@
 #include "System.h"
-#include <Core/World/World.h>
+#include <Core/World.h>
 #include <Core/ECS/Registry.h>
 #include <Log.h>
 

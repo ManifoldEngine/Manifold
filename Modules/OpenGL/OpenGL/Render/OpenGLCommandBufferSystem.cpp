@@ -1,7 +1,7 @@
 #include "OpenGLCommandBufferSystem.h"
 
 #include <Core/Debug/Profiling.h>
-#include <Core/Thread/Parallel.h>
+#include <Core/Async/Parallel.h>
 
 #include <Resources/Resource.h>
 
@@ -70,9 +70,7 @@ void OpenGLCommandBufferSystem::tick(float deltaTime, ECS::Registry& registry)
 			.model = Transform::model(*position, *rotation, *scale),
 
 			.meshId = meshComponent.meshHandle,
-			.materialId = meshComponent.materialHandle,
-			.shaderId = openGLMaterial.shaderId,
-
+			
 			.mesh = meshRes->value,
 			.material = materialRes->value,
 			.shader = shaderRes->value,

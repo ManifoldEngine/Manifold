@@ -4,7 +4,7 @@
 #include <Inputs/Data/InputControl.h>
 #include <Inputs/Data/InputDevice.h>
 #include <Inputs/Data/InputUser.h>
-#include <Core/World/World.h>
+#include <Core/World.h>
 
 #ifndef MANI_WEBGL
 extern "C" __declspec(dllexport) void runTests()

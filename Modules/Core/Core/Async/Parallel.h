@@ -49,4 +49,11 @@ namespace Mani
 		ThreadPool& threadPool = Application::get().getThreadPool();
 		return threadPool.enqueue(std::forward<TFunctor>(f), std::forward<TArgs>(args)...);
 	}
+
+	template<typename TFunctor, typename... TArgs>
+	void defer(TFunctor&& f, TArgs&&... args)
+	{
+		Deferred& deferred = Application::get().getDeferred();
+		deferred.defer(std::forward<TFunctor>(f), std::forward<TArgs>(args)...);
+	}
 }
