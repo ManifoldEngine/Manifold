@@ -54,27 +54,27 @@ void OpenGLCommandBufferSystem::tick(float deltaTime, ECS::Registry& registry)
 			return;
 		}
 
-		const OpenGLMaterial& material = materialRes->get();
+		const OpenGLMaterial& material = materialRes->value;
 		Resource<OpenGLShader>* shaderRes = registry.get<Resource<OpenGLShader>>(material.shaderId);
 		MANI_ASSERT(shaderRes != nullptr, "We expect the shader to exist at this point.");
 		
 		OpenGLCommand3D command = {
 			.model = Transform::model(*position, *rotation, *scale),
 
-			.vao = vaoRes->value.get(),
-			.shader = shaderRes->value.get(),
+			.vao = &vaoRes->value,
+			.shader = &shaderRes->value,
 			.color = material.color,
 			.shininess = material.shininess
 		};
 
-		if (const Resource<OpenGLTexture2D>* diffuseRes = registry.get<Resource<OpenGLTexture2D>>(material.diffuseId))
+		if (Resource<OpenGLTexture2D>* diffuseRes = registry.get<Resource<OpenGLTexture2D>>(material.diffuseId))
 		{
-			command.diffuse = diffuseRes->value.get();
+			command.diffuse = &diffuseRes->value;
 		}
 
-		if (const Resource<OpenGLTexture2D>* specularRes = registry.get<Resource<OpenGLTexture2D>>(material.specularId))
+		if (Resource<OpenGLTexture2D>* specularRes = registry.get<Resource<OpenGLTexture2D>>(material.specularId))
 		{
-			command.specular = specularRes->value.get();
+			command.specular = &specularRes->value;
 		}
 
 		threadBuffers[threadIndex].emplace_back(command);

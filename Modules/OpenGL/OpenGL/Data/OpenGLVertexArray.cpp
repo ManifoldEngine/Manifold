@@ -38,16 +38,15 @@ OpenGLVertexArray::~OpenGLVertexArray()
 	glDeleteVertexArrays(1, &m_vertexArrayObjectId);
 }
 
-void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buffer)
+void OpenGLVertexArray::addVertexBuffer(OpenGLVertexBuffer&& buffer)
 {
 	bind();
-	MANI_ASSERT(buffer != nullptr, "if this is null, then we did something terribly wrong and it should not fail silently.");
-	buffer->bind();
+	buffer.bind();
 
 	// using a unsigned long here since this will be casted to void* which is in 64bits.
 	// MSVC complains if we cast an int to a type that is larger (see C4312).
 	uint64_t accumulatedOffset = 0;
-	for (const auto& layoutElement : buffer->layout)
+	for (const auto& layoutElement : buffer.layout)
 	{
 		switch (layoutElement.shaderType)
 		{
@@ -62,7 +61,7 @@ void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buff
 					static_cast<GLint>(OpenGLVertexBuffer::getComponentCount(layoutElement.shaderType)), // GLint size,
 					toOpenGLType(layoutElement.shaderType), // GLenum type, 
 					layoutElement.isNormalized, // GLboolean normalized,
-					static_cast<GLsizei>(buffer->getStrideSize()), // GLsizei stride,
+					static_cast<GLsizei>(buffer.getStrideSize()), // GLsizei stride,
 					(void*)accumulatedOffset // const void* pointer
 				);
 				accumulatedOffset += OpenGLVertexBuffer::getShaderDataTypeSize(layoutElement.shaderType);
@@ -81,7 +80,7 @@ void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buff
 					m_attributeCount, // GLuint index, 
 					static_cast<GLint>(OpenGLVertexBuffer::getComponentCount(layoutElement.shaderType)), // GLint size,
 					toOpenGLType(layoutElement.shaderType), // GLenum type, 
-					static_cast<GLsizei>(buffer->getStrideSize()), // GLsizei stride,
+					static_cast<GLsizei>(buffer.getStrideSize()), // GLsizei stride,
 					(void*)accumulatedOffset // const void* pointer
 				);
 				accumulatedOffset += OpenGLVertexBuffer::getShaderDataTypeSize(layoutElement.shaderType);
@@ -94,19 +93,19 @@ void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buff
 				break;
 		}
 	}
-	m_vertexBuffers.push_back(buffer);
+	m_vertexBuffers.emplace_back(std::move(buffer));
 }
 
-void OpenGLVertexArray::setIndexBuffer(std::shared_ptr<OpenGLIndexBuffer> buffer)
+void OpenGLVertexArray::setIndexBuffer(OpenGLIndexBuffer&& buffer)
 {
 	bind();
 	// we purposefully don't null check buffer. if this is null, then we did something terribly wrong and it should not fail silently.
-	buffer->bind();
+	buffer.bind();
 
-	m_indexBuffer = buffer;
+	m_indexBuffer = std::move(buffer);
 }
 
-std::shared_ptr<OpenGLIndexBuffer> OpenGLVertexArray::getIndexBuffer() const
+const OpenGLIndexBuffer& OpenGLVertexArray::getIndexBuffer() const
 {
 	return m_indexBuffer;
 }

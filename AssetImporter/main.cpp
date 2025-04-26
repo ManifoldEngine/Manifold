@@ -115,7 +115,7 @@ int main(int argc, char** argv)
 	const Resource<AssetImporterConfig>& configRes = *registry.get<Resource<AssetImporterConfig>>(configId);
 	MANI_ASSERT(configRes.isReady, "Could not find Config/AssetImporter.json");
 
-	const AssetImporterConfig& config = configRes.get();
+	const AssetImporterConfig& config = configRes.value;
 	MANI_ASSERT(!config.engineAssetPath.empty(), "Config engine asset path is empty");
 	MANI_ASSERT(!config.projectAssetPath.empty(), "Config project asset path is empty");
 
@@ -129,7 +129,7 @@ int main(int argc, char** argv)
 	const Resource<ShaderConfig>& shaderConfigRes = *registry.get<Resource<ShaderConfig>>(shaderConfigId);
 	MANI_ASSERT(shaderConfigRes.isReady, "Could not find shader config at configured path");
 
-	referenceAllShaders(config, shaderConfigRes.get());
+	referenceAllShaders(config, shaderConfigRes.value);
 
 	return EXIT_SUCCESS;
 }

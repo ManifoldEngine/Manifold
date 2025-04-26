@@ -9,6 +9,7 @@ namespace Mani
 	class OpenGLTexture2D
 	{
 	public:
+		OpenGLTexture2D();
 		OpenGLTexture2D(const STBITexture& texture);
 		~OpenGLTexture2D();
 

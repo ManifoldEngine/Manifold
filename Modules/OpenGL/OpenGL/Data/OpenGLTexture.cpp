@@ -5,6 +5,16 @@
 
 using namespace Mani;
 
+OpenGLTexture2D::OpenGLTexture2D()
+    : m_textureId(UINT32_MAX),
+    m_width(0),
+    m_height(0),
+    m_channels(0),
+    m_boundSlot(-1),
+    m_filteringMode(0)
+{
+}
+
 OpenGLTexture2D::OpenGLTexture2D(const STBITexture& texture)
     : m_textureId(UINT32_MAX), 
     m_width(texture.width),

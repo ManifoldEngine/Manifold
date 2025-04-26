@@ -333,14 +333,7 @@ void render3d(const OpenGLCommand3D& command, RenderContext& context)
 
 	vao.bind();
 
-	if (const auto& indexBuffer = vao.getIndexBuffer())
-	{
-		glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indexBuffer->getStrideCount()), GL_UNSIGNED_INT, nullptr);
-	}
-	else
-	{
-		MANI_ASSERT(false, "no index buffer provided with the vertices");
-	}
+	glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vao.getIndexBuffer().getStrideCount()), GL_UNSIGNED_INT, nullptr);
 
 	if (command.diffuse != nullptr)
 	{
@@ -374,19 +367,18 @@ void loadQuad(uint32_t repeatAmount, Resource<OpenGLVertexArray>& res)
 		-1.0f, 0.0f, 0.0f,	repeatAmountF,	0.0f,
 	};
 
-	std::shared_ptr<OpenGLVertexBuffer> vertexBuffer = std::make_shared<OpenGLVertexBuffer>(&vertices[0], (int)(sizeof(float) * vertices.size()));
-	vertexBuffer->layout =
+	OpenGLVertexBuffer vertexBuffer = OpenGLVertexBuffer(&vertices[0], (int)(sizeof(float) * vertices.size()));
+	vertexBuffer.layout =
 	{
 		{ EShaderDataType::Float3, false },
 		{ EShaderDataType::Float2, false }
 	};
 
 	std::vector<unsigned int> indices = { 0, 1, 2, 3, 4, 5 };
-	std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(&indices[0], (int)sizeof(uint32_t) * indices.size());
+	OpenGLIndexBuffer indexBuffer = OpenGLIndexBuffer(&indices[0], (int)sizeof(uint32_t) * indices.size());
 
-	res.value = std::make_shared<OpenGLVertexArray>();
-	res.value->addVertexBuffer(vertexBuffer);
-	res.value->setIndexBuffer(indexBuffer);
+	res.value.addVertexBuffer(std::move(vertexBuffer));
+	res.value.setIndexBuffer(std::move(indexBuffer));
 	res.isReady = true;
 }
 

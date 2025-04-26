@@ -219,7 +219,7 @@ namespace Mani
 			return false;
 		}
 
-		resource.value = std::make_shared<T>(ManiZ::from::json<T>(content));
+		resource.value = ManiZ::from::json<T>(std::move(content));
 		return true;
 	}
 }

@@ -36,6 +36,9 @@ namespace Mani
 		
 		// buffers can't be copied implicitely.
 		OpenGLVertexBuffer(const OpenGLVertexBuffer&) = delete;
+		OpenGLVertexBuffer& operator=(const OpenGLVertexBuffer&) = delete;
+		OpenGLVertexBuffer(OpenGLVertexBuffer&& other) noexcept;
+		OpenGLVertexBuffer& operator=(OpenGLVertexBuffer&& other) noexcept;
 
 		void set(const float* data, size_t size);
 
@@ -63,6 +66,10 @@ namespace Mani
 
 		// buffers can't be copied implicitely.
 		OpenGLIndexBuffer(const OpenGLVertexBuffer&) = delete;
+		OpenGLIndexBuffer operator=(const OpenGLVertexBuffer&) = delete;
+		
+		OpenGLIndexBuffer(OpenGLIndexBuffer&& other) noexcept;
+		OpenGLIndexBuffer& operator=(OpenGLIndexBuffer&& other) noexcept;
 
 		void set(const unsigned int* indices, size_t size);
 

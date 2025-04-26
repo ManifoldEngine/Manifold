@@ -4,6 +4,11 @@
 
 using namespace Mani;
 
+Mani::OpenGLShader::OpenGLShader()
+    : name(""), vertexSource(""), fragmentSource(""), shaderProgramId(UINT32_MAX)
+{
+}
+
 OpenGLShader::OpenGLShader(const std::string_view& inName, const std::string_view& inVertexSource, const std::string_view& inFragmentSource)
     : name(inName), vertexSource(inVertexSource), fragmentSource(inFragmentSource), shaderProgramId(UINT32_MAX)
 {
@@ -30,7 +35,6 @@ bool OpenGLShader::compile()
         return false;
     }
 
-    
     uint32_t fragmentShaderId = compile(fragmentSource, GL_FRAGMENT_SHADER);
     if (fragmentShaderId == UINT32_MAX)
     {

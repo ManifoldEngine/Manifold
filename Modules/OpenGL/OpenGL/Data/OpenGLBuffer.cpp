@@ -22,6 +22,29 @@ OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	glDeleteBuffers(1, &m_vertexBufferObjectId);
 }
 
+OpenGLVertexBuffer::OpenGLVertexBuffer(OpenGLVertexBuffer&& other) noexcept
+{
+	m_vertexBufferObjectId = other.m_vertexBufferObjectId;
+	layout = other.layout;
+	m_size = other.m_size;
+
+	other.m_vertexBufferObjectId = 0;
+	other.layout.~vector();
+	other.m_size = 0;
+}
+
+OpenGLVertexBuffer& OpenGLVertexBuffer::operator=(OpenGLVertexBuffer&& other) noexcept
+{
+	m_vertexBufferObjectId = other.m_vertexBufferObjectId;
+	layout = other.layout;
+	m_size = other.m_size;
+
+	other.m_vertexBufferObjectId = 0;
+	other.layout.~vector();
+	other.m_size = 0;
+	return *this;
+}
+
 void OpenGLVertexBuffer::set(const float* data, size_t count)
 {
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferObjectId);
@@ -119,6 +142,25 @@ OpenGLIndexBuffer::OpenGLIndexBuffer(const unsigned int* indices, size_t size)
 OpenGLIndexBuffer::~OpenGLIndexBuffer()
 {
 	glDeleteBuffers(1, &m_indexBufferObjectId);
+}
+
+OpenGLIndexBuffer::OpenGLIndexBuffer(OpenGLIndexBuffer&& other) noexcept
+{
+	m_size = other.m_size;
+	m_indexBufferObjectId = other.m_indexBufferObjectId;
+
+	other.m_size = 0;
+	other.m_indexBufferObjectId = 0;
+}
+
+OpenGLIndexBuffer& OpenGLIndexBuffer::operator=(OpenGLIndexBuffer&& other) noexcept
+{
+	m_size = other.m_size;
+	m_indexBufferObjectId = other.m_indexBufferObjectId;
+
+	other.m_size = 0;
+	other.m_indexBufferObjectId = 0;
+	return *this;
 }
 
 void OpenGLIndexBuffer::set(const unsigned int* indices, size_t size)

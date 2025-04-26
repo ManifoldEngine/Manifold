@@ -7,6 +7,7 @@ namespace Mani
 {
 	struct OpenGLShader
 	{
+		OpenGLShader();
 		OpenGLShader(const std::string_view& inName, const std::string_view& inVertexSource, const std::string_view& inFragmentSource);
 		~OpenGLShader();
 

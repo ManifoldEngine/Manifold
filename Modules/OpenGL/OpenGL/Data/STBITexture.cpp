@@ -7,6 +7,11 @@
 
 using namespace Mani;
 
+STBITexture::STBITexture()
+    : data(nullptr), width(0), height(0), channels(0)
+{
+}
+
 STBITexture::STBITexture(const std::string_view& path)
     : data(nullptr), width(0), height(0), channels(0)
 {

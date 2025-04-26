@@ -7,6 +7,7 @@ namespace Mani
 	class STBITexture
 	{
 	public:
+		STBITexture();
 		STBITexture(const std::string_view& path);
 		~STBITexture();
 
