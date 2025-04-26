@@ -16,6 +16,14 @@ namespace Mani
 {
 	class IResourceSystemExtension;
 
+	namespace ResourceLoader
+	{
+		// loads a json file into a resource. Specialize this function to define loading for specific assets.
+		// returns true if loading was successful
+		template<typename T>
+		static bool load(const std::filesystem::path& absolutePath, Resource<T>& resource);
+	}
+
 	class ResourceSystem : public ECS::System
 	{
 	private:
@@ -99,17 +107,38 @@ namespace Mani
 			storage.pathToEntityId[path] = entityId;
 		}
 
-		auto load = [entityId, path, &resource]
+		auto load = [&, entityId, path, method]
 		{
-			std::string content;
-			if (!FileSystem::readFile(path, content))
+			if (!ResourceLoader::load(path, resource))
 			{
-				MANI_LOG_ERROR(LogResources, "Could not find asset at path {}", path.string());
+				MANI_LOG_ERROR(LogResources, "Could not load resource at {}", path.string());
 				return;
 			}
 
-			resource.value = std::make_unique<T>(ManiZ::from::json<T>(content));
 			resource.isReady = true;
+
+			switch (method)
+			{
+				case ELoadMethod::Sync:
+				{
+					forEachExtension(registry, [&registry, entityId](const IResourceSystemExtension& ext)
+					{
+						ext.onResourceLoaded(registry, entityId);
+					});
+					break;
+				}
+				case ELoadMethod::Async:
+				{
+					// the extension promises that it will be called on the main thread so we defer it to the end of the frame.
+					Mani::defer([&registry, entityId] {
+						forEachExtension(registry, [&registry, entityId](const IResourceSystemExtension& ext)
+						{
+							ext.onResourceLoaded(registry, entityId);
+						});
+					});
+					break;
+				}
+			}
 		};
 
 		switch (method)
@@ -122,10 +151,6 @@ namespace Mani
 				break;
 		}
 		
-		forEachExtension(registry, [&registry, &entityId](const IResourceSystemExtension& ext)
-		{
-			ext.onResourceCreated(registry, entityId);
-		});
 		return entityId;
 	}
 
@@ -137,7 +162,7 @@ namespace Mani
 		resource.isReady = true;
 		forEachExtension(registry, [&registry, &entityId](const IResourceSystemExtension& ext)
 		{
-			ext.onResourceCreated(registry, entityId);
+			ext.onResourceLoaded(registry, entityId);
 		});
 		return entityId;
 	}
@@ -147,7 +172,7 @@ namespace Mani
 	{
 		forEachExtension(registry, [&registry, inEntityId](const IResourceSystemExtension& ext)
 		{
-			ext.onResourceDestroyed(registry, inEntityId);
+			ext.onResourceUnloaded(registry, inEntityId);
 		});
 
 		ResourceSystem::Storage& storage = *registry.getSingle<ResourceSystem::Storage>();
@@ -182,5 +207,19 @@ namespace Mani
 			const ResourceSystemExtension& ext = *registry.get<ResourceSystemExtension>(entityId);
 			f(*ext.obj);
 		}
+	}
+
+	template<typename T>
+	bool ResourceLoader::load(const std::filesystem::path& absolutePath, Resource<T>& resource)
+	{
+		std::string content;
+		if (!FileSystem::readFile(absolutePath, content))
+		{
+			MANI_LOG_ERROR(LogResources, "Could not find asset at path {}", absolutePath.string());
+			return false;
+		}
+
+		resource.value = std::make_shared<T>(ManiZ::from::json<T>(content));
+		return true;
 	}
 }

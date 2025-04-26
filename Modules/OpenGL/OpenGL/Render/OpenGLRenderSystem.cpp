@@ -87,28 +87,13 @@ struct RenderContext
 
 	unsigned int readBuffer3D = 0;
 	unsigned int readBuffer2D = 0;
-
-	OpenGLRenderSystem::Storage* storage;
 };
 
 RenderContext createContext(const ECS::Registry& registry);
 
 void render3d(const OpenGLCommand3D& command, RenderContext& context);
 void render2d(const OpenGLCommand2D& command, RenderContext& context);
-void loadOpenGLVertexArray(const Mesh& meshRes, Resource<OpenGLVertexArray>& res);
-void loadOpenGLTexture(const STBITexture& stbiTexture, Resource<OpenGLTexture2D>& res);
 void loadQuad(uint32_t repeatAmount, Resource<OpenGLVertexArray>& res);
-
-struct OpenGLRenderSystem::Storage
-{
-	ThreadPool renderThread{ 1 };
-
-	std::unordered_map<ECS::EntityId, Resource<OpenGLVertexArray>> vaos;
-	std::unordered_map<ECS::EntityId, Resource<OpenGLTexture2D>> textures;
-	std::unordered_map<uint32_t, Resource<OpenGLVertexArray>> quadVaos;
-
-	std::mutex resourceMutex;
-};
 
 void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 {
@@ -153,7 +138,6 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 
 	OpenGLRenderSystem::Storage& storage = *registry.getSingle<OpenGLRenderSystem::Storage>();
 	RenderContext context = createContext(registry);
-	context.storage = &storage;
 	context.readBuffer3D = cbs3d->readBuffer;
 
 #if MANI_DEBUG
@@ -259,25 +243,18 @@ void render3d(const OpenGLCommand3D& command, RenderContext& context)
 {
 	MANI_TIME_SCOPE(OpenGLRenderSystemtickrenderthreadrender);
 
-	Resource<OpenGLVertexArray>* vaoRes = nullptr;
-	{
-		std::lock_guard<std::mutex> lock(context.storage->resourceMutex);
-		vaoRes = &(context.storage->vaos[command.meshId]);
-	}
+	MANI_ASSERT(command.vao != nullptr, "Resource was unloaded unexpectedly.");
+	MANI_ASSERT(command.shader != nullptr, "Resource was unloaded unexpectedly.");
 
-	if (!vaoRes->isReady)
-	{
-		loadOpenGLVertexArray(*command.mesh, *vaoRes);
-	}
-
-	const Material& material = *command.material;
+	const Mat4f& model = command.model;
+	const OpenGLVertexArray& vao = *command.vao;
 	const OpenGLShader& shader = *command.shader;
-
-	const Mat3f normalMatrix = static_cast<Mat3f>(command.model).inverse().transpose();
+	
+	const Mat3f normalMatrix = static_cast<Mat3f>(model).inverse().transpose();
 
 	shader.use();
 	// set vertex uniforms
-	shader.setFloatMatrix4(MODEL, &(command.model._00));
+	shader.setFloatMatrix4(MODEL, &(model._00));
 	shader.setFloatMatrix3(NORMALMATRIX, &(normalMatrix._00));
 	shader.setFloatMatrix4(VIEW, &(context.view._00));
 	shader.setFloatMatrix4(PROJECTION, &(context.projection._00));
@@ -285,37 +262,21 @@ void render3d(const OpenGLCommand3D& command, RenderContext& context)
 	// set fragment uniforms
 	shader.setFloat3(VIEWPOSITION, context.cameraPosition.x, context.cameraPosition.y, context.cameraPosition.z);
 
-	shader.setFloat(MATERIAL_SHININESS, material.shininess);
-	shader.setFloat4(COLOR, material.color.x, material.color.y, material.color.z, material.color.w);
+	shader.setFloat(MATERIAL_SHININESS, command.shininess);
+	
+	const Vec4f& color = command.color;
+	shader.setFloat4(COLOR, color.x, color.y, color.z, color.w);
 
 	int textureIndex = 0;
-	Resource<OpenGLTexture2D>* diffuseRes = nullptr;
 	if (command.diffuse != nullptr)
 	{
-		{
-			std::lock_guard<std::mutex> lock(context.storage->resourceMutex);
-			diffuseRes = &(context.storage->textures[command.diffuseId]);
-		}
-
-		loadOpenGLTexture(*command.diffuse, *diffuseRes);
-		
-		OpenGLTexture2D& texture = diffuseRes->getMutable();
-		texture.bind(textureIndex);
+		command.diffuse->bind(textureIndex++);
 		shader.setTextureSlot(MATERIAL_DIFFUSE, textureIndex);
 	}
 
-	Resource<OpenGLTexture2D>* specularRes = nullptr;
 	if (command.specular != nullptr)
 	{
-		{
-			std::lock_guard<std::mutex> lock(context.storage->resourceMutex);
-			specularRes = &(context.storage->textures[command.specularId]);
-		}
-
-		loadOpenGLTexture(*command.specular, *specularRes);
-
-		OpenGLTexture2D& texture = specularRes->getMutable();
-		texture.bind(textureIndex);
+		command.specular->bind(textureIndex++);
 		shader.setTextureSlot(MATERIAL_SPECULAR, textureIndex);
 	}
 
@@ -370,7 +331,6 @@ void render3d(const OpenGLCommand3D& command, RenderContext& context)
 	shader.setInt(POINTLIGHTSCOUNT, pointLightIndex);
 	shader.setInt(SPOTLIGHTSCOUNT, spotlightIndex);
 
-	const OpenGLVertexArray& vao = vaoRes->get();
 	vao.bind();
 
 	if (const auto& indexBuffer = vao.getIndexBuffer())
@@ -382,46 +342,20 @@ void render3d(const OpenGLCommand3D& command, RenderContext& context)
 		MANI_ASSERT(false, "no index buffer provided with the vertices");
 	}
 
-	if (diffuseRes != nullptr)
+	if (command.diffuse != nullptr)
 	{
-		diffuseRes->getMutable().unbind();
+		command.diffuse->unbind();
 	}
 
-	if (specularRes != nullptr)
+	if (command.specular != nullptr)
 	{
-		specularRes->getMutable().unbind();
+		command.specular->unbind();
 	}
 }
 
 void render2d(const OpenGLCommand2D& command, RenderContext& context)
 {
 
-}
-
-void loadOpenGLVertexArray(const Mesh& mesh, Resource<OpenGLVertexArray>& res)
-{
-	constexpr size_t vertexSize = 3 + 3 + 2;
-	std::shared_ptr<OpenGLVertexBuffer> vertexBuffer = std::make_shared<OpenGLVertexBuffer>(&mesh.vertices[0].position.x, (int)(sizeof(float) * (mesh.vertices.size() * vertexSize)));;
-	vertexBuffer->layout =
-	{
-		{ EShaderDataType::Float3, false },
-		{ EShaderDataType::Float3, true  },
-		{ EShaderDataType::Float2, false }
-	};
-
-	std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(&mesh.indices[0], (int)sizeof(uint32_t) * mesh.indices.size());
-
-	res.value = std::make_unique<OpenGLVertexArray>();
-	res.value->addVertexBuffer(vertexBuffer);
-	res.value->setIndexBuffer(indexBuffer);
-
-	res.isReady = true;
-}
-
-void loadOpenGLTexture(const STBITexture& stbiTexture, Resource<OpenGLTexture2D>& res)
-{
-	res.value = std::make_shared<OpenGLTexture2D>(stbiTexture);
-	res.isReady = true;
 }
 
 void loadQuad(uint32_t repeatAmount, Resource<OpenGLVertexArray>& res)

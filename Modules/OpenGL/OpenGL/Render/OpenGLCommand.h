@@ -5,10 +5,8 @@
 #include <ECS/Entity.h>
 
 #include <OpenGL/Data/OpenGLShader.h>
-#include <OpenGL/Data/STBITexture.h>
-
-#include <RenderAPI/Mesh.h>
-#include <RenderAPI/Material.h>
+#include <OpenGL/Data/OpenGLVertexArray.h>
+#include <OpenGL/Data/OpenGLTexture.h>
 
 #include <memory>
 #include <vector>
@@ -26,20 +24,18 @@ namespace Mani
 	{
 		Mat4f model;
 
-		ECS::EntityId meshId;
-		ECS::EntityId diffuseId;
-		ECS::EntityId specularId;
+		OpenGLVertexArray* vao;
+		OpenGLShader* shader;
+		OpenGLTexture2D* diffuse;
+		OpenGLTexture2D* specular;
 
-		std::shared_ptr<Mesh> mesh;
-		std::shared_ptr<Material> material;
-		std::shared_ptr<OpenGLShader> shader;
-		std::shared_ptr<STBITexture> diffuse;
-		std::shared_ptr<STBITexture> specular;
+		Vec4f color = VEC4F::ONE;
+		float shininess = 32.f;
 	};
 
 	struct OpenGLCommand2D
 	{
-		Mat4f model;
+		/*Mat4f model;
 
 		ECS::EntityId meshId;
 		ECS::EntityId materialId;
@@ -49,7 +45,7 @@ namespace Mani
 
 		std::shared_ptr<Material> material;
 		std::shared_ptr<OpenGLShader> shader;
-		std::shared_ptr<STBITexture> texture;		
+		std::shared_ptr<STBITexture> texture;		*/
 	};
 
 	template<typename T>

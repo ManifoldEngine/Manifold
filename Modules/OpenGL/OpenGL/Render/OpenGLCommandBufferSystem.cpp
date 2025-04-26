@@ -39,53 +39,42 @@ void OpenGLCommandBufferSystem::tick(float deltaTime, ECS::Registry& registry)
 		auto [position, rotation, scale] = Transform::getTransform(registry, entityId);
 
 		// todo: camera frustrum culling
-	
-		Resource<Mesh>* meshRes = registry.get<Resource<Mesh>>(meshComponent.meshHandle);
-		if (meshRes == nullptr || !meshRes->isReady)
+
+		Resource<OpenGLVertexArray>* vaoRes = registry.get<Resource<OpenGLVertexArray>>(meshComponent.meshHandle);
+		if (vaoRes == nullptr || !vaoRes->isReady)
 		{
 			// resource is not ready yet.
 			return;
 		}
-
-		Resource<Material>* materialRes = registry.get<Resource<Material>>(meshComponent.materialHandle);
+		
+		Resource<OpenGLMaterial>* materialRes = registry.get<Resource<OpenGLMaterial>>(meshComponent.materialHandle);
 		if (materialRes == nullptr || !materialRes->isReady)
 		{
 			// resource is not ready yet.
 			return;
 		}
 
-		const ECS::EntityId openGLMaterialHandle = OpenGLResourceSystem::getOpenGLResourceId(registry, meshComponent.materialHandle);
-		Resource<OpenGLMaterial>* openGLMaterialRes = registry.get<Resource<OpenGLMaterial>>(openGLMaterialHandle);
-		if (openGLMaterialRes == nullptr || !openGLMaterialRes->isReady)
-		{
-			// resource is not ready yet.
-			return;
-		}
-
-		const OpenGLMaterial& openGLMaterial = openGLMaterialRes->get();
-		Resource<OpenGLShader>* shaderRes = registry.get<Resource<OpenGLShader>>(openGLMaterial.shaderId);
+		const OpenGLMaterial& material = materialRes->get();
+		Resource<OpenGLShader>* shaderRes = registry.get<Resource<OpenGLShader>>(material.shaderId);
 		MANI_ASSERT(shaderRes != nullptr, "We expect the shader to exist at this point.");
-
+		
 		OpenGLCommand3D command = {
 			.model = Transform::model(*position, *rotation, *scale),
 
-			.meshId = meshComponent.meshHandle,
-			
-			.mesh = meshRes->value,
-			.material = materialRes->value,
-			.shader = shaderRes->value,
+			.vao = vaoRes->value.get(),
+			.shader = shaderRes->value.get(),
+			.color = material.color,
+			.shininess = material.shininess
 		};
 
-		if (Resource<STBITexture>* diffuseRes = registry.get<Resource<STBITexture>>(openGLMaterial.diffuseId))
+		if (const Resource<OpenGLTexture2D>* diffuseRes = registry.get<Resource<OpenGLTexture2D>>(material.diffuseId))
 		{
-			command.diffuseId = openGLMaterial.diffuseId;
-			command.diffuse = diffuseRes->value;
+			command.diffuse = diffuseRes->value.get();
 		}
 
-		if (Resource<STBITexture>* specularRes = registry.get<Resource<STBITexture>>(openGLMaterial.specularId))
+		if (const Resource<OpenGLTexture2D>* specularRes = registry.get<Resource<OpenGLTexture2D>>(material.specularId))
 		{
-			command.specularId = openGLMaterial.specularId;
-			command.specular = specularRes->value;
+			command.specular = specularRes->value.get();
 		}
 
 		threadBuffers[threadIndex].emplace_back(command);

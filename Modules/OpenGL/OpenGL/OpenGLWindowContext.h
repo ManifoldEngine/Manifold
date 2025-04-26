@@ -6,8 +6,8 @@ struct GLFWwindow;
 
 struct OpenGLWindowContext
 {
-	GLFWwindow* window = nullptr; // main window
-	GLFWwindow* resource = nullptr; // resource loading context
+	GLFWwindow* window = nullptr; // main window, render thread
+	GLFWwindow* mainThreadContext = nullptr; // shared context, main thread
 
 	int width = 800;
 	int height = 800;

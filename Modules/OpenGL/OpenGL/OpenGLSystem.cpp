@@ -60,13 +60,16 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
     OpenGLWindowContext& context = *registry.addSingle<OpenGLWindowContext>();
     // create the window
     context.window = glfwCreateWindow(context.width, context.height, context.name.data(), NULL, NULL);
-    
+
     if (context.window == nullptr)
     {
         MANI_LOG_ERROR(LogOpenGL, "failed to create glfwwindow");
         terminate(registry);
         return;
     }
+
+    glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
+    context.mainThreadContext = glfwCreateWindow(0, 0, "main_thread_context", NULL, context.window);
 
     glfwGetWindowSize(context.window, &context.width, &context.height);
 
@@ -107,7 +110,7 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
 #endif
 
     // we leave this context current on the main thread.
-    glfwMakeContextCurrent(context.resource);
+    glfwMakeContextCurrent(context.mainThreadContext);
 
     world.createSystem<OpenGLResourceSystem>()
         .createSystem<OpenGLInputSystem>()

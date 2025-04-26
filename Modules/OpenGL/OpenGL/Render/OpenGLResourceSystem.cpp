@@ -4,6 +4,7 @@
 
 #include <ECS/Entity.h>
 
+#include <OpenGL/OpenGLWindowContext.h>
 #include <OpenGL/Data/OpenGLBuffer.h>
 #include <OpenGL/Data/OpenGLVertexArray.h>
 #include <OpenGL/Data/OpenGLTexture.h>
@@ -12,14 +13,18 @@
 #include <OpenGL/Data/OpenGLSprite.h>
 #include <OpenGL/Data/STBITexture.h>
 
+#include <OpenGL/Render/OpenGLRenderSystem.h>
+
 #include <RenderAPI/Mesh.h>
 #include <RenderAPI/Material.h>
 #include <RenderAPI/Sprite.h>
 #include <RenderAPI/Shader.h>
 
+#include <GLFW/glfw3.h>
+
 using namespace Mani;
 
-void OpenGLResourceSystemExtension::onResourceCreated(ECS::Registry& registry, ECS::EntityId entityId) const
+void OpenGLResourceSystemExtension::onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId) const
 {
 	const ECS::Entity* entity = registry.getEntity(entityId);
 	if (entity == nullptr)
@@ -41,6 +46,13 @@ void OpenGLResourceSystemExtension::onResourceCreated(ECS::Registry& registry, E
 		return;
 	}
 
+	const ECS::ComponentId stbiTextureId = registry.getComponentId<Resource<STBITexture>>();
+	if (entity->hasComponent(stbiTextureId))
+	{
+		OpenGLResourceSystem::onSTBITextureLoaded(registry, entityId);
+		return;
+	}
+
 	const ECS::ComponentId spriteId = registry.getComponentId<Resource<Sprite>>();
 	if (entity->hasComponent(spriteId))
 	{
@@ -56,7 +68,7 @@ void OpenGLResourceSystemExtension::onResourceCreated(ECS::Registry& registry, E
 	}
 }
 
-void OpenGLResourceSystemExtension::onResourceDestroyed(ECS::Registry& registry, ECS::EntityId entityId) const
+void OpenGLResourceSystemExtension::onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId) const
 {
 	const ECS::Entity* entity = registry.getEntity(entityId);
 	if (entity == nullptr)
@@ -78,6 +90,13 @@ void OpenGLResourceSystemExtension::onResourceDestroyed(ECS::Registry& registry,
 		return;
 	}
 
+	const ECS::ComponentId stbiTextureId = registry.getComponentId<Resource<STBITexture>>();
+	if (entity->hasComponent(stbiTextureId))
+	{
+		OpenGLResourceSystem::onSTBITextureUnloaded(registry, entityId);
+		return;
+	}
+
 	const ECS::ComponentId spriteId = registry.getComponentId<Resource<Sprite>>();
 	if (entity->hasComponent(spriteId))
 	{
@@ -89,9 +108,6 @@ void OpenGLResourceSystemExtension::onResourceDestroyed(ECS::Registry& registry,
 struct OpenGLResourceSystem::Storage
 {
 	ECS::EntityId extensionHandle = ECS::INVALID_ID;
-
-	std::unordered_map<ECS::EntityId, ECS::EntityId> resourceMap = {};
-	std::mutex resourceMutex;
 };
 
 void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, World& world)
@@ -111,100 +127,65 @@ void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry)
 	registry.removeSingle<OpenGLResourceSystem::Storage>();
 }
 
-ECS::EntityId OpenGLResourceSystem::getOpenGLResourceId(ECS::Registry& registry, ECS::EntityId entityId)
-{
-	// we could be accessing this while we're shutting down the application from the render thread
-	if (OpenGLResourceSystem::Storage* storage = registry.getSingle<OpenGLResourceSystem::Storage>())
-	{
-		std::lock_guard<std::mutex> lock(storage->resourceMutex);
-		auto it = storage->resourceMap.find(entityId);
-		if (it == storage->resourceMap.end())
-		{
-			return ECS::INVALID_ID;
-		}
-		return it->second;
-	}
-	return ECS::INVALID_ID;
-}
-
 void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, ECS::EntityId meshId) 
 {
-	const ECS::EntityId openglResourceId = registry.create();
-	registry.add<Resource<OpenGLVertexArray>>(openglResourceId);
+	const Resource<Mesh>* meshRes = registry.get<Resource<Mesh>>(meshId);
+	MANI_ASSERT(meshRes != nullptr && meshRes->isReady, "We expect the mesh to have been loaded");
+	const Mesh& mesh = meshRes->get();
 
-	OpenGLResourceSystem::Storage& storage = *registry.getSingle<OpenGLResourceSystem::Storage>();
-	{
-		std::lock_guard<std::mutex> lock(storage.resourceMutex);
-		storage.resourceMap[meshId] = openglResourceId;
-	}
+	Resource<OpenGLVertexArray>& res = *registry.add<Resource<OpenGLVertexArray>>(meshId);
+	
+	// VAOs need to be created in the context they're going to be used in.
+	OpenGLRenderSystem::enqueueRenderTask(registry, [&registry, &res, &mesh] {
+		OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
+		MANI_ASSERT(context != nullptr, "Trying to load vao without a valid context");
+
+		glfwMakeContextCurrent(context->window);
+		constexpr size_t vertexSize = 3 + 3 + 2;
+		std::shared_ptr<OpenGLVertexBuffer> vertexBuffer = std::make_shared<OpenGLVertexBuffer>(&mesh.vertices[0].position.x, (int)(sizeof(float) * (mesh.vertices.size() * vertexSize)));;
+		vertexBuffer->layout =
+		{
+			{ EShaderDataType::Float3, false },
+			{ EShaderDataType::Float3, true  },
+			{ EShaderDataType::Float2, false }
+		};
+
+		std::shared_ptr<OpenGLIndexBuffer> indexBuffer = std::make_shared<OpenGLIndexBuffer>(&mesh.indices[0], (int)sizeof(uint32_t) * mesh.indices.size());
+
+		res.value = std::make_shared<OpenGLVertexArray>();
+		res.value->addVertexBuffer(vertexBuffer);
+		res.value->setIndexBuffer(indexBuffer);
+
+		res.isReady = true;
+		glfwMakeContextCurrent(nullptr);
+	});
 }
 
 void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, ECS::EntityId materialId) 
 {
-	const ECS::EntityId openglMaterialId = registry.create();
-	Resource<OpenGLMaterial>* openglMaterialRes = registry.add<Resource<OpenGLMaterial>>(openglMaterialId);
+	const Resource<Material>* materialRes = registry.get<Resource<Material>>(materialId);
+	MANI_ASSERT(materialRes != nullptr && materialRes->isReady, "We expect the material to have been loaded");
+	const Material& material = materialRes->get();
 
-	OpenGLResourceSystem::Storage& storage = *registry.getSingle<OpenGLResourceSystem::Storage>();
+	std::shared_ptr<OpenGLMaterial> openglMaterial = std::make_shared<OpenGLMaterial>();
+	openglMaterial->shaderId = ResourceSystem::loadResource<Shader>(registry, material.shaderPath);
+	if (!material.diffusePath.empty())
 	{
-		std::lock_guard<std::mutex> lock(storage.resourceMutex);
-		storage.resourceMap[materialId] = openglMaterialId;
+		openglMaterial->diffuseId = ResourceSystem::loadResource<STBITexture>(registry, material.diffusePath);
+	}
+	if (!material.specularPath.empty())
+	{
+		openglMaterial->specularId = ResourceSystem::loadResource<STBITexture>(registry, material.specularPath);
 	}
 
-	const ECS::EntityId diffuseId = registry.create();
-	registry.add<Resource<STBITexture>>(diffuseId);
-	
-	const ECS::EntityId specularId = registry.create();
-	registry.add<Resource<STBITexture>>(specularId);
-	
-	Resource<Material>* materialRes = registry.get<Resource<Material>>(materialId);
-	Mani::enqueueTask([&registry, materialRes, openglMaterialRes, diffuseId, specularId]
-	{
-		while (!materialRes->isReady)
-		{
-			std::this_thread::yield();
-		}
+	openglMaterial->name = material.name;
+	openglMaterial->color = material.color;
+	openglMaterial->shininess = material.shininess;
 
-		const Material& material = materialRes->get();
-		openglMaterialRes->value = std::make_unique<OpenGLMaterial>();
-		openglMaterialRes->value->name = material.name;
-		openglMaterialRes->value->color = material.color;
-		openglMaterialRes->value->shininess = material.shininess;
-
-		// shader
-		const ECS::EntityId shaderId = ResourceSystem::loadResourceSync<Shader>(registry, material.shaderPath);
-		openglMaterialRes->value->shaderId = OpenGLResourceSystem::getOpenGLResourceId(registry, shaderId);
-
-		// diffuse
-		Resource<STBITexture>* diffuse = registry.get<Resource<STBITexture>>(diffuseId);
-		if (!material.diffusePath.empty())
-		{
-			diffuse->value = std::make_unique<STBITexture>(material.diffusePath);
-			openglMaterialRes->value->diffuseId = diffuseId;
-			diffuse->isReady = true;
-		}
-		else
-		{
-			registry.deferDestroy(diffuseId);
-		}
-
-		// specular
-		Resource<STBITexture>* specular = registry.get<Resource<STBITexture>>(specularId);
-		if (!material.specularPath.empty())
-		{
-			specular->value = std::make_unique<STBITexture>(material.specularPath);
-			openglMaterialRes->value->specularId = specularId;
-			specular->isReady = true;
-		}
-		else
-		{
-			registry.deferDestroy(specularId);
-		}
-
-		openglMaterialRes->isReady = true;
-	});
+	Resource<OpenGLMaterial>& openglMaterialRes = *registry.add<Resource<OpenGLMaterial>>(materialId);
+	openglMaterialRes.value = openglMaterial;
+	openglMaterialRes.isReady = true;
 }
-
-void OpenGLResourceSystem::onSpriteLoaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onSpriteLoaded called"); }
 
 void Mani::OpenGLResourceSystem::onShaderLoaded(ECS::Registry& registry, ECS::EntityId shaderId)
 {
@@ -214,27 +195,46 @@ void Mani::OpenGLResourceSystem::onShaderLoaded(ECS::Registry& registry, ECS::En
 
 	const Shader& shader = shaderRes->get();
 	// compile
-	std::unique_ptr<OpenGLShader> openglShader = std::make_unique<OpenGLShader>(
+	std::shared_ptr<OpenGLShader> openglShader = std::make_shared<OpenGLShader>(
 		shader.name,
 		shader.vertexSource,
 		shader.fragmentSource
 	);
-	openglShader->compile();
 
+	openglShader->compile();
 	if (openglShader->isCompiled())
 	{
 		// if compiled, inject the shader in the resource system
-		ECS::EntityId openGLShaderId = ResourceSystem::injectResource<OpenGLShader>(registry, std::move(openglShader));
-
-		OpenGLResourceSystem::Storage& storage = *registry.getSingle<OpenGLResourceSystem::Storage>();
-		{
-			std::lock_guard<std::mutex> lock(storage.resourceMutex);
-			storage.resourceMap[shaderId] = openGLShaderId;
-		}
+		Resource<OpenGLShader>& openGLShaderRes = *registry.add<Resource<OpenGLShader>>(shaderId);
+		openGLShaderRes.value = openglShader;
+		openGLShaderRes.isReady = true;
 	}
 }
 
+void Mani::OpenGLResourceSystem::onSTBITextureLoaded(ECS::Registry& registry, ECS::EntityId entityId)
+{
+	Resource<STBITexture>* stbiTextureRes = registry.get<Resource<STBITexture>>(entityId);
+	MANI_ASSERT(stbiTextureRes != nullptr && stbiTextureRes->isReady, "We expect the material to have been loaded");
+	const STBITexture& stbiTexture = stbiTextureRes->get();
+
+	Resource<OpenGLTexture2D>& textureRes = *registry.add<Resource<OpenGLTexture2D>>(entityId);
+	textureRes.value = std::make_shared<OpenGLTexture2D>(stbiTexture);
+	textureRes.isReady = true;
+
+	stbiTextureRes->value.reset();
+}
+
+void OpenGLResourceSystem::onSpriteLoaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onSpriteLoaded called"); }
+
 void OpenGLResourceSystem::onMeshUnloaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onMeshUnloaded called"); }
 void OpenGLResourceSystem::onMaterialUnloaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onMaterialUnloaded called"); }
-void OpenGLResourceSystem::onSpriteUnloaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onSpriteUnloaded called"); }
 void OpenGLResourceSystem::onShaderUnloaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onShaderUnloaded called"); }
+void OpenGLResourceSystem::onSTBITextureUnloaded(ECS::Registry& registry, ECS::EntityId) { MANI_LOG(LogOpenGL, "onSTBITextureUnloaded called"); }
+void OpenGLResourceSystem::onSpriteUnloaded(ECS::Registry& registry, ECS::EntityId entityId) { MANI_LOG(LogOpenGL, "onSpriteUnloaded called"); }
+
+template<>
+bool ResourceLoader::load<STBITexture>(const std::filesystem::path& absolutePath, Resource<STBITexture>& resource)
+{
+	resource.value = std::make_shared<STBITexture>(absolutePath.string());
+	return resource.value->data != nullptr;
+}

@@ -35,8 +35,8 @@ OpenGLVertexArray::OpenGLVertexArray()
 
 OpenGLVertexArray::~OpenGLVertexArray()
 {
-		glDeleteVertexArrays(1, &m_vertexArrayObjectId);
-	}
+	glDeleteVertexArrays(1, &m_vertexArrayObjectId);
+}
 
 void OpenGLVertexArray::addVertexBuffer(std::shared_ptr<OpenGLVertexBuffer> buffer)
 {
