@@ -69,7 +69,6 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
     }
 
     glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
-    context.mainThreadContext = glfwCreateWindow(0, 0, "main_thread_context", NULL, context.window);
 
     glfwGetWindowSize(context.window, &context.width, &context.height);
 
@@ -102,7 +101,7 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
     glViewport(0, 0, context.width, context.height);
     
 #ifndef MANI_WEBGL
-    #if MANI_OPENGL_DEBUG
+    #if MANI_OPENGL_DEBUG   
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
         glDebugMessageCallback(OpenGLMessageCallback, nullptr);
@@ -110,7 +109,7 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
 #endif
 
     // we leave this context current on the main thread.
-    glfwMakeContextCurrent(context.mainThreadContext);
+    glfwMakeContextCurrent(nullptr);
 
     world.createSystem<OpenGLResourceSystem>()
         .createSystem<OpenGLInputSystem>()

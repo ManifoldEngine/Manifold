@@ -32,9 +32,6 @@ group "Engine"
         -- stb (image)
         includedirs { thirdpartiesdir .. "/stb"}
         
-        filter("configurations:Debug")
-           defines { "MANI_OPENGL_DEBUG" }
-           
         -- webgl
         filter("platforms:WebGL")
             includedirs { thirdpartiesdir .. "emscripten/upstream/emscripten/cache/sysroot/include" }

@@ -31,7 +31,7 @@ void OpenGLCommandBufferSystem::tick(float deltaTime, ECS::Registry& registry)
 	MANI_TIME_SCOPE(OpenGLCommandBufferSystemtick);
 
 	// gather all draw commands.
-	std::array<std::vector<OpenGLCommand3D>, Application::THREAD_COUNT> threadBuffers;
+	std::array<std::vector<OpenGLCommand>, Application::THREAD_COUNT> threadBuffers;
 	ECS::View<Position, Rotation, Scale, MeshComponent> view(registry);
 	Mani::parallelFor(view, [&threadBuffers, &registry](ECS::EntityId entityId, size_t threadIndex)
 	{
@@ -58,36 +58,45 @@ void OpenGLCommandBufferSystem::tick(float deltaTime, ECS::Registry& registry)
 		Resource<OpenGLShader>* shaderRes = registry.get<Resource<OpenGLShader>>(material.shaderId);
 		MANI_ASSERT(shaderRes != nullptr, "We expect the shader to exist at this point.");
 		
-		OpenGLCommand3D command = {
+		OpenGLCommand command = {
 			.model = Transform::model(*position, *rotation, *scale),
 
 			.vao = &vaoRes->value,
 			.shader = &shaderRes->value,
 			.color = material.color,
-			.shininess = material.shininess
+			.rendererId = meshComponent.rendererId,
 		};
 
-		if (Resource<OpenGLTexture2D>* diffuseRes = registry.get<Resource<OpenGLTexture2D>>(material.diffuseId))
+		for (const auto& texture : material.textures)
 		{
-			command.diffuse = &diffuseRes->value;
+			if (Resource<OpenGLTexture2D>* res = registry.get<Resource<OpenGLTexture2D>>(texture.id))
+			{
+				if (!res->isReady)
+				{
+					continue;
+				}
+				command.textures.push_back({ texture.key, &res->value });
+			}
 		}
 
-		if (Resource<OpenGLTexture2D>* specularRes = registry.get<Resource<OpenGLTexture2D>>(material.specularId))
+		for (const auto& [key, value] : meshComponent.customParameters)
 		{
-			command.specular = &specularRes->value;
+			command.customParamaters.push_back({ key, value });
 		}
 
 		threadBuffers[threadIndex].emplace_back(command);
 	});
 
 	// merge all thread buffers into the command buffer.
-	std::vector<OpenGLCommand3D> commandBuffer;
+	std::vector<OpenGLCommand> commandBuffer;
 	for (const auto& buffer : threadBuffers)
 	{
 		commandBuffer.insert(commandBuffer.end(), buffer.begin(), buffer.end());
 	}
 
-	// todo sort the commands
+	std::sort(commandBuffer.begin(), commandBuffer.end(), [](const OpenGLCommand& lhs, const OpenGLCommand& rhs) {
+		return std::tie(lhs.shader, lhs.vao, lhs.rendererId) < std::tie(rhs.shader, rhs.vao, rhs.rendererId);
+	});
 
 	// update command buffers
 	OpenGLCommandBuffer3D& cbs = *registry.getSingle<OpenGLCommandBuffer3D>();
@@ -100,7 +109,7 @@ void OpenGLCommandBufferSystem::tick(float deltaTime, ECS::Registry& registry)
 		std::this_thread::yield();
 	}
 	// clear read command buffer
-	std::vector<OpenGLCommand3D>& writeBuffer = cbs.buffers[cbs.writeBuffer];
+	std::vector<OpenGLCommand>& writeBuffer = cbs.buffers[cbs.writeBuffer];
 	// write to the current write buffer
 	writeBuffer.clear();
 	writeBuffer = std::move(commandBuffer);

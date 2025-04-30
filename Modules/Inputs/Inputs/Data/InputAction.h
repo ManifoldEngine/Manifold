@@ -20,5 +20,8 @@ namespace Mani
 		bool isEnabled = true;
 
 		[[nodiscard]] bool changed() const { return isPressed != wasPressed; }
+		[[nodiscard]] Vec3d xyz() const { return { x, y, z }; }
+		[[nodiscard]] Vec2d xy() const { return { x, y }; }
+		[[nodiscard]] Vec2d xz() const { return { x, z }; }
 	};
 }

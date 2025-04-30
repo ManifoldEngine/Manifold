@@ -4,6 +4,12 @@
 
 namespace Mani
 {
+	// unspecialized resource component used to tag resource entities.
+	struct ResourceTag 
+	{
+		uint32_t tag = 0;
+	};
+
 	template<typename T>
 	struct Resource
 	{

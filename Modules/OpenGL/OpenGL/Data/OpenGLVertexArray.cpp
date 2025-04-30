@@ -23,8 +23,30 @@ GLenum toOpenGLType(EShaderDataType type)
 	}
 }
 
-OpenGLVertexArray::OpenGLVertexArray()
-	: m_vertexArrayObjectId(-1)
+OpenGLVertexArray::OpenGLVertexArray(OpenGLVertexArray&& other) noexcept
+{
+	m_vertexArrayObjectId = other.m_vertexArrayObjectId;
+	m_attributeCount = other.m_attributeCount;
+	m_vertexBuffers = std::move(other.m_vertexBuffers);
+	m_indexBuffer = std::move(other.m_indexBuffer);
+	
+	other.m_vertexArrayObjectId = 0;
+	other.m_attributeCount = 0;
+}
+
+OpenGLVertexArray& OpenGLVertexArray::operator=(OpenGLVertexArray&& other) noexcept
+{
+	m_vertexArrayObjectId = other.m_vertexArrayObjectId;
+	m_attributeCount = other.m_attributeCount;
+	m_vertexBuffers = std::move(other.m_vertexBuffers);
+	m_indexBuffer = std::move(other.m_indexBuffer);
+
+	other.m_vertexArrayObjectId = 0;
+	other.m_attributeCount = 0;
+	return *this;
+}
+
+void Mani::OpenGLVertexArray::create()
 {
 #if MANI_WEBGL
 	glGenVertexArrays(1, &m_vertexArrayObjectId);
@@ -33,9 +55,19 @@ OpenGLVertexArray::OpenGLVertexArray()
 #endif
 }
 
-OpenGLVertexArray::~OpenGLVertexArray()
+void Mani::OpenGLVertexArray::destroy()
 {
 	glDeleteVertexArrays(1, &m_vertexArrayObjectId);
+	
+	for (auto& buffer : m_vertexBuffers)
+	{
+		buffer.destroy();
+	}
+	m_indexBuffer.destroy();
+
+	m_vertexBuffers.clear();
+	m_vertexArrayObjectId = UINT32_MAX;
+	m_attributeCount = 0;
 }
 
 void OpenGLVertexArray::addVertexBuffer(OpenGLVertexBuffer&& buffer)

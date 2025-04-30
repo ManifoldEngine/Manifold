@@ -4,6 +4,8 @@
 
 #include <ECS/Entity.h>
 
+#include <RenderAPI/Shader.h>
+
 #include <OpenGL/Data/OpenGLShader.h>
 #include <OpenGL/Data/OpenGLVertexArray.h>
 #include <OpenGL/Data/OpenGLTexture.h>
@@ -20,17 +22,17 @@ namespace Mani
 		constexpr unsigned int COMMAND_BUFFER_AMOUNT = 2;
 	}
 
-	struct OpenGLCommand3D
+	struct OpenGLCommand
 	{
 		Mat4f model;
 
 		OpenGLVertexArray* vao;
 		OpenGLShader* shader;
-		OpenGLTexture2D* diffuse;
-		OpenGLTexture2D* specular;
-
 		Vec4f color = VEC4F::ONE;
-		float shininess = 32.f;
+		std::vector<std::pair<std::string, OpenGLTexture2D*>> textures;
+		std::vector<std::pair<std::string, ShaderType>> customParamaters;
+
+		int rendererId = 0;
 	};
 
 	struct OpenGLCommand2D
@@ -69,6 +71,6 @@ namespace Mani
 		}
 	};
 
-	typedef OpenGLCommandBuffer<OpenGLCommand3D> OpenGLCommandBuffer3D;
+	typedef OpenGLCommandBuffer<OpenGLCommand> OpenGLCommandBuffer3D;
 	typedef OpenGLCommandBuffer<OpenGLCommand2D> OpenGLCommandBuffer2D;
 }

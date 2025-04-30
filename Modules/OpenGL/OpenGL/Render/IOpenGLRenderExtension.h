@@ -12,6 +12,6 @@ namespace Mani
 
 	struct OpenGLRenderExtension
 	{
-		std::shared_ptr<IOpenGLRenderExtension> obj;
+		std::unique_ptr<IOpenGLRenderExtension> obj;
 	};
 }

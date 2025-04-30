@@ -12,12 +12,16 @@ namespace Mani
 	class OpenGLVertexArray
 	{
 	public:
-		OpenGLVertexArray();
-		~OpenGLVertexArray();
+		OpenGLVertexArray() = default;
 
-		// can't implicetely copy a VAO.
+		// buffers can't be copied implicitely.
 		OpenGLVertexArray(const OpenGLVertexArray&) = delete;
+		OpenGLVertexArray& operator=(const OpenGLVertexArray&) = delete;
+		OpenGLVertexArray(OpenGLVertexArray&& other) noexcept;
+		OpenGLVertexArray& operator=(OpenGLVertexArray&& other) noexcept;
 
+		void create();
+		void destroy();
 		void bind() const;
 
 		void addVertexBuffer(OpenGLVertexBuffer&& buffer);
@@ -25,7 +29,7 @@ namespace Mani
 	
 		const OpenGLIndexBuffer& getIndexBuffer() const;
 	private:
-		unsigned int m_vertexArrayObjectId;
+		unsigned int m_vertexArrayObjectId = UINT32_MAX;
 		int m_attributeCount = 0;
 
 		std::vector<OpenGLVertexBuffer> m_vertexBuffers;

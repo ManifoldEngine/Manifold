@@ -1,19 +1,21 @@
 #pragma once
 
 #include <OpenGL/OpenGL.h>
+#include <RenderAPI/Shader.h>
 #include <string>
 
 namespace Mani
 {
 	struct OpenGLShader
 	{
-		OpenGLShader();
-		OpenGLShader(const std::string_view& inName, const std::string_view& inVertexSource, const std::string_view& inFragmentSource);
-		~OpenGLShader();
+		void create(const std::string_view& inName, const std::string_view& inVertexSource, const std::string_view& inFragmentSource);
+		void destroy();
 
 		bool compile();
 		bool isCompiled() const;
 		void use() const;
+
+		void setShaderType(const std::string_view& name, const ShaderType& value) const;
 
 		void setFloat(const std::string_view& name, float value) const;
 		void setFloat2(const std::string_view& name, float x, float y) const;
@@ -35,8 +37,7 @@ namespace Mani
 		std::string name = "";
 		std::string vertexSource = "";
 		std::string fragmentSource = "";
-
-		uint32_t shaderProgramId;
+		uint32_t shaderProgramId = UINT32_MAX;
 
 	private:
 		static uint32_t compile(const std::string_view& source, int shaderType);

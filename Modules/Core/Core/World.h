@@ -169,6 +169,9 @@ namespace Mani
 			(*it)->deinitialize(m_registry);
 		}
 
+		// it is possible we have deferred entities left.
+		m_registry.handleDeferredDestroy();
+
 		m_isInitialized = false;
 	}
 

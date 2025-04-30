@@ -30,15 +30,17 @@ namespace Mani
 	class OpenGLVertexBuffer
 	{
 	public:
-		OpenGLVertexBuffer();
-		OpenGLVertexBuffer(const float* data, size_t size);
-		~OpenGLVertexBuffer();
-		
+		OpenGLVertexBuffer() = default;
+
 		// buffers can't be copied implicitely.
 		OpenGLVertexBuffer(const OpenGLVertexBuffer&) = delete;
 		OpenGLVertexBuffer& operator=(const OpenGLVertexBuffer&) = delete;
 		OpenGLVertexBuffer(OpenGLVertexBuffer&& other) noexcept;
 		OpenGLVertexBuffer& operator=(OpenGLVertexBuffer&& other) noexcept;
+
+		void create();
+		void create(const float* data, size_t size);
+		void destroy();
 
 		void set(const float* data, size_t size);
 
@@ -50,26 +52,26 @@ namespace Mani
 		
 		static size_t getShaderDataTypeSize(EShaderDataType type);
 		static size_t getComponentCount(EShaderDataType type);
-	private:
-		void create();
 
-		size_t m_size;
-		unsigned int m_vertexBufferObjectId;
+	private:
+		size_t m_size = 0;
+		unsigned int m_vertexBufferObjectId = UINT32_MAX;
 	};
 
 	class OpenGLIndexBuffer
 	{
 	public:
-		OpenGLIndexBuffer();
-		OpenGLIndexBuffer(const unsigned int* indices, size_t size);
-		~OpenGLIndexBuffer();
+		OpenGLIndexBuffer() = default;
 
 		// buffers can't be copied implicitely.
 		OpenGLIndexBuffer(const OpenGLVertexBuffer&) = delete;
 		OpenGLIndexBuffer operator=(const OpenGLVertexBuffer&) = delete;
-		
 		OpenGLIndexBuffer(OpenGLIndexBuffer&& other) noexcept;
 		OpenGLIndexBuffer& operator=(OpenGLIndexBuffer&& other) noexcept;
+
+		void create();
+		void create(const unsigned int* indices, size_t size);
+		void destroy();
 
 		void set(const unsigned int* indices, size_t size);
 
@@ -78,9 +80,7 @@ namespace Mani
 		size_t getStrideSize() const;
 
 	private:
-		void create();
-
-		size_t m_size;
-		unsigned int m_indexBufferObjectId;
+		size_t m_size = 0;
+		unsigned int m_indexBufferObjectId = UINT32_MAX;
 	};
 }

@@ -20,8 +20,6 @@ using namespace Mani;
 
 struct ManImGuiRenderSystem::Storage
 {
-	ECS::EntityId extensionId = ECS::INVALID_ID;
-
 	ImDrawData* drawData = nullptr;
 	unsigned long long frame = 0;
 	std::atomic<unsigned long long> renderFrame = 0;
@@ -32,15 +30,13 @@ void ManImGuiRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 	world.initializeDependency<ManImGuiSystem>();
 	world.initializeDependency<OpenGLRenderSystem>();
 
-	ManImGuiRenderSystem::Storage& storage = *registry.addSingle<ManImGuiRenderSystem::Storage>();
-	std::shared_ptr<IOpenGLRenderExtension> ext = std::make_shared<ManImGuiRenderSystemExtension>();
-	storage.extensionId = OpenGLRenderSystem::addExtension(registry, ext);
+	registry.addSingle<ManImGuiRenderSystem::Storage>();
+	OpenGLRenderSystem::registerExtension(registry, &extension);
 }
 
 void ManImGuiRenderSystem::onDeinitialize(ECS::Registry& registry)
 {
-	ManImGuiRenderSystem::Storage& storage = *registry.getSingle<ManImGuiRenderSystem::Storage>();
-	OpenGLRenderSystem::removeExtension(registry, storage.extensionId);
+	OpenGLRenderSystem::unregisterExtension(registry, &extension);
 	registry.removeSingle<ManImGuiRenderSystem::Storage>();
 }
 

@@ -5,10 +5,18 @@
 namespace Mani
 {
     class IOpenGLRenderExtension;
+    class IOpenGLRenderer;
 
     class OpenGLRenderSystem : public ECS::System
     {
     public:
+        struct Storage
+        {
+            ThreadPool renderThread{ 1 };
+
+            std::vector<IOpenGLRenderer*> renderers;
+            std::vector<IOpenGLRenderExtension*> extensions;
+        };
 
         virtual std::string_view getName() const override { return "OpenGLRenderSystem"; }
         virtual ETickGroup getTickGroup() const override { return ETickGroup::Render; }
@@ -19,18 +27,15 @@ namespace Mani
         template<typename TFunctor, typename... TArgs>
         static void enqueueRenderTask(ECS::Registry& registry, TFunctor&& f, TArgs&&... args);
 
-        static ECS::EntityId addExtension(ECS::Registry& registry, std::shared_ptr<IOpenGLRenderExtension> extension);
-        static void removeExtension(ECS::Registry& registry, ECS::EntityId entityId);
+        static void registerExtension(ECS::Registry& registry, IOpenGLRenderExtension* extension);
+        static void unregisterExtension(ECS::Registry& registry, IOpenGLRenderExtension* extension);
+
+        static void registerRenderer(ECS::Registry& registry, IOpenGLRenderer* renderer);
+        static void unregisterRenderer(ECS::Registry& registry, IOpenGLRenderer* renderer);
 
     protected:
         virtual void onInitialize(ECS::Registry& registry, World& world) override;
         virtual void onDeinitialize(ECS::Registry& registry) override;
-    
-    private:
-        struct Storage
-        {
-            ThreadPool renderThread{ 1 };
-        };
     };
 
     template<typename TFunctor, typename ...TArgs>

@@ -7,13 +7,13 @@ namespace Mani
 	class STBITexture
 	{
 	public:
-		STBITexture();
-		STBITexture(const std::string_view& path);
-		~STBITexture();
-
-		int width;
-		int height;
-		int channels;
-		unsigned char* data;
+		bool load(const std::string_view& path);
+		bool isLoaded() const { return data != nullptr; }
+		void freeTexture();
+		
+		int width = 0;
+		int height = 0;
+		int channels = 0;
+		unsigned char* data = nullptr;
 	};
 }

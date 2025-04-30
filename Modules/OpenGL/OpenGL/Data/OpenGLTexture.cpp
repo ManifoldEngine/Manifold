@@ -5,24 +5,15 @@
 
 using namespace Mani;
 
-OpenGLTexture2D::OpenGLTexture2D()
-    : m_textureId(UINT32_MAX),
-    m_width(0),
-    m_height(0),
-    m_channels(0),
-    m_boundSlot(-1),
-    m_filteringMode(0)
+bool OpenGLTexture2D::load(const STBITexture& texture)
 {
-}
+    m_textureId = UINT32_MAX;
+    m_width = texture.width;
+    m_height = texture.height;
+    m_channels = texture.channels;
+    m_boundSlot = -1;
+    m_filteringMode = 0;
 
-OpenGLTexture2D::OpenGLTexture2D(const STBITexture& texture)
-    : m_textureId(UINT32_MAX), 
-    m_width(texture.width),
-    m_height(texture.height),
-    m_channels(texture.channels),
-    m_boundSlot(-1),
-    m_filteringMode(0)
-{
     if (texture.data != nullptr)
     {
         GLenum internalFormat;
@@ -104,16 +95,22 @@ OpenGLTexture2D::OpenGLTexture2D(const STBITexture& texture)
             texture.data
         );
 #endif
+        return true;
     }
     else
     {
         MANI_LOG_ERROR(LogOpenGL, "Received null texture");
+        return false;
     }
 }
 
-OpenGLTexture2D::~OpenGLTexture2D()
+void OpenGLTexture2D::unload()
 {
-    glDeleteTextures(1, &m_textureId);
+    if (m_textureId == UINT32_MAX)
+    {
+        glDeleteTextures(1, &m_textureId);
+        m_textureId = UINT32_MAX;
+    }
 }
 
 void OpenGLTexture2D::bind(uint32_t slot)

@@ -4,22 +4,29 @@
 using namespace Mani;
 
 // OpenGLVertexBuffer Begin
-OpenGLVertexBuffer::OpenGLVertexBuffer()
-	: m_size(0), m_vertexBufferObjectId(UINT32_MAX)
+void OpenGLVertexBuffer::create()
 {
-	create();
+#ifdef MANI_WEBGL
+	glGenBuffers(1, &m_vertexBufferObjectId);
+#else
+	glCreateBuffers(1, &m_vertexBufferObjectId);
+#endif
 }
 
-OpenGLVertexBuffer::OpenGLVertexBuffer(const float* data, size_t size)
-	: m_size(size), m_vertexBufferObjectId(UINT32_MAX)
+void Mani::OpenGLVertexBuffer::create(const float* data, size_t size)
 {
 	create();
 	set(data, size);
 }
 
-OpenGLVertexBuffer::~OpenGLVertexBuffer()
+void Mani::OpenGLVertexBuffer::destroy()
 {
-	glDeleteBuffers(1, &m_vertexBufferObjectId);
+	if (m_vertexBufferObjectId != UINT32_MAX)
+	{
+		glDeleteBuffers(1, &m_vertexBufferObjectId);
+		m_size = 0;
+		m_vertexBufferObjectId = UINT32_MAX;
+	}
 }
 
 OpenGLVertexBuffer::OpenGLVertexBuffer(OpenGLVertexBuffer&& other) noexcept
@@ -47,6 +54,7 @@ OpenGLVertexBuffer& OpenGLVertexBuffer::operator=(OpenGLVertexBuffer&& other) no
 
 void OpenGLVertexBuffer::set(const float* data, size_t count)
 {
+	m_size = count;
 	glBindBuffer(GL_ARRAY_BUFFER, m_vertexBufferObjectId);
 	glBufferData(GL_ARRAY_BUFFER, m_size, data, GL_STATIC_DRAW);
 }
@@ -115,33 +123,33 @@ size_t OpenGLVertexBuffer::getComponentCount(EShaderDataType type)
 		default: MANI_ASSERT(false, "Unknown EShaderDataType");  return 0;
 	}
 }
-void OpenGLVertexBuffer::create()
-{
-#ifdef MANI_WEBGL
-	glGenBuffers(1, &m_vertexBufferObjectId);
-#else
-	glCreateBuffers(1, &m_vertexBufferObjectId);
-#endif
-}
 // OpenGLVertexBuffer End
 
 
 // OpenGLIndexBuffer Begin
-OpenGLIndexBuffer::OpenGLIndexBuffer()
-	: m_size(0), m_indexBufferObjectId(UINT32_MAX)
+void OpenGLIndexBuffer::create()
 {
-	create();
+#ifdef MANI_WEBGL
+	glGenBuffers(1, &m_indexBufferObjectId);
+#else
+	glCreateBuffers(1, &m_indexBufferObjectId);
+#endif
 }
 
-OpenGLIndexBuffer::OpenGLIndexBuffer(const unsigned int* indices, size_t size)
-	: m_size(size), m_indexBufferObjectId(UINT32_MAX)
+void OpenGLIndexBuffer::create(const unsigned int* indices, size_t size)
 {
 	create();
 	set(indices, size);
 }
-OpenGLIndexBuffer::~OpenGLIndexBuffer()
+
+void OpenGLIndexBuffer::destroy()
 {
-	glDeleteBuffers(1, &m_indexBufferObjectId);
+	if (m_indexBufferObjectId != UINT32_MAX)
+	{
+		glDeleteBuffers(1, &m_indexBufferObjectId);
+		m_size = 0;
+		m_indexBufferObjectId = UINT32_MAX;
+	}
 }
 
 OpenGLIndexBuffer::OpenGLIndexBuffer(OpenGLIndexBuffer&& other) noexcept
@@ -165,6 +173,7 @@ OpenGLIndexBuffer& OpenGLIndexBuffer::operator=(OpenGLIndexBuffer&& other) noexc
 
 void OpenGLIndexBuffer::set(const unsigned int* indices, size_t size)
 {
+	m_size = size;
 	glBindBuffer(GL_ARRAY_BUFFER, m_indexBufferObjectId);
 	glBufferData(GL_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);
 }
@@ -184,12 +193,5 @@ size_t OpenGLIndexBuffer::getStrideSize() const
 	return sizeof(int);
 }
 
-void OpenGLIndexBuffer::create()
-{
-#ifdef MANI_WEBGL
-	glGenBuffers(1, &m_indexBufferObjectId);
-#else
-	glCreateBuffers(1, &m_indexBufferObjectId);
-#endif
-}
+
 // OpenGLIndexBuffer End

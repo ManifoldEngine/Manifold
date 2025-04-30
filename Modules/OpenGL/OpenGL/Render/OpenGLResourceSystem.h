@@ -12,8 +12,8 @@ namespace Mani
     class OpenGLResourceSystemExtension : public IResourceSystemExtension
     {
         // this is all guarranteed to be called from the main thread.
-        virtual void onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId) const override;
-        virtual void onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId) const override;
+        virtual void onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const override;
+        virtual void onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const override;
     };
 
     class OpenGLResourceSystem : public ECS::System
@@ -31,17 +31,18 @@ namespace Mani
     private:
         struct Storage;
 
-        static void onMeshLoaded(ECS::Registry& registry, ECS::EntityId entityId);
-        static void onMaterialLoaded(ECS::Registry& registry, ECS::EntityId entityId);
-        static void onShaderLoaded(ECS::Registry& registry, ECS::EntityId entityId);
-        static void onSTBITextureLoaded(ECS::Registry& registry, ECS::EntityId entityId);
-        static void onSpriteLoaded(ECS::Registry& registry, ECS::EntityId entityId);
+        static void onMeshLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
+        static void onMaterialLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
+        static void onShaderLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
+        static void onSTBITextureLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
+        static void onSpriteLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
 
-        static void onMeshUnloaded(ECS::Registry& registry, ECS::EntityId entityId);
-        static void onMaterialUnloaded(ECS::Registry& registry, ECS::EntityId entityId);
-        static void onShaderUnloaded(ECS::Registry& registry, ECS::EntityId entityId);
-        static void onSTBITextureUnloaded(ECS::Registry& registry, ECS::EntityId entityId);
-        static void onSpriteUnloaded(ECS::Registry& registry, ECS::EntityId entityId);
+        static void onMeshUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
+        static void onMaterialUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
+        static void onShaderUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
+        static void onSTBITextureUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
+        static void onTexture2DUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
+        static void onSpriteUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
     };
 
     template<>
