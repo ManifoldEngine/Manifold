@@ -1,23 +1,82 @@
 #include "ManImGuiRenderSystem.h"
 
-#include "IsManImGuiDisplayed.h"
+#include <Core/Debug/Profiling.h>
+
+#include <OpenGL/OpenGLWindowContext.h>
+#include <OpenGL/Render/OpenGLRenderSystem.h>
+#include <OpenGL/Render/OpenGLCommand.h>
 
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
+#include <GL/gl3w.h>
+#include <GLFW/glfw3.h>
+
+#include <ManImGui/ManImGuiSystem.h>
+#include <ManImGui/ManImGuiWindowContext.h>
+
 using namespace Mani;
 
-void ManImGuiRenderSystem::tick(float deltaTime, ECS::Registry& registry)
+struct ManImGuiRenderSystem::Storage
 {
-	for (const auto entityId : ECS::View<IsManImGuiDisplayed>(registry))
+	ImDrawData* drawData = nullptr;
+	unsigned long long frame = 0;
+	std::atomic<unsigned long long> renderFrame = 0;
+};
+
+void ManImGuiRenderSystem::onInitialize(ECS::Registry& registry, World& world)
+{
+	world.initializeDependency<ManImGuiSystem>();
+	world.initializeDependency<OpenGLRenderSystem>();
+
+	registry.addSingle<ManImGuiRenderSystem::Storage>();
+	OpenGLRenderSystem::registerExtension(registry, &extension);
+}
+
+void ManImGuiRenderSystem::onDeinitialize(ECS::Registry& registry)
+{
+	OpenGLRenderSystem::unregisterExtension(registry, &extension);
+	registry.removeSingle<ManImGuiRenderSystem::Storage>();
+}
+
+void Mani::ManImGuiRenderSystem::tick(float deltaTime, ECS::Registry& registry)
+{
+	ManImGuiRenderSystem::Storage& storage = *registry.getSingle<ManImGuiRenderSystem::Storage>();
+	ManImGuiWindowContext& context = *registry.getSingle<ManImGuiWindowContext>();
+
+	switch (context.mode)
 	{
-		IsManImGuiDisplayed& isManImGuiDisplayed = *registry.get<IsManImGuiDisplayed>(entityId);
-		if (isManImGuiDisplayed.value)
+		case EManImGuiMode::Hidden:
 		{
-			ImGui::Render();
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+			storage.frame++;
+			storage.renderFrame = storage.frame;
+			storage.drawData = nullptr;
+			break;
 		}
-		break;
+		
+		case EManImGuiMode::Show:
+		{
+			while (storage.frame != storage.renderFrame)
+			{
+				std::this_thread::yield();
+			}
+
+			ImGui::Render();
+			storage.drawData = ImGui::GetDrawData();
+			storage.frame++;
+			break;
+		}
+	}
+}
+
+void ManImGuiRenderSystemExtension::onPostRender(ECS::Registry& registry) const
+{
+	MANI_TIME_SCOPE(ManImGuiRenderSystemExtensiononPostRender);
+	ManImGuiRenderSystem::Storage& storage = *registry.getSingle<ManImGuiRenderSystem::Storage>();
+	if (storage.renderFrame < storage.frame)
+	{
+		ImGui_ImplOpenGL3_RenderDrawData(storage.drawData);
+		storage.renderFrame++;
 	}
 }

@@ -24,13 +24,15 @@ bool CameraSystem::shouldTick(ECS::Registry& registry) const
     return true;
 }
 
-void CameraSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void CameraSystem::onInitialize(ECS::Registry& registry, World& world)
 {
     CameraSystemCache& cache = *registry.addSingle<CameraSystemCache>();
 
     cache.cameraId = registry.create();
-    Transform* transform = registry.add<Transform>(cache.cameraId);
-    transform->position = Vec3f(0.0f, 0.0f, -3.0f);
+    Position* position = registry.add<Position>(cache.cameraId);
+    position->value = Vec3f(0.0f, 0.0f, -3.0f);
+    position->value = Vec3f(0.0f, 0.0f, -3.0f);
+    registry.add<Rotation>(cache.cameraId);
     registry.add<Camera>(cache.cameraId);
 }
 
@@ -45,37 +47,29 @@ void CameraSystem::onDeinitialize(ECS::Registry& registry)
 
 void CameraSystem::tick(float deltaTime, ECS::Registry& registry)
 {
-    for (const ECS::EntityId& entityId : ECS::View<Transform, Camera>(registry))
+    for (const ECS::EntityId& entityId : ECS::View<Position, Rotation, Camera>(registry))
     {
-        Transform* transform = registry.get<Transform>(entityId);
-        if (transform == nullptr)
-        {
-            continue;
-        }
+        Position& position = *registry.get<Position>(entityId);
+        Rotation& rotation = *registry.get<Rotation>(entityId);
+        Camera& camera = *registry.get<Camera>(entityId);
 
-        Camera* camera = registry.get<Camera>(entityId);
-        if (camera == nullptr)
-        {
-            continue;
-        }
-
-        camera->view = Mat4f::lookAt(transform->position, transform->position + transform->forward(), transform->up());
+        camera.view = Mat4f::lookAt(position.value, position.value + Transform::forward(rotation), Transform::up(rotation));
         
-        switch (camera->mode)
+        switch (camera.mode)
         {
         case Camera::EMode::PERSPECTIVE:
             {
-                MANI_ASSERT(Math::abs(camera->height) > FLT_EPSILON, "Height of a camera cannot be 0.");
-                camera->projection = Mat4f::perspective(Math::degToRad(camera->fov),
-                                                        camera->width / camera->height,
-                                                        camera->nearClipPlane, 
-                                                        camera->farClipPlane);
+                MANI_ASSERT(Math::abs(camera.height) > FLT_EPSILON, "Height of a camera cannot be 0.");
+                camera.projection = Mat4f::perspective(Math::degToRad(camera.fov),
+                                                        camera.width / camera.height,
+                                                        camera.nearClipPlane, 
+                                                        camera.farClipPlane);
                 break;
             }
 
             case Camera::EMode::ORTHOGRAPHIC:
             {
-                camera->projection = Mat4f::orthographic(0.f, camera->width, 0.f, camera->height, camera->nearClipPlane, camera->farClipPlane);
+                camera.projection = Mat4f::orthographic(0.f, camera.width, 0.f, camera.height, camera.nearClipPlane, camera.farClipPlane);
                 break;
             }
 
@@ -120,8 +114,8 @@ Vec3f Mani::CameraSystem::screenToWorldProjection(const ECS::Registry& registry,
         return VEC4F::ZERO;
     }
 
-    const Transform* transform = getTransform(registry);
-    if (transform == nullptr)
+    auto [cPosition, cRotation] = getTransform(registry);
+    if (cPosition == nullptr || cRotation == nullptr)
     {
         return VEC4F::ZERO;
     }
@@ -143,10 +137,10 @@ Vec3f Mani::CameraSystem::screenToWorldProjection(const ECS::Registry& registry,
     const float xOffset = ((xMax - xMin) * .5f) * xRatio;
     const float yOffset = ((yMax - yMin) * .5f) * yRatio;
 
-    return transform->position +
-        transform->right() * xOffset +
-        transform->up() * yOffset +
-        transform->forward() * distance;
+    return cPosition->value +
+        Transform::right(*cRotation) * xOffset +
+        Transform::up(*cRotation) * yOffset +
+        Transform::forward(*cRotation) * distance;
 }
 
 const Camera* Mani::CameraSystem::getCamera(const ECS::Registry& registry)
@@ -158,11 +152,11 @@ const Camera* Mani::CameraSystem::getCamera(const ECS::Registry& registry)
     return nullptr;
 }
 
-const Transform* Mani::CameraSystem::getTransform(const ECS::Registry& registry)
+std::tuple<const Position*, const Rotation*> Mani::CameraSystem::getTransform(const ECS::Registry& registry)
 {
     if (const CameraSystemCache* cache = registry.getSingle<CameraSystemCache>())
     {
-        return registry.get<Transform>(cache->cameraId);
+        return { registry.get<Position>(cache->cameraId), registry.get<Rotation>(cache->cameraId) };
     }
-    return nullptr;
+    return { nullptr, nullptr };
 }

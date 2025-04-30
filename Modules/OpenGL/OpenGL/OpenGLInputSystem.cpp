@@ -11,9 +11,9 @@ using namespace Mani;
 
 Vec2f OpenGLInputSystem::s_mouse = VEC2F::ZERO;
 
-void Mani::OpenGLInputSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
+void Mani::OpenGLInputSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-    systemContainer.initializeDependency<InputSystem>();
+    world.initializeDependency<InputSystem>();
 
     OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
     MANI_ASSERT(context != nullptr, "We expect the window context to be accessible. If the window is owned by a parent registry, make sure to forward it to this registry.");
@@ -161,13 +161,13 @@ int Mani::OpenGLInputSystem::maniToGLFWCursorMode(Cursor::EMode mode)
 {
     switch (mode)
     {
-        case Cursor::EMode::HIDDEN:
+        case Cursor::EMode::Hidden:
             return GLFW_CURSOR_HIDDEN;
-        case Cursor::EMode::NORMAL:
+        case Cursor::EMode::Normal:
             return GLFW_CURSOR_NORMAL;
-        case Cursor::EMode::DISABLED:
+        case Cursor::EMode::Disabled:
             return GLFW_CURSOR_DISABLED;
-        case Cursor::EMode::CAPTURED:
+        case Cursor::EMode::Captured:
             return GLFW_CURSOR_CAPTURED;
         default:
             return 0;

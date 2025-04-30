@@ -9,7 +9,7 @@ group "Engine"
             moduledir .. "/%{prj.name}/**.cpp" 
         }
 
-        links { "Core", "ECS" }
+        links { "Core" }
 
         includedirs { moduledir .. "/**" }
 group ""

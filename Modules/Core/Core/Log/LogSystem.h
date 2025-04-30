@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Core/Core.h>
-#include <Core/System/System.h>
+#include <Core/ECS/System.h>
 #include <string_view>
 #include <unordered_map>
 
@@ -16,7 +16,7 @@ namespace Mani
 		Error,
 	};
 
-	class LogSystem : public SystemBase
+	class LogSystem : public ECS::System
 	{
 	public:
 		LogSystem();

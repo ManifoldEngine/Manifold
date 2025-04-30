@@ -1,366 +1,242 @@
 #include "OpenGLRenderSystem.h"
-#include <Core/Log.h>
-#include <Core/ManiAssert.h>
+
 #include <Core/Debug/Profiling.h>
-#include <Core/Components/Transform.h>
-
-
-#include <ECS/Registry.h>
-#include <ECS/View.h>
+#include <Core/Async/ThreadPool.h>
 
 #include <Camera/CameraSystem.h>
 
-#include <RenderAPI/MeshComponent.h>
-#include <RenderAPI/SpriteComponent.h>
-#include <RenderAPI/Light/DirectionalLightComponent.h>
-#include <RenderAPI/Light/PointLightComponent.h>
-#include <RenderAPI/Light/SpotlightComponent.h>
+#include <Resources/Resource.h>
+#include <Resources/ResourceSystem.h>
 
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/OpenGLWindowContext.h>
-#include <OpenGL/Render/OpenGLResourceSystem.h>
-#include <OpenGL/Render/OpenGLBuffer.h>
-#include <OpenGL/Render/OpenGLVertexArray.h>
-#include <OpenGL/Render/OpenGLTexture.h>
-#include <OpenGL/Render/OpenGLMaterial.h>
-#include <OpenGL/Render/OpenGLShader.h>
-#include <OpenGL/Render/OpenGLSprite.h>
-#include <OpenGL/Render/OpenGLClearColor.h>
+
+#include <OpenGL/Data/OpenGLClearColor.h>
+
+#include <OpenGL/Render/IOpenGLRenderExtension.h>
+#include <OpenGL/Render/IOpenGLRenderer.h>
+#include <OpenGL/Render/OpenGLCameraUpdateSystem.h>
+#include <OpenGL/Render/OpenGLCommand.h>
+#include <OpenGL/Render/OpenGLRenderContext.h>
 
 #include <GLFW/glfw3.h>
 
 using namespace Mani;
 
-std::string_view OpenGLRenderSystem::getName() const
+OpenGLRenderContext createContext(ECS::Registry& registry);
+void loadQuad(uint32_t repeatAmount, Resource<OpenGLVertexArray>& res);
+
+OpenGLRenderSystem::Storage* getStorageChecked(ECS::Registry& registry)
 {
-	return "OpenGLRenderSystem";
+	OpenGLRenderSystem::Storage* storage = registry.getSingle<OpenGLRenderSystem::Storage>();
+	MANI_ASSERT(storage != nullptr, "trying to register an extension outside of the lifetime of the system");
+	return storage;
 }
 
-bool OpenGLRenderSystem::shouldTick(ECS::Registry& registry) const
+void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-	return true;
-}
-
-void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, SystemContainer& systemContainer)
-{
-	m_resourceSystem = systemContainer.initializeDependency<OpenGLResourceSystem>();
-	systemContainer.initializeDependency<CameraSystem>();
-
+	world.initializeDependency<CameraSystem>();
+	world.initializeDependency<OpenGLCameraUpdateSystem>();
+	
+	registry.addSingle<OpenGLRenderSystem::Storage>();
 	registry.addSingle<OpenGLClearColor>();
 }
 
-void Mani::OpenGLRenderSystem::onDeinitialize(ECS::Registry& registry)
+void OpenGLRenderSystem::onDeinitialize(ECS::Registry& registry)
 {
+	OpenGLRenderSystem::Storage& storage = *registry.getSingle<OpenGLRenderSystem::Storage>();
+	storage.renderThread.stop();
+
 	registry.removeSingle<OpenGLClearColor>();
+	registry.removeSingle<OpenGLRenderSystem::Storage>();
 }
 
 void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 {
 	MANI_TIME_SCOPE(OpenGLRenderSystemtick);
 
-	if (m_resourceSystem.expired())
+	OpenGLCommandBuffer3D* cbs = registry.getSingle<OpenGLCommandBuffer3D>();
+	if (cbs == nullptr)
+	{
+		MANI_LOG_WARNING(LogOpenGL, "Trying to push opengl commands without a command buffer");
+		return;
+	}
+
+	if (!cbs->isReadBufferValid())
 	{
 		return;
 	}
 
-	OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
-	MANI_ASSERT(context != nullptr, "We expect the window context to be accessible. If the window is owned by a parent registry, make sure to forward it to this registry.");
+	OpenGLRenderSystem::Storage& storage = *registry.getSingle<OpenGLRenderSystem::Storage>();
+	OpenGLRenderContext context = createContext(registry);
+	context.readBuffer = cbs->readBuffer;
 
-	ECS::View<Camera> cameraView(registry);
-	for (const auto& entityId : cameraView)
+#if MANI_DEBUG
+	const int fps = Math::isEqual(deltaTime, 0.f) ? 0 : static_cast<int>(1 / deltaTime);
+	glfwSetWindowTitle(context.openglContext->window, std::format("{} ({}fps)", context.openglContext->name, fps).c_str());
+#endif
+
+	storage.renderThread.enqueue([&registry, cbs, context = std::move(context)]() mutable
 	{
-		Camera* camera = registry.get<Camera>(entityId);
-		camera->width = static_cast<float>(context->width);
-		camera->height = static_cast<float>(context->height);
+		MANI_TIME_SCOPE(OpenGLRenderSystemtickrenderthread);
+		glfwMakeContextCurrent(context.openglContext->window);
+
+		const std::vector<OpenGLCommand>& commands = cbs->buffers[context.readBuffer];
+		glEnable(GL_DEPTH_TEST);
+
+		// setting color state.
+		const Vec4f& clearColor = context.clearColor;
+		glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
+
+		// consuming color state.
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glViewport(0, 0, context.width, context.height);
+
+		size_t commandId = 0;
+		for (auto* renderer : context.renderers)
+		{
+			for (; commandId < commands.size(); commandId++)
+			{
+				const OpenGLCommand& command = commands[commandId];
+				if (renderer->getId() != command.rendererId)
+				{
+					break;
+				}
+				renderer->render(command, context);
+			}
+		}
+
+		// render extension if any
+		for (auto* extension : context.extensions)
+		{
+			extension->onPostRender(registry);
+		}
+
+		cbs->renderFrame++;
+		glfwSwapBuffers(context.openglContext->window);
+		glfwMakeContextCurrent(nullptr);
+	});
+}
+
+OpenGLRenderContext createContext(ECS::Registry& registry)
+{
+	OpenGLRenderContext context;
+	{
+		context.openglContext = registry.getSingle<OpenGLWindowContext>();
 	}
 
-	std::shared_ptr<OpenGLResourceSystem> resourceSystem = m_resourceSystem.lock();
-	
-	Mat4f viewMatrix;
-	Mat4f projectionMatrix;
-	Vec3f cameraPosition;
 	{
-		ECS::View<Transform, Camera> cameraView(registry);
+		// camera
+		ECS::View<Position, Camera> cameraView(registry);
 		auto it = cameraView.begin();
 		MANI_ASSERT(it != cameraView.end(), "Trying to render without a camera");
 
-		const Transform& cameraTransform = *registry.get<Transform>(*it);
-		cameraPosition = cameraTransform.position;
+		const Position& position = *registry.get<Position>(*it);
+		context.cameraPosition = position.value;
 
 		const Camera& camera = *registry.get<Camera>(*it);
-		viewMatrix = camera.view;
-		projectionMatrix = camera.projection;
+		context.view = camera.view;
+		context.projection = camera.projection;
+		context.width = static_cast<int>(camera.width);
+		context.height = static_cast<int>(camera.height);
 	}
 
-	glEnable(GL_DEPTH_TEST);
+	{
+		// light
+		for (const auto entityId : ECS::View<DirectionalLight> (registry))
+		{
+			const DirectionalLight& light = *registry.get<DirectionalLight>(entityId);
+			context.directionalLights.emplace_back(light);
+		}
+		for (const auto entityId : ECS::View<PointLight, Position> (registry))
+		{
+			const PointLight& light = *registry.get<PointLight>(entityId);
+			const Position& position = *registry.get<Position>(entityId);
+			context.pointLights.emplace_back(std::tuple<PointLight, Position>{ light, position });
+		}
+		for (const auto entityId : ECS::View<Spotlight, Position, Rotation> (registry))
+		{
+			const Spotlight& light = *registry.get<Spotlight>(entityId);
+			const Position& position = *registry.get<Position>(entityId);
+			const Rotation& rotation = *registry.get<Rotation>(entityId);
+			context.spotlights.emplace_back(std::tuple<Spotlight, Position, Rotation>{ light, position, rotation });
+		}
+	}
+
+	{
+		// clear color
+		const OpenGLClearColor& clearColor = *registry.getSingle<OpenGLClearColor>();
+		context.clearColor = clearColor.color;
+	}
+
+	{
+		OpenGLRenderSystem::Storage* storage = getStorageChecked(registry);
+		context.renderers = storage->renderers;
+		context.extensions = storage->extensions;
+	}
+
+	return context;
+}
+
+void loadQuad(uint32_t repeatAmount, Resource<OpenGLVertexArray>& res)
+{
 	
-	// setting color state.
-	const OpenGLClearColor& clearColor = *registry.getSingle<OpenGLClearColor>();
-	glClearColor(clearColor.color.x, clearColor.color.y, clearColor.color.z, clearColor.color.w);
+}
 
-	// consuming color state.
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	ECS::View<DirectionalLightComponent> directionalLightsView(registry);
-	ECS::View<Transform, PointLightComponent> pointLightsView(registry);
-	ECS::View<Transform, SpotlightComponent> spotlightsView(registry);
-
-	// Render MeshComponents
-	ECS::View<Transform, MeshComponent> meshesView(registry);
-	for (const ECS::EntityId entityId : meshesView)
+template<typename T>
+void push_back_if_unique(std::vector<T*>& vector, T* element)
+{
+	auto it = std::find(vector.begin(), vector.end(), element);
+	if (it == vector.end())
 	{
-		Transform* transform = registry.get<Transform>(entityId);
-		const MeshComponent* meshComponent = registry.get<MeshComponent>(entityId);
+		vector.push_back(element);
+	}
+}
 
-		if (meshComponent->mesh == nullptr)
+void OpenGLRenderSystem::registerExtension(ECS::Registry& registry, IOpenGLRenderExtension* extension)
+{
+	MANI_ASSERT(extension != nullptr, "Cannot register a null extension");
+	OpenGLRenderSystem::Storage* storage = getStorageChecked(registry);
+	push_back_if_unique(storage->extensions, extension);
+}
+
+void OpenGLRenderSystem::unregisterExtension(ECS::Registry& registry, IOpenGLRenderExtension* extension)
+{
+	if (OpenGLRenderSystem::Storage* storage = registry.getSingle<OpenGLRenderSystem::Storage>())
+	{
+		// no need to check on unregister as the system might have been uninitialized already.
+		std::vector<IOpenGLRenderExtension*>& extensions = storage->extensions;
+		if (auto it = std::find(extensions.begin(), extensions.end(), extension); it != extensions.end())
 		{
-			MANI_LOG_WARNING(LogOpenGL, "Entity {} with null mesh or material", entityId);
-			continue;
-		}
-
-		const std::shared_ptr<Mesh>& mesh = meshComponent->mesh;
-		const std::shared_ptr<Material>& materialAsset = meshComponent->material;
-
-		if (mesh == nullptr || materialAsset == nullptr)
-		{
-			MANI_LOG_WARNING(LogOpenGL, "Entity {} with null mesh or material", entityId);
-			continue;
-		}
-
-		const std::shared_ptr<OpenGLVertexArray>& vao = resourceSystem->getVertexArray(mesh->name);
-		if (vao == nullptr)
-		{
-			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a mesh that is not loaded");
-			continue;
-		}
-
-		const std::shared_ptr<OpenGLMaterial> material = resourceSystem->getMaterial(materialAsset->name);
-		if (material == nullptr)
-		{
-			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a material that is not loaded");
-			continue;
-		}
-
-		MANI_ASSERT(!material->shader.empty(), "A Shader is always expected in a material");
-
-		std::shared_ptr<OpenGLShader> shader = resourceSystem->getShader(material->shader);
-		if (shader == nullptr)
-		{
-			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a mesh with an uncompiled shader");
-			continue;
-		}
-
-		shader->use();
-
-		Mat4f modelMatrix = transform->calculateModelMatrix();
-		Mat3f normalMatrix = static_cast<Mat3f>(modelMatrix).inverse().transpose();
-
-		// set vertex uniforms
-		shader->setFloatMatrix4("model", &(modelMatrix._00));
-		shader->setFloatMatrix3("normalMatrix", &(normalMatrix._00));
-		shader->setFloatMatrix4("view", &(viewMatrix._00));
-		shader->setFloatMatrix4("projection", &(projectionMatrix._00));
-
-		// set fragment uniforms
-		shader->setFloat3("viewPosition", cameraPosition.x, cameraPosition.y, cameraPosition.z);
-
-		int textureIndex = 0;
-
-		// set material
-		std::shared_ptr<OpenGLTexture2D> diffuseTexture = nullptr;
-		if (!material->diffuse.empty())
-		{
-			diffuseTexture = resourceSystem->getTexture(material->diffuse);
-			if (diffuseTexture != nullptr)
-			{
-				diffuseTexture->bind(textureIndex);
-				shader->setTextureSlot("material.diffuseMap", textureIndex++);
-			}
-		}
-
-		std::shared_ptr<OpenGLTexture2D> specularTexture = nullptr;
-		if (!material->specular.empty())
-		{
-			specularTexture = resourceSystem->getTexture(material->specular);
-			if (specularTexture != nullptr)
-			{
-				specularTexture->bind(textureIndex);
-				shader->setTextureSlot("material.specularMap", textureIndex++);
-			}
-		}
-
-		shader->setFloat("material.shininess", material->shininess);
-
-		// set lights
-		int directionalLightIndex = 0;
-		int pointLightIndex = 0;
-		int spotlightIndex = 0;
-		for(const ECS::EntityId entityId : directionalLightsView)
-		{
-			const DirectionalLightComponent* light = registry.get<DirectionalLightComponent>(entityId);
-
-			const std::string directionalLightArray = std::format("directionalLights[{}]", directionalLightIndex);
-			shader->setFloat3(std::format("{}.direction", directionalLightArray).c_str(), light->direction.x, light->direction.y, light->direction.z);
-			shader->setFloat3(std::format("{}.ambient", directionalLightArray).c_str(), light->ambient.x, light->ambient.y, light->ambient.z);
-			shader->setFloat3(std::format("{}.diffuse", directionalLightArray).c_str(), light->diffuse.x, light->diffuse.y, light->diffuse.z);
-			shader->setFloat3(std::format("{}.specular", directionalLightArray).c_str(), light->specular.x, light->specular.x, light->specular.x);
-			directionalLightIndex++;
-		}
-
-		for (const ECS::EntityId entityId : pointLightsView)
-		{
-			const Transform* transform = registry.get<Transform>(entityId);
-			const PointLightComponent* light = registry.get<PointLightComponent>(entityId);
-
-			const std::string pointLightArray = std::format("pointLights[{}]", pointLightIndex);
-			shader->setFloat3(std::format("{}.position", pointLightArray).c_str(), transform->position.x, transform->position.y, transform->position.z);
-
-			shader->setFloat3(std::format("{}.ambient", pointLightArray).c_str(), light->ambient.x, light->ambient.y, light->ambient.z);
-			shader->setFloat3(std::format("{}.diffuse", pointLightArray).c_str(), light->diffuse.x, light->diffuse.y, light->diffuse.z);
-			shader->setFloat3(std::format("{}.specular", pointLightArray).c_str(), light->specular.x, light->specular.x, light->specular.x);
-
-			shader->setFloat(std::format("{}.constant", pointLightArray).c_str(), light->constant);
-			shader->setFloat(std::format("{}.linear", pointLightArray).c_str(), light->linear);
-			shader->setFloat(std::format("{}.quadratic", pointLightArray).c_str(), light->quadratic);
-
-			pointLightIndex++;
-		}
-
-		for (const ECS::EntityId entityId : spotlightsView)
-		{
-			const Transform* transform = registry.get<Transform>(entityId);
-			const SpotlightComponent* light = registry.get<SpotlightComponent>(entityId);
-			const Vec3f forward = transform->forward();
-
-			const std::string spotlightsArray = std::format("spotlights[{}]", spotlightIndex);
-			shader->setFloat3(std::format("{}.position", spotlightsArray).c_str(), transform->position.x, transform->position.y, transform->position.z);
-			shader->setFloat3(std::format("{}.direction", spotlightsArray).c_str(), forward.x, forward.y, forward.z);
-			shader->setFloat(std::format("{}.cutOff", spotlightsArray).c_str(), light->cutOff);
-			shader->setFloat(std::format("{}.outterCutOff", spotlightsArray).c_str(), light->outterCutOff);
-
-			shader->setFloat3(std::format("{}.ambient", spotlightsArray).c_str(), light->ambient.x, light->ambient.y, light->ambient.z);
-			shader->setFloat3(std::format("{}.diffuse", spotlightsArray).c_str(), light->diffuse.x, light->diffuse.y, light->diffuse.z);
-			shader->setFloat3(std::format("{}.specular", spotlightsArray).c_str(), light->specular.x, light->specular.x, light->specular.x);
-
-			spotlightIndex++;
-		}
-
-		shader->setInt("directionalLightsCount", directionalLightIndex);
-		shader->setInt("pointLightsCount", pointLightIndex);
-		shader->setInt("spotlightsCount", spotlightIndex);
-
-		shader->setFloat4("color", material->color.x, material->color.y, material->color.z, material->color.w);
-
-		vao->bind();
-
-		if (const auto& indexBuffer = vao->getIndexBuffer())
-		{
-			glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indexBuffer->getStrideCount()), GL_UNSIGNED_INT, nullptr);
-		}
-		else
-		{
-			MANI_ASSERT(false, "no index buffer provided with the vertices");
-		}
-
-		if (diffuseTexture != nullptr)
-		{
-			diffuseTexture->unbind();
-		}
-
-		if (specularTexture != nullptr)
-		{
-			specularTexture->unbind();
+			extensions.erase(it);
 		}
 	}
+}
 
-	// Render SpriteComponents
-	ECS::View<Transform, SpriteComponent> spritesView(registry);
-	for (const ECS::EntityId entityId : spritesView)
+void OpenGLRenderSystem::registerRenderer(ECS::Registry& registry, IOpenGLRenderer* renderer)
+{
+	MANI_ASSERT(renderer != nullptr, "Cannot register a null renderer");
+
+	OpenGLRenderSystem::Storage* storage = getStorageChecked(registry);
+	std::vector<IOpenGLRenderer*>& renderers = storage->renderers;
+	push_back_if_unique(renderers, renderer);
+
+	std::sort(renderers.begin(), renderers.end(), [](const IOpenGLRenderer* lhs, const IOpenGLRenderer* rhs)
 	{
-		const Transform* transform = registry.get<Transform>(entityId);
-		const SpriteComponent* spriteComponent = registry.get<SpriteComponent>(entityId);
+		return lhs->getId() < rhs->getId();
+	});
+}
 
-		if (spriteComponent->sprite == nullptr)
+void OpenGLRenderSystem::unregisterRenderer(ECS::Registry& registry, IOpenGLRenderer* renderer)
+{
+	if (OpenGLRenderSystem::Storage* storage = registry.getSingle<OpenGLRenderSystem::Storage>())
+	{
+		// no need to check on unregister as the system might have been uninitialized already.
+		std::vector<IOpenGLRenderer*>& renderers = storage->renderers;
+		if (auto it = std::find(renderers.begin(), renderers.end(), renderer); it != renderers.end())
 		{
-			MANI_LOG_WARNING(LogOpenGL, "Entity {} with null sprite", entityId);
-			return;
+			renderers.erase(it);
 		}
-
-		const std::shared_ptr<OpenGLSprite> sprite = resourceSystem->getSprite(spriteComponent->sprite->name);
-		if (sprite == nullptr)
-		{
-			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a sprite that is not loaded");
-			return;
-		}
-
-		MANI_ASSERT(!sprite->shaderName.empty(), "A Shader is always expected in a sprite");
-
-		const std::shared_ptr<OpenGLShader> shader = resourceSystem->getShader(sprite->shaderName);
-		if (shader == nullptr)
-		{
-			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a vao that is not loaded");
-			return;
-		}
-
-		const std::shared_ptr<OpenGLVertexArray> vao = resourceSystem->getQuad(spriteComponent->repeatAmount);
-		if (vao == nullptr)
-		{
-			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a vao that is not loaded");
-			return;
-		}
-
-		const std::shared_ptr<OpenGLTexture2D> texture = resourceSystem->getTexture(sprite->textureName);
-		if (texture == nullptr)
-		{
-			MANI_LOG_WARNING(LogOpenGL, "Attempting to draw a texture that is not loaded");
-			return;
-		}
-
-		texture->setFilteringMode(spriteComponent->filteringMode);
-
-		shader->use();
-
-		//Transform scaledTransform = *transform;
-		Transform transformCopy = *transform;
-		const Vec2f& pivot = spriteComponent->pivot;
-		
-		// since we know the quad is 1x1, we can assume that the scale is the actual world size.
-		transformCopy.position.x += pivot.x * transformCopy.scale.x;
-		transformCopy.position.z -= pivot.y * transformCopy.scale.z;
-		
-		const float width = static_cast<float>(texture->getWidth());
-		const float height = static_cast<float>(texture->getHeight());
-		MANI_ASSERT(width > 0.f && height > 0.f, "do not divide by zero");
-		if (width > height)
-		{
-			transformCopy.scale.z *= height / width;
-		}
-		else
-		{
-			transformCopy.scale.x *= width / height;
-		}
-			
-		Mat4f modelMatrix = transformCopy.calculateModelMatrix();
-		
-		shader->setFloatMatrix4("model", &(modelMatrix._00));
-		shader->setFloatMatrix4("view", &(viewMatrix._00));
-		shader->setFloatMatrix4("projection", &(projectionMatrix._00));
-
-		int textureIndex = 0;
-		texture->bind(textureIndex);
-		shader->setTextureSlot("sprite", textureIndex++);
-		shader->setFloat4("color", spriteComponent->color.x, spriteComponent->color.y, spriteComponent->color.z, spriteComponent->color.w);
-
-		vao->bind();
-		if (const auto& indexBuffer = vao->getIndexBuffer())
-		{
-			glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indexBuffer->getStrideCount()), GL_UNSIGNED_INT, nullptr);
-		}
-		else
-		{
-			MANI_ASSERT(false, "no index buffer provided with the vertices");
-		}
-
-		texture->unbind();
 	}
 }

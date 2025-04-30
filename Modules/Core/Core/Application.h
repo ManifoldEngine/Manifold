@@ -1,14 +1,18 @@
 #pragma once
 
 #include <Core/Core.h>
-#include <Core/System/SystemContainer.h>
-#include <Core/Thread/ThreadPool.h>
+#include <Core/World.h>
+#include <Core/CoreConfig.h>
+#include <Core/Async/ThreadPool.h>
+#include <Core/Async/Defer.h>
 
 namespace Mani
 {
 	class Application
 	{
 	public:
+		static constexpr size_t THREAD_COUNT = 10;
+
 		Application();
 		~Application();
 
@@ -19,8 +23,10 @@ namespace Mani
 
 		void tick(float deltaTime);
 	
-		SystemContainer& getSystemContainer() { return m_systemContainer; }
+		World& getWorld() { return m_world; }
 		ThreadPool& getThreadPool() { return m_threadPool; }
+		Deferred& getDeferred() { return m_deferred; }
+		const CoreConfig& getConfig() const { return m_config; }
 
 		bool isRunning() const { return m_isRunning; }
 
@@ -29,7 +35,9 @@ namespace Mani
 
 		bool m_isRunning = false;
 		
-		SystemContainer m_systemContainer;
+		World m_world;
 		ThreadPool m_threadPool;
+		Deferred m_deferred;
+		CoreConfig m_config;
 	};
 }

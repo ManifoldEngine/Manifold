@@ -5,12 +5,12 @@
 
 using namespace Mani;
 
-void ProfilingSystem::onInitialize(Mani::ECS::Registry& registry, Mani::SystemContainer& systemContainer)
+void ProfilingSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	registry.addSingle<ScopedTimerDatabase>();
 }
 
-void ProfilingSystem::onDeinitialize(Mani::ECS::Registry& registry)
+void ProfilingSystem::onDeinitialize(ECS::Registry& registry)
 {
 	for (const auto entityId : ECS::View<ScopedTimerDatabase>(registry))
 	{
@@ -27,10 +27,10 @@ void ProfilingSystem::onDeinitialize(Mani::ECS::Registry& registry)
 	registry.removeSingle<ScopedTimerDatabase>();
 }
 
-void ProfilingSystem::onTimerDestroyed(const Mani::_impl::ScopedTimer& scopeTimer)
+void ProfilingSystem::onTimerDestroyed(const _impl::ScopedTimer& scopeTimer)
 {
 #if MANI_DEBUG
-	ECS::Registry& registry = Application::get().getSystemContainer().getMutableRegistry();
+	ECS::Registry& registry = Application::get().getWorld().getMutableRegistry();
 	if (ScopedTimerDatabase* database = registry.getSingle<ScopedTimerDatabase>())
 	{
 		const double elapsed = scopeTimer.elapsed();

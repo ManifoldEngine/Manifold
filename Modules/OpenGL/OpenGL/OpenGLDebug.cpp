@@ -42,7 +42,7 @@ void Mani::OpenGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum s
         default: break;
     }
 
-    ss << " " << message;
+    ss << std::format(" [{}] {}", id, message);
 
     switch (type)
     {
@@ -63,7 +63,7 @@ void Mani::OpenGLMessageCallback(GLenum source, GLenum type, GLuint id, GLenum s
 
         default:
         {
-            MANI_LOG(LogOpenGLAPI, "{}", ss.str());
+            MANI_LOG_VERBOSE(LogOpenGLAPI, "{}", ss.str());
             break;
         }
     }

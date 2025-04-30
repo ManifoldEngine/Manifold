@@ -1,9 +1,13 @@
 #pragma once
 
 #include <string>
+#include <variant>
+#include <ManiMaths/Fwd.h>
 
 namespace Mani
 {
+	using ShaderType = std::variant<float, Vec2f, Vec3f, Vec4f, int, Vec2i, Vec3i, Vec4i, Mat3f, Mat4f, bool>;
+
 	struct Shader
 	{
 		std::string name = "";

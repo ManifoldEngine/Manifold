@@ -9,7 +9,7 @@ namespace Mani
         struct ScopedTimer;
     }
 
-    class ProfilingSystem : public Mani::SystemBase
+    class ProfilingSystem : public Mani::ECS::System
     {
     public:
         virtual std::string_view getName() const override { return "ProfilingSystem"; }
@@ -18,7 +18,7 @@ namespace Mani
         static void onTimerDestroyed(const Mani::_impl::ScopedTimer& namedScopeTimer);
 
     protected:
-        virtual void onInitialize(Mani::ECS::Registry& registry, Mani::SystemContainer& systemContainer) override;
+        virtual void onInitialize(Mani::ECS::Registry& registry, World& world) override;
         virtual void onDeinitialize(Mani::ECS::Registry& registry) override;
     };
 

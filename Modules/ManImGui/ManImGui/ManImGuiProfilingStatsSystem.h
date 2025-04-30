@@ -2,11 +2,17 @@
 
 #include <Core/CoreFwd.h>
 
-class ManImGuiProfilingStatsSystem : public Mani::SystemBase
+namespace Mani
 {
-public:
-    virtual std::string_view getName() const override { return "ManImGuiProfilingStatsSystem"; }
-    virtual bool shouldTick(Mani::ECS::Registry& registry) const override { return true; }
+    class ManImGuiProfilingStatsSystem : public ECS::System
+    {
+    public:
+        virtual std::string_view getName() const override { return "ManImGuiProfilingStatsSystem"; }
+        virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
 
-    virtual void tick(float deltaTime, Mani::ECS::Registry& registry) override;
-};
+        virtual void tick(float deltaTime, ECS::Registry& registry) override;
+
+    protected:
+        virtual void onInitialize(ECS::Registry& registry, World& world) override;
+    };
+}

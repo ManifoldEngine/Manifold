@@ -1,21 +1,29 @@
 #include "ManImGuiProfilingStatsSystem.h"
 
-#include "ManImGuiMainLoopSystem.h"
+#include "ManImGuiWindowContext.h"
+#include "ManImGuiSystem.h"
 
 #include <Core/Debug/Profiling.h>
 #include "imgui.h"
 
 using namespace Mani;
 
+void ManImGuiProfilingStatsSystem::onInitialize(ECS::Registry& registry, World& world)
+{
+	world.initializeDependency<ManImGuiSystem>();
+}
+
 void ManImGuiProfilingStatsSystem::tick(float deltaTime, Mani::ECS::Registry& registry)
 {
-	if (!ManImGuiMainLoopSystem::isDisplayed(registry))
+	ManImGuiWindowContext* context = registry.getSingle<ManImGuiWindowContext>();
+	MANI_ASSERT(context != nullptr, "We expect the context to be accessible");
+	if (context->mode < EManImGuiMode::Show)
 	{
 		return;
 	}
 
 	// this system might not be in the application's registry, but below it.
-	const ECS::Registry& appRegistry = Application::get().getSystemContainer().getRegistry();
+	const ECS::Registry& appRegistry = Application::get().getWorld().getRegistry();
 	const ScopedTimerDatabase* database = appRegistry.getSingle<ScopedTimerDatabase>();
 	if (database == nullptr)
 	{

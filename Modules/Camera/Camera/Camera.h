@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string_view>
-#include <Core/CoreAssert.h>
+#include <Core/ManiAssert.h>
 #include <ManiMaths/Fwd.h>
 #include <Log.h>
 

@@ -1,13 +1,11 @@
 #include <Core/Log.h>
-#include <Assets/AssetSystem.h>
-
-#include <Scene/Scene.h>
+#include <Resources/ResourceSystem.h>
 
 #include <RenderAPI/Mesh.h>
 #include <RenderAPI/Shader.h>
+#include <RenderAPI/ShaderConfig.h>
 
 #include <MeshImporter/MeshImporter.h>
-#include <SceneImporter/SceneImporter.h>
 #include <ShaderImporter/ShaderImporter.h>
 
 #include <vector>
@@ -17,130 +15,121 @@ using namespace Mani;
 
 namespace fs = std::filesystem;
 
+constexpr std::string_view GLSL_EXT = ".glsl";
+constexpr std::string_view SHADER_EXT = ".shader";
+constexpr std::string_view FBX_EXT = ".fbx";
+constexpr std::string_view MESH_EXT = ".mesh";
+
 struct AssetImporterConfig
 {
 	std::string engineAssetPath = "Engine/Assets";
 	std::string projectAssetPath = "";
 };
 
-class AssetImporterSystem : public Mani::SystemBase
+void processShader(const fs::path& path)
 {
-public:
-	virtual std::string_view getName() const override { return "AssetImporterSystem"; }
-	virtual bool shouldTick(ECS::Registry& registry) const override { return false; }
-
-protected:
-	virtual void onInitialize(ECS::Registry& registry, Mani::SystemContainer& systemContainer) override
+	std::shared_ptr<Shader> shader = std::make_shared<Shader>();
+	if (!ShaderImporter::importFromPath(path, shader))
 	{
-		std::shared_ptr<AssetSystem> assetSystem = systemContainer.initializeDependency<AssetSystem>().lock();
-		std::weak_ptr<AssetImporterConfig> weakConfig = AssetSystem::loadAsset<AssetImporterConfig>(registry, "Config/AssetImporter.json");
-		MANI_ASSERT(!weakConfig.expired(), "Could not find Config/AssetImporter.json");
-
-		std::shared_ptr<AssetImporterConfig> config = weakConfig.lock();
-		fs::path rootPath;
-		MANI_ASSERT(FileSystem::tryGetRootPath(rootPath), "Could not get root path");
-
-		if (!config->engineAssetPath.empty())
-		{
-			fs::path engineAssetPath = fs::path(rootPath).append(config->engineAssetPath);
-			exploreDirectory(engineAssetPath);
-		}
-
-		if (!config->projectAssetPath.empty())
-		{
-			fs::path projectAssetPath = fs::path(rootPath).append(config->projectAssetPath);
-			exploreDirectory(projectAssetPath);
-		}
+		MANI_LOG_ERROR(Log, "Could not import shader at {}", path.string());
+		return;
 	}
 
-private:
-	void exploreDirectory(const fs::path& path)
+	fs::path output = path.parent_path();
+	output.append(std::format("{}{}", shader->name, SHADER_EXT));
+	MANI_LOG(Log, "Saving {}", output.string());
+	if (!ShaderImporter::exportToPath(output, shader))
 	{
-		for (const auto& entry : fs::recursive_directory_iterator(path))
-		{
-			if (entry.is_directory() || !entry.is_regular_file())
-			{
-				continue;
-			}
+		MANI_LOG_ERROR(Log, "Could not save shader at {}", output.string());
+	}
+}
 
-			fs::path extension = entry.path().extension();
-
-			if (extension == ".glsl")
-			{
-				MANI_LOG(Log, "importing {}", entry.path().string());
-				importShader(entry.path());
-			}
-			else if (extension == ".fbx")
-			{
-				MANI_LOG(Log, "importing {}", entry.path().string());
-				importModel(entry.path());
-			}
-		}
+void processMesh(const fs::path& path)
+{
+	std::vector<std::shared_ptr<Mesh>> meshes;
+	if (!MeshImporter::importFromPath(path, meshes))
+	{
+		MANI_LOG_ERROR(Log, "Could not import mesh at {}", path.string());
+		return;
 	}
 
-	void importModel(const fs::path& path)
+	for (const std::shared_ptr<Mesh>& mesh : meshes)
 	{
-		std::vector<std::shared_ptr<Mesh>> meshes;
-		if (!MeshImporter::importFromPath(path, meshes))
-		{
-			MANI_LOG_ERROR(Log, "Could not import mesh at {}", path.string());
-			return;
-		}
-
-		for (const std::shared_ptr<Mesh>& mesh : meshes)
-		{
-			fs::path output = path.parent_path();
-			output.append(std::format("{}{}", mesh->name, ".mesh"));
-			MANI_LOG(Log, "Saving {}", output.string());
-			if (!MeshImporter::exportToPath(output, mesh))
-			{
-				MANI_LOG_ERROR(Log, "Could not save mesh at {}", output.string());
-			}
-		}
-
-		std::shared_ptr<Scene> scene = std::make_shared<Scene>();
-		if (!SceneImporter::importFromPath(path, scene))
-		{
-			MANI_LOG_ERROR(Log, "Could not import scene from {}", path.string());
-			return;
-		}
-
-		{
-			fs::path output = path.parent_path();
-			output.append(std::format("{}{}", path.stem().string(), ".scene"));
-			MANI_LOG(Log, "Saving {}", output.string());
-			if (!SceneImporter::exportToPath(output, scene))
-			{
-				MANI_LOG_ERROR(Log, "Could not save scene at {}", path.string());
-			}
-		}
-	}
-
-	void importShader(const fs::path& path)
-	{
-		std::shared_ptr<Shader> shader = std::make_shared<Shader>();
-		if (!ShaderImporter::importFromPath(path, shader))
-		{
-			MANI_LOG_ERROR(Log, "Could not import shader at {}", path.string());
-			return;
-		}
-
 		fs::path output = path.parent_path();
-		output.append(std::format("{}{}", shader->name, ".shader"));
+		output.append(std::format("{}{}", mesh->name, MESH_EXT));
 		MANI_LOG(Log, "Saving {}", output.string());
-		if (!ShaderImporter::exportToPath(output, shader))
+		if (!MeshImporter::exportToPath(output, mesh))
 		{
-			MANI_LOG_ERROR(Log, "Could not save shader at {}", output.string());
+			MANI_LOG_ERROR(Log, "Could not save mesh at {}", output.string());
 		}
 	}
-};
+}
+
+void processAsset(const fs::path& path, const fs::path& extension)
+{
+	if (extension == GLSL_EXT)
+	{
+		MANI_LOG(Log, "importing {}", path.string());
+		processShader(path);
+	}
+	else if (extension == FBX_EXT)
+	{
+		MANI_LOG(Log, "importing {}", path.string());
+		processMesh(path);
+	}
+}
+
+void referenceAllShaders(const AssetImporterConfig& config, const ShaderConfig& shaderConfig)
+{
+	ShaderCollection shaders;
+
+	auto referenceShader = [&shaders](const fs::path& path, const fs::path& extension)
+	{
+		if (extension == SHADER_EXT)
+		{
+			MANI_LOG(Log, "referencing {}", path.string());
+			shaders.paths.emplace_back(path.string());
+		}
+	};
+
+	FileSystem::foreach(FileSystem::getAbsolutePath(config.engineAssetPath), referenceShader);
+	FileSystem::foreach(FileSystem::getAbsolutePath(config.projectAssetPath), referenceShader);
+
+	const std::string json = ManiZ::to::json(shaders);
+	const fs::path path = FileSystem::getAbsolutePath(shaderConfig.shaderCollectionRelativePath).append(Mani::SHADERCOLLECTION_FILENAME);
+	if (!FileSystem::writeFile(path, json))
+	{
+		MANI_LOG_ERROR(Log, "Could not write ShaderPaths to {}", path.string());
+	}
+}
 
 int main(int argc, char** argv)
 {
 	Application app;
-	app.getSystemContainer().createSystem<AssetImporterSystem>();
+	World& world = app.getWorld();
+	world.initializeDependency<ResourceSystem>();
+	ECS::Registry& registry = world.getMutableRegistry();
+
+	// load asset importer config
+	const ECS::EntityId configId = ResourceSystem::loadResourceSync<AssetImporterConfig>(registry, "Config/AssetImporter.json");
+	const Resource<AssetImporterConfig>& configRes = *registry.get<Resource<AssetImporterConfig>>(configId);
+	MANI_ASSERT(configRes.isReady, "Could not find Config/AssetImporter.json");
+
+	const AssetImporterConfig& config = configRes.value;
+	MANI_ASSERT(!config.engineAssetPath.empty(), "Config engine asset path is empty");
+	MANI_ASSERT(!config.projectAssetPath.empty(), "Config project asset path is empty");
+
+	// process assets
+	FileSystem::foreach(FileSystem::getAbsolutePath(config.engineAssetPath), &processAsset);
+	FileSystem::foreach(FileSystem::getAbsolutePath(config.projectAssetPath), &processAsset);
+
+	// load shader config
+	const std::string shaderConfigRelPath = std::format("Config/{}", Mani::SHADERCONFIG_FILENAME);
+	const ECS::EntityId shaderConfigId = ResourceSystem::loadResourceSync<ShaderConfig>(registry, shaderConfigRelPath);
+	const Resource<ShaderConfig>& shaderConfigRes = *registry.get<Resource<ShaderConfig>>(shaderConfigId);
+	MANI_ASSERT(shaderConfigRes.isReady, "Could not find shader config at configured path");
+
+	referenceAllShaders(config, shaderConfigRes.value);
 
 	return EXIT_SUCCESS;
 }
-
-

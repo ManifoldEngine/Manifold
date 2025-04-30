@@ -10,18 +10,18 @@ namespace Mani
 {
 	class OpenGLSystem;
 	
-	class OpenGLInputSystem: public SystemBase
+	class OpenGLInputSystem: public ECS::System
 	{
 	public:
 		virtual std::string_view getName() const override { return "OpenGLInputSystem"; }
 		virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
-		virtual ETickGroup getTickGroup() const override { return ETickGroup::PreTick; }
+		virtual ETickGroup getTickGroup() const override { return ETickGroup::PostInput; }
 
 		virtual void tick(float deltaTime, ECS::Registry& registry) override;
 		
 		static int maniToGLFWCursorMode(Cursor::EMode mode);
 	protected:
-		virtual void onInitialize(ECS::Registry& registry, SystemContainer& systemContainer) override;
+		virtual void onInitialize(ECS::Registry& registry, World& world) override;
 		virtual void onDeinitialize(ECS::Registry& registry) override;
 
 	private:
