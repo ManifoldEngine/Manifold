@@ -3,6 +3,8 @@
 #include <Core/ECS/View.h>
 #include <Core/ECS/Bitset.h>
 
+#include <memory>
+
 using namespace Mani;
 
 MANI_SECTION_BEGIN(ECS, "ECS")
@@ -529,5 +531,74 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			MANI_TEST_ASSERT(!registry.has<Component3>(entityId), "should not have Comp3");
 		}
 	}
+
+	MANI_TEST(ComponentConstructorParameters, "Should forward a component's constructor parameters")
+	{
+		struct Component 
+		{
+			int a = 0;
+			int b = 0;
+			int c = 0;
+		};
+
+		ECS::Registry registry;
+		{
+			ECS::EntityId entityId = registry.create();
+			Component& comp = *registry.add<Component>(entityId, 1, 2, 3);
+			MANI_TEST_ASSERT(comp.a == 1, "should be equal to the forwarded ctor value");
+			MANI_TEST_ASSERT(comp.b == 2, "should be equal to the forwarded ctor value");
+			MANI_TEST_ASSERT(comp.c == 3, "should be equal to the forwarded ctor value");
+		}
+	}
+
+	MANI_TEST(ComponentConstructorParametersOutOfOrder, "Should forward a component's in order constructor parameters")
+	{
+		struct Component
+		{
+			int a = 0;
+			std::string b = "";
+			bool c = false;
+		};
+
+		ECS::Registry registry;
+		{
+			ECS::EntityId entityId = registry.create();
+			
+			//Component& comp = *registry.add<Component>(entityId, "coucou", true, 3); // should not compile
+			Component& comp = *registry.add<Component>(entityId, 3, "coucou", true); // should compile
+
+			MANI_TEST_ASSERT(comp.a == 3, "should be equal to the forwarded ctor value");
+			MANI_TEST_ASSERT(comp.b == "coucou", "should be equal to the forwarded ctor value");
+			MANI_TEST_ASSERT(comp.c == true, "should be equal to the forwarded ctor value");
+		}
+	}
+
+	MANI_SECTION_BEGIN(ComponentDestructorSection, "Destructor section")
+	{
+		inline bool WAS_DTOR_CALLED = false;
+
+		struct DtorComponent
+		{
+			std::shared_ptr<float> DONTDOTHISHEAPALLOCATIONISBADMKAY = nullptr;
+			
+			~DtorComponent()
+			{
+				WAS_DTOR_CALLED = true;
+			}
+		};
+
+		MANI_TEST(ShouldCallComponentDestructorWhenRemoved, "Should call component destructor when removed")
+		{
+
+			ECS::Registry registry;
+			{
+				ECS::EntityId entityId = registry.create();
+				registry.add<DtorComponent>(entityId, std::make_shared<float>(420.69f));
+				registry.remove<DtorComponent>(entityId);
+				MANI_TEST_ASSERT(WAS_DTOR_CALLED, "destructor should have been called");
+			}
+		}
+	}
+	MANI_SECTION_END(ComponentDestructorSection)
 }
 MANI_SECTION_END(ECS)
