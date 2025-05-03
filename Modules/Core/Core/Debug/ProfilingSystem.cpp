@@ -10,7 +10,7 @@ void ProfilingSystem::onInitialize(ECS::Registry& registry, World& world)
 	registry.addSingle<ScopedTimerDatabase>();
 }
 
-void ProfilingSystem::onDeinitialize(ECS::Registry& registry)
+void ProfilingSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	for (const auto entityId : ECS::View<ScopedTimerDatabase>(registry))
 	{

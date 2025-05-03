@@ -106,7 +106,7 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 	}
 }
 
-void ManImGuiSystem::onDeinitialize(ECS::Registry& registry)
+void ManImGuiSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();

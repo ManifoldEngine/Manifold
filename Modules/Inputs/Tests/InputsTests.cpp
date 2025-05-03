@@ -40,7 +40,7 @@ protected:
 		InputDevice* inputDevice = registry.add<InputDevice>(deviceId);
 		inputDevice->deviceName = getDeviceName();
 	}
-	virtual void onDeinitialize(ECS::Registry& registry) override
+	virtual void onDeinitialize(ECS::Registry& registry, World& world) override
 	{
 		registry.destroy(deviceId);
 		deviceId = ECS::INVALID_ID;
@@ -210,7 +210,7 @@ protected:
 		inputUser->inputDevices.push_back(VirtualControllerSystem::getDeviceId());
 	}
 
-	virtual void onDeinitialize(ECS::Registry& registry) override
+	virtual void onDeinitialize(ECS::Registry& registry, World& world) override
 	{
 		inputUser = nullptr;
 		previousInputUser = InputUser();

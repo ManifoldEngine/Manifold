@@ -22,7 +22,7 @@ namespace Mani
 		static int maniToGLFWCursorMode(Cursor::EMode mode);
 	protected:
 		virtual void onInitialize(ECS::Registry& registry, World& world) override;
-		virtual void onDeinitialize(ECS::Registry& registry) override;
+		virtual void onDeinitialize(ECS::Registry& registry, World& world) override;
 
 	private:
 		static void glfwCallback_onMouseMoved(GLFWwindow* window, double x, double y);

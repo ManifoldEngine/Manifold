@@ -86,7 +86,7 @@ namespace Mani
 			}
 		}
 
-		m_systems.insert(insertIt, system);
+		m_systems.emplace(insertIt, system);
 
 		if (m_isInitialized)
 		{
@@ -131,7 +131,7 @@ namespace Mani
 			{
 				if (m_isInitialized)
 				{
-					system->deinitialize(m_registry);
+					system->deinitialize(m_registry, *this);
 				}
 
 				system.reset();
@@ -166,7 +166,7 @@ namespace Mani
 
 		for (auto it = m_systems.rbegin(); it != m_systems.rend(); it++)
 		{
-			(*it)->deinitialize(m_registry);
+			(*it)->deinitialize(m_registry, *this);
 		}
 
 		// it is possible we have deferred entities left.

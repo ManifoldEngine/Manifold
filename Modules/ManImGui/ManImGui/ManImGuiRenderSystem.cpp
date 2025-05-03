@@ -34,7 +34,7 @@ void ManImGuiRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 	OpenGLRenderSystem::registerExtension(registry, &extension);
 }
 
-void ManImGuiRenderSystem::onDeinitialize(ECS::Registry& registry)
+void ManImGuiRenderSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	OpenGLRenderSystem::unregisterExtension(registry, &extension);
 	registry.removeSingle<ManImGuiRenderSystem::Storage>();

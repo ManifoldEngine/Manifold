@@ -27,7 +27,7 @@ void Mani::OpenGLInputSystem::onInitialize(ECS::Registry& registry, World& world
     };
 }
 
-void Mani::OpenGLInputSystem::onDeinitialize(ECS::Registry& registry)
+void Mani::OpenGLInputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
     OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
     MANI_ASSERT(context != nullptr, "We expect the window context to be accessible. If the window is owned by a parent registry, make sure to forward it to this registry.");

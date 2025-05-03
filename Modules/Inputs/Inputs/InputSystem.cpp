@@ -13,7 +13,7 @@ void Mani::InputSystem::onInitialize(ECS::Registry& registry, World& world)
 	registry.addSingle<Cursor>();
 }
 
-void Mani::InputSystem::onDeinitialize(ECS::Registry& registry)
+void Mani::InputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	registry.removeSingle<Cursor>();
 }

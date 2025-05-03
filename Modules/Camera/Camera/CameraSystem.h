@@ -13,7 +13,7 @@ namespace Mani
 		virtual bool shouldTick(ECS::Registry& registry) const override;
 
 		virtual void onInitialize(ECS::Registry& registry, World& world) override;
-		virtual void onDeinitialize(ECS::Registry& registry) override;
+		virtual void onDeinitialize(ECS::Registry& registry, World& world) override;
 
 		virtual void tick(float deltaTime, ECS::Registry& registry) override;
 

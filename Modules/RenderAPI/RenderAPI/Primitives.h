@@ -6,7 +6,7 @@ namespace Mani
 {
 	namespace Primitives
 	{
-		Mesh makeCube()
+		inline Mesh makeCube()
 		{
 			return 
 			{
@@ -69,7 +69,7 @@ namespace Mani
 			};
 		}
 
-		Mesh makeSphere(unsigned int segments = 16, unsigned int rings = 16)
+		inline Mesh makeSphere(unsigned int segments = 16, unsigned int rings = 16)
 		{
 			Mesh mesh;
 			mesh.name = "Sphere";
@@ -112,7 +112,7 @@ namespace Mani
 			return mesh;
 		}
 
-		Mesh makeCylinder(unsigned int segments = 32, float height = 1.0f, float radius = 0.5f)
+		inline Mesh makeCylinder(unsigned int segments = 32, float height = 1.0f, float radius = 0.5f)
 		{
 			Mesh mesh;
 			mesh.name = "Cylinder";
@@ -164,6 +164,28 @@ namespace Mani
 				mesh.indices.push_back(viBottom);
 				mesh.indices.push_back(next * 2);
 			}
+
+			return mesh;
+		}
+	
+		inline Mesh makeQuad()
+		{
+			Mesh mesh;
+			mesh.name = "Quad";
+
+			mesh.vertices = 
+			{
+				{{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}, // bottom-left
+				{{ 0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, // bottom-right
+				{{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, // top-right
+				{{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // top-left
+			};
+
+			mesh.indices = 
+			{
+				0, 1, 2, // first triangle
+				2, 3, 0  // second triangle
+			};
 
 			return mesh;
 		}

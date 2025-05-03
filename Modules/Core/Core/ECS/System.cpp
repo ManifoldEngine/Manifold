@@ -32,14 +32,14 @@ void ECS::System::initialize(ECS::Registry& registry, World& world)
     onInitialize(registry, world);
 }
 
-void ECS::System::deinitialize(ECS::Registry& registry)
+void ECS::System::deinitialize(ECS::Registry& registry, World& world)
 {
     if (!m_isInitialized)
     {
         return;
     }
 
-    onDeinitialize(registry);
+    onDeinitialize(registry, world);
     m_isInitialized = false;
     MANI_LOG(LogCore, "Deinitialized {}", getName());
 }
@@ -57,6 +57,6 @@ void ECS::System::onInitialize(ECS::Registry& registry, World& world)
 {
 }
 
-void ECS::System::onDeinitialize(ECS::Registry& registry)
+void ECS::System::onDeinitialize(ECS::Registry& registry, World& world)
 {
 }

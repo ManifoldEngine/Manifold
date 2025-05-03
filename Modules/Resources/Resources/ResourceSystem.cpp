@@ -7,7 +7,7 @@ void ResourceSystem::onInitialize(ECS::Registry& registry, World& world)
 	registry.addSingle<ResourceSystem::Storage>();
 }
 
-void ResourceSystem::onDeinitialize(ECS::Registry& registry)
+void ResourceSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	unloadAll(registry);
 	for (const auto entityId : ECS::View<ResourceSystemExtension>(registry))
@@ -49,17 +49,17 @@ void ResourceSystem::unloadResource(ECS::Registry& registry, ECS::EntityId inEnt
 		ext.onResourceUnloaded(registry, inEntityId, tag);
 	});
 
-	ResourceSystem::Storage& storage = *registry.getSingle<ResourceSystem::Storage>();
 	registry.destroy(inEntityId);
 
+	if (ResourceSystem::Storage* storage = registry.getSingle<ResourceSystem::Storage>())
 	{
-		std::lock_guard<std::mutex> lock(storage.pathToEntityMutex);
-		for (const auto& [path, entityId] : storage.pathToEntityId)
+		std::lock_guard<std::mutex> lock(storage->pathToEntityMutex);
+		for (const auto& [path, entityId] : storage->pathToEntityId)
 		{
 			if (entityId == inEntityId)
 			{
 				MANI_LOG(LogResources, "Unloading asset at {}", path.string());
-				storage.pathToEntityId.erase(path);	
+				storage->pathToEntityId.erase(path);	
 				return;
 			}
 		}

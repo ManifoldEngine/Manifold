@@ -42,7 +42,7 @@ void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 	registry.addSingle<OpenGLClearColor>();
 }
 
-void OpenGLRenderSystem::onDeinitialize(ECS::Registry& registry)
+void OpenGLRenderSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	OpenGLRenderSystem::Storage& storage = *registry.getSingle<OpenGLRenderSystem::Storage>();
 	storage.renderThread.stop();
