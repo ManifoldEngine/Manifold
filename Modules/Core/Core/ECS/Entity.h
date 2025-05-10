@@ -7,7 +7,7 @@ namespace Mani
 {
 	namespace ECS
 	{
-		const int MAX_COMPONENTS = 64;
+		const int MAX_COMPONENTS = 128;
 
 #if MANI_WEBGL
 		using EntityId = unsigned int;
