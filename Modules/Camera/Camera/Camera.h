@@ -37,7 +37,8 @@ namespace Mani
 		{
 			Vec4f projectedPosition = position.homogenous() * view;
 
-			if (Math::abs(projectedPosition.w) <= FLT_EPSILON)
+			if (Math::isEqual(projectedPosition.w, 0.f) ||
+				projectedPosition.w == 0.f) // this fixes warning C4723: potential divide by 0
 			{
 				return VEC2F::ZERO;
 			}
