@@ -19,7 +19,7 @@ Manifold is provided as a static library. The recommended way to install it is t
 ### Project Template
 For your convenience, please use this github template to kickstart a new project setup https://github.com/ManifoldEngine/ManifoldTemplate
 
-### download Manifold
+### Download Manifold
 1. Create your git repository as you see fit
 2. `git submodule add https://github.com/ManifoldEngine/Manifold.git Engine`
     * Note that we have given a path to the submodule. However, it can be named as you please
