@@ -41,7 +41,6 @@ namespace Mani
 			{
 				return VEC2F::ZERO;
 			}
-
 			return Vec2f(projectedPosition.x / projectedPosition.w, projectedPosition.y / projectedPosition.w);
 		}
 

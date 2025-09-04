@@ -36,7 +36,7 @@ void CameraSystem::onInitialize(ECS::Registry& registry, World& world)
     registry.add<Camera>(cache.cameraId);
 }
 
-void CameraSystem::onDeinitialize(ECS::Registry& registry)
+void CameraSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
     if (const CameraSystemCache* cache = registry.getSingle<CameraSystemCache>())
     {

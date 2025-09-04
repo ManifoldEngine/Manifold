@@ -34,14 +34,14 @@ namespace Mani
 			virtual ETickGroup getTickGroup() const;
 
 			void initialize(ECS::Registry& registry, World& world);
-			void deinitialize(ECS::Registry& registry);
+			void deinitialize(ECS::Registry& registry, World& world);
 
 			virtual void tick(float deltaTime, ECS::Registry& registry);
 
 			bool isInitialized() const;
 		protected:
 			virtual void onInitialize(ECS::Registry& registry, World& world);
-			virtual void onDeinitialize(ECS::Registry& registry);
+			virtual void onDeinitialize(ECS::Registry& registry, World& world);
 
 		private:
 			bool m_isInitialized = false;

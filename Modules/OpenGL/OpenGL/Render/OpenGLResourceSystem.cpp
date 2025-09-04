@@ -10,7 +10,6 @@
 #include <OpenGL/Data/OpenGLTexture.h>
 #include <OpenGL/Data/OpenGLShader.h>
 #include <OpenGL/Data/OpenGLMaterial.h>
-#include <OpenGL/Data/OpenGLSprite.h>
 #include <OpenGL/Data/STBITexture.h>
 
 #include <OpenGL/Render/OpenGLRenderSystem.h>
@@ -121,7 +120,7 @@ void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, World& world)
 	storage.extensionHandle = ResourceSystem::addExtension(registry, std::move(ext));
 }
 
-void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry)
+void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	OpenGLResourceSystem::Storage& storage = *registry.getSingle<OpenGLResourceSystem::Storage>();
 	ResourceSystem::removeExtension(registry, storage.extensionHandle);

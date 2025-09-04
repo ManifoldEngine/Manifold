@@ -86,7 +86,7 @@ namespace Mani
 			}
 		}
 
-		m_systems.insert(insertIt, system);
+		m_systems.emplace(insertIt, system);
 
 		if (m_isInitialized)
 		{
@@ -131,7 +131,7 @@ namespace Mani
 			{
 				if (m_isInitialized)
 				{
-					system->deinitialize(m_registry);
+					system->deinitialize(m_registry, *this);
 				}
 
 				system.reset();
@@ -166,7 +166,7 @@ namespace Mani
 
 		for (auto it = m_systems.rbegin(); it != m_systems.rend(); it++)
 		{
-			(*it)->deinitialize(m_registry);
+			(*it)->deinitialize(m_registry, *this);
 		}
 
 		// it is possible we have deferred entities left.
@@ -182,7 +182,10 @@ namespace Mani
 			return;
 		}
 
-		for (auto& system : m_systems)
+		// snapshot the systems that should tick. 
+		// New systems can be created during a tick and they might not be in a proper state to tick yet.
+		std::vector<std::shared_ptr<ECS::System>> systems = m_systems;
+		for (auto& system : systems)
 		{
 			if (system->shouldTick(m_registry))
 			{

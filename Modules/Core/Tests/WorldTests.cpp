@@ -16,7 +16,7 @@ namespace Mani_Test
 			onInitializeCalled = true;
 		}
 
-		virtual void onDeinitialize(ECS::Registry& registry) override
+		virtual void onDeinitialize(ECS::Registry& registry, World& world) override
 		{
 			if (onDeinitializeCalled)
 			{
@@ -132,7 +132,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 		public:
 			virtual std::string_view getName() const override { return "SomeSystem1"; }
 			virtual void onInitialize(ECS::Registry& registry, World& world) override { someSystem1Initialized = true; }
-			virtual void onDeinitialize(ECS::Registry& registry) override { someSystem1DeInitialized = true; }
+			virtual void onDeinitialize(ECS::Registry& registry, World& world) override { someSystem1DeInitialized = true; }
 		};
 
 		class SomeSystem2 : public ECS::System
@@ -140,7 +140,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 		public:
 			virtual std::string_view getName() const override { return "SomeSystem2"; }
 			virtual void onInitialize(ECS::Registry& registry, World& world) override { someSystem2Initialized = true; }
-			virtual void onDeinitialize(ECS::Registry& registry) override { someSystem2DeInitialized = true; }
+			virtual void onDeinitialize(ECS::Registry& registry, World& world) override { someSystem2DeInitialized = true; }
 		};
 
 		class SomeSystem3 : public ECS::System
@@ -148,7 +148,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 		public:
 			virtual std::string_view getName() const override { return "SomeSystem3"; }
 			virtual void onInitialize(ECS::Registry& registry, World& world) override { someSystem3Initialized = true; }
-			virtual void onDeinitialize(ECS::Registry& registry) override { someSystem3DeInitialized = true; }
+			virtual void onDeinitialize(ECS::Registry& registry, World& world) override { someSystem3DeInitialized = true; }
 		};
 
 		World world;

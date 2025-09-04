@@ -27,10 +27,11 @@ namespace Mani
 
 			void* addComponent(ECS::EntityId entityId, ComponentId componentId, size_t componentSize);
 			void* getComponent(ECS::EntityId entityId, ComponentId componentId) const;
+			void* removeComponent(ECS::EntityId entityId, ComponentId componentId);
+			bool hasComponent(ECS::EntityId entityId, ComponentId componentId) const;
+
 			template<typename T>
 			ComponentId getComponentId() const { return TYPE_ID<T>; }
-			bool removeComponent(ECS::EntityId entityId, ComponentId componentId);
-			bool hasComponent(ECS::EntityId entityId, ComponentId componentId) const;
 
 			bool isMarkedForDestroy(ECS::EntityId entityId) const;
 			void handleDeferredDestroy();

@@ -19,7 +19,7 @@ namespace Mani
 
     protected:
         virtual void onInitialize(Mani::ECS::Registry& registry, World& world) override;
-        virtual void onDeinitialize(Mani::ECS::Registry& registry) override;
+        virtual void onDeinitialize(Mani::ECS::Registry& registry, Mani::World& world) override;
     };
 
 }

@@ -73,7 +73,7 @@ void OpenGL3DRendererSystem::onInitialize(ECS::Registry& registry, World& world)
 	OpenGLRenderSystem::registerRenderer(registry, &renderer);
 }
 
-void OpenGL3DRendererSystem::onDeinitialize(ECS::Registry& registry)
+void OpenGL3DRendererSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	OpenGLRenderSystem::unregisterRenderer(registry, &renderer);
 }

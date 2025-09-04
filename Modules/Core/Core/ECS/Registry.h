@@ -39,8 +39,8 @@ namespace Mani
 
 			// adds a TComponent to an entity
 			// returns the added component
-			template<typename TComponent>
-			TComponent* add(ECS::EntityId entityId);
+			template<typename TComponent, typename... TArgs>
+			TComponent* add(ECS::EntityId entityId, TArgs&&... args);
 
 			// adds all TComponents to an entity
 			// returns the added components
@@ -122,8 +122,8 @@ namespace Mani
 			EntityContainer m_entityContainer;
 		};
 
-		template<typename TComponent>
-		inline TComponent* Registry::add(ECS::EntityId entityId)
+		template<typename TComponent, typename... TArgs>
+		inline TComponent* Registry::add(ECS::EntityId entityId, TArgs&&... args)
 		{
 			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
 
@@ -134,7 +134,7 @@ namespace Mani
 			}
 
 			// this is a placement new
-			TComponent* component = new (buffer) TComponent();
+			TComponent* component = new (buffer) TComponent(args...);
 			return component;
 		}
 
@@ -187,7 +187,13 @@ namespace Mani
 		inline bool Registry::remove(ECS::EntityId entityId)
 		{
 			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
-			return m_entityContainer.removeComponent(entityId, componentId);
+			if (void* data = m_entityContainer.removeComponent(entityId, componentId))
+			{
+				TComponent* component = static_cast<TComponent*>(data);
+				component->~TComponent();
+				return true;
+			}
+			return false;
 		}
 
 		template<typename TComponent>

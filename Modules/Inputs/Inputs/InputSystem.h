@@ -15,6 +15,6 @@ namespace Mani
 
     protected:
         virtual void onInitialize(ECS::Registry& registry, World& world);
-        virtual void onDeinitialize(ECS::Registry& registry);
+        virtual void onDeinitialize(ECS::Registry& registry, World& world);
     };
 }

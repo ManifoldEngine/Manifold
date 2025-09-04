@@ -151,22 +151,23 @@ void* ECS::EntityContainer::getComponent(ECS::EntityId entityId, ComponentId com
 	return m_componentPools[componentId]->get(entityId);
 }
 
-bool ECS::EntityContainer::removeComponent(ECS::EntityId entityId, ComponentId componentId)
+void* ECS::EntityContainer::removeComponent(ECS::EntityId entityId, ComponentId componentId)
 {
 	if (!isValid(entityId))
 	{
-		return false;
+		return nullptr;
 	}
 
 	if (!hasComponent(entityId, componentId))
 	{
 		// Entity doesn't have a component of that type.
-		return false;
+		return nullptr;
 	}
 
+	void* data = m_componentPools[componentId]->get(entityId);
 	Entity& entity = m_entities[entityId];
 	entity.resetComponentBit(componentId);
-	return true;
+	return data;
 }
 
 bool ECS::EntityContainer::hasComponent(ECS::EntityId entityId, ComponentId componentId) const

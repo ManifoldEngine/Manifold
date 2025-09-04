@@ -21,7 +21,7 @@ void OpenGLCommandBufferSystem::onInitialize(ECS::Registry& registry, World& wor
 	registry.addSingle<OpenGLCommandBuffer3D>();
 }
 
-void OpenGLCommandBufferSystem::onDeinitialize(ECS::Registry& registry)
+void OpenGLCommandBufferSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	registry.removeSingle<OpenGLCommandBuffer3D>();
 }

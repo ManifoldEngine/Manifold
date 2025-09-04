@@ -14,9 +14,12 @@ namespace Mani
 
 	class OpenGL3DRendererSystem : public ECS::System
 	{
+	public:
+		virtual std::string_view getName() const override { return "OpenGL3DRendererSystem"; }
+
 	protected:
 		virtual void onInitialize(ECS::Registry& registry, World& world) override;
-		virtual void onDeinitialize(ECS::Registry& registry);
+		virtual void onDeinitialize(ECS::Registry& registry, World& world);
 
 		OpenGL3DRenderer renderer;
 	};

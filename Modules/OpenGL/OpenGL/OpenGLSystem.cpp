@@ -118,7 +118,7 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
         .createSystem<OpenGLRenderSystem>();
 }
 
-void OpenGLSystem::onDeinitialize(ECS::Registry& registry)
+void OpenGLSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
     terminate(registry);
 }
