@@ -3,6 +3,7 @@
 #include <FloatingCamera/FloatingCamera.h>
 #include <Camera/CameraSystem.h>
 #include <Inputs/Data/InputUser.h>
+#include <Inputs/Data/InputDevice.h>
 #include <ManiMaths/Fwd.h>
 
 using namespace Mani;
@@ -17,6 +18,12 @@ void FloatingCameraSystem::onInitialize(ECS::Registry& registry, World& world)
 	inputUser.setAction(AIM_ACTION);
 	inputUser.addBinding("WASD", MOVE_ACTION);
 	inputUser.addBinding("Mouse", AIM_ACTION);
+
+	// assign all devices to this input user by default.
+	for (const auto entityId : ECS::View<InputDevice>(registry))
+	{
+		inputUser.inputDevices.push_back(entityId);
+	}
 }
 
 void FloatingCameraSystem::tick(float deltaTime, ECS::Registry& registry)

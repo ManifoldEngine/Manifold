@@ -22,6 +22,9 @@ namespace Mani
 		float farClipPlane = 10'000.f;
 		float width = 800.f;
 		float height = 800.f;
+		
+		float orthographicZoomFactor = 0.01f;
+		
 		EMode mode = EMode::PERSPECTIVE;
 
 		float getAspectRatio() const
