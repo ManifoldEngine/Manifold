@@ -37,7 +37,5 @@ namespace Mani
 
 		std::vector<IOpenGLRenderer*> renderers;
 		std::vector<IOpenGLRenderExtension*> extensions;
-
-		unsigned int readBuffer = 0;
 	};
 }

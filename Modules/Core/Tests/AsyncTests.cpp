@@ -63,7 +63,7 @@ MANI_SECTION_BEGIN(Async, "Async")
 		{
 		public:
 			virtual bool shouldTick(ECS::Registry&) const override { return true; }
-			virtual void tick(float deltaTime, ECS::Registry& registry)
+			virtual void tick(ECS::Registry& registry)
 			{
 				Arbiter& arbiter = *registry.getSingle<Arbiter>();
 				arbiter.callers.push_back(ECallers::System);
@@ -80,7 +80,7 @@ MANI_SECTION_BEGIN(Async, "Async")
 			arbiter.callers.push_back(ECallers::Deferred);
 		});
 
-		app.tick(0.16f);
+		app.tick();
 
 		Arbiter* arbiter = registry.getSingle<Arbiter>();
 		MANI_TEST_ASSERT(arbiter != nullptr, "arbiter should have been added");

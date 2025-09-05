@@ -15,23 +15,23 @@ group "Engine"
         includedirs { moduledir .. "/**" }
 
         -- gl3w
-        includedirs { thirdpartiesdir .. "/gl3w/include" }
+        includedirs { moduledir .. "/%{prj.name}/ThirdParties/gl3w/include" }
         files {
-            thirdpartiesdir .. "/gl3w/include/**.h",
-            thirdpartiesdir .. "/gl3w/src/gl3w.c"
+            moduledir .. "/%{prj.name}/ThirdParties/gl3w/include/**.h",
+            moduledir .. "/%{prj.name}/ThirdParties/gl3w/src/gl3w.c"
         }
 
         -- glfw
-        includedirs { thirdpartiesdir .. "/glfw/include" }
-        libdirs { thirdpartiesdir .. "/glfw/src/Debug" }
+        includedirs { moduledir .. "/%{prj.name}/ThirdParties/glfw/include" }
+        libdirs { moduledir .. "/%{prj.name}/ThirdParties/glfw/lib-vc2022" }
         links { "glfw3" }
 
         -- openGL
         links { "OpenGL32" }
     
         -- stb (image)
-        includedirs { thirdpartiesdir .. "/stb"}
-        
+        includedirs { moduledir .. "/%{prj.name}/ThirdParties/stb" }
+
         -- webgl
         filter("platforms:WebGL")
             includedirs { thirdpartiesdir .. "emscripten/upstream/emscripten/cache/sysroot/include" }

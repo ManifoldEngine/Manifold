@@ -12,19 +12,22 @@ group "AssetImporter"
             enginedir .. "/%{prj.name}/**.h",
             enginedir .. "/%{prj.name}/**.cpp" 
         }
+        
+        includedirs { moduledir .. "/**", enginedir .. "/%{prj.name}/" }
 
         removefiles { enginedir .. "/%{prj.name}/ThirdParties/**" }
-
-        includedirs { moduledir .. "/**", enginedir .. "/%{prj.name}" }
 
         links { "Core", "Resources", "RenderAPI" }
 
         -- assimp
-        includedirs { thirdpartiesdir .. "/assimp/include" }
-        libdirs { thirdpartiesdir .. "/assimp/lib/Debug" }
+
+        assimpPath = enginedir .. "/%{prj.name}/ThirdParties/assimp"
+
+        includedirs { assimpPath .. "/include" }
+        libdirs { assimpPath .. "/lib/Debug" }
         links { "assimp-vc143-mtd" }
 
         postbuildcommands {
-            "{COPYFILE} " .. thirdpartiesdir .. "/assimp/bin/Debug/assimp-vc143-mtd.dll bin/assimp-vc143-mtd.dll"
+            "{COPYFILE} " .. assimpPath .. "/bin/Debug/assimp-vc143-mtd.dll bin/assimp-vc143-mtd.dll"
         }
 group ""

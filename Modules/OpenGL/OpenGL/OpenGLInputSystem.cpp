@@ -3,15 +3,16 @@
 #include <Inputs/InputSystem.h>
 #include <Inputs/Data/InputDevice.h>
 
-#include <GLFW/glfw3.h>
 #include <OpenGLWindowContext.h>
 #include <ManiMaths/Fwd.h>
+
+#include <GLFW/glfw3.h>
 
 using namespace Mani;
 
 Vec2f OpenGLInputSystem::s_mouse = VEC2F::ZERO;
 
-void Mani::OpenGLInputSystem::onInitialize(ECS::Registry& registry, World& world)
+void OpenGLInputSystem::onInitialize(ECS::Registry& registry, World& world)
 {
     world.initializeDependency<InputSystem>();
 
@@ -27,7 +28,7 @@ void Mani::OpenGLInputSystem::onInitialize(ECS::Registry& registry, World& world
     };
 }
 
-void Mani::OpenGLInputSystem::onDeinitialize(ECS::Registry& registry, World& world)
+void OpenGLInputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
     OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
     MANI_ASSERT(context != nullptr, "We expect the window context to be accessible. If the window is owned by a parent registry, make sure to forward it to this registry.");
@@ -36,7 +37,7 @@ void Mani::OpenGLInputSystem::onDeinitialize(ECS::Registry& registry, World& wor
     registry.removeSingle<InputDevice>();
 }
 
-void Mani::OpenGLInputSystem::tick(float deltaTime, ECS::Registry& registry)
+void OpenGLInputSystem::tick(ECS::Registry& registry)
 {
     glfwPollEvents();
 
@@ -157,7 +158,7 @@ void Mani::OpenGLInputSystem::tick(float deltaTime, ECS::Registry& registry)
     }
 }
 
-int Mani::OpenGLInputSystem::maniToGLFWCursorMode(Cursor::EMode mode)
+int OpenGLInputSystem::maniToGLFWCursorMode(Cursor::EMode mode)
 {
     switch (mode)
     {

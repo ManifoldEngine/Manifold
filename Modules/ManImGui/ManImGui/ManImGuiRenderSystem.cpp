@@ -40,7 +40,7 @@ void ManImGuiRenderSystem::onDeinitialize(ECS::Registry& registry, World& world)
 	registry.removeSingle<ManImGuiRenderSystem::Storage>();
 }
 
-void Mani::ManImGuiRenderSystem::tick(float deltaTime, ECS::Registry& registry)
+void Mani::ManImGuiRenderSystem::tick(ECS::Registry& registry)
 {
 	ManImGuiRenderSystem::Storage& storage = *registry.getSingle<ManImGuiRenderSystem::Storage>();
 	ManImGuiWindowContext& context = *registry.getSingle<ManImGuiWindowContext>();

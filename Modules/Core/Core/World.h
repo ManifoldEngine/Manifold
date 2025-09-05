@@ -23,7 +23,7 @@ namespace Mani
 		// Deinitiailize all systems
 		void deinitialize();
 
-		void tick(float deltaTime);
+		void tick();
 
 		// creates a new TSystem : public ECS::System
 		// if the container is initialized, the system will be initialized as well
@@ -172,7 +172,7 @@ namespace Mani
 		m_isInitialized = false;
 	}
 
-	inline void World::tick(float deltaTime)
+	inline void World::tick()
 	{
 		if (!m_isInitialized)
 		{
@@ -187,7 +187,7 @@ namespace Mani
 			{
 				if (system->shouldTick(m_registry))
 				{
-					system->tick(deltaTime, m_registry);
+					system->tick(m_registry);
 				}
 			}
 		}

@@ -16,30 +16,22 @@ group "Engine"
         includedirs { moduledir .. "/**" }
 
         -- ImGui
+        imguiPath = moduledir .. "/%{prj.name}/ThirdParties/ImGui"
+
+        removefiles { imguiPath .. "/**" }
+        
         files {
-            thirdpartiesdir .. "/ImGui/*.h",
-            thirdpartiesdir .. "/ImGui/*.cpp",
-            thirdpartiesdir .. "/ImGui/backends/imgui_impl_glfw.h",
-            thirdpartiesdir .. "/ImGui/backends/imgui_impl_glfw.cpp",
-            thirdpartiesdir .. "/ImGui/backends/imgui_impl_opengl3.h",
-            thirdpartiesdir .. "/ImGui/backends/imgui_impl_opengl3.cpp",
-            thirdpartiesdir .. "/ImGui/misc/debuggers/imgui.natvis",
-            thirdpartiesdir .. "/ImGui/misc/cpp/imgui_stdlib.*"
+            imguiPath .. "/*.h",
+            imguiPath .. "/*.cpp",
+            imguiPath .. "/backends/imgui_impl_glfw.h",
+            imguiPath .. "/backends/imgui_impl_glfw.cpp",
+            imguiPath .. "/backends/imgui_impl_opengl3.h",
+            imguiPath .. "/backends/imgui_impl_opengl3.cpp",
+            imguiPath .. "/misc/debuggers/imgui.natvis",
+            imguiPath .. "/misc/cpp/imgui_stdlib.*"
         }
 
-        includedirs { thirdpartiesdir .. "/ImGui" }
-
-        -- gl3w
-        includedirs { thirdpartiesdir .. "/gl3w/include" }
-        files {
-            thirdpartiesdir .. "/gl3w/include/**.h",
-            thirdpartiesdir .. "/gl3w/src/gl3w.c"
-        }
-
-        -- glfw
-        includedirs { thirdpartiesdir .. "/glfw/include" }
-        libdirs { thirdpartiesdir .. "/glfw/src/Debug" }
-        links { "glfw3" }
+        includedirs { imguiPath }
 
         -- openGL
         links { "OpenGL32" }

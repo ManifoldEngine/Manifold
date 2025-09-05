@@ -44,7 +44,7 @@ void ECS::System::deinitialize(ECS::Registry& registry, World& world)
     MANI_LOG(LogCore, "Deinitialized {}", getName());
 }
 
-void ECS::System::tick(float deltaTime, ECS::Registry& registry)
+void ECS::System::tick(ECS::Registry& registry)
 {
 }
 

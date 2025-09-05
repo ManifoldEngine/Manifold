@@ -14,7 +14,7 @@ namespace Mani
         // systems displaying imgui should be executing after this system
         virtual ETickGroup getTickGroup() const override { return ETickGroup::PreUpdate; }
 
-        virtual void tick(float deltaTime, ECS::Registry& registry) override;
+        virtual void tick(ECS::Registry& registry) override;
 
     protected:
         virtual void onInitialize(ECS::Registry& registry, World& world) override;

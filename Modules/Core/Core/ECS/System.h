@@ -40,7 +40,7 @@ namespace Mani
 			void initialize(ECS::Registry& registry, World& world);
 			void deinitialize(ECS::Registry& registry, World& world);
 
-			virtual void tick(float deltaTime, ECS::Registry& registry);
+			virtual void tick(ECS::Registry& registry);
 
 			bool isInitialized() const;
 		protected:

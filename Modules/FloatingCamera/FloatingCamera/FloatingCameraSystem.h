@@ -20,7 +20,7 @@ namespace Mani
 
 		void onInitialize(ECS::Registry& registry, World& world) override;
 
-		virtual void tick(float deltaTime, ECS::Registry& registry) override;
+		virtual void tick(ECS::Registry& registry) override;
 
 	private:
 		const std::string MOVE_ACTION = "FloatingCameraMove";

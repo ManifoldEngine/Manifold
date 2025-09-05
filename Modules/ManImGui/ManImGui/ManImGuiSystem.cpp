@@ -119,7 +119,7 @@ void ManImGuiSystem::onDeinitialize(ECS::Registry& registry, World& world)
 	}
 }
 
-void ManImGuiSystem::tick(float deltaTime, ECS::Registry& registry)
+void ManImGuiSystem::tick(ECS::Registry& registry)
 {
 	ManImGuiWindowContext& context = *registry.getSingle<ManImGuiWindowContext>();
 	for (const auto entityId : ECS::View<ManImGuiUser, InputUser>(registry))

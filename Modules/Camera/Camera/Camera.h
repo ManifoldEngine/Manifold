@@ -22,6 +22,9 @@ namespace Mani
 		float farClipPlane = 10'000.f;
 		float width = 800.f;
 		float height = 800.f;
+		
+		float orthographicZoomFactor = 0.01f;
+		
 		EMode mode = EMode::PERSPECTIVE;
 
 		float getAspectRatio() const
@@ -37,7 +40,8 @@ namespace Mani
 		{
 			Vec4f projectedPosition = position.homogenous() * view;
 
-			if (Math::abs(projectedPosition.w) <= FLT_EPSILON)
+			if (Math::isEqual(projectedPosition.w, 0.f) ||
+				projectedPosition.w == 0.f) // this fixes warning C4723: potential divide by 0
 			{
 				return VEC2F::ZERO;
 			}

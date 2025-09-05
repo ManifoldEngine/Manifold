@@ -1,21 +1,3 @@
-[submodule "ThirdParties/stb"]
-	path = ThirdParties/stb
-	url = https://github.com/nothings/stb
-[submodule "ThirdParties/assimp"]
-	path = ThirdParties/assimp
-	url = https://github.com/assimp/assimp.git
-[submodule "ThirdParties/emsdk"]
-	path = ThirdParties/emsdk
-	url = https://github.com/emscripten-core/emsdk.git
-[submodule "ThirdParties/glfw"]
-	path = ThirdParties/glfw
-	url = https://github.com/glfw/glfw.git
-[submodule "ThirdParties/lua"]
-	path = ThirdParties/lua
-	url = https://github.com/rjpcomputing/luaforwindows.git
-[submodule "ThirdParties/gl3w"]
-	path = ThirdParties/gl3w
-	url = https://github.com/skaslev/gl3w.git
 [submodule "ThirdParties/ManiZ"]
 	path = ThirdParties/ManiZ
 	url = https://github.com/ManifoldEngine/ManiZ
@@ -25,7 +7,3 @@
 [submodule "ThirdParties/ManiMaths"]
 	path = ThirdParties/ManiMaths
 	url = https://github.com/ManifoldEngine/ManiMaths.git
-[submodule "ThirdParties/ImGui"]
-	path = ThirdParties/ImGui
-	url = https://github.com/ocornut/imgui.git
-	branch = docking
