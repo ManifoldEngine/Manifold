@@ -85,26 +85,7 @@ void Application::run()
 
 	while (m_isRunning)
 	{
-		//ManiClock::time_point before = ManiClock::now();
-		
 		tick();
-
-		//ManiClock::time_point after = ManiClock::now();
-		//if (m_config.targetFPS > 0)
-		//{
-		//	// if we have a target framerate, sleep for the remainder of the frame.
-		//	const auto tickTime = ns(after - before);
-		//	constexpr long long oneSecondInNanoseconds = 1'000'000'000;
-		//	const auto targetTicktime = ns(oneSecondInNanoseconds / m_config.targetFPS);
-		//	if (targetTicktime > tickTime)
-		//	{
-		//		MANI_LOG(Log, "target = {} ns, frametime = {} ns, sleeping = {} ns",
-		//			targetTicktime.count(),
-		//			tickTime.count(),
-		//			(targetTicktime > tickTime ? (targetTicktime - tickTime).count() : 0));
-		//		std::this_thread::sleep_for(targetTicktime - tickTime);
-		//	}
-		//}
 	}
 	m_world.deinitialize();
 }
