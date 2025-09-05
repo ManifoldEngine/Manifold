@@ -18,7 +18,7 @@ void Mani::InputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 	registry.removeSingle<Cursor>();
 }
 
-void InputSystem::tick(float deltaTime, ECS::Registry& registry)
+void InputSystem::tick(ECS::Registry& registry)
 {
 	ECS::View<InputUser> inputUserView(registry);
 	for (const ECS::EntityId entityId : inputUserView)

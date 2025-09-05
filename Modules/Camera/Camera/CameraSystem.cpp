@@ -45,7 +45,7 @@ void CameraSystem::onDeinitialize(ECS::Registry& registry, World& world)
     registry.removeSingle<CameraSystemCache>();
 }
 
-void CameraSystem::tick(float deltaTime, ECS::Registry& registry)
+void CameraSystem::tick(ECS::Registry& registry)
 {
     for (const ECS::EntityId& entityId : ECS::View<Position, Rotation, Camera>(registry))
     {

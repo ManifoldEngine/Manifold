@@ -37,7 +37,7 @@ void OpenGLInputSystem::onDeinitialize(ECS::Registry& registry, World& world)
     registry.removeSingle<InputDevice>();
 }
 
-void OpenGLInputSystem::tick(float deltaTime, ECS::Registry& registry)
+void OpenGLInputSystem::tick(ECS::Registry& registry)
 {
     glfwPollEvents();
 

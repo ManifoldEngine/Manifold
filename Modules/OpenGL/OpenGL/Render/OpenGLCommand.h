@@ -14,6 +14,7 @@
 #include <vector>
 #include <array>
 #include <atomic>
+#include <semaphore>
 
 namespace Mani
 {
@@ -35,42 +36,23 @@ namespace Mani
 		int rendererId = 0;
 	};
 
-	struct OpenGLCommand2D
-	{
-		/*Mat4f model;
-
-		ECS::EntityId meshId;
-		ECS::EntityId materialId;
-		ECS::EntityId shaderId;
-		ECS::EntityId diffuseId;
-		ECS::EntityId specularId;
-
-		std::shared_ptr<Material> material;
-		std::shared_ptr<OpenGLShader> shader;
-		std::shared_ptr<STBITexture> texture;		*/
-	};
-
-	template<typename T>
 	struct OpenGLCommandBuffer
 	{
-		std::array<std::vector<T>, OpenGL::COMMAND_BUFFER_AMOUNT> buffers;
+		std::vector<OpenGLCommand> commands;
+
+		std::binary_semaphore isReadyToWrite{ 0 };
+	};
+
+	struct OpenGLCommandBufferCollection
+	{
+		std::array<OpenGLCommandBuffer, OpenGL::COMMAND_BUFFER_AMOUNT> buffers;
+		
 		unsigned int readBuffer = OpenGL::COMMAND_BUFFER_AMOUNT;
 		unsigned int writeBuffer = 0;
-		
-		unsigned long long frame = 0;
-		std::atomic<unsigned long long> renderFrame = 0;
-
-		void resetReadBuffer()
-		{
-			readBuffer = OpenGL::COMMAND_BUFFER_AMOUNT;
-		}
 
 		bool isReadBufferValid() const
 		{
 			return readBuffer < OpenGL::COMMAND_BUFFER_AMOUNT;
 		}
 	};
-
-	typedef OpenGLCommandBuffer<OpenGLCommand> OpenGLCommandBuffer3D;
-	typedef OpenGLCommandBuffer<OpenGLCommand2D> OpenGLCommandBuffer2D;
 }

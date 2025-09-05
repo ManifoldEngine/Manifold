@@ -17,7 +17,7 @@ namespace Mani
 		virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
 		virtual ETickGroup getTickGroup() const override { return ETickGroup::PostInput; }
 
-		virtual void tick(float deltaTime, ECS::Registry& registry) override;
+		virtual void tick(ECS::Registry& registry) override;
 		
 		static int maniToGLFWCursorMode(Cursor::EMode mode);
 	protected:

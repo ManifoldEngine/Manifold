@@ -21,7 +21,7 @@ namespace Mani
 		void run();
 		void stop();
 
-		void tick(float deltaTime);
+		void tick();
 	
 		World& getWorld() { return m_world; }
 		ThreadPool& getThreadPool() { return m_threadPool; }

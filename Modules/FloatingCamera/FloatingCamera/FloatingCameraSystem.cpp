@@ -1,5 +1,6 @@
 #include "FloatingCameraSystem.h"
 
+#include <Core/TimeSystem.h>
 #include <FloatingCamera/FloatingCamera.h>
 #include <Camera/CameraSystem.h>
 #include <Inputs/Data/InputUser.h>
@@ -10,6 +11,8 @@ using namespace Mani;
 
 void FloatingCameraSystem::onInitialize(ECS::Registry& registry, World& world)
 {
+	world.initializeDependency<TimeSystem>();
+
 	ECS::EntityId entityId = registry.create();
 	registry.add<FloatingCamera>(entityId);
 	
@@ -26,7 +29,7 @@ void FloatingCameraSystem::onInitialize(ECS::Registry& registry, World& world)
 	}
 }
 
-void FloatingCameraSystem::tick(float deltaTime, ECS::Registry& registry)
+void FloatingCameraSystem::tick(ECS::Registry& registry)
 {
 	ECS::View<FloatingCamera, InputUser> floatingCameraView(registry);
 	for (const ECS::EntityId entityId : floatingCameraView)
@@ -47,11 +50,12 @@ void FloatingCameraSystem::tick(float deltaTime, ECS::Registry& registry)
 		const ECS::EntityId cameraId = *cameraView.begin();
 		Position& position = *registry.get<Position>(cameraId);
 		Rotation& rotation = *registry.get<Rotation>(cameraId);
-	
+
+		Time& time = *registry.getSingle<Time>();
 		position.value +=  (Transform::right(rotation) * static_cast<float>(moveAction.x) +
 							Transform::up(rotation) * static_cast<float>(moveAction.y) +
 							Transform::forward(rotation) * static_cast<float>(moveAction.z)) *
-							deltaTime * floatingCamera.cameraSpeed;
+							time.delta * floatingCamera.cameraSpeed;
 
 		const float aimX = static_cast<float>(aimAction.x);
 		const float aimY = static_cast<float>(aimAction.y);

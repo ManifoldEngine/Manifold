@@ -1,5 +1,4 @@
 #include "Application.h"
-#include <Core/CoreTime.h>
 #include <Core/CoreConfig.h>
 #include <Core/ManiAssert.h>
 
@@ -7,13 +6,22 @@
 #include <Core/Log/LogSystem.h>
 
 #include <Core/FileSystem.h>
+
+#include <Core/ManiTime.h>
+#include <Core/TimeSystem.h>
+
 #include <ManiZ/Json.h>
+#include <thread>
+#include <chrono>
 
 #if MANI_DEBUG
 #include <Debug/ProfilingSystem.h>
 #endif
 
 using namespace Mani;
+
+using ManiClock = std::chrono::steady_clock;
+using ns = std::chrono::nanoseconds;
 
 CoreConfig loadConfig()
 {
@@ -62,7 +70,6 @@ Application::~Application()
 	m_world.destroySystem<ProfilingSystem>();
 #endif
 	m_world.destroySystem<LogSystem>();
-
 	s_application = nullptr;
 }
 
@@ -73,14 +80,31 @@ Application& Mani::Application::get()
 
 void Application::run()
 {
-	Time::onApplicationStart();
 	m_world.initialize();
 	m_isRunning = true;
 
 	while (m_isRunning)
 	{
-		Time::onNewFrame();
-		tick(Time::getDeltaTime());
+		//ManiClock::time_point before = ManiClock::now();
+		
+		tick();
+
+		//ManiClock::time_point after = ManiClock::now();
+		//if (m_config.targetFPS > 0)
+		//{
+		//	// if we have a target framerate, sleep for the remainder of the frame.
+		//	const auto tickTime = ns(after - before);
+		//	constexpr long long oneSecondInNanoseconds = 1'000'000'000;
+		//	const auto targetTicktime = ns(oneSecondInNanoseconds / m_config.targetFPS);
+		//	if (targetTicktime > tickTime)
+		//	{
+		//		MANI_LOG(Log, "target = {} ns, frametime = {} ns, sleeping = {} ns",
+		//			targetTicktime.count(),
+		//			tickTime.count(),
+		//			(targetTicktime > tickTime ? (targetTicktime - tickTime).count() : 0));
+		//		std::this_thread::sleep_for(targetTicktime - tickTime);
+		//	}
+		//}
 	}
 	m_world.deinitialize();
 }
@@ -90,8 +114,8 @@ void Application::stop()
 	m_isRunning = false;
 }
 
-void Application::tick(float deltaTime)
+void Application::tick()
 {
-	m_world.tick(deltaTime);
+	m_world.tick();
 	m_deferred.resolve();
 }

@@ -3,7 +3,7 @@
 #include <Core/CoreFwd.h>
 #include <Core/Debug/ProfilingSystem.h>
 #include <string>
-#include <ctime>
+#include <chrono>
 
 namespace Mani
 {
@@ -13,25 +13,25 @@ namespace Mani
 		{
 			ScopedTimer(std::string nameIn) : name(nameIn)
 			{
-				start = std::clock();
+				start = std::chrono::steady_clock::now();
 				end = start;
 			}
 
 			~ScopedTimer() 
 			{
-				end = std::clock();
+				end = std::chrono::steady_clock::now();
 				Mani::ProfilingSystem::onTimerDestroyed(*this);
 			}
 
 			double elapsed() const 
 			{
 				constexpr double secondsToMs = 1000.0;
-				return secondsToMs * (static_cast<double>(end - start) / static_cast<double>(CLOCKS_PER_SEC));
+				return secondsToMs * std::chrono::duration<double>(end - start).count();
 			};
 
 			std::string name;
-			std::clock_t start;
-			std::clock_t end;
+			std::chrono::steady_clock::time_point start;
+			std::chrono::steady_clock::time_point end;
 		};
 	}
 
