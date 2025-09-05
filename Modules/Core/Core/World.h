@@ -133,9 +133,6 @@ namespace Mani
 				{
 					system->deinitialize(m_registry, *this);
 				}
-
-				system.reset();
-				m_systems.erase(it);
 				return *this;
 			}
 		}
@@ -182,18 +179,28 @@ namespace Mani
 			return;
 		}
 
-		// snapshot the systems that should tick. 
-		// New systems can be created during a tick and they might not be in a proper state to tick yet.
-		std::vector<std::shared_ptr<ECS::System>> systems = m_systems;
-		for (auto& system : systems)
 		{
-			if (system->shouldTick(m_registry))
+			// snapshot the systems that should tick. 
+			// New systems can be created during a tick and they might not be in a proper state to tick yet.
+			std::vector<std::shared_ptr<ECS::System>> systems = m_systems;
+			for (auto& system : systems)
 			{
-				system->tick(deltaTime, m_registry);
+				if (system->shouldTick(m_registry))
+				{
+					system->tick(deltaTime, m_registry);
+				}
 			}
 		}
 
 		m_registry.handleDeferredDestroy();
+
+		for (auto it = m_systems.begin(); it != m_systems.end(); it++)
+		{
+			if (!(*it)->isInitialized())
+			{
+				m_systems.erase(it);
+			}
+		}
 	}
 
 	inline size_t World::systemCount() const
