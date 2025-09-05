@@ -29,7 +29,7 @@ namespace Mani_Test
 			return true;
 		}
 
-		virtual void tick(float deltaTime, ECS::Registry& registry) override
+		virtual void tick(ECS::Registry& registry) override
 		{
 			tickCalled = true;
 		}
@@ -64,7 +64,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 		
 		MANI_TEST_ASSERT(SomeSystem::onInitializeCalled, "onInitialize should have been called.");
 
-		world.tick(.16f);
+		world.tick();
 	
 		MANI_TEST_ASSERT(SomeSystem::tickCalled, "tick should have been called.");
 
@@ -91,7 +91,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 		world.createSystem<SomeSystem>();
 		
 		MANI_TEST_ASSERT(!SomeSystem::onInitializeCalled, "System initialize should not have been called yet");
-		world.tick(.16f);
+		world.tick();
 		MANI_TEST_ASSERT(!SomeSystem::tickCalled, "system tick should not have been called yet, since the system isn't initialized");
 
 		bool onDeinitializeCalled = false;
@@ -106,7 +106,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 		world.initialize();
 	
 		MANI_TEST_ASSERT(SomeSystem::onInitializeCalled, "System initialize should have been called");
-		world.tick(.16f);
+		world.tick();
 		MANI_TEST_ASSERT(SomeSystem::tickCalled, "System tick have been called, since the system is now initialized");
 		world.deinitialize();
 		MANI_TEST_ASSERT(onDeinitializeCalled, "System should have been deinitialized, since it was initialized.");

@@ -123,7 +123,7 @@ void OpenGLSystem::onDeinitialize(ECS::Registry& registry, World& world)
     terminate(registry);
 }
 
-void OpenGLSystem::tick(float deltaTime, ECS::Registry& registry)
+void OpenGLSystem::tick(ECS::Registry& registry)
 {
 #ifdef __EMSCRIPTEN__
     emscripten_sleep(100);

@@ -1,5 +1,6 @@
 #include "OpenGLRenderSystem.h"
 
+#include <Core/TimeSystem.h>
 #include <Core/Debug/Profiling.h>
 #include <Core/Async/ThreadPool.h>
 
@@ -24,7 +25,6 @@
 using namespace Mani;
 
 OpenGLRenderContext createContext(ECS::Registry& registry);
-void loadQuad(uint32_t repeatAmount, Resource<OpenGLVertexArray>& res);
 
 OpenGLRenderSystem::Storage* getStorageChecked(ECS::Registry& registry)
 {
@@ -35,6 +35,7 @@ OpenGLRenderSystem::Storage* getStorageChecked(ECS::Registry& registry)
 
 void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 {
+	world.initializeDependency<TimeSystem>();
 	world.initializeDependency<CameraSystem>();
 	world.initializeDependency<OpenGLCameraUpdateSystem>();
 	
@@ -51,11 +52,11 @@ void OpenGLRenderSystem::onDeinitialize(ECS::Registry& registry, World& world)
 	registry.removeSingle<OpenGLRenderSystem::Storage>();
 }
 
-void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
+void OpenGLRenderSystem::tick(ECS::Registry& registry)
 {
 	MANI_TIME_SCOPE(OpenGLRenderSystemtick);
 
-	OpenGLCommandBuffer3D* cbs = registry.getSingle<OpenGLCommandBuffer3D>();
+	OpenGLCommandBufferCollection* cbs = registry.getSingle<OpenGLCommandBufferCollection>();
 	if (cbs == nullptr)
 	{
 		MANI_LOG_WARNING(LogOpenGL, "Trying to push opengl commands without a command buffer");
@@ -69,19 +70,19 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 
 	OpenGLRenderSystem::Storage& storage = *registry.getSingle<OpenGLRenderSystem::Storage>();
 	OpenGLRenderContext context = createContext(registry);
-	context.readBuffer = cbs->readBuffer;
+	OpenGLCommandBuffer& buffer = cbs->buffers[cbs->readBuffer];
 
 #if MANI_DEBUG
-	const int fps = Math::isEqual(deltaTime, 0.f) ? 0 : static_cast<int>(1 / deltaTime);
+	Time& time = *registry.getSingle<Time>();
+	const int fps = Math::isEqual(time.delta, 0.f) ? 0 : static_cast<int>(1 / time.delta);
 	glfwSetWindowTitle(context.openglContext->window, std::format("{} ({}fps)", context.openglContext->name, fps).c_str());
 #endif
 
-	storage.renderThread.enqueue([&registry, cbs, context = std::move(context)]() mutable
+	storage.renderThread.enqueue([&registry, &buffer, context = std::move(context)]() mutable
 	{
 		MANI_TIME_SCOPE(OpenGLRenderSystemtickrenderthread);
 		glfwMakeContextCurrent(context.openglContext->window);
 
-		const std::vector<OpenGLCommand>& commands = cbs->buffers[context.readBuffer];
 		glEnable(GL_DEPTH_TEST);
 
 		// setting color state.
@@ -96,9 +97,9 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 		size_t commandId = 0;
 		for (auto* renderer : context.renderers)
 		{
-			for (; commandId < commands.size(); commandId++)
+			for (; commandId < buffer.commands.size(); commandId++)
 			{
-				const OpenGLCommand& command = commands[commandId];
+				const OpenGLCommand& command = buffer.commands[commandId];
 				if (renderer->getId() != command.rendererId)
 				{
 					break;
@@ -113,9 +114,10 @@ void OpenGLRenderSystem::tick(float deltaTime, ECS::Registry& registry)
 			extension->onPostRender(registry);
 		}
 
-		cbs->renderFrame++;
 		glfwSwapBuffers(context.openglContext->window);
 		glfwMakeContextCurrent(nullptr);
+
+		buffer.isReadyToWrite.release();
 	});
 }
 
@@ -177,11 +179,6 @@ OpenGLRenderContext createContext(ECS::Registry& registry)
 	}
 
 	return context;
-}
-
-void loadQuad(uint32_t repeatAmount, Resource<OpenGLVertexArray>& res)
-{
-	
 }
 
 template<typename T>

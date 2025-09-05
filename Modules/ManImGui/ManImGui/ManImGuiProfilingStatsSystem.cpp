@@ -3,6 +3,7 @@
 #include "ManImGuiWindowContext.h"
 #include "ManImGuiSystem.h"
 
+#include <Core/TimeSystem.h>
 #include <Core/Debug/Profiling.h>
 #include "imgui.h"
 
@@ -11,9 +12,10 @@ using namespace Mani;
 void ManImGuiProfilingStatsSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<ManImGuiSystem>();
+	world.initializeDependency<TimeSystem>();
 }
 
-void ManImGuiProfilingStatsSystem::tick(float deltaTime, Mani::ECS::Registry& registry)
+void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 {
 	ManImGuiWindowContext* context = registry.getSingle<ManImGuiWindowContext>();
 	MANI_ASSERT(context != nullptr, "We expect the context to be accessible");
@@ -32,7 +34,8 @@ void ManImGuiProfilingStatsSystem::tick(float deltaTime, Mani::ECS::Registry& re
 
 	bool isActive = false;
 	ImGui::Begin("Profiling Stats", &isActive, ImGuiWindowFlags_MenuBar);
-	const float fps = Math::isEqual(deltaTime, 0.f) ? 0.f : 1.f / deltaTime;
+	Time& time = *registry.getSingle<Time>();
+	const float fps = Math::isEqual(time.delta, 0.f) ? 0.f : 1.f / time.delta;
 	ImGui::Text(std::format("{:.3}fps", fps).c_str());
 	for (const auto& [name, stats] : database->scopedTimers)
 	{

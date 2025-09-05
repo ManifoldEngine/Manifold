@@ -14,7 +14,7 @@ namespace Mani
 		virtual std::string_view getName() const override;
 		virtual bool shouldTick(ECS::Registry& registry) const override;
 
-		virtual void tick(float deltaTime, ECS::Registry& registry) override;
+		virtual void tick(ECS::Registry& registry) override;
 		
 	protected:
 		virtual void onInitialize(ECS::Registry& registry, World& world) override;

@@ -1,5 +1,5 @@
 #include "Log.h"
-#include <Core/CoreTime.h>
+#include <Core/TimeSystem.h>
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
@@ -83,12 +83,12 @@ void LogSystem::setChannelLogLevel(const std::string_view& channel, ELogLevel lo
 void LogSystem::logImpl(const std::string_view& channel, ELogLevel level, const std::string_view& log)
 {
 #if MANI_CONSOLE_APP
-	std::cout << LEVEL_TO_COLOR_MAP[level] << "[" << Time::getTimeFormatted() << "]" << "[" << channel << "]: " << log << RESET << std::endl;
+	std::cout << LEVEL_TO_COLOR_MAP[level] << "[" << TimeSystem::getTimeFormatted() << "]" << "[" << channel << "]: " << log << RESET << std::endl;
 #else
 #if MANI_WINDOWS
 	std::stringstream ss;
 	ss << LEVEL_TO_COLOR_MAP[level];
-	ss << "[" << Time::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
+	ss << "[" << TimeSystem::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
 	ss << RESET << "\n";
 	std::string s = ss.str();
 	std::wstring ws(s.begin(), s.end());

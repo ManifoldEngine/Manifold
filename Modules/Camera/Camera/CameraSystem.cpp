@@ -45,7 +45,7 @@ void CameraSystem::onDeinitialize(ECS::Registry& registry, World& world)
     registry.removeSingle<CameraSystemCache>();
 }
 
-void CameraSystem::tick(float deltaTime, ECS::Registry& registry)
+void CameraSystem::tick(ECS::Registry& registry)
 {
     for (const ECS::EntityId& entityId : ECS::View<Position, Rotation, Camera>(registry))
     {
@@ -69,7 +69,13 @@ void CameraSystem::tick(float deltaTime, ECS::Registry& registry)
 
             case Camera::EMode::ORTHOGRAPHIC:
             {
-                camera.projection = Mat4f::orthographic(0.f, camera.width, 0.f, camera.height, camera.nearClipPlane, camera.farClipPlane);
+                const float zoomFactor = camera.orthographicZoomFactor;
+                const float halfWidth = camera.width * zoomFactor / 2.f;
+                const float halfHeight = camera.height * zoomFactor / 2.f;
+                const float clipDelta = camera.farClipPlane - camera.nearClipPlane;
+                camera.projection = Mat4f::orthographic(-halfWidth, halfWidth,
+                                                        halfHeight, -halfHeight, 
+                                                        -clipDelta, clipDelta);
                 break;
             }
 

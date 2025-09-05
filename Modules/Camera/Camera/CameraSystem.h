@@ -15,7 +15,7 @@ namespace Mani
 		virtual void onInitialize(ECS::Registry& registry, World& world) override;
 		virtual void onDeinitialize(ECS::Registry& registry, World& world) override;
 
-		virtual void tick(float deltaTime, ECS::Registry& registry) override;
+		virtual void tick(ECS::Registry& registry) override;
 
 		static Vec2f worldToScreenSpace(const ECS::Registry& registry, const Vec3f& position);
 		static Vec3f screenToWorldSpace(const ECS::Registry& registry, const Vec2f& position);

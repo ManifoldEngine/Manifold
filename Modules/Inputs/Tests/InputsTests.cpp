@@ -22,7 +22,7 @@ public:
 	virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
 	virtual ETickGroup getTickGroup() const override { return ETickGroup::Input; }
 
-	virtual void tick(float deltaTime, ECS::Registry& registry)
+	virtual void tick(ECS::Registry& registry)
 	{
 		ECS::View<InputDevice> deviceView(registry);
 		for (const ECS::EntityId entityId : deviceView)
@@ -180,7 +180,7 @@ public:
 	inline static InputUser previousInputUser;
 	inline static std::vector<InputAction> registeredActions;
 
-	virtual void tick(float deltaTime, ECS::Registry& registry) override
+	virtual void tick(ECS::Registry& registry) override
 	{
 		for (const auto& [name, inputAction] : inputUser->actions)
 		{
@@ -231,7 +231,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		// press A button before pluging in the virtual controller
 		VirtualControllerSystem::setAButton(true);
 
-		world.tick(.0f);
+		world.tick();
 
 		// create a user and assign them the virtual controller.
 		world.initializeDependency<InputUserMockSystem>();
@@ -242,7 +242,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		// press A button again
 		VirtualControllerSystem::setAButton(true);
 		// tick the system, consumes input buffers
-		world.tick(.0f);
+		world.tick();
 
 		MANI_TEST_ASSERT(registeredActions.size() == 1, "Should have registered an input because the button was already pressed.");
 
@@ -254,7 +254,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		VirtualControllerSystem::setBButton(true);
 
 		// tick the system, consumes input buffers
-		world.tick(.0f);
+		world.tick();
 		
 		MANI_TEST_ASSERT(registeredActions.size() == 4, "Should have registered an input");
 		
@@ -292,7 +292,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		};
 
 		// tick the system, consumes input buffers
-		world.tick(.0f);
+		world.tick();
 
 		// left stick full left
 		VirtualControllerSystem::setLeftStick(-1.f, 0.f);
@@ -300,7 +300,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		VirtualControllerSystem::setRightStick(1.f, 0.f);
 
 		// tick the system, consumes input buffers
-		world.tick(.0f);
+		world.tick();
 
 		const InputAction& moveAction = InputUserMockSystem::inputUser->actions["Move"];
 		MANI_TEST_ASSERT(moveAction.x <= FLT_EPSILON, "Move X axis should be zero");
@@ -325,7 +325,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		VirtualControllerSystem::setRightBumper(1.f);
 
 		// this should not crash.
-		world.tick(0.f);
+		world.tick();
 		
 		MANI_TEST_ASSERT(InputUserMockSystem::registeredActions.empty(), "Action should not have been triggered.");
 	
@@ -362,7 +362,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		VirtualControllerSystem::setAButton(true);
 		
 		// this should not crash.
-		world.tick(0.f);
+		world.tick();
 
 		MANI_TEST_ASSERT(actionEvents.size() == 2, "Should have registered 2 actions");
 		MANI_TEST_ASSERT(actionEvents[0].name == "Jump", "First action should have been jump");

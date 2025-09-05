@@ -22,7 +22,7 @@ namespace Mani
         virtual ETickGroup getTickGroup() const override { return ETickGroup::Render; }
         virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
 
-        virtual void tick(float deltaTime, ECS::Registry& registry) override;
+        virtual void tick(ECS::Registry& registry) override;
 
         template<typename TFunctor, typename... TArgs>
         static void enqueueRenderTask(ECS::Registry& registry, TFunctor&& f, TArgs&&... args);

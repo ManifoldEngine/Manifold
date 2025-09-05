@@ -11,6 +11,6 @@ namespace Mani
         virtual bool shouldTick(Mani::ECS::Registry& registry) const override { return true; }
         virtual ETickGroup getTickGroup() const override { return ETickGroup::PreRender; }
 
-        virtual void tick(float deltaTime, Mani::ECS::Registry& registry) override;
+        virtual void tick(Mani::ECS::Registry& registry) override;
     };
 }
