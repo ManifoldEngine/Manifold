@@ -1,26 +1,26 @@
-include "../../../locations.lua"
+local locations = require("locations")
 
 group "Engine"
     project "Events"
         kind "StaticLib"
-        location (moduledir .. "/%{prj.name}")
+        location (locations.moduledir .. "/%{prj.name}")
         
         files { 
-            moduledir .. "/%{prj.name}/**.h",
-            moduledir .. "/%{prj.name}/**.cpp" 
+            locations.moduledir .. "/%{prj.name}/**.h",
+            locations.moduledir .. "/%{prj.name}/**.cpp" 
         }
 
-        includedirs { moduledir .. "/**" }
+        includedirs { locations.moduledir .. "/**" }
 group ""
 
 group "_TestLibs"
     project "EventsTests"
         kind "SharedLib"
-        location (moduledir .. "/Events/Tests")
+        location (locations.moduledir .. "/Events/Tests")
 
-        files { moduledir .. "/Events/Tests/**.h", moduledir .. "/Events/Tests/**.cpp" }
+        files { locations.moduledir .. "/Events/Tests/**.h", locations.moduledir .. "/Events/Tests/**.cpp" }
         
         links { "Events" }
         
-        includedirs { moduledir .. "/**" }
+        includedirs { locations.moduledir .. "/**" }
 group ""

@@ -1,22 +1,22 @@
-include "../../../locations.lua"
+local locations = require("locations")
 
 group "Engine"
     project "ManImGui"
         kind "StaticLib"
-        location (moduledir .. "/%{prj.name}")
+        location (locations.moduledir .. "/%{prj.name}")
         ignoredefaultlibraries { "MSVCRTD" }
         
         files { 
-            moduledir .. "/%{prj.name}/**.h",
-            moduledir .. "/%{prj.name}/**.cpp" 
+            locations.moduledir .. "/%{prj.name}/**.h",
+            locations.moduledir .. "/%{prj.name}/**.cpp" 
         }
 
         links { "Core", "Inputs", "OpenGL" }
 
-        includedirs { moduledir .. "/**" }
+        includedirs { locations.moduledir .. "/**" }
 
         -- ImGui
-        imguiPath = moduledir .. "/%{prj.name}/ThirdParties/ImGui"
+        imguiPath = locations.moduledir .. "/%{prj.name}/ThirdParties/ImGui"
 
         removefiles { imguiPath .. "/**" }
         
