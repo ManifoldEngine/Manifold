@@ -180,7 +180,9 @@ Vec3f Mani::CameraSystem::screenToWorldProjection(const ECS::Registry& registry,
             const float halfWidth = camera->width * 0.5f;
             const float halfHeight = camera->height * 0.5f;
 
-            const Vec2f centeredPosition = position - Vec2f{ halfWidth, halfHeight };
+            Vec2f centeredPosition = position - Vec2f{ halfWidth, halfHeight };
+            // we reverse the height because the screen coordinates go from top to bottom
+            centeredPosition.y *= -1.f;
 
             const Vec3f& cameraPositionValue = cameraPosition->value;
             Vec3f worldPosition = cameraPositionValue + static_cast<Vec3f>(centeredPosition * camera->orthographicZoomFactor);
