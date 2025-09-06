@@ -71,7 +71,7 @@ void FloatingCameraSystem::tick(ECS::Registry& registry)
 		const float yaw = deltaX * floatingCamera.sensitivity;
 		const float pitch = deltaY * floatingCamera.sensitivity;
 
-		Quatf quatPitch = Quatf::axisAngleDeg(-pitch, VEC3F::RIGHT);
+		Quatf quatPitch = Quatf::axisAngleDeg(pitch, VEC3F::RIGHT);
 		Quatf quatYaw = Quatf::axisAngleDeg(yaw, VEC3F::UP);
 
 		// it is crucial to respect this order of operation to avoid unintended roll.

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ManiMaths/Fwd.h>
+#include <Core/Vec.h>
 #include <RenderAPI/Shader.h>
 #include <vector>
 

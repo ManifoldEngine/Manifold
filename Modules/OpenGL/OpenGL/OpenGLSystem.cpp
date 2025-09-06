@@ -46,6 +46,11 @@ bool OpenGLSystem::shouldTick(ECS::Registry& registry) const
 
 void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
 {
+#ifndef MANI_COORDINATE_ZMINUSFORWARD_YUP
+    // OpenGL uses righ handed z- forward coordinate system.
+    static_assert(false);
+#endif
+
     // initialize glfw
     if (!glfwInit())
     {
