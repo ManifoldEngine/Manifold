@@ -1,27 +1,27 @@
-include "../../../locations.lua"
+local locations = require("locations")
 
 group "AssetImporter"
     project "AssetImporter"
         kind "ConsoleApp"
-        location (enginedir .. "/%{prj.name}")
+        location (locations.enginedir .. "/%{prj.name}")
         
-        targetdir (enginedir .. "/%{prj.name}/bin/")
-        objdir (enginedir .. "/%{prj.name}/bin-int/")
+        targetdir (locations.enginedir .. "/%{prj.name}/bin/")
+        objdir (locations.enginedir .. "/%{prj.name}/bin-int/")
 
         files { 
-            enginedir .. "/%{prj.name}/**.h",
-            enginedir .. "/%{prj.name}/**.cpp" 
+            locations.enginedir .. "/%{prj.name}/**.h",
+            locations.enginedir .. "/%{prj.name}/**.cpp" 
         }
         
-        includedirs { moduledir .. "/**", enginedir .. "/%{prj.name}/" }
+        includedirs { locations.moduledir .. "/**", locations.enginedir .. "/%{prj.name}/" }
 
-        removefiles { enginedir .. "/%{prj.name}/ThirdParties/**" }
+        removefiles { locations.enginedir .. "/%{prj.name}/ThirdParties/**" }
 
         links { "Core", "Resources", "RenderAPI" }
 
         -- assimp
 
-        assimpPath = enginedir .. "/%{prj.name}/ThirdParties/assimp"
+        local assimpPath = locations.enginedir .. "/%{prj.name}/ThirdParties/assimp"
 
         includedirs { assimpPath .. "/include" }
         libdirs { assimpPath .. "/lib/Debug" }
