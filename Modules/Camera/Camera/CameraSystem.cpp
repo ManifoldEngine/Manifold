@@ -14,6 +14,24 @@ struct CameraSystemCache
     ECS::EntityId cameraId; 
 };
 
+const Camera* getCamera(const ECS::Registry& registry)
+{
+    if (const CameraSystemCache* cache = registry.getSingle<CameraSystemCache>())
+    {
+        return registry.get<Camera>(cache->cameraId);
+    }
+    return nullptr;
+}
+
+std::tuple<const Position*, const Rotation*> getCameraPositionAndRotation(const ECS::Registry& registry)
+{
+    if (const CameraSystemCache* cache = registry.getSingle<CameraSystemCache>())
+    {
+        return { registry.get<Position>(cache->cameraId), registry.get<Rotation>(cache->cameraId) };
+    }
+    return { nullptr, nullptr };
+}
+
 std::string_view CameraSystem::getName() const
 {
     return "CameraSystem";
@@ -72,10 +90,9 @@ void CameraSystem::tick(ECS::Registry& registry)
                 const float zoomFactor = camera.orthographicZoomFactor;
                 const float halfWidth = camera.width * zoomFactor / 2.f;
                 const float halfHeight = camera.height * zoomFactor / 2.f;
-                const float clipDelta = camera.farClipPlane - camera.nearClipPlane;
                 camera.projection = Mat4f::orthographic(-halfWidth, halfWidth,
-                                                        halfHeight, -halfHeight, 
-                                                        -clipDelta, clipDelta);
+                                                        -halfHeight, halfHeight,
+                                                        camera.nearClipPlane, camera.farClipPlane);
                 break;
             }
 
@@ -106,63 +123,76 @@ Vec3f Mani::CameraSystem::screenToWorldSpace(const ECS::Registry& registry, cons
     return VEC3F::ZERO;
 }
 
-Vec3f Mani::CameraSystem::screenToWorldProjection(const ECS::Registry& registry, const Vec2f& position, float distance)
+Vec3f Mani::CameraSystem::screenToWorldProjection(const ECS::Registry& registry, const Vec2f& screenPosition, float distance)
 {
     const Camera* camera = getCamera(registry);
     if (camera == nullptr)
     {
-        return VEC4F::ZERO;
+        return VEC3F::ZERO;
     }
 
-    if (camera->mode != Camera::EMode::PERSPECTIVE)
+    const Vec2f position {
+        Math::clamp(screenPosition.x, 0.f, camera->width), 
+        Math::clamp(screenPosition.y, 0.f, camera->height)
+    };
+
+    switch (camera->mode)
     {
-        MANI_LOG_WARNING(LogCamera, "Trying to do Screen to World projection with a non perspective camera");
-        return VEC4F::ZERO;
-    }
+        case Camera::EMode::PERSPECTIVE:
+        {
+            auto [cameraPosition, cameraRotation] = getCameraPositionAndRotation(registry);
+            if (cameraPosition == nullptr || cameraRotation == nullptr)
+            {
+                return VEC3F::ZERO;
+            }
 
-    auto [cPosition, cRotation] = getTransform(registry);
-    if (cPosition == nullptr || cRotation == nullptr)
-    {
-        return VEC4F::ZERO;
-    }
-
-    const float theta = Math::degToRad(camera->fov) * .5f;
-    const float aspectRatio = camera->getAspectRatio();
+            const float theta = Math::degToRad(camera->fov) * .5f;
+            const float aspectRatio = camera->getAspectRatio();
     
-    const float tanHalfTheta = Math::tan(theta * .5f);
-    const float yMin = tanHalfTheta * distance;
-    const float yMax = -tanHalfTheta * distance;
-    const float xMax = yMax * aspectRatio;
-    const float xMin = yMin * aspectRatio;
+            const float tanHalfTheta = Math::tan(theta * .5f);
+            const float yMin = tanHalfTheta * distance;
+            const float yMax = -tanHalfTheta * distance;
+            const float xMax = yMax * aspectRatio;
+            const float xMin = yMin * aspectRatio;
 
-    MANI_ASSERT(!Math::isEqual(camera->width, 0.f), "divide by zero");
-    const float xRatio = position.x / (camera->width * .5f);
-    MANI_ASSERT(!Math::isEqual(camera->height, 0.f), "divide by zero");
-    const float yRatio = position.y / (camera->height * .5f);
+            MANI_ASSERT(!Math::isEqual(camera->width, 0.f), "divide by zero");
+            const float xRatio = position.x / (camera->width * .5f);
+            MANI_ASSERT(!Math::isEqual(camera->height, 0.f), "divide by zero");
+            const float yRatio = position.y / (camera->height * .5f);
 
-    const float xOffset = ((xMax - xMin) * .5f) * xRatio;
-    const float yOffset = ((yMax - yMin) * .5f) * yRatio;
+            const float xOffset = ((xMax - xMin) * .5f) * xRatio;
+            const float yOffset = ((yMax - yMin) * .5f) * yRatio;
 
-    return cPosition->value +
-        Transform::right(*cRotation) * xOffset +
-        Transform::up(*cRotation) * yOffset +
-        Transform::forward(*cRotation) * distance;
-}
+            return cameraPosition->value +
+                Transform::right(*cameraRotation) * xOffset +
+                Transform::up(*cameraRotation) * yOffset +
+                Transform::forward(*cameraRotation) * distance;
+        }
 
-const Camera* Mani::CameraSystem::getCamera(const ECS::Registry& registry)
-{
-    if (const CameraSystemCache* cache = registry.getSingle<CameraSystemCache>())
-    {
-        return registry.get<Camera>(cache->cameraId);
+        case Camera::EMode::ORTHOGRAPHIC:
+        {
+            auto [cameraPosition, cameraRotation] = getCameraPositionAndRotation(registry);
+            if (cameraPosition == nullptr || cameraRotation == nullptr)
+            {
+                return VEC3F::ZERO;
+            }
+
+            const float halfWidth = camera->width * 0.5f;
+            const float halfHeight = camera->height * 0.5f;
+
+            Vec2f centeredPosition = position - Vec2f{ halfWidth, halfHeight };
+            // we reverse the height because the screen coordinates go from top to bottom
+            centeredPosition.y *= -1.f;
+
+            const Vec3f& cameraPositionValue = cameraPosition->value;
+            Vec3f worldPosition = cameraPositionValue + static_cast<Vec3f>(centeredPosition * camera->orthographicZoomFactor);
+            worldPosition.z = cameraPositionValue.z;
+            return cameraRotation->value.rotate(worldPosition);
+        }
+
+        default: 
+            MANI_ASSERT(false, "Unsupported camera mode.");
     }
-    return nullptr;
-}
 
-std::tuple<const Position*, const Rotation*> Mani::CameraSystem::getTransform(const ECS::Registry& registry)
-{
-    if (const CameraSystemCache* cache = registry.getSingle<CameraSystemCache>())
-    {
-        return { registry.get<Position>(cache->cameraId), registry.get<Rotation>(cache->cameraId) };
-    }
-    return { nullptr, nullptr };
+    return VEC3F::ZERO;
 }

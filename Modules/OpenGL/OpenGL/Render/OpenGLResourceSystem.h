@@ -46,5 +46,5 @@ namespace Mani
     };
 
     template<>
-    bool ResourceLoader::load<STBITexture>(const std::filesystem::path& absolutePath, Resource<STBITexture>& resource);
+    bool ResourceLoader::load<STBITexture>(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<STBITexture>& resource);
 }
