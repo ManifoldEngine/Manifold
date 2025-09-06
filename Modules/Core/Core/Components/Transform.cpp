@@ -1,4 +1,5 @@
 #include "Transform.h"
+#include <Core/Vec.h>
 #include <Core/ManiAssert.h>
 
 using namespace Mani;

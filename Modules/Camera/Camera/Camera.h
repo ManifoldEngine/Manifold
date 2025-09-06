@@ -2,6 +2,7 @@
 
 #include <string_view>
 #include <Core/ManiAssert.h>
+#include <Core/Vec.h>
 #include <ManiMaths/Fwd.h>
 #include <Log.h>
 
