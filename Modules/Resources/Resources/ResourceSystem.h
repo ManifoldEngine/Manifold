@@ -21,7 +21,7 @@ namespace Mani
 		// loads a json file into a resource. Specialize this function to define loading for specific resources.
 		// returns true if loading was successful
 		template<typename T>
-		static bool load(const std::filesystem::path& absolutePath, Resource<T>& resource);
+		static bool load(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<T>& resource);
 	}
 
 	class ResourceSystem : public ECS::System
@@ -110,7 +110,7 @@ namespace Mani
 
 		auto load = [&, entityId, path, tag, method]
 		{
-			if (!ResourceLoader::load(path, resource))
+			if (!ResourceLoader::load(registry, path, resource))
 			{
 				MANI_LOG_ERROR(LogResources, "Could not load resource at {}", path.string());
 				return;
@@ -187,7 +187,7 @@ namespace Mani
 	}
 
 	template<typename T>
-	bool ResourceLoader::load(const std::filesystem::path& absolutePath, Resource<T>& resource)
+	bool ResourceLoader::load(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<T>& resource)
 	{
 		std::string content;
 		if (!FileSystem::readFile(absolutePath, content))

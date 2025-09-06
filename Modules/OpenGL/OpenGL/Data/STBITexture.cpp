@@ -8,10 +8,10 @@
 
 using namespace Mani;
 
-bool STBITexture::load(const std::string_view& path)
+bool STBITexture::load(const std::string_view& path, uint8_t stbiSetFlipVerticallyOnLoad)
 {
     MANI_ASSERT(!isLoaded(), "Overwriting a loaded texture!");
-    stbi_set_flip_vertically_on_load(1);
+    stbi_set_flip_vertically_on_load(stbiSetFlipVerticallyOnLoad);
 
     data = stbi_load(path.data(), &width, &height, &channels, 0);
     if (stbi_failure_reason())

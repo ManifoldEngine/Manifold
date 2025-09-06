@@ -20,9 +20,5 @@ namespace Mani
 		static Vec2f worldToScreenSpace(const ECS::Registry& registry, const Vec3f& position);
 		static Vec3f screenToWorldSpace(const ECS::Registry& registry, const Vec2f& position);
 		static Vec3f screenToWorldProjection(const ECS::Registry& regitry, const Vec2f& position, float distance);
-
-	private:
-		static const Camera* getCamera(const ECS::Registry& registry);
-		static std::tuple<const Position*, const Rotation*> getTransform(const ECS::Registry& registry);
 	};
 }
