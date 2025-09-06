@@ -2,6 +2,7 @@
 
 #include <Core/Components/Transform.h>
 #include <Core/ManiAssert.h>
+#include <Core/Vec.h>
 
 #include <ECS/Entity.h>
 #include <ECS/Registry.h>
@@ -48,8 +49,7 @@ void CameraSystem::onInitialize(ECS::Registry& registry, World& world)
 
     cache.cameraId = registry.create();
     Position* position = registry.add<Position>(cache.cameraId);
-    position->value = Vec3f(0.0f, 0.0f, -3.0f);
-    position->value = Vec3f(0.0f, 0.0f, -3.0f);
+    position->value = Mani::VEC3F::BACK * 5.f; // film the origin by default
     registry.add<Rotation>(cache.cameraId);
     registry.add<Camera>(cache.cameraId);
 }
