@@ -26,8 +26,4 @@ group "AssetImporter"
         includedirs { assimpPath .. "/include" }
         libdirs { assimpPath .. "/lib/Debug" }
         links { "assimp-vc143-mtd" }
-
-        postbuildcommands {
-            "{COPYFILE} " .. assimpPath .. "/bin/Debug/assimp-vc143-mtd.dll bin/assimp-vc143-mtd.dll"
-        }
 group ""
