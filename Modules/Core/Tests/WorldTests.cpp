@@ -247,5 +247,67 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 		world.destroySystem<SomeOtherSystem>();
 		world.deinitialize();
 	}
+
+	MANI_SECTION_BEGIN(SystemSets, "System Sets")
+	{
+		MANI_TEST(CreateAndDestroySystemSet, "Should create then destroy all systems in the same variadic template type")
+		{
+			static size_t createdSytems = 0;
+			static size_t destroyedSystems = 0;
+
+			class MyFirstSystem : public Mani::ECS::System
+			{
+			protected:
+				virtual void onInitialize(Mani::ECS::Registry& registry, Mani::World& world) override
+				{
+					createdSytems++;
+				}
+
+				virtual void onDeinitialize(Mani::ECS::Registry& registry, Mani::World& world) override
+				{
+					destroyedSystems++;
+				}
+			};
+
+			class MySecondSystem : public Mani::ECS::System
+			{
+			protected:
+				virtual void onInitialize(Mani::ECS::Registry& registry, Mani::World& world) override
+				{
+					createdSytems++;
+				}
+				virtual void onDeinitialize(Mani::ECS::Registry& registry, Mani::World& world) override
+				{
+					destroyedSystems++;
+				}
+			};
+
+			{
+				World world;
+				world.initialize();
+				world.createSystems<MyFirstSystem, MySecondSystem>();
+				const bool hasSystems = world.hasSystems<MyFirstSystem, MySecondSystem>();
+				MANI_ASSERT(hasSystems, "should have the system set");
+				world.destroySystems<MyFirstSystem, MySecondSystem>();
+				MANI_ASSERT(createdSytems == 2, "should have created a set of 2 systems");
+				MANI_ASSERT(destroyedSystems == 2, "should have destroyed a set of 2 systems");
+			}
+
+			createdSytems = 0;
+			destroyedSystems = 0;
+			using MySystemSet = Mani::TypeList<MyFirstSystem, MySecondSystem>;
+
+			{
+				World world;
+				world.initialize();
+				world.createSystems(MySystemSet{});
+				MANI_ASSERT(world.hasSystems(MySystemSet{}), "should have the system set");
+				world.destroySystems(MySystemSet{});
+				MANI_ASSERT(createdSytems == 2, "should have created a set of 2 systems");
+				MANI_ASSERT(destroyedSystems == 2, "should have destroyed a set of 2 systems");
+			}
+		}
+	}
+	MANI_SECTION_END(SystemSets)
 }
 MANI_SECTION_END(Core_World)

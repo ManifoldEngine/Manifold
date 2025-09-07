@@ -10,7 +10,7 @@
 
 namespace Mani
 {
-	template<typename... TComponents, typename TFunctor>
+	template<typename... TComponents, typename TFunctor = void(const ECS::EntityId, size_t)>
 	void parallelFor(ECS::View<TComponents...>& view, TFunctor&& f)
 	{
 		static_assert(Application::THREAD_COUNT > 0, "cannot parallel over 0 threads");
