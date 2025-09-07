@@ -75,24 +75,22 @@ void OpenGLShader::use() const
 
 void OpenGLShader::setShaderType(const std::string_view& key, const ShaderType& value) const
 {
-    std::visit([&key](const ShaderType& value) {
-        using T = std::decay_t<decltype(value)>;
-
-        if         constexpr (std::is_same_v<T, float>) { setFloat(key, std::get<float>(value)); }
-        else    if constexpr (std::is_same_v<T, int>)   { setInt(key, std::get<int>(value)); }
-        else    if constexpr (std::is_same_v<T, bool>)  { setBool(key, std::get<bool>(value)); }
-        else    if constexpr (std::is_same_v<T, Vec2f>) { const Vec2f& v = std::get<Vec2f>(value); setFloat2(key, v.x, v.y); }
-        else    if constexpr (std::is_same_v<T, Vec3f>) { const Vec3f& v = std::get<Vec3f>(value); setFloat3(key, v.x, v.y, v.z); }
-        else    if constexpr (std::is_same_v<T, Vec4f>) { const Vec4f& v = std::get<Vec4f>(value); setFloat4(key, v.x, v.y, v.z, v.w); }
-        else    if constexpr (std::is_same_v<T, Vec2i>) { const Vec2i& v = std::get<Vec2i>(value); setInt2(key, v.x, v.y); }
-        else    if constexpr (std::is_same_v<T, Vec3i>) { const Vec3i& v = std::get<Vec3i>(value); setInt3(key, v.x, v.y, v.z); }
-        else    if constexpr (std::is_same_v<T, Vec4i>) { const Vec4i& v = std::get<Vec4i>(value); setInt4(key, v.x, v.y, v.z, v.w); }
-        else    if constexpr (std::is_same_v<T, Mat3f>) { const Mat3f& v = std::get<Mat3f>(value); setFloatMatrix3(key, &v._00); }
-        else    if constexpr (std::is_same_v<T, Mat4f>) { const Mat4f& v = std::get<Mat4f>(value); setFloatMatrix4(key, &v._00); }
-    }, value);
+   std::visit([&](auto&& obj) {
+        using T = std::decay_t<decltype(obj)>;
+        
+        if      constexpr (std::is_same_v<T, float>) { setFloat(key, std::get<float>(value)); }
+        else if constexpr (std::is_same_v<T, int>)   { setInt(key, std::get<int>(value)); }
+        else if constexpr (std::is_same_v<T, bool>)  { setBool(key, std::get<bool>(value)); }
+        else if constexpr (std::is_same_v<T, Vec2f>) { const Vec2f& v = std::get<Vec2f>(value); setFloat2(key, v.x, v.y); }
+        else if constexpr (std::is_same_v<T, Vec3f>) { const Vec3f& v = std::get<Vec3f>(value); setFloat3(key, v.x, v.y, v.z); }
+        else if constexpr (std::is_same_v<T, Vec4f>) { const Vec4f& v = std::get<Vec4f>(value); setFloat4(key, v.x, v.y, v.z, v.w); }
+        else if constexpr (std::is_same_v<T, Vec2i>) { const Vec2i& v = std::get<Vec2i>(value); setInt2(key, v.x, v.y); }
+        else if constexpr (std::is_same_v<T, Vec3i>) { const Vec3i& v = std::get<Vec3i>(value); setInt3(key, v.x, v.y, v.z); }
+        else if constexpr (std::is_same_v<T, Vec4i>) { const Vec4i& v = std::get<Vec4i>(value); setInt4(key, v.x, v.y, v.z, v.w); }
+        else if constexpr (std::is_same_v<T, Mat3f>) { const Mat3f& v = std::get<Mat3f>(value); setFloatMatrix3(key, &v._00); }
+        else if constexpr (std::is_same_v<T, Mat4f>) { const Mat4f& v = std::get<Mat4f>(value); setFloatMatrix4(key, &v._00); }
+   }, value);
 }
-
-#include <iostream>
 
 uint32_t OpenGLShader::compile(const std::string_view& inSource, int shaderType)
 {
@@ -107,7 +105,6 @@ uint32_t OpenGLShader::compile(const std::string_view& inSource, int shaderType)
     {
         char infoLog[512];
         glGetShaderInfoLog(id, 512, NULL, infoLog);
-        std::cout << "shader compilation failed: " << infoLog << std::endl;
         MANI_LOG_ERROR(LogOpenGL, "shader compilation failed: {}", infoLog);
         id = UINT32_MAX;
         return id;

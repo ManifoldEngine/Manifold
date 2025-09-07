@@ -48,16 +48,7 @@ void Mani::ManImGuiRenderSystem::tick(ECS::Registry& registry)
 
 	switch (context.mode)
 	{
-		case EManImGuiMode::Hidden:
-		{
-			if (storage.drawData != nullptr)
-			{
-				storage.isDrawDataBeingRead.release();
-			}
-			storage.drawData = nullptr;
-			break;
-		}
-		
+		case EManImGuiMode::Hidden: break;	
 		case EManImGuiMode::Show:
 		{
 			storage.isDrawDataBeingRead.acquire();
