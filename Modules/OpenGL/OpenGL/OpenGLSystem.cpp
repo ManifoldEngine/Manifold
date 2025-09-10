@@ -39,7 +39,7 @@ std::string_view OpenGLSystem::getName() const
     return "OpenGLSystem";
 }
 
-bool OpenGLSystem::shouldTick(ECS::Registry& registry) const
+bool OpenGLSystem::shouldTick(const ECS::Registry& registry) const
 {
     return false;
 }

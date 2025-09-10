@@ -22,7 +22,7 @@ namespace Mani
         friend OpenGLResourceSystemExtension;
 
         virtual std::string_view getName() const override { return "OpenGLResourceSystem"; }
-        virtual bool shouldTick(ECS::Registry& registry) const override { return false; }
+        virtual bool shouldTick(const ECS::Registry& registry) const override { return false; }
 
     protected:
         virtual void onInitialize(ECS::Registry& registry, World& world) override;

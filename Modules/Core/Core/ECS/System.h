@@ -34,7 +34,7 @@ namespace Mani
 		{
 		public:
 			virtual std::string_view getName() const;
-			virtual bool shouldTick(ECS::Registry& registry) const;
+			virtual bool shouldTick(const ECS::Registry& registry) const;
 			virtual ETickGroup getTickGroup() const;
 
 			void initialize(ECS::Registry& registry, World& world);

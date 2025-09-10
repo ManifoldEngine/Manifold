@@ -20,7 +20,7 @@ namespace Mani
 
         virtual std::string_view getName() const override { return "OpenGLRenderSystem"; }
         virtual ETickGroup getTickGroup() const override { return ETickGroup::Render; }
-        virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
+        virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }
 
         virtual void tick(ECS::Registry& registry) override;
 
