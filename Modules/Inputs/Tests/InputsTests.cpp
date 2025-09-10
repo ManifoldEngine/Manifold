@@ -19,7 +19,7 @@ class VirtualControllerSystem : public ECS::System
 {
 public:
 	virtual std::string_view getName() const override { return "VirtualControllerSystem"; }
-	virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
+	virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }
 	virtual ETickGroup getTickGroup() const override { return ETickGroup::Input; }
 
 	virtual void tick(ECS::Registry& registry)
@@ -172,7 +172,7 @@ class InputUserMockSystem : public ECS::System
 {
 public:
 	virtual std::string_view getName() const override { return "VirtualControllerSystem"; }
-	virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
+	virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }
 	virtual ETickGroup getTickGroup() const override { return ETickGroup::Update; }
 
 	// never do this!

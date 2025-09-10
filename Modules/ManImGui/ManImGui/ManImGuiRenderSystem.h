@@ -17,7 +17,7 @@ namespace Mani
         struct Storage;
 
         virtual std::string_view getName() const override { return "ManImGuiRenderSystem"; }
-        virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
+        virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }
         virtual ETickGroup getTickGroup() const override { return ETickGroup::PreRender; }
         
         virtual void tick(ECS::Registry& registry) override;

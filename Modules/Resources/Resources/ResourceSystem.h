@@ -35,7 +35,7 @@ namespace Mani
 
 	public:
 		virtual std::string_view getName() const override { return "ResourceSystem"; }
-		virtual bool shouldTick(ECS::Registry& registry) const override { return false; }
+		virtual bool shouldTick(const ECS::Registry& registry) const override { return false; }
 
 		template<typename T>
 		static ECS::EntityId loadResource(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t = 0);

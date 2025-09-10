@@ -12,7 +12,7 @@ namespace Mani
 	{
 	public:
 		virtual std::string_view getName() const override;
-		virtual bool shouldTick(ECS::Registry& registry) const override;
+		virtual bool shouldTick(const ECS::Registry& registry) const override;
 
 		virtual void tick(ECS::Registry& registry) override;
 		

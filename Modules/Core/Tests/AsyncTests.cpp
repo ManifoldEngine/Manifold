@@ -62,7 +62,7 @@ MANI_SECTION_BEGIN(Async, "Async")
 		class TestSystem : public ECS::System
 		{
 		public:
-			virtual bool shouldTick(ECS::Registry&) const override { return true; }
+			virtual bool shouldTick(const ECS::Registry&) const override { return true; }
 			virtual void tick(ECS::Registry& registry)
 			{
 				Arbiter& arbiter = *registry.getSingle<Arbiter>();

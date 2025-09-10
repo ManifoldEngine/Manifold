@@ -38,7 +38,7 @@ std::string_view CameraSystem::getName() const
     return "CameraSystem";
 }
 
-bool CameraSystem::shouldTick(ECS::Registry& registry) const
+bool CameraSystem::shouldTick(const ECS::Registry& registry) const
 {
     return true;
 }
