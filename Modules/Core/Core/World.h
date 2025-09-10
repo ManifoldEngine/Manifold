@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 namespace Mani
 {
@@ -102,20 +103,10 @@ namespace Mani
 
 		auto system = std::make_shared<TSystem>();
 
-		ETickGroup targetTickGroup = system->getTickGroup();
-		auto insertIt = m_systems.end();
-		for (auto it = m_systems.begin(); it != m_systems.end(); it++)
-		{
-			const auto& [sytem, _] = *it;
-			if (system->getTickGroup() > targetTickGroup)
-			{
-				insertIt = it;
-				break;
-			}
-		}
-
 		constexpr bool isMarkedForDestruction = false;
-		m_systems.emplace(insertIt, SystemContainer{ system, isMarkedForDestruction });
+		m_systems.push_back(SystemContainer{ system, isMarkedForDestruction });
+
+		std::sort(m_systems.begin(), m_systems.end(), [](const auto& lhs, const auto& rhs) { return lhs.system->getTickGroup() < rhs.system->getTickGroup(); });
 
 		if (m_isInitialized)
 		{
