@@ -1,67 +1,75 @@
 #pragma once
 
-#include <string_view>
 #include <Core/ManiAssert.h>
 #include <Core/Vec.h>
+
+#include <Core/Components/Position.h>
+#include <Core/Components/Rotation.h>
+#include <Core/Components/Scale.h>
+
+#include <RenderAPI/BoundingSphere.h>
+
 #include <ManiMaths/Fwd.h>
 #include <Log.h>
+#include <string_view>
 
 namespace Mani
 {
 	const std::string_view LogCamera = "LogCamera";
 
-	struct Camera
+	enum class ECameraMode : uint8_t
 	{
-		enum class EMode : uint8_t
+		PERSPECTIVE = 0,
+		ORTHOGRAPHIC
+	};
+
+	struct Frustum
+	{
+		struct Plane
 		{
-			PERSPECTIVE = 0,
-			ORTHOGRAPHIC
+			Vec3f point = VEC3F::ZERO;
+			Vec3f normal = VEC3F::ZERO;
 		};
 
+		Plane top;
+		Plane bottom;
+		Plane right;
+		Plane left;
+		Plane far;
+		Plane near;
+	};
+
+	struct Camera
+	{
 		float fov = 45.f;
-		float nearClipPlane = .1f;
-		float farClipPlane = 10'000.f;
+		float near = .1f;
+		float far = 10'000.f;
 		float width = 800.f;
 		float height = 800.f;
 		
 		float orthographicZoomFactor = 0.01f;
 		
-		EMode mode = EMode::PERSPECTIVE;
-
-		float getAspectRatio() const
-		{
-			MANI_ASSERT(Math::abs(height) > FLT_EPSILON, "height cannot be zero");
-			return width / height;
-		}
-
+		ECameraMode mode = ECameraMode::PERSPECTIVE;
 		Mat4f projection = MAT4F::IDENTITY;
 		Mat4f view = MAT4F::IDENTITY;
 
-		Vec2f worldToScreenSpace(const Vec3f& position) const
-		{
-			Vec4f projectedPosition = position.homogenous() * view;
-
-			if (Math::isEqual(projectedPosition.w, 0.f) ||
-				projectedPosition.w == 0.f) // this fixes warning C4723: potential divide by 0
-			{
-				return VEC2F::ZERO;
-			}
-			return Vec2f(projectedPosition.x / projectedPosition.w, projectedPosition.y / projectedPosition.w);
-		}
-
-		Vec3f screenToWorldSpace(const Vec2f& position) const
-		{
-			Vec4f projectedPosition = (projection * view).inverse() * position.homogenous();
-			if (Math::abs(projectedPosition.w) <= FLT_EPSILON)
-			{
-				return VEC3F::ZERO;
-			}
-			
-			return Vec3f {
-				projectedPosition.x / projectedPosition.w,
-				0.f,
-				projectedPosition.z / projectedPosition.w,
-			};
-		}
+		Frustum frustrum;
 	};
+
+	namespace CameraStatics
+	{
+		float getAspectRatio(const Camera& camera);
+		Vec2f worldToScreenSpace(const Camera& camera, const Vec3f& position);
+		Vec3f screenToWorldSpace(const Camera& camera, const Vec2f& position);
+		bool isInView(const Camera& camera, const Position& position, const Rotation& rotation, const Scale& scale, const BoundingSphere& boundingSphere);
+	}
+
+	namespace FrustumStatics
+	{
+		Frustum create(const Camera& camera, const Vec3f& position, const Quatf& rotation);
+
+		bool isSphereInside(const Frustum& frustum, const Vec3f& position, const Quatf& rotation, const Vec3f& scale, float radius);
+		bool isSphereOnOrForwardPlane(const Vec3f& position, float radius, const Frustum::Plane& plane);
+		float getSignedDistanceToPlane(const Vec3f& point, const Frustum::Plane& plane);
+	}
 }

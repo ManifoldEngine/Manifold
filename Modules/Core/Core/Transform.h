@@ -17,6 +17,11 @@ namespace Mani
 		Vec3f up(const Rotation& q);
 		Vec3f right(const Rotation& q);
 
+		Mat4f model(const Vec3f& p, const Quatf& q, const Vec3f& s);
+		Vec3f forward(const Quatf& q);
+		Vec3f up(const Quatf& q);
+		Vec3f right(const Quatf& q);
+
 		std::tuple<Position&, Rotation&, Scale&> addTransform(ECS::Registry& registry, ECS::EntityId entityId);
 		std::tuple<Position*, Rotation*, Scale*> getTransform(ECS::Registry& registry, ECS::EntityId entityId);
 	};

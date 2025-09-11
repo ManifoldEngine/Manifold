@@ -3,6 +3,8 @@
 #include <Core/Debug/Profiling.h>
 #include <Core/Async/Parallel.h>
 
+#include <Camera/Camera.h>
+
 #include <Resources/Resource.h>
 
 #include <OpenGL/OpenGL.h>
@@ -11,6 +13,7 @@
 #include <OpenGL/Render/OpenGLResourceSystem.h>
 
 #include <RenderAPI/MeshComponent.h>
+#include <RenderAPI/BoundingSphere.h>
 
 #include <vector>
 
@@ -35,15 +38,27 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 {
 	MANI_TIME_SCOPE(OpenGLCommandBufferSystemtick);
 
+	// camera
+	ECS::View<Position, Camera> cameraView(registry);
+	auto it = cameraView.begin();
+	MANI_ASSERT(it != cameraView.end(), "Trying to render without a camera");
+	auto [cameraPosition, camera] = registry.getMany<Position, Camera>(*it);
+
 	// gather all draw commands.
 	std::array<std::vector<OpenGLCommand>, Application::THREAD_COUNT> threadBuffers;
 	ECS::View<Position, Rotation, Scale, MeshComponent> view(registry);
-	Mani::parallelFor(view, [&threadBuffers, &registry](ECS::EntityId entityId, size_t threadIndex)
+	Mani::parallelFor(view, [&threadBuffers, &registry, cameraPosition, camera](ECS::EntityId entityId, size_t threadIndex)
 	{
 		MeshComponent& meshComponent = *registry.get<MeshComponent>(entityId);
 		auto [position, rotation, scale] = Transform::getTransform(registry, entityId);
 
-		// todo: camera frustrum culling
+		if (const BoundingSphere* boundingSphere = registry.get<BoundingSphere>(entityId))
+		{
+			if (!CameraStatics::isInView(*camera, *position, *rotation, *scale, *boundingSphere))
+			{
+				return;
+			}
+		}
 
 		Resource<OpenGLVertexArray>* vaoRes = registry.get<Resource<OpenGLVertexArray>>(meshComponent.meshHandle);
 		if (vaoRes == nullptr || !vaoRes->isReady)
@@ -117,7 +132,7 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 	// write to the current write buffer
 	writeBuffer.commands.clear();
 	writeBuffer.commands = std::move(commands);
-
+	MANI_LOG(LogOpenGL, "wrote {} opengl to command buffer", writeBuffer.commands.size());
 	// set the next read buffer
 	cbs.readBuffer = cbs.writeBuffer;
 	// set the next write buffer

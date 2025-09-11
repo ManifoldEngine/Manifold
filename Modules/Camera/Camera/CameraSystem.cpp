@@ -1,6 +1,6 @@
 #include "CameraSystem.h"
 
-#include <Core/Components/Transform.h>
+#include <Core/Transform.h>
 #include <Core/ManiAssert.h>
 #include <Core/Vec.h>
 
@@ -49,7 +49,7 @@ void CameraSystem::onInitialize(ECS::Registry& registry, World& world)
 
     cache.cameraId = registry.create();
     Position* position = registry.add<Position>(cache.cameraId);
-    position->value = Mani::VEC3F::BACK * 5.f; // film the origin by default
+    position->value = VEC3F::BACK * 5.f; // film the origin by default
     registry.add<Rotation>(cache.cameraId);
     registry.add<Camera>(cache.cameraId);
 }
@@ -72,27 +72,27 @@ void CameraSystem::tick(ECS::Registry& registry)
         Camera& camera = *registry.get<Camera>(entityId);
 
         camera.view = Mat4f::lookAt(position.value, position.value + Transform::forward(rotation), Transform::up(rotation));
-        
+        camera.frustrum = FrustumStatics::create(camera, position.value, rotation.value);
+
         switch (camera.mode)
         {
-        case Camera::EMode::PERSPECTIVE:
+        case ECameraMode::PERSPECTIVE:
             {
                 MANI_ASSERT(Math::abs(camera.height) > FLT_EPSILON, "Height of a camera cannot be 0.");
                 camera.projection = Mat4f::perspective(Math::degToRad(camera.fov),
                                                         camera.width / camera.height,
-                                                        camera.nearClipPlane, 
-                                                        camera.farClipPlane);
+                                                        camera.near, camera.far);
                 break;
             }
 
-            case Camera::EMode::ORTHOGRAPHIC:
+            case ECameraMode::ORTHOGRAPHIC:
             {
                 const float zoomFactor = camera.orthographicZoomFactor;
                 const float halfWidth = camera.width * zoomFactor / 2.f;
                 const float halfHeight = camera.height * zoomFactor / 2.f;
                 camera.projection = Mat4f::orthographic(-halfWidth, halfWidth,
                                                         -halfHeight, halfHeight,
-                                                        camera.nearClipPlane, camera.farClipPlane);
+                                                        camera.near, camera.far);
                 break;
             }
 
@@ -105,25 +105,25 @@ void CameraSystem::tick(ECS::Registry& registry)
     }
 }
 
-Vec2f Mani::CameraSystem::worldToScreenSpace(const ECS::Registry& registry, const Vec3f& position)
+Vec2f CameraSystem::worldToScreenSpace(const ECS::Registry& registry, const Vec3f& position)
 {
     if (const Camera* camera = getCamera(registry))
     {
-        return camera->worldToScreenSpace(position);
+        return CameraStatics::worldToScreenSpace(*camera, position);
     }
     return VEC2F::ZERO;
 }
 
-Vec3f Mani::CameraSystem::screenToWorldSpace(const ECS::Registry& registry, const Vec2f& position)
+Vec3f CameraSystem::screenToWorldSpace(const ECS::Registry& registry, const Vec2f& position)
 {
     if (const Camera* camera = getCamera(registry))
     {
-        return camera->screenToWorldSpace(position);
+        return CameraStatics::screenToWorldSpace(*camera, position);
     }
     return VEC3F::ZERO;
 }
 
-Vec3f Mani::CameraSystem::screenToWorldProjection(const ECS::Registry& registry, const Vec2f& screenPosition, float distance)
+Vec3f CameraSystem::screenToWorldProjection(const ECS::Registry& registry, const Vec2f& screenPosition, float distance)
 {
     const Camera* camera = getCamera(registry);
     if (camera == nullptr)
@@ -138,7 +138,7 @@ Vec3f Mani::CameraSystem::screenToWorldProjection(const ECS::Registry& registry,
 
     switch (camera->mode)
     {
-        case Camera::EMode::PERSPECTIVE:
+        case ECameraMode::PERSPECTIVE:
         {
             auto [cameraPosition, cameraRotation] = getCameraPositionAndRotation(registry);
             if (cameraPosition == nullptr || cameraRotation == nullptr)
@@ -147,7 +147,7 @@ Vec3f Mani::CameraSystem::screenToWorldProjection(const ECS::Registry& registry,
             }
 
             const float theta = Math::degToRad(camera->fov) * .5f;
-            const float aspectRatio = camera->getAspectRatio();
+            const float aspectRatio = CameraStatics::getAspectRatio(*camera);
     
             const float tanHalfTheta = Math::tan(theta * .5f);
             const float yMin = tanHalfTheta * distance;
@@ -169,7 +169,7 @@ Vec3f Mani::CameraSystem::screenToWorldProjection(const ECS::Registry& registry,
                 Transform::forward(*cameraRotation) * distance;
         }
 
-        case Camera::EMode::ORTHOGRAPHIC:
+        case ECameraMode::ORTHOGRAPHIC:
         {
             auto [cameraPosition, cameraRotation] = getCameraPositionAndRotation(registry);
             if (cameraPosition == nullptr || cameraRotation == nullptr)
