@@ -9,6 +9,6 @@
 #include <Core/ECS/View.h>
 #include <Core/ECS/System.h>
 
-#include <Core/Components/Transform.h>
+#include <Core/Transform.h>
 
 #include <Core/Application.h>
