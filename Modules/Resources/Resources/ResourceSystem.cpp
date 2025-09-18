@@ -10,28 +10,31 @@ void ResourceSystem::onInitialize(ECS::Registry& registry, World& world)
 void ResourceSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	unloadAll(registry);
-	for (const auto entityId : ECS::View<ResourceSystemExtension>(registry))
-	{
-		removeExtension(registry, entityId);
-	}
 	registry.removeSingle<ResourceSystem::Storage>();
 }
 
-ECS::EntityId ResourceSystem::addExtension(ECS::Registry& registry, std::unique_ptr<IResourceSystemExtension> extension)
+void Mani::ResourceSystem::registerExtension(ECS::Registry& registry, IResourceSystemExtension* extension)
 {
-	ECS::EntityId entityId = registry.create();
-	ResourceSystemExtension& ext = *registry.add<ResourceSystemExtension>(entityId);
-	ext.obj = std::move(extension);
-	return entityId;
+	MANI_ASSERT(extension != nullptr, "trying to register a null extension");
+	if (Storage* storage = registry.getSingle<Storage>())
+	{
+		std::vector<IResourceSystemExtension*>& extensions = storage->extensions;
+		auto it = std::find(extensions.begin(), extensions.end(), extension);
+		if (it == extensions.end())
+		{
+			extensions.push_back(extension);
+		}
+	}
 }
 
-void ResourceSystem::removeExtension(ECS::Registry& registry, ECS::EntityId entityId)
+void Mani::ResourceSystem::unregisterExtension(ECS::Registry& registry, IResourceSystemExtension* extension)
 {
-	if (ResourceSystemExtension* ext = registry.get<ResourceSystemExtension>(entityId))
+	MANI_ASSERT(extension != nullptr, "trying to unregister a null extension");
+	if (Storage* storage = registry.getSingle<Storage>())
 	{
-		ext->obj.reset();
+		std::vector<IResourceSystemExtension*>& extensions = storage->extensions;
+		extensions.erase(std::remove_if(extensions.begin(), extensions.end(), [extension](const auto* ext) { return ext == extension; }), extensions.end());
 	}
-	registry.destroy(entityId);
 }
 
 void ResourceSystem::unloadResource(ECS::Registry& registry, ECS::EntityId inEntityId)

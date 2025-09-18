@@ -3,15 +3,11 @@
 #include <Core/Vec.h>
 #include <RenderAPI/Shader.h>
 #include <vector>
+#include <string>
 
 namespace Mani
 {
-	struct Texture
-	{
-		std::string key = "";
-		std::string path = "";
-	};
-
+	struct ShaderParam_Texture { std::string key = ""; std::string path = ""; };
 	struct ShaderParam_float { std::string key = ""; float value = 0.f; };
 	struct ShaderParam_Vec2f { std::string key = ""; Vec2f value = VEC2F::ZERO; };
 	struct ShaderParam_Vec3f { std::string key = ""; Vec3f value = VEC3F::ZERO; };
@@ -31,7 +27,7 @@ namespace Mani
 		Vec4f color = VEC4F::ONE;
 
 		std::string shaderPath = "";
-		std::vector<Texture> textures;
+		std::vector<ShaderParam_Texture> textures;
 		
 		std::vector<ShaderParam_float> shaderParam_float_values;
 		std::vector<ShaderParam_Vec2f> shaderParam_Vec2f_values;

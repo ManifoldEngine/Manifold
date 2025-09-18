@@ -1,7 +1,6 @@
 #pragma once
 
 #include <OpenGL/OpenGL.h>
-#include <OpenGL/Data/STBITexture.h>
 #include <RenderAPI/Texture.h>
 
 namespace Mani
@@ -9,7 +8,7 @@ namespace Mani
 	class OpenGLTexture2D
 	{
 	public:
-		bool load(const STBITexture& texture);
+		bool load(const Texture& texture);
 		void unload();
 
 		void bind(uint32_t slot);
