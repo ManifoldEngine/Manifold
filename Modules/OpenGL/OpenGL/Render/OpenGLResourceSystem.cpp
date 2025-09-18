@@ -4,6 +4,7 @@
 
 #include <ECS/Entity.h>
 
+#include <OpenGL/OpenGLConfig.h>
 #include <OpenGL/OpenGLWindowContext.h>
 #include <OpenGL/Data/OpenGLBuffer.h>
 #include <OpenGL/Data/OpenGLVertexArray.h>
@@ -320,8 +321,17 @@ void Mani::OpenGLResourceSystem::onTexture2DUnloaded(ECS::Registry& registry, EC
 void OpenGLResourceSystem::onSpriteUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) { MANI_LOG(LogOpenGL, "onSpriteUnloaded called"); }
 
 template<>
-bool ResourceLoader::load<STBITexture>(const std::filesystem::path& absolutePath, Resource<STBITexture>& resource)
+bool ResourceLoader::load<STBITexture>(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<STBITexture>& resource)
 {
-	resource.value.load(absolutePath.string());
+	uint8_t stbiSetFlipVerticallyOnLoad = Mani::STBISETFLIPVERTICALLYONLOAD_DISABLED;
+
+	ECS::View<Resource<OpenGLConfig>> openGLConfigView(registry);
+	const auto it = openGLConfigView.begin();
+	if (it != openGLConfigView.end())
+	{
+		const Resource<OpenGLConfig>& configRes = *registry.get<Resource<OpenGLConfig>>(*it);
+		stbiSetFlipVerticallyOnLoad = configRes.value.stbiSetFlipVerticallyOnLoad;
+	}
+	resource.value.load(absolutePath.string(), stbiSetFlipVerticallyOnLoad);
 	return resource.value.isLoaded();
 }

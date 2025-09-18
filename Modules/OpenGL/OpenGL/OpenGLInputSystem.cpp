@@ -87,7 +87,7 @@ void OpenGLInputSystem::tick(ECS::Registry& registry)
     if (glfwGetKey(context.window, GLFW_KEY_A) == GLFW_PRESS)
     {
         inputDevice.buttonBuffer.emplace_back(ButtonControl{ "A", true });
-        wasd.x += 1.0f;
+        wasd.x += -1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_A) == GLFW_RELEASE)
     {
@@ -98,7 +98,7 @@ void OpenGLInputSystem::tick(ECS::Registry& registry)
     if (glfwGetKey(context.window, GLFW_KEY_D) == GLFW_PRESS)
     {
         inputDevice.buttonBuffer.emplace_back(ButtonControl{ "D", true });
-        wasd.x += -1.0f;
+        wasd.x += 1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_D) == GLFW_RELEASE)
     {

@@ -22,7 +22,7 @@ namespace Mani
         friend OpenGLResourceSystemExtension;
 
         virtual std::string_view getName() const override { return "OpenGLResourceSystem"; }
-        virtual bool shouldTick(ECS::Registry& registry) const override { return false; }
+        virtual bool shouldTick(const ECS::Registry& registry) const override { return false; }
 
     protected:
         virtual void onInitialize(ECS::Registry& registry, World& world) override;
@@ -46,5 +46,5 @@ namespace Mani
     };
 
     template<>
-    bool ResourceLoader::load<STBITexture>(const std::filesystem::path& absolutePath, Resource<STBITexture>& resource);
+    bool ResourceLoader::load<STBITexture>(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<STBITexture>& resource);
 }

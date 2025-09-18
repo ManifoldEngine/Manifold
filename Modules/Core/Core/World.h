@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 namespace Mani
 {
@@ -30,24 +31,45 @@ namespace Mani
 		// if a system of type TSystem already exists, a new system will not be created.
 		// after this is called, a TSystem is guarranteed to live in the container.
 		// returns true if a system was created.
-		template<IsDerived<ECS::System> TSystem>
+		template<DerivedFrom<ECS::System> TSystem>
 		World& createSystem();
+	
+		template<typename... TSystems>
+		requires (DerivedFrom<TSystems, ECS::System> && ...)
+		World& createSystems();
+
+		template<typename... Ts>
+		World& createSystems(TypeList<Ts...>&&);
 		
 		// creates, initializes then return a shared pointer to the TSystem
 		// this is most notably useful to allow a system to initialize a dependency and receive a pointer to it
 		// returns a weak pointer to a TSystem
-		template<IsDerived<ECS::System> TSystem>
+		template<DerivedFrom<ECS::System> TSystem>
 		void initializeDependency();
 
 		// returns true if TSystem was created in this world.
 		template<typename TSystem>
 		bool has() const;
 
+		template<typename... TSystems>
+		requires (DerivedFrom<TSystems, ECS::System> && ...)
+		bool hasSystems() const;
+		
+		template <typename... Ts>
+		bool hasSystems(TypeList<Ts...>&&) const;
+
 		// destroys a system of type TSystem.
 		// after this is called, no TSystem remains in the container.
 		// returns true if a system was destroyed
-		template<IsDerived<ECS::System> TSystem>
+		template<DerivedFrom<ECS::System> TSystem>
 		World& destroySystem();
+
+		template<DerivedFrom<ECS::System>... TSystems>
+		requires (DerivedFrom<TSystems, ECS::System> && ...)
+		World& destroySystems();
+
+		template<typename... Ts>
+		World& destroySystems(TypeList<Ts...>&&);
 
 		// returns the amount of systems
 		size_t systemCount() const;
@@ -56,16 +78,22 @@ namespace Mani
 		ECS::Registry& getMutableRegistry() { return m_registry; }
 
 	private:
+		struct SystemContainer
+		{
+			std::shared_ptr<ECS::System> system = nullptr;
+			bool isMarkedForDestruction = false;
+		};
+
 		ECS::Registry m_registry;
-		std::vector<std::shared_ptr<ECS::System>> m_systems;
+		std::vector<SystemContainer> m_systems;
 		bool m_isInitialized = false;
 	};
 
-	template<IsDerived<ECS::System> TSystem>
+	template<DerivedFrom<ECS::System> TSystem>
 	inline World& World::createSystem()
 	{
 		// check if a system of this type exists already.
-		for (const auto& system : m_systems)
+		for (const auto& [system, _]: m_systems)
 		{
 			if (std::dynamic_pointer_cast<const TSystem>(system) != nullptr)
 			{
@@ -75,18 +103,10 @@ namespace Mani
 
 		auto system = std::make_shared<TSystem>();
 
-		ETickGroup targetTickGroup = system->getTickGroup();
-		auto insertIt = m_systems.end();
-		for (auto it = m_systems.begin(); it != m_systems.end(); it++)
-		{
-			if ((*it)->getTickGroup() > targetTickGroup)
-			{
-				insertIt = it;
-				break;
-			}
-		}
+		constexpr bool isMarkedForDestruction = false;
+		m_systems.push_back(SystemContainer{ system, isMarkedForDestruction });
 
-		m_systems.emplace(insertIt, system);
+		std::sort(m_systems.begin(), m_systems.end(), [](const auto& lhs, const auto& rhs) { return lhs.system->getTickGroup() < rhs.system->getTickGroup(); });
 
 		if (m_isInitialized)
 		{
@@ -95,13 +115,27 @@ namespace Mani
 		return *this;
 	}
 
-	template<IsDerived<ECS::System> TSystem>
+	template<typename... TSystems>
+	requires (DerivedFrom<TSystems, ECS::System> && ...)
+	inline World& World::createSystems()
+	{
+		(createSystem<TSystems>(), ...);
+		return *this;
+	}
+
+	template<typename ...Ts>
+	inline World& World::createSystems(TypeList<Ts...>&&)
+	{
+		return createSystems<Ts...>();
+	}
+
+	template<DerivedFrom<ECS::System> TSystem>
 	inline void World::initializeDependency()
 	{
 		createSystem<TSystem>();
-		for (auto& system : m_systems)
+		for (auto& [system, _] : m_systems)
 		{
-			if (isDerived<TSystem>(system))
+			if (isDerivedFrom<TSystem>(system))
 			{
 				system->initialize(m_registry, *this);
 			}
@@ -111,9 +145,9 @@ namespace Mani
 	template<typename TSystem>
 	inline bool World::has() const
 	{
-		for (auto& system : m_systems)
+		for (auto& [system, isMarkedForDestruction] : m_systems)
 		{
-			if (isDerived<TSystem>(*system))
+			if (!isMarkedForDestruction && isDerivedFrom<TSystem>(*system))
 			{
 				return true;
 			}
@@ -121,25 +155,50 @@ namespace Mani
 		return false;
 	}
 
-	template<IsDerived<ECS::System> TSystem>
+	template<typename... TSystems>
+	requires (DerivedFrom<TSystems, ECS::System> && ...)
+	inline bool World::hasSystems() const
+	{
+		return (has<TSystems>() && ...);
+	}
+
+	template<typename ...Ts>
+	inline bool World::hasSystems(TypeList<Ts...>&&) const
+	{
+		return hasSystems<Ts...>();
+	}
+
+	template<DerivedFrom<ECS::System> TSystem>
 	inline World& World::destroySystem()
 	{
 		for (auto it = m_systems.begin(); it != m_systems.end(); it++)
 		{
-			std::shared_ptr<ECS::System> system = *it;
+			auto& [system, isMarkedForDestruction] = *it;
 			if (std::dynamic_pointer_cast<TSystem>(system) != nullptr)
 			{
 				if (m_isInitialized)
 				{
 					system->deinitialize(m_registry, *this);
 				}
-
-				system.reset();
-				m_systems.erase(it);
+				isMarkedForDestruction = true;
 				return *this;
 			}
 		}
 		return *this;
+	}
+
+	template<DerivedFrom<ECS::System>... TSystems>
+	requires (DerivedFrom<TSystems, ECS::System> && ...)
+	inline World& World::destroySystems()
+	{
+		(destroySystem<TSystems>(), ...);
+		return *this;
+	}
+
+	template<typename ...Ts>
+	inline World& World::destroySystems(TypeList<Ts...>&&)
+	{
+		return destroySystems<Ts...>();
 	}
 
 	inline void World::initialize()
@@ -149,7 +208,7 @@ namespace Mani
 			return;
 		}
 
-		for (auto& system : m_systems)
+		for (auto& [system, _] : m_systems)
 		{
 			system->initialize(m_registry, *this);
 		}
@@ -166,7 +225,8 @@ namespace Mani
 
 		for (auto it = m_systems.rbegin(); it != m_systems.rend(); it++)
 		{
-			(*it)->deinitialize(m_registry, *this);
+			auto& [system, _] = *it;
+			system->deinitialize(m_registry, *this);
 		}
 
 		// it is possible we have deferred entities left.
@@ -182,18 +242,23 @@ namespace Mani
 			return;
 		}
 
-		// snapshot the systems that should tick. 
-		// New systems can be created during a tick and they might not be in a proper state to tick yet.
-		std::vector<std::shared_ptr<ECS::System>> systems = m_systems;
-		for (auto& system : systems)
 		{
-			if (system->shouldTick(m_registry))
+			// snapshot the systems that should tick. 
+			// New systems can be created during a tick and they might not be in a proper state to tick yet.
+			std::vector<SystemContainer> systems = m_systems;
+			for (auto& [system, _] : systems)
 			{
-				system->tick(m_registry);
+				if (system->shouldTick(m_registry))
+				{
+					system->tick(m_registry);
+				}
 			}
 		}
 
 		m_registry.handleDeferredDestroy();
+
+		// remove uninitialized systems
+		m_systems.erase(std::remove_if(m_systems.begin(), m_systems.end(), [](const auto& container) { return container.isMarkedForDestruction; }), m_systems.end());
 	}
 
 	inline size_t World::systemCount() const

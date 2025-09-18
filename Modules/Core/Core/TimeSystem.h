@@ -10,7 +10,7 @@ namespace Mani
     public:
         virtual std::string_view getName() const override { return "TimeSystem"; }
         virtual ETickGroup getTickGroup() const override { return ETickGroup::Begin;  }
-        virtual bool shouldTick(ECS::Registry& registry) const override { return true; }
+        virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }
 
         virtual void tick(ECS::Registry& registry) override;
 

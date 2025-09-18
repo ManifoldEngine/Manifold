@@ -10,7 +10,7 @@ std::string_view ECS::System::getName() const
     return "NONE";
 }
 
-bool ECS::System::shouldTick(ECS::Registry& registry) const
+bool ECS::System::shouldTick(const ECS::Registry& registry) const
 {
     return false;
 }

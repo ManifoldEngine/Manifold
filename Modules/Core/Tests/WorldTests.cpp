@@ -1,6 +1,5 @@
 #include <Core/World.h>
 #include <Core/ECS/System.h>
-#include <Events/Event.h>
 
 #include <ManiTests/ManiTests.h>
 
@@ -24,7 +23,7 @@ namespace Mani_Test
 			}
 		}
 
-		virtual bool shouldTick(ECS::Registry& registry) const override
+		virtual bool shouldTick(const ECS::Registry& registry) const override
 		{
 			return true;
 		}
@@ -125,8 +124,6 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 		static bool someSystem2DeInitialized = false;
 		static bool someSystem3DeInitialized = false;
 
-		DECLARE_EVENT(OnDeinitializedEvent, );
-		
 		class SomeSystem1 : public ECS::System
 		{
 		public:
@@ -247,5 +244,127 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 		world.destroySystem<SomeOtherSystem>();
 		world.deinitialize();
 	}
+
+	MANI_TEST(ShouldBeAbleToMixupSystemCreationAccrossMultipleTickGroups, "Should Be Able To Mixup System Creation Accross Multiple TickGroups")
+	{
+		struct TickOrder { std::vector<std::string> order; };
+		
+		class SomePreUpdateSystem :		public ECS::System { public: virtual ETickGroup getTickGroup() const override { return ETickGroup::PreUpdate;	} virtual std::string_view getName() const override { return "SomePreUpdateSystem";	}	virtual void tick(ECS::Registry& registry) override { registry.getSingle<TickOrder>()->order.push_back(getName().data()); } virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }};
+		class SomeUpdateSystem :		public ECS::System { public: virtual ETickGroup getTickGroup() const override { return ETickGroup::Update;		} virtual std::string_view getName() const override { return "SomeUpdateSystem";	}	virtual void tick(ECS::Registry& registry) override { registry.getSingle<TickOrder>()->order.push_back(getName().data()); } virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }};
+		class SomePostUpdateSystem :	public ECS::System { public: virtual ETickGroup getTickGroup() const override { return ETickGroup::PostUpdate;	} virtual std::string_view getName() const override { return "SomePostUpdateSystem";}	virtual void tick(ECS::Registry& registry) override { registry.getSingle<TickOrder>()->order.push_back(getName().data()); } virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }};
+		class SomePreRenderSystem :		public ECS::System { public: virtual ETickGroup getTickGroup() const override { return ETickGroup::PreRender;	} virtual std::string_view getName() const override { return "SomePreRenderSystem";	}	virtual void tick(ECS::Registry& registry) override { registry.getSingle<TickOrder>()->order.push_back(getName().data()); } virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }};
+		class SomeRenderSystem :		public ECS::System { public: virtual ETickGroup getTickGroup() const override { return ETickGroup::Render;		} virtual std::string_view getName() const override { return "SomeRenderSystem";	}	virtual void tick(ECS::Registry& registry) override { registry.getSingle<TickOrder>()->order.push_back(getName().data()); } virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }};
+		class SomePostRenderSystem :	public ECS::System { public: virtual ETickGroup getTickGroup() const override { return ETickGroup::PostRender; }  virtual std::string_view getName() const override { return "SomePostRenderSystem";}	virtual void tick(ECS::Registry& registry) override { registry.getSingle<TickOrder>()->order.push_back(getName().data()); } virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }};
+
+		const std::vector<std::string> expected = 
+		{
+			"SomePreUpdateSystem",
+			"SomeUpdateSystem",
+			"SomePostUpdateSystem",
+			"SomePreRenderSystem",
+			"SomeRenderSystem",
+			"SomePostRenderSystem",
+		};
+
+		{
+			World world;
+			world.initialize();
+			ECS::Registry& registry = world.getMutableRegistry();
+			registry.addSingle<TickOrder>();
+
+			world.createSystem<SomePostRenderSystem>();
+			world.createSystem<SomeRenderSystem>();
+			world.createSystem<SomePreRenderSystem>();
+			world.createSystem<SomePostUpdateSystem>();
+			world.createSystem<SomeUpdateSystem>();
+			world.createSystem<SomePreUpdateSystem>();
+
+			world.tick();
+
+			const TickOrder tickOrder1 = *registry.getSingle<TickOrder>();
+			MANI_TEST_ASSERT(tickOrder1.order == expected, "order should have been respected");
+		}
+
+		{
+			World world;
+			world.initialize();
+			ECS::Registry& registry = world.getMutableRegistry();
+			registry.addSingle<TickOrder>();
+
+			world.createSystems<SomePostRenderSystem,
+								SomeRenderSystem,
+								SomePreRenderSystem,
+								SomePostUpdateSystem,
+								SomeUpdateSystem,
+								SomePreUpdateSystem>();
+
+			world.tick();
+
+			const TickOrder tickOrder1 = *registry.getSingle<TickOrder>();
+			MANI_TEST_ASSERT(tickOrder1.order == expected, "order should have been respected");
+		}
+	}
+
+	MANI_SECTION_BEGIN(SystemSets, "System Sets")
+	{
+		MANI_TEST(CreateAndDestroySystemSet, "Should create then destroy all systems in the same variadic template type")
+		{
+			static size_t createdSytems = 0;
+			static size_t destroyedSystems = 0;
+
+			class MyFirstSystem : public Mani::ECS::System
+			{
+			protected:
+				virtual void onInitialize(Mani::ECS::Registry& registry, Mani::World& world) override
+				{
+					createdSytems++;
+				}
+
+				virtual void onDeinitialize(Mani::ECS::Registry& registry, Mani::World& world) override
+				{
+					destroyedSystems++;
+				}
+			};
+
+			class MySecondSystem : public Mani::ECS::System
+			{
+			protected:
+				virtual void onInitialize(Mani::ECS::Registry& registry, Mani::World& world) override
+				{
+					createdSytems++;
+				}
+				virtual void onDeinitialize(Mani::ECS::Registry& registry, Mani::World& world) override
+				{
+					destroyedSystems++;
+				}
+			};
+
+			{
+				World world;
+				world.initialize();
+				world.createSystems<MyFirstSystem, MySecondSystem>();
+				const bool hasSystems = world.hasSystems<MyFirstSystem, MySecondSystem>();
+				MANI_ASSERT(hasSystems, "should have the system set");
+				world.destroySystems<MyFirstSystem, MySecondSystem>();
+				MANI_ASSERT(createdSytems == 2, "should have created a set of 2 systems");
+				MANI_ASSERT(destroyedSystems == 2, "should have destroyed a set of 2 systems");
+			}
+
+			createdSytems = 0;
+			destroyedSystems = 0;
+			using MySystemSet = Mani::TypeList<MyFirstSystem, MySecondSystem>;
+
+			{
+				World world;
+				world.initialize();
+				world.createSystems(MySystemSet{});
+				MANI_ASSERT(world.hasSystems(MySystemSet{}), "should have the system set");
+				world.destroySystems(MySystemSet{});
+				MANI_ASSERT(createdSytems == 2, "should have created a set of 2 systems");
+				MANI_ASSERT(destroyedSystems == 2, "should have destroyed a set of 2 systems");
+			}
+		}
+	}
+	MANI_SECTION_END(SystemSets)
 }
 MANI_SECTION_END(Core_World)

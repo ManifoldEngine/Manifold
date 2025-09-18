@@ -1,13 +1,13 @@
-include "../../../locations.lua"
+local locations = require("locations")
 
 group ""
     project "Tests"
         kind "ConsoleApp"
-        location (enginedir .. "/%{prj.name}")
+        location (locations.enginedir .. "/%{prj.name}")
 
-        files { enginedir .. "/%{prj.name}/**.h", enginedir .. "/%{prj.name}/**.cpp" }
+        files { locations.enginedir .. "/%{prj.name}/**.h", locations.enginedir .. "/%{prj.name}/**.cpp" }
                 
-        includedirs { thirdpartiesdir .. "/SimpleTests/include", moduledir }
+        includedirs { locations.thirdpartiesdir .. "/SimpleTests/include", locations.moduledir }
 
-        defines { "MANI_TESTS_BUILD_OUTPUTDIR=\"" .. outputdir .. "/\"" }
+        defines { "MANI_TESTS_BUILD_OUTPUTDIR=\"" .. locations.outputdir .. "/\"" }
 group ""

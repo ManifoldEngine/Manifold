@@ -21,8 +21,7 @@ using namespace Mani;
 struct ManImGuiRenderSystem::Storage
 {
 	ImDrawData* drawData = nullptr;
-	unsigned long long frame = 0;
-	std::atomic<unsigned long long> renderFrame = 0;
+	std::binary_semaphore isDrawDataBeingRead{ 0 };
 };
 
 void ManImGuiRenderSystem::onInitialize(ECS::Registry& registry, World& world)
@@ -30,7 +29,9 @@ void ManImGuiRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 	world.initializeDependency<ManImGuiSystem>();
 	world.initializeDependency<OpenGLRenderSystem>();
 
-	registry.addSingle<ManImGuiRenderSystem::Storage>();
+	ManImGuiRenderSystem::Storage& storage = *registry.addSingle<ManImGuiRenderSystem::Storage>();
+	storage.isDrawDataBeingRead.release();
+
 	OpenGLRenderSystem::registerExtension(registry, &extension);
 }
 
@@ -47,24 +48,13 @@ void Mani::ManImGuiRenderSystem::tick(ECS::Registry& registry)
 
 	switch (context.mode)
 	{
-		case EManImGuiMode::Hidden:
-		{
-			storage.frame++;
-			storage.renderFrame = storage.frame;
-			storage.drawData = nullptr;
-			break;
-		}
-		
+		case EManImGuiMode::Hidden: break;	
 		case EManImGuiMode::Show:
 		{
-			while (storage.frame != storage.renderFrame)
-			{
-				std::this_thread::yield();
-			}
-
+			storage.isDrawDataBeingRead.acquire();
+			MANI_ASSERT(storage.drawData == nullptr, "Draw data should have been consumed by that point.");
 			ImGui::Render();
 			storage.drawData = ImGui::GetDrawData();
-			storage.frame++;
 			break;
 		}
 	}
@@ -74,9 +64,10 @@ void ManImGuiRenderSystemExtension::onPostRender(ECS::Registry& registry) const
 {
 	MANI_TIME_SCOPE(ManImGuiRenderSystemExtensiononPostRender);
 	ManImGuiRenderSystem::Storage& storage = *registry.getSingle<ManImGuiRenderSystem::Storage>();
-	if (storage.renderFrame < storage.frame)
+	if (storage.drawData != nullptr)
 	{
 		ImGui_ImplOpenGL3_RenderDrawData(storage.drawData);
-		storage.renderFrame++;
+		storage.drawData = nullptr;
+		storage.isDrawDataBeingRead.release();
 	}
 }

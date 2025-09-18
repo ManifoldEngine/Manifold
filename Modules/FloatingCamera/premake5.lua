@@ -1,16 +1,16 @@
-include "../../../locations.lua"
+local locations = require("locations")
 
 group "Engine"
     project "FloatingCamera"
         kind "StaticLib"
-        location (moduledir .. "/%{prj.name}")
+        location (locations.moduledir .. "/%{prj.name}")
         
         files { 
-            moduledir .. "/%{prj.name}/**.h",
-            moduledir .. "/%{prj.name}/**.cpp" 
+            locations.moduledir .. "/%{prj.name}/**.h",
+            locations.moduledir .. "/%{prj.name}/**.cpp" 
         }
 
         links { "Core", "Camera", "Inputs" }
 
-        includedirs { moduledir .. "/**" }
+        includedirs { locations.moduledir .. "/**" }
 group ""

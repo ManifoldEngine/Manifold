@@ -7,17 +7,21 @@ namespace Mani
 {
 	enum class ETickGroup : uint8_t
 	{
-		Begin = 0,
-		PreInput = 1,
-		Input = 2,
-		PostInput = 3,
-		PreUpdate = 4,
-		Update = 5,
-		PostUpdate = 6,
-		PreRender = 7,
-		Render = 8,
-		PostRender = 9,
-		End = 10,
+		Begin		= 0,
+
+		PreInput	= 1,
+		Input		= 2,
+		PostInput	= 3,
+
+		PreUpdate	= 4,
+		Update		= 5,
+		PostUpdate	= 6,
+
+		PreRender	= 7,
+		Render		= 8,
+		PostRender	= 9,
+
+		End			= 10,
 	};
 
 	class World;
@@ -30,7 +34,7 @@ namespace Mani
 		{
 		public:
 			virtual std::string_view getName() const;
-			virtual bool shouldTick(ECS::Registry& registry) const;
+			virtual bool shouldTick(const ECS::Registry& registry) const;
 			virtual ETickGroup getTickGroup() const;
 
 			void initialize(ECS::Registry& registry, World& world);

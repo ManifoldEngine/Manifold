@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ManiMaths/Vec3.h>
+#include <Core/Vec.h>
 
 namespace Mani
 {

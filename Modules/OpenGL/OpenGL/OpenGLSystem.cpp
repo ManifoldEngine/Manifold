@@ -12,8 +12,9 @@
 #include <RenderAPI/ShaderConfig.h>
 #include <RenderAPI/Shader.h>
 
-#include <OpenGLDebug.h>
-#include <OpenGLWindowContext.h>
+#include <OpenGL/OpenGLDebug.h>
+#include <OpenGL/OpenGLConfig.h>
+#include <OpenGL/OpenGLWindowContext.h>
 #include <OpenGL/OpenGLInputSystem.h>
 #include <OpenGL/Data/OpenGLShader.h>
 #include <OpenGL/Render/OpenGLResourceSystem.h>
@@ -38,19 +39,30 @@ std::string_view OpenGLSystem::getName() const
     return "OpenGLSystem";
 }
 
-bool OpenGLSystem::shouldTick(ECS::Registry& registry) const
+bool OpenGLSystem::shouldTick(const ECS::Registry& registry) const
 {
     return false;
 }
 
 void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
 {
+#ifndef MANI_COORDINATE_ZMINUSFORWARD_YUP
+    // OpenGL uses righ handed z- forward coordinate system.
+    static_assert(false);
+#endif
+
     // initialize glfw
     if (!glfwInit())
     {
         MANI_LOG_ERROR(LogOpenGL, "failed to init glfw");
         return;
     }
+    world.initializeDependency<ResourceSystem>();
+    
+    const std::string openglConfigRelPath = std::format("Config/{}", Mani::OPENGLCONFIG_FILENAME);
+    const ECS::EntityId openglConfigId = ResourceSystem::loadResourceSync<OpenGLConfig>(registry, openglConfigRelPath);
+    const Resource<OpenGLConfig>& configRes = *registry.get<Resource<OpenGLConfig>>(openglConfigId);
+    const OpenGLConfig& config = configRes.value;
 
     // set glfw context
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -94,7 +106,7 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
         return;
     }
 
-    glfwSwapInterval(1); // vsync
+    glfwSwapInterval(config.vsync); // vsync
     loadAndCompileShadersSync(registry, world);
 
     // set the view port to the window's size.

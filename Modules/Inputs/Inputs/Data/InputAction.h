@@ -21,6 +21,7 @@ namespace Mani
 
 		[[nodiscard]] bool changed() const { return isPressed != wasPressed; }
 		[[nodiscard]] bool pressed() const { return isPressed && !wasPressed; }
+		[[nodiscard]] bool held() const { return isPressed; }
 		[[nodiscard]] bool released() const { return !isPressed && wasPressed; }
 
 		[[nodiscard]] Vec3d xyz() const { return { x, y, z }; }
