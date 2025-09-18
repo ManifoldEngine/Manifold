@@ -47,13 +47,16 @@ namespace Mani
 		float width = 800.f;
 		float height = 800.f;
 		
-		float orthographicZoomFactor = 0.01f;
 		
 		ECameraMode mode = ECameraMode::PERSPECTIVE;
 		Mat4f projection = MAT4F::IDENTITY;
 		Mat4f view = MAT4F::IDENTITY;
 
 		Frustum frustrum;
+
+		// Ortho specific parameters
+		float orthographicZoomFactor = 1.f;
+		uint32_t pixelsPerUnit = 32;
 	};
 
 	namespace CameraStatics

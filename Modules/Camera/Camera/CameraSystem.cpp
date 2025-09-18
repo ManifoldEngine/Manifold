@@ -88,8 +88,11 @@ void CameraSystem::tick(ECS::Registry& registry)
             case ECameraMode::ORTHOGRAPHIC:
             {
                 const float zoomFactor = camera.orthographicZoomFactor;
-                const float halfWidth = camera.width * zoomFactor / 2.f;
-                const float halfHeight = camera.height * zoomFactor / 2.f;
+                const float ppu = static_cast<float>(camera.pixelsPerUnit);
+                const float width = (camera.width / ppu) * zoomFactor;
+                const float height = (camera.height / ppu) * zoomFactor;
+                const float halfWidth = width / 2.f;
+                const float halfHeight = height / 2.f;
                 camera.projection = Mat4f::orthographic(-halfWidth, halfWidth,
                                                         -halfHeight, halfHeight,
                                                         camera.near, camera.far);

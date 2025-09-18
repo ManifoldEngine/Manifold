@@ -116,7 +116,7 @@ bool FrustumStatics::isSphereInside(const Frustum& frustum, const Vec3f& positio
 	const float maxScale = Math::maxT(Math::maxT(scale.x, scale.y), scale.z);
 	
 	const Vec3f worldCenter = model * position;
-	const float scaledRadius = radius * (maxScale / 2.f);
+	const float scaledRadius = radius * maxScale;
 	return isSphereOnOrForwardPlane(worldCenter, scaledRadius, frustum.near) &&
 		isSphereOnOrForwardPlane(worldCenter, scaledRadius, frustum.far) &&
 		isSphereOnOrForwardPlane(worldCenter, scaledRadius, frustum.right) &&
