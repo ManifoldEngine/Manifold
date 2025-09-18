@@ -39,7 +39,13 @@ Vec3f CameraStatics::screenToWorldSpace(const Camera& camera, const Vec2f& posit
 
 bool Mani::CameraStatics::isInView(const Camera& camera, const Position& position, const Rotation& rotation, const Scale& scale, const BoundingSphere& boundingSphere)
 {
-	return FrustumStatics::isSphereInside(camera.frustrum, position.value, rotation.value, scale.value, boundingSphere.radius);
+	float radius = boundingSphere.radius;
+	if (camera.mode == ECameraMode::ORTHOGRAPHIC)
+	{
+		MANI_ASSERT(!Math::isEqual(camera.orthographicZoomFactor, 0.f), "About do divive by zero.");
+		radius *= 1.f / camera.orthographicZoomFactor;
+	}
+	return FrustumStatics::isSphereInside(camera.frustrum, position.value, rotation.value, scale.value, radius);
 }
 
 Frustum FrustumStatics::create(const Camera& camera, const Vec3f& position, const Quatf& rotation)
