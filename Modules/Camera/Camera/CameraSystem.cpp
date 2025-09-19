@@ -10,28 +10,10 @@
 
 using namespace Mani;
 
-struct CameraSystemCache
+struct CameraSystem::Storage
 {
     ECS::EntityId cameraId; 
 };
-
-const Camera* getCamera(const ECS::Registry& registry)
-{
-    if (const CameraSystemCache* cache = registry.getSingle<CameraSystemCache>())
-    {
-        return registry.get<Camera>(cache->cameraId);
-    }
-    return nullptr;
-}
-
-std::tuple<const Position*, const Rotation*> getCameraPositionAndRotation(const ECS::Registry& registry)
-{
-    if (const CameraSystemCache* cache = registry.getSingle<CameraSystemCache>())
-    {
-        return { registry.get<Position>(cache->cameraId), registry.get<Rotation>(cache->cameraId) };
-    }
-    return { nullptr, nullptr };
-}
 
 std::string_view CameraSystem::getName() const
 {
@@ -45,22 +27,20 @@ bool CameraSystem::shouldTick(const ECS::Registry& registry) const
 
 void CameraSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-    CameraSystemCache& cache = *registry.addSingle<CameraSystemCache>();
+    Storage& storage = *registry.addSingle<Storage>();
 
-    cache.cameraId = registry.create();
-    Position* position = registry.add<Position>(cache.cameraId);
+    storage.cameraId = registry.create();
+    Position* position = registry.add<Position>(storage.cameraId);
     position->value = VEC3F::BACK * 5.f; // film the origin by default
-    registry.add<Rotation>(cache.cameraId);
-    registry.add<Camera>(cache.cameraId);
+    registry.add<Rotation>(storage.cameraId);
+    registry.add<Camera>(storage.cameraId);
 }
 
 void CameraSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-    if (const CameraSystemCache* cache = registry.getSingle<CameraSystemCache>())
-    {
-        registry.destroy(cache->cameraId);
-    }
-    registry.removeSingle<CameraSystemCache>();
+    const Storage& storage = *registry.getSingle<Storage>();
+    registry.destroy(storage.cameraId);
+    registry.removeSingle<Storage>();
 }
 
 void CameraSystem::tick(ECS::Registry& registry)
@@ -106,101 +86,4 @@ void CameraSystem::tick(ECS::Registry& registry)
             }
         }
     }
-}
-
-Vec2f CameraSystem::worldToScreenSpace(const ECS::Registry& registry, const Vec3f& position)
-{
-    if (const Camera* camera = getCamera(registry))
-    {
-        return CameraStatics::worldToScreenSpace(*camera, position);
-    }
-    return VEC2F::ZERO;
-}
-
-Vec3f CameraSystem::screenToWorldSpace(const ECS::Registry& registry, const Vec2f& position)
-{
-    if (const Camera* camera = getCamera(registry))
-    {
-        return CameraStatics::screenToWorldSpace(*camera, position);
-    }
-    return VEC3F::ZERO;
-}
-
-Vec3f CameraSystem::screenToWorldProjection(const ECS::Registry& registry, const Vec2f& screenPosition, float distance)
-{
-    const Camera* camera = getCamera(registry);
-    if (camera == nullptr)
-    {
-        return VEC3F::ZERO;
-    }
-
-    const Vec2f position {
-        Math::clamp(screenPosition.x, 0.f, camera->width), 
-        Math::clamp(screenPosition.y, 0.f, camera->height)
-    };
-
-    switch (camera->mode)
-    {
-        case ECameraMode::PERSPECTIVE:
-        {
-            auto [cameraPosition, cameraRotation] = getCameraPositionAndRotation(registry);
-            if (cameraPosition == nullptr || cameraRotation == nullptr)
-            {
-                return VEC3F::ZERO;
-            }
-
-            const float theta = Math::degToRad(camera->fov) * .5f;
-            const float aspectRatio = CameraStatics::getAspectRatio(*camera);
-    
-            const float tanHalfTheta = Math::tan(theta * .5f);
-            const float yMin = tanHalfTheta * distance;
-            const float yMax = -tanHalfTheta * distance;
-            const float xMax = yMax * aspectRatio;
-            const float xMin = yMin * aspectRatio;
-
-            MANI_ASSERT(!Math::isEqual(camera->width, 0.f), "divide by zero");
-            const float xRatio = position.x / (camera->width * .5f);
-            MANI_ASSERT(!Math::isEqual(camera->height, 0.f), "divide by zero");
-            const float yRatio = position.y / (camera->height * .5f);
-
-            const float xOffset = ((xMax - xMin) * .5f) * xRatio;
-            const float yOffset = ((yMax - yMin) * .5f) * yRatio;
-
-            return cameraPosition->value +
-                Transform::right(*cameraRotation) * xOffset +
-                Transform::up(*cameraRotation) * yOffset +
-                Transform::forward(*cameraRotation) * distance;
-        }
-
-        case ECameraMode::ORTHOGRAPHIC:
-        {
-            auto [cameraPosition, cameraRotation] = getCameraPositionAndRotation(registry);
-            if (cameraPosition == nullptr || cameraRotation == nullptr)
-            {
-                return VEC3F::ZERO;
-            }
-            MANI_ASSERT(camera->pixelsPerUnit != 0, "Do not divide by zero");
-
-            const float width = camera->width / camera->pixelsPerUnit;
-            const float height = camera->height / camera->pixelsPerUnit;
-
-            const float halfWidth = width * 0.5f;
-            const float halfHeight = height * 0.5f;
-
-            Vec2f centeredPosition = position - Vec2f{ halfWidth, halfHeight };
-            // we reverse the height because the screen coordinates go from top to bottom
-            centeredPosition.y *= -1.f;
-
-            const Vec3f& cameraPositionValue = cameraPosition->value;
-            Vec3f worldPosition = cameraPositionValue + static_cast<Vec3f>(centeredPosition);
-            worldPosition.z = cameraPositionValue.z;
-            return cameraRotation->value.rotate(worldPosition);
-        }
-
-        default: 
-            MANI_ASSERT(false, "Unsupported camera mode.");
-            break;
-    }
-
-    return VEC3F::ZERO;
 }

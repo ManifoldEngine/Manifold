@@ -20,20 +20,48 @@ Vec2f CameraStatics::worldToScreenSpace(const Camera& camera, const Vec3f& posit
 	{
 		return VEC2F::ZERO;
 	}
+	
+	// we reverse the height because the screen coordinates go from top to bottom
+	projectedPosition.y *= -1.f;
+
+	switch (camera.mode)
+	{
+		case ECameraMode::ORTHOGRAPHIC:
+		{
+			projectedPosition.x *= camera.pixelsPerUnit;
+			projectedPosition.y *= camera.pixelsPerUnit;
+			break;
+		}
+	}
 	return Vec2f(projectedPosition.x / projectedPosition.w, projectedPosition.y / projectedPosition.w);
 }
 
 Vec3f CameraStatics::screenToWorldSpace(const Camera& camera, const Vec2f& position)
 {
-	Vec4f projectedPosition = (camera.projection * camera.view).inverse() * position.homogenous();
+	Vec4f projectedPosition = camera.view.inverse() * position.homogenous();
 	if (Math::abs(projectedPosition.w) <= FLT_EPSILON)
 	{
 		return VEC3F::ZERO;
 	}
 
+	// we reverse the height because the screen coordinates go from top to bottom
+	projectedPosition.y *= -1.f;
+
+	switch (camera.mode)
+	{
+		case ECameraMode::ORTHOGRAPHIC:
+		{
+			MANI_ASSERT(camera.pixelsPerUnit != 0, "Do not divide by zero");
+			projectedPosition.x /= camera.pixelsPerUnit;
+			projectedPosition.y /= camera.pixelsPerUnit;
+			projectedPosition.z /= camera.pixelsPerUnit;
+			break;
+		}
+	}
+
 	return Vec3f{
 		projectedPosition.x / projectedPosition.w,
-		0.f,
+		projectedPosition.y / projectedPosition.w,
 		projectedPosition.z / projectedPosition.w,
 	};
 }

@@ -132,7 +132,7 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 	// write to the current write buffer
 	writeBuffer.commands.clear();
 	writeBuffer.commands = std::move(commands);
-	MANI_LOG(LogOpenGL, "wrote {} opengl to command buffer", writeBuffer.commands.size());
+	MANI_LOG_VERBOSE(LogOpenGL, "wrote {} opengl to command buffer", writeBuffer.commands.size());
 	// set the next read buffer
 	cbs.readBuffer = cbs.writeBuffer;
 	// set the next write buffer
