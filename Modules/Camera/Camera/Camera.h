@@ -62,7 +62,8 @@ namespace Mani
 	{
 		float getAspectRatio(const Camera& camera);
 		Vec2f worldToScreenSpace(const Camera& camera, const Vec3f& position);
-		Vec3f screenToWorldSpace(const Camera& camera, const Vec2f& position);
+		Vec3f cameraPixelsToWorldSpace(const Camera& camera, const Vec2f& position, bool shouldClampPosition = true);
+		Vec3f screenToWorldSpace(const Camera& camera, Vec2f position);
 
 		bool isInView(const Camera& camera, const Position& position, const Rotation& rotation, const Scale& scale, const BoundingSphere& boundingSphere);
 	}

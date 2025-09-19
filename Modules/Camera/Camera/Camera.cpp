@@ -13,53 +13,52 @@ float CameraStatics::getAspectRatio(const Camera& camera)
 
 Vec2f CameraStatics::worldToScreenSpace(const Camera& camera, const Vec3f& position)
 {
-	Vec4f projectedPosition = position.homogenous() * camera.view;
+	Vec4f projectedPosition = camera.view * camera.projection * position.homogenous();
 
 	if (Math::isEqual(projectedPosition.w, 0.f) ||
 		projectedPosition.w == 0.f) // this fixes warning C4723: potential divide by 0
 	{
 		return VEC2F::ZERO;
 	}
-	
-	// we reverse the height because the screen coordinates go from top to bottom
-	projectedPosition.y *= -1.f;
 
-	switch (camera.mode)
-	{
-		case ECameraMode::ORTHOGRAPHIC:
-		{
-			projectedPosition.x *= camera.pixelsPerUnit;
-			projectedPosition.y *= camera.pixelsPerUnit;
-			break;
-		}
-	}
 	return Vec2f(projectedPosition.x / projectedPosition.w, projectedPosition.y / projectedPosition.w);
 }
 
-Vec3f CameraStatics::screenToWorldSpace(const Camera& camera, const Vec2f& position)
+Vec3f Mani::CameraStatics::cameraPixelsToWorldSpace(const Camera& camera, const Vec2f& position, bool shouldClampPosition)
 {
-	Vec4f projectedPosition = camera.view.inverse() * position.homogenous();
+	MANI_ASSERT(!Math::isEqual(camera.width, 0) && !Math::isEqual(camera.height, 0), "Do not divide by zero");
+	const float halfWidth = camera.width / 2.f;
+	const float halfHeight = camera.height / 2.f;
+
+	float clampedX = position.x;
+	float clampedY = position.y;
+	
+	if (shouldClampPosition)
+	{
+		// clamp to camera size
+		clampedX = Math::clamp(position.x, 0.f, camera.width);
+		clampedY = Math::clamp(position.y, 0.f, camera.height);
+	}
+
+	// transform to screen space
+	const float x = (clampedX - halfWidth) / halfWidth;
+	const float y = (clampedY - halfHeight) / halfHeight;
+
+	return CameraStatics::screenToWorldSpace(camera, Vec2f{ x, y });
+}
+
+Vec3f CameraStatics::screenToWorldSpace(const Camera& camera, Vec2f position)
+{
+	// we reverse y because the screen coordinates go from top to bottom
+	position.y *= -1.f;
+	Vec4f projectedPosition = (camera.projection * camera.view).inverse() * position.homogenous();
 	if (Math::abs(projectedPosition.w) <= FLT_EPSILON)
 	{
 		return VEC3F::ZERO;
 	}
 
-	// we reverse the height because the screen coordinates go from top to bottom
-	projectedPosition.y *= -1.f;
-
-	switch (camera.mode)
+	return Vec3f
 	{
-		case ECameraMode::ORTHOGRAPHIC:
-		{
-			MANI_ASSERT(camera.pixelsPerUnit != 0, "Do not divide by zero");
-			projectedPosition.x /= camera.pixelsPerUnit;
-			projectedPosition.y /= camera.pixelsPerUnit;
-			projectedPosition.z /= camera.pixelsPerUnit;
-			break;
-		}
-	}
-
-	return Vec3f{
 		projectedPosition.x / projectedPosition.w,
 		projectedPosition.y / projectedPosition.w,
 		projectedPosition.z / projectedPosition.w,
