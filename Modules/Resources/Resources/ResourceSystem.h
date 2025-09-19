@@ -26,13 +26,6 @@ namespace Mani
 
 	class ResourceSystem : public ECS::System
 	{
-	private:
-		struct Storage
-		{
-			std::unordered_map<std::filesystem::path, ECS::EntityId> pathToEntityId;
-			std::mutex pathToEntityMutex;
-		};
-
 	public:
 		virtual std::string_view getName() const override { return "ResourceSystem"; }
 		virtual bool shouldTick(const ECS::Registry& registry) const override { return false; }
@@ -50,14 +43,21 @@ namespace Mani
 		template<typename T>
 		static ECS::EntityId injectResource(ECS::Registry& registry, T&& value, uint32_t = 0);
 
-		static ECS::EntityId addExtension(ECS::Registry& registry, std::unique_ptr<IResourceSystemExtension> extension);
-		static void removeExtension(ECS::Registry& registry, ECS::EntityId);
+		static void registerExtension(ECS::Registry& registry, IResourceSystemExtension* extension);
+		static void unregisterExtension(ECS::Registry& registry, IResourceSystemExtension* extension);
 
 	protected:
 		virtual void onInitialize(ECS::Registry& registry, World& world) override;
 		virtual void onDeinitialize(ECS::Registry& registry, World& world) override;
 
 	private:
+		struct Storage
+		{
+			std::vector<IResourceSystemExtension*> extensions;
+			std::unordered_map<std::filesystem::path, ECS::EntityId> pathToEntityId;
+			std::mutex pathToEntityMutex;
+		};
+
 		enum class ELoadMethod : uint8_t
 		{
 			Async = 0,
@@ -179,10 +179,11 @@ namespace Mani
 
 	void ResourceSystem::forEachExtension(const ECS::Registry& registry, auto&& f)
 	{
-		for (const auto entityId : ECS::View<ResourceSystemExtension>(registry))
+		auto* storage = registry.getSingle<ResourceSystem::Storage>();
+		MANI_ASSERT(storage != nullptr, "outside of the lifetime of resource system");
+		for (const auto* extension : storage->extensions)
 		{
-			const ResourceSystemExtension& ext = *registry.get<ResourceSystemExtension>(entityId);
-			f(*ext.obj);
+			f(*extension);
 		}
 	}
 

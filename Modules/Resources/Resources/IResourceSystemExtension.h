@@ -10,9 +10,4 @@ namespace Mani
 		virtual void onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const = 0;
 		virtual void onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const = 0;
 	};
-
-	struct ResourceSystemExtension
-	{
-		std::unique_ptr<IResourceSystemExtension> obj;
-	};
 }

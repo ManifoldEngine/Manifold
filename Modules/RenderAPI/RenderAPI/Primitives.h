@@ -168,17 +168,19 @@ namespace Mani
 			return mesh;
 		}
 	
-		inline Mesh makeQuad()
+		inline Mesh makeQuad(Vec2f size = { 1.f, 1.f })
 		{
 			Mesh mesh;
 			mesh.name = "Quad";
 
+			const float halfX = size.x * .5f;
+			const float halfY = size.y * .5f;
 			mesh.vertices = 
 			{
-				{{-0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}, // bottom-left
-				{{ 0.5f, -0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, // bottom-right
-				{{ 0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, // top-right
-				{{-0.5f,  0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // top-left
+				{{-halfX, -halfY, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f}}, // bottom-left
+				{{ halfX, -halfY, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f}}, // bottom-right
+				{{ halfX,  halfY, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}}, // top-right
+				{{-halfX,  halfY, 0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}}, // top-left
 			};
 
 			mesh.indices = 

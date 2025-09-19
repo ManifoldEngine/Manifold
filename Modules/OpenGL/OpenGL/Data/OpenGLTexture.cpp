@@ -5,16 +5,16 @@
 
 using namespace Mani;
 
-bool OpenGLTexture2D::load(const STBITexture& texture)
+bool OpenGLTexture2D::load(const Texture& texture)
 {
     m_textureId = UINT32_MAX;
-    m_width = texture.width;
-    m_height = texture.height;
+    m_width = texture.size.x;
+    m_height = texture.size.y;
     m_channels = texture.channels;
     m_boundSlot = -1;
     m_filteringMode = 0;
 
-    if (texture.data != nullptr)
+    if (texture.buffer != nullptr)
     {
         GLenum internalFormat;
         GLenum imageDataFormat;
@@ -66,7 +66,7 @@ bool OpenGLTexture2D::load(const STBITexture& texture)
             m_height,
             imageDataFormat,
             GL_UNSIGNED_BYTE, // data type (stbi_uc is in bytes)
-            texture.data
+            texture.buffer
         );
 #else
         // create texture data
@@ -92,7 +92,7 @@ bool OpenGLTexture2D::load(const STBITexture& texture)
             m_height,
             imageDataFormat,
             GL_UNSIGNED_BYTE, // data type (stbi_uc is in bytes)
-            texture.data
+            texture.buffer
         );
 #endif
         return true;

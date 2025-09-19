@@ -47,13 +47,15 @@ namespace Mani
 		float width = 800.f;
 		float height = 800.f;
 		
-		float orthographicZoomFactor = 0.01f;
 		
 		ECameraMode mode = ECameraMode::PERSPECTIVE;
 		Mat4f projection = MAT4F::IDENTITY;
 		Mat4f view = MAT4F::IDENTITY;
 
 		Frustum frustrum;
+
+		// Ortho specific parameters
+		uint32_t pixelsPerUnit = 32;
 	};
 
 	namespace CameraStatics
@@ -61,6 +63,8 @@ namespace Mani
 		float getAspectRatio(const Camera& camera);
 		Vec2f worldToScreenSpace(const Camera& camera, const Vec3f& position);
 		Vec3f screenToWorldSpace(const Camera& camera, const Vec2f& position);
+		//Vec3f screenToWorldProjection(const ECS::Registry& regitry, const Vec2f& position, float distance);
+
 		bool isInView(const Camera& camera, const Position& position, const Rotation& rotation, const Scale& scale, const BoundingSphere& boundingSphere);
 	}
 
@@ -68,7 +72,7 @@ namespace Mani
 	{
 		Frustum create(const Camera& camera, const Vec3f& position, const Quatf& rotation);
 
-		bool isSphereInside(const Frustum& frustum, const Vec3f& position, const Quatf& rotation, const Vec3f& scale, float radius);
+		bool isSphereInside(const Frustum& frustum, const Vec3f& position, const Vec3f& scale, float radius);
 		bool isSphereOnOrForwardPlane(const Vec3f& position, float radius, const Frustum::Plane& plane);
 		float getSignedDistanceToPlane(const Vec3f& point, const Frustum::Plane& plane);
 	}
