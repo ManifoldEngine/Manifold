@@ -76,7 +76,7 @@ void CameraSystem::tick(ECS::Registry& registry)
 
         switch (camera.mode)
         {
-        case ECameraMode::PERSPECTIVE:
+            case ECameraMode::PERSPECTIVE:
             {
                 MANI_ASSERT(Math::abs(camera.height) > FLT_EPSILON, "Height of a camera cannot be 0.");
                 camera.projection = Mat4f::perspective(Math::degToRad(camera.fov),
@@ -87,10 +87,10 @@ void CameraSystem::tick(ECS::Registry& registry)
 
             case ECameraMode::ORTHOGRAPHIC:
             {
-                const float zoomFactor = camera.orthographicZoomFactor;
+                MANI_ASSERT(camera.pixelsPerUnit != 0, "Do not divide by zero");
                 const float ppu = static_cast<float>(camera.pixelsPerUnit);
-                const float width = (camera.width / ppu) * zoomFactor;
-                const float height = (camera.height / ppu) * zoomFactor;
+                const float width = camera.width / ppu;
+                const float height = camera.height / ppu;
                 const float halfWidth = width / 2.f;
                 const float halfHeight = height / 2.f;
                 camera.projection = Mat4f::orthographic(-halfWidth, halfWidth,
@@ -179,22 +179,27 @@ Vec3f CameraSystem::screenToWorldProjection(const ECS::Registry& registry, const
             {
                 return VEC3F::ZERO;
             }
+            MANI_ASSERT(camera->pixelsPerUnit != 0, "Do not divide by zero");
 
-            const float halfWidth = camera->width * 0.5f;
-            const float halfHeight = camera->height * 0.5f;
+            const float width = camera->width / camera->pixelsPerUnit;
+            const float height = camera->height / camera->pixelsPerUnit;
+
+            const float halfWidth = width * 0.5f;
+            const float halfHeight = height * 0.5f;
 
             Vec2f centeredPosition = position - Vec2f{ halfWidth, halfHeight };
             // we reverse the height because the screen coordinates go from top to bottom
             centeredPosition.y *= -1.f;
 
             const Vec3f& cameraPositionValue = cameraPosition->value;
-            Vec3f worldPosition = cameraPositionValue + static_cast<Vec3f>(centeredPosition * camera->orthographicZoomFactor);
+            Vec3f worldPosition = cameraPositionValue + static_cast<Vec3f>(centeredPosition);
             worldPosition.z = cameraPositionValue.z;
             return cameraRotation->value.rotate(worldPosition);
         }
 
         default: 
             MANI_ASSERT(false, "Unsupported camera mode.");
+            break;
     }
 
     return VEC3F::ZERO;

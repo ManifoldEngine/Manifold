@@ -20,21 +20,55 @@ MANI_SECTION_BEGIN(CameraTests, "Camera")
 			constexpr Quatf rotation = QUATF::IDENTITY;
 
 			// assuming a sprite that's 32x32 with a tpu of 32
-			BoundingSphere boundingSphere = { .radius = 1.f };
+			const BoundingSphere boundingSphere = { .radius = Math::sqrt(2.f) };
 
 			Camera camera;
-			camera.height = 100.f;
-			camera.width = 100.f;
+			camera.height = 128.f;
+			camera.width = 128.f;
 			camera.mode = ECameraMode::ORTHOGRAPHIC;
-			camera.orthographicZoomFactor = 1.f;
 			camera.pixelsPerUnit = 32;
 			camera.frustrum = FrustumStatics::create(camera, position, rotation);
 
 			{
-				const bool expected = true;
+				constexpr Position entityPosition = Position{ VEC3F::ZERO };
+				constexpr Rotation entityRotation = Rotation{ QUATF::IDENTITY };
+				constexpr Scale entityScale = Scale{ VEC3F::ONE };
 				
-				const bool result = CameraStatics::isInView(camera, VEC3F::ZERO, rotation, VEC3F::ONE, boundingSphere);
+				const bool expected = true;
+				const bool result = CameraStatics::isInView(camera, entityPosition, entityRotation, entityScale, boundingSphere);
 				MANI_TEST_ASSERT(result == expected, "Should be in view");
+			}
+
+			{
+				constexpr Position entityPosition = Position{ { 1000.f, 1000.f, 0.f} };
+				constexpr Rotation entityRotation = Rotation{ QUATF::IDENTITY };
+				constexpr Scale entityScale = Scale{ VEC3F::ONE };
+
+				const bool expected = false;
+				const bool result = CameraStatics::isInView(camera, entityPosition, entityRotation, entityScale, boundingSphere);
+				MANI_TEST_ASSERT(result == expected, "Should not be in view");
+			}
+
+			{
+				// screen should be 4 times larger than the diameter, so this offset should be barely out of view
+				const Position entityPosition = Position{ { 2.0f, 0.f, 0.f } };
+				constexpr Rotation entityRotation = Rotation{ QUATF::IDENTITY };
+				constexpr Scale entityScale = Scale{ VEC3F::ONE };
+
+				const bool expected = true;
+				const bool result = CameraStatics::isInView(camera, entityPosition, entityRotation, entityScale, boundingSphere);
+				MANI_TEST_ASSERT(result == expected, "Should be in view");
+			}
+
+			{
+				// screen should be 4 times larger than the diameter, so this offset should be barely out of view
+				const Position entityPosition = Position{ { 3.50f, 0.f, 0.f } };
+				constexpr Rotation entityRotation = Rotation{ QUATF::IDENTITY };
+				constexpr Scale entityScale = Scale{ VEC3F::ONE };
+
+				const bool expected = false;
+				const bool result = CameraStatics::isInView(camera, entityPosition, entityRotation, entityScale, boundingSphere);
+				MANI_TEST_ASSERT(result == expected, "Should not be in view");
 			}
 		}
 	}
