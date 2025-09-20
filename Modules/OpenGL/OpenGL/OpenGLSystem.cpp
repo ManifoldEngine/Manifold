@@ -74,6 +74,7 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
     OpenGLWindowContext& context = *registry.addSingle<OpenGLWindowContext>();
     context.width = appConfig.startupScreenWidth;
     context.height = appConfig.startupScreenHeight;
+    context.name = appConfig.startupWindowTitle;
 
     // create the window
     context.window = glfwCreateWindow(context.width, context.height, context.name.data(), NULL, NULL);
