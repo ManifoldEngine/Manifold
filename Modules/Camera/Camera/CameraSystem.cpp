@@ -33,7 +33,16 @@ void CameraSystem::onInitialize(ECS::Registry& registry, World& world)
     Position* position = registry.add<Position>(storage.cameraId);
     position->value = VEC3F::BACK * 5.f; // film the origin by default
     registry.add<Rotation>(storage.cameraId);
-    registry.add<Camera>(storage.cameraId);
+    Camera& camera = *registry.add<Camera>(storage.cameraId);
+    
+    const CoreConfig& config = Application::get().getConfig();
+    const float width = static_cast<float>(config.startupScreenWidth);
+    const float height = static_cast<float>(config.startupScreenHeight);
+
+    camera.width = width;
+    camera.height = height;
+    camera.virtualWidth = width;
+    camera.virtualHeight = height;
 }
 
 void CameraSystem::onDeinitialize(ECS::Registry& registry, World& world)
@@ -68,9 +77,19 @@ void CameraSystem::tick(ECS::Registry& registry)
             case ECameraMode::ORTHOGRAPHIC:
             {
                 MANI_ASSERT(camera.pixelsPerUnit != 0, "Do not divide by zero");
-                const float ppu = static_cast<float>(camera.pixelsPerUnit);
-                const float width = camera.width / ppu;
-                const float height = camera.height / ppu;
+                float ppu = static_cast<float>(camera.pixelsPerUnit);
+                if (camera.useVirtualResolution)
+                {
+                    MANI_ASSERT(!Math::isEqual(camera.virtualWidth, 0.f) && !Math::isEqual(camera.virtualHeight, 0.f), "Do not divide by zero");
+                    float ratioX = camera.width / camera.virtualWidth;
+                    float ratioY = camera.height / camera.virtualHeight;
+                    const float ratio = Math::minT(ratioX, ratioY);
+                    ppu *= ratio;
+                }
+
+                const float width = Math::floor(camera.width / ppu);
+                const float height = Math::floor(camera.height / ppu);
+                MANI_ASSERT(!Math::isEqual(width, 0.f) && !Math::isEqual(height, 0.f), "trying to render with a width or height of 0 pixels");
                 const float halfWidth = width / 2.f;
                 const float halfHeight = height / 2.f;
                 camera.projection = Mat4f::orthographic(-halfWidth, halfWidth,

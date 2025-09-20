@@ -44,9 +44,8 @@ namespace Mani
 		float fov = 45.f;
 		float near = .1f;
 		float far = 10'000.f;
-		float width = 800.f;
-		float height = 800.f;
-		
+		float width = 1280.f;
+		float height = 720.f;
 		
 		ECameraMode mode = ECameraMode::PERSPECTIVE;
 		Mat4f projection = MAT4F::IDENTITY;
@@ -56,6 +55,11 @@ namespace Mani
 
 		// Ortho specific parameters
 		uint32_t pixelsPerUnit = 32;
+
+		// virtual resolution overwrite the pixels per units value
+		bool useVirtualResolution = false;
+		float virtualWidth = 480.f;
+		float virtualHeight = 640.f;
 	};
 
 	namespace CameraStatics
