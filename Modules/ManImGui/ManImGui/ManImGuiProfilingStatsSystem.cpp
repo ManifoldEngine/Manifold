@@ -9,6 +9,14 @@
 
 using namespace Mani;
 
+std::vector<std::string> getSortedKeys(const std::unordered_map<std::string, ScopedTimerStats>& map)
+{
+	std::vector<std::string> keys(map.size());
+	std::transform(map.begin(), map.end(), keys.begin(), [](const auto& pair) { return pair.first; });
+	std::sort(keys.begin(), keys.end());
+	return keys;
+}
+
 void ManImGuiProfilingStatsSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<ManImGuiSystem>();
@@ -32,16 +40,20 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 		return;
 	}
 
+	const std::vector<std::string> keys = getSortedKeys(database->scopedTimers);
+
 	bool isActive = false;
 	ImGui::Begin("Profiling Stats", &isActive, ImGuiWindowFlags_MenuBar);
 	Time& time = *registry.getSingle<Time>();
 	const float fps = Math::isEqual(time.delta, 0.f) ? 0.f : 1.f / time.delta;
 	ImGui::Text(std::format("{:.3}fps, entity count {}", fps, registry.size()).c_str());
-	for (const auto& [name, stats] : database->scopedTimers)
+	for (const auto& name : keys)
 	{
+		const auto& stats = database->scopedTimers.at(name);
+
 		ImGui::Indent();
 		ImGui::Separator();
-		ImGui::Text(std::format("{}: {:.3}ms", name, stats.lastValue).c_str());
+		ImGui::Text(std::format("{}: {:.3}ms", name, stats.lastTick).c_str());
 
 		ImGui::SameLine();
 		if (ImGui::TreeNode(std::format("##tree{}", name).c_str()))
@@ -57,6 +69,8 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 			}
 
 			ImGui::Text(std::format("average: {:.3}ms", average).c_str());
+			ImGui::Text(std::format("last value {:.3}ms", stats.lastValue).c_str());
+			ImGui::Text(std::format("per tick: {:.3}ms", stats.lastTick).c_str());
 			ImGui::TreePop();
 		}
 		ImGui::Unindent();

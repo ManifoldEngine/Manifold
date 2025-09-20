@@ -38,10 +38,13 @@ namespace Mani
 	struct ScopedTimerStats
 	{
 		unsigned long count = 0;
-		double accumulator = 0;
-		double min = 0;
-		double max = 0;
-		double lastValue = 0;
+		double accumulator = 0.0;
+		double min = 0.0;
+		double max = 0.0;
+		double lastValue = 0.0;
+
+		double perTickAccumulator = 0.0;
+		double lastTick = 0.0;
 	};
 
 	struct ScopedTimerDatabase

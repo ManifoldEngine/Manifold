@@ -27,6 +27,21 @@ void ProfilingSystem::onDeinitialize(ECS::Registry& registry, World& world)
 	registry.removeSingle<ScopedTimerDatabase>();
 }
 
+void Mani::ProfilingSystem::tick(Mani::ECS::Registry& registry)
+{
+	ScopedTimerDatabase* database = registry.getSingle<ScopedTimerDatabase>();
+	if (database == nullptr)
+	{
+		return;
+	}
+
+	for (auto& [name, timer] : database->scopedTimers)
+	{
+		timer.lastTick = timer.perTickAccumulator;
+		timer.perTickAccumulator = 0.f;
+	}
+}
+
 void ProfilingSystem::onTimerDestroyed(const _impl::ScopedTimer& scopeTimer)
 {
 #if MANI_DEBUG
@@ -38,6 +53,7 @@ void ProfilingSystem::onTimerDestroyed(const _impl::ScopedTimer& scopeTimer)
 		ScopedTimerStats& stats = database->scopedTimers[scopeTimer.name];
 		stats.count++;
 		stats.accumulator += elapsed;
+		stats.perTickAccumulator += elapsed;
 		stats.min = Math::minT(stats.min, elapsed);
 		stats.max = Math::maxT(stats.max, elapsed);
 		stats.lastValue = elapsed;
