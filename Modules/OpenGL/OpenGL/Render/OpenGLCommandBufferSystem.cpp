@@ -36,7 +36,7 @@ void OpenGLCommandBufferSystem::onDeinitialize(ECS::Registry& registry, World& w
 
 void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 {
-	MANI_TIME_SCOPE(OpenGLCommandBufferSystemtick);
+	MANI_TIME_SCOPE(OpenGLCommandBufferSystem_tick);
 
 	// camera
 	ECS::View<Position, Camera> cameraView(registry);

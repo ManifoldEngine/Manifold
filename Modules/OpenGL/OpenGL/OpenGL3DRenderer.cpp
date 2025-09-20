@@ -24,7 +24,7 @@ constexpr std::string_view COLOR = "color";
 
 void OpenGL3DRenderer::render(const OpenGLCommand& command, OpenGLRenderContext& context)
 {
-	MANI_TIME_SCOPE(OpenGLRenderSystemtickrenderthreadrender);
+	MANI_TIME_SCOPE(OpenGLRenderSystem_tick_renderthread_render);
 
 	MANI_ASSERT(command.vao != nullptr, "Resource was unloaded unexpectedly.");
 	MANI_ASSERT(command.shader != nullptr, "Resource was unloaded unexpectedly.");

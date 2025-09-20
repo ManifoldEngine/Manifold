@@ -54,7 +54,7 @@ void OpenGLRenderSystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void OpenGLRenderSystem::tick(ECS::Registry& registry)
 {
-	MANI_TIME_SCOPE(OpenGLRenderSystemtick);
+	MANI_TIME_SCOPE(OpenGLRenderSystem_tick);
 
 	OpenGLCommandBufferCollection* cbs = registry.getSingle<OpenGLCommandBufferCollection>();
 	if (cbs == nullptr)
@@ -80,7 +80,7 @@ void OpenGLRenderSystem::tick(ECS::Registry& registry)
 
 	storage.renderThread.enqueue([&registry, &buffer, context = std::move(context)]() mutable
 	{
-		MANI_TIME_SCOPE(OpenGLRenderSystemtickrenderthread);
+		MANI_TIME_SCOPE(OpenGLRenderSystem_tick_renderthread);
 		glfwMakeContextCurrent(context.openglContext->window);
 
 		glEnable(GL_DEPTH_TEST);
