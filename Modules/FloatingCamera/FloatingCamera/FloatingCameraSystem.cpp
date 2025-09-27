@@ -63,7 +63,7 @@ void FloatingCameraSystem::tick(ECS::Registry& registry)
 		const float deltaX = floatingCamera.previousCameraX - aimX;
 		const float deltaY = floatingCamera.previousCameraY - aimY;
 
-		if (Math::abs(deltaX) <= FLT_EPSILON || Math::abs(deltaX) <= FLT_EPSILON)
+		if (Math::abs(deltaX) <= FLT_EPSILON || Math::abs(deltaY) <= FLT_EPSILON)
 		{
 			continue;
 		}

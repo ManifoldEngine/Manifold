@@ -21,6 +21,6 @@ namespace Mani
 
 		ECS::EntityId shaderId;
 		std::vector<Texture> textures;
-		std::vector<std::pair<std::string, ShaderType>> customParameters;
+		std::vector<std::pair<std::string, ShaderType>> shaderParameters;
 	};
 }

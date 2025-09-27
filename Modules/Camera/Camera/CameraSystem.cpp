@@ -12,7 +12,7 @@ using namespace Mani;
 
 struct CameraSystem::Storage
 {
-    ECS::EntityId cameraId; 
+    ECS::EntityId cameraId = ECS::INVALID_ID;
 };
 
 std::string_view CameraSystem::getName() const
@@ -23,33 +23,6 @@ std::string_view CameraSystem::getName() const
 bool CameraSystem::shouldTick(const ECS::Registry& registry) const
 {
     return true;
-}
-
-void CameraSystem::onInitialize(ECS::Registry& registry, World& world)
-{
-    Storage& storage = *registry.addSingle<Storage>();
-
-    storage.cameraId = registry.create();
-    Position* position = registry.add<Position>(storage.cameraId);
-    position->value = VEC3F::BACK * 5.f; // film the origin by default
-    registry.add<Rotation>(storage.cameraId);
-    Camera& camera = *registry.add<Camera>(storage.cameraId);
-    
-    const CoreConfig& config = Application::get().getConfig();
-    const float width = static_cast<float>(config.startupScreenWidth);
-    const float height = static_cast<float>(config.startupScreenHeight);
-
-    camera.width = width;
-    camera.height = height;
-    camera.virtualWidth = width;
-    camera.virtualHeight = height;
-}
-
-void CameraSystem::onDeinitialize(ECS::Registry& registry, World& world)
-{
-    const Storage& storage = *registry.getSingle<Storage>();
-    registry.destroy(storage.cameraId);
-    registry.removeSingle<Storage>();
 }
 
 void CameraSystem::tick(ECS::Registry& registry)
@@ -65,7 +38,7 @@ void CameraSystem::tick(ECS::Registry& registry)
 
         switch (camera.mode)
         {
-            case ECameraMode::PERSPECTIVE:
+            case ECameraMode::Perspective:
             {
                 MANI_ASSERT(Math::abs(camera.height) > FLT_EPSILON, "Height of a camera cannot be 0.");
                 camera.projection = Mat4f::perspective(Math::degToRad(camera.fov),
@@ -74,7 +47,7 @@ void CameraSystem::tick(ECS::Registry& registry)
                 break;
             }
 
-            case ECameraMode::ORTHOGRAPHIC:
+            case ECameraMode::Orthographic:
             {
                 MANI_ASSERT(camera.pixelsPerUnit != 0, "Do not divide by zero");
                 float ppu = static_cast<float>(camera.pixelsPerUnit);

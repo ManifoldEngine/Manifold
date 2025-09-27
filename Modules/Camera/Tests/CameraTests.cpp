@@ -25,7 +25,7 @@ MANI_SECTION_BEGIN(CameraTests, "Camera")
 			Camera camera;
 			camera.height = 128.f;
 			camera.width = 128.f;
-			camera.mode = ECameraMode::ORTHOGRAPHIC;
+			camera.mode = ECameraMode::Orthographic;
 			camera.pixelsPerUnit = 32;
 			camera.frustrum = FrustumStatics::create(camera, position, rotation);
 

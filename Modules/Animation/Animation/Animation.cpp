@@ -2,8 +2,13 @@
 
 using namespace Mani;
 
-void AnimationStatics::play(Mani::ECS::Registry& registry, Mani::ECS::EntityId entityId)
+void Mani::AnimationStatics::play(ECS::Registry& registry, Mani::ECS::EntityId entityId, Mani::ECS::EntityId resourceId, Animator::EPlayMode playMode)
 {
-	Animation* animation = registry.get<Animation>(entityId);
-	MANI_ASSERT(animation != nullptr, "Trying to play an animation on an entity that doesn't have an animation component.");
+	Animator* animator = registry.get<Animator>(entityId);
+	MANI_ASSERT(animator != nullptr, "Trying to play an animation on an entity that doesn't have an animation component.");
+
+	animator->elapsed = 0.f;
+	animator->frameId = 0;
+	animator->mode = playMode;
+	animator->resourceId = resourceId;
 }

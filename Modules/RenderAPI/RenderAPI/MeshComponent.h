@@ -12,6 +12,6 @@ namespace Mani
 		ECS::EntityId materialHandle;
 		int rendererId = 0;
 
-		std::unordered_map<std::string, ShaderType> customParameters;
+		std::unordered_map<std::string, ShaderType> shaderParameters;
 	};
 }

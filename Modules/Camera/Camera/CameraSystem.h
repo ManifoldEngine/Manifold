@@ -13,9 +13,6 @@ namespace Mani
 		virtual bool shouldTick(const ECS::Registry& registry) const override;
 		virtual ETickGroup getTickGroup() const override { return ETickGroup::PreUpdate; }
 
-		virtual void onInitialize(ECS::Registry& registry, World& world) override;
-		virtual void onDeinitialize(ECS::Registry& registry, World& world) override;
-
 		virtual void tick(ECS::Registry& registry) override;
 	private:
 		struct Storage;

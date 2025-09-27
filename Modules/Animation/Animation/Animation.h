@@ -3,43 +3,46 @@
 #include <Core/CoreFwd.h>
 #include <RenderAPI/Colors.h>
 #include <ManiMaths/Fwd.h>
+#include <string>
 
 namespace Mani
 {
 	using FrameId = size_t;
 	constexpr FrameId INVALID_FRAME_ID = UINT64_MAX;
 
-	struct AnimationAsset
+	struct Animation
 	{
-		struct Key
+		struct Frame
 		{
-			Mani::Vec3f position = Mani::VEC3F::ZERO;
-			Mani::Quatf rotation = Mani::QUATF::IDENTITY;
-			Mani::Vec3f scale = Mani::VEC3F::ZERO;
-
+			std::string texturePath = "";
 			Mani::Vec4f color = Mani::Colors::WHITE;
 		};
 
-		struct Frame
-		{
-			std::vector<Key> keys;
-		};
-
 		std::string name = "";
-		float duration = 0.f;		// in seconds
-		float tickDuration = .16f;	// in seconds
+		float duration = 0.f;	// in seconds
 
 		std::vector<Frame> frames;
 	};
 
-	struct Animation
+	struct Animator
 	{
-		Mani::ECS::EntityId animationId = Mani::ECS::INVALID_ID;
+		enum class EPlayMode : uint8_t
+		{
+			OneShot,
+			Loop,
+		};
+
+		Mani::ECS::EntityId resourceId = Mani::ECS::INVALID_ID;
 		FrameId frameId = INVALID_FRAME_ID;
+		float elapsed = 0.f;			// in seconds
+		float playRate = 1.f / 24.f;	// in seconds
+		EPlayMode mode = EPlayMode::OneShot;
+
+		bool shouldCull = true;
 	};
 
 	namespace AnimationStatics
 	{
-		void play(Mani::ECS::Registry& registry, Mani::ECS::EntityId entityId);
+		void play(ECS::Registry& registry, Mani::ECS::EntityId entityId, Mani::ECS::EntityId resourceId, Animator::EPlayMode playMode = Animator::EPlayMode::OneShot);
 	}
 }

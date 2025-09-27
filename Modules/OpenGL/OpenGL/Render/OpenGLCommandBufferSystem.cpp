@@ -39,10 +39,9 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 	MANI_TIME_SCOPE(OpenGLCommandBufferSystem_tick);
 
 	// camera
-	ECS::View<Position, Camera> cameraView(registry);
-	auto it = cameraView.begin();
-	MANI_ASSERT(it != cameraView.end(), "Trying to render without a camera");
-	auto [cameraPosition, camera] = registry.getMany<Position, Camera>(*it);
+	ECS::EntityId cameraId = CameraStatics::getMainCameraId(registry);
+	MANI_ASSERT(cameraId != ECS::INVALID_ID, "trying to render without a camera");
+	auto [cameraPosition, camera] = registry.getMany<Position, Camera>(cameraId);
 
 	// gather all draw commands.
 	std::array<std::vector<OpenGLCommand>, Application::THREAD_COUNT> threadBuffers;
@@ -99,7 +98,7 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 			}
 		}
 
-		for (const auto& [key, value] : meshComponent.customParameters)
+		for (const auto& [key, value] : meshComponent.shaderParameters)
 		{
 			command.customParamaters.push_back({ key, value });
 		}

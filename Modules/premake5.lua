@@ -1,3 +1,4 @@
+include "Animation"
 include "Camera"
 include "Core"
 include "FloatingCamera"

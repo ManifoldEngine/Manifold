@@ -14,4 +14,9 @@ namespace Mani
 		std::string vertexSource = "";
 		std::string fragmentSource = "";
 	};
+
+	namespace ShaderConstants
+	{
+		constexpr std::string_view MANI_TEXTURE_0 = "mani_texture_0";
+	}
 }
