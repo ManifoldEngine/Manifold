@@ -1,4 +1,6 @@
 #include <ManiTests/ManiTests.h>
+#include <Core/ManiTests.h>
+
 #include <Inputs/InputSystem.h>
 #include <Inputs/Data/InputAction.h>
 #include <Inputs/Data/InputControl.h>
@@ -9,7 +11,7 @@
 #ifndef MANI_WEBGL
 extern "C" __declspec(dllexport) void runTests()
 {
-	ManiTests::ManiTestsRunner::runTests();
+	Mani::runTests();
 }
 #endif
 

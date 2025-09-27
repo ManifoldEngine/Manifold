@@ -1,5 +1,6 @@
 #include <ManiTests/ManiTests.h>
 
+#include <Core/ManiTests.h>
 #include <Core/CoreFwd.h>
 #include <Core/ManiTime.h>
 
@@ -20,7 +21,7 @@
 #ifndef MANI_WEBGL
 extern "C" __declspec(dllexport) void runTests()
 {
-	ManiTests::ManiTestsRunner::runTests();
+	Mani::runTests();
 }
 #endif
 

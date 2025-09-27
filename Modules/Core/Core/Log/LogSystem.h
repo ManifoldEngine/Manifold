@@ -30,9 +30,12 @@ namespace Mani
 		static void s_log(const std::string_view& channel, ELogLevel level, const std::string_view& log);
 		static void s_setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel);
 		
+		static void s_suppress();
+		static void s_unsuppress();
+
 	private:
 		static LogSystem* s_logSystem;
-		
+		inline static bool s_isSuppressed = false;
 		std::unordered_map<std::string_view, ELogLevel> channels;
 		
 		static void logImpl(const std::string_view& channel, ELogLevel level, const std::string_view& log);

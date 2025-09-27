@@ -85,6 +85,11 @@ void LogSystem::setChannelLogLevel(const std::string_view& channel, ELogLevel lo
 
 void LogSystem::logImpl(const std::string_view& channel, ELogLevel level, const std::string_view& log)
 {
+	if (s_isSuppressed)
+	{
+		return;
+	}
+
 #if MANI_CONSOLE_APP
 	std::cout << LEVEL_TO_COLOR_MAP[level] << "[" << TimeSystem::getTimeFormatted() << "]" << "[" << channel << "]: " << log << LogColors::RESET << std::endl;
 #else
@@ -92,7 +97,7 @@ void LogSystem::logImpl(const std::string_view& channel, ELogLevel level, const 
 	std::stringstream ss;
 	ss << LEVEL_TO_COLOR_MAP[level];
 	ss << "[" << TimeSystem::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
-	ss << RESET << "\n";
+	ss << LogColors::RESET << "\n";
 	std::string s = ss.str();
 	std::wstring ws(s.begin(), s.end());
 	OutputDebugStringW(ws.c_str());
@@ -110,4 +115,14 @@ void Mani::LogSystem::s_setChannelLogLevel(const std::string_view& channel, ELog
 	{
 		MANI_LOG_WARNING(LogCore, "LogSystem::setChannelLogLevel called without an application context. {}'s log level won't change.", channel);
 	}
+}
+
+void Mani::LogSystem::s_suppress()
+{
+	s_isSuppressed = true;
+}
+
+void Mani::LogSystem::s_unsuppress()
+{
+	s_isSuppressed = false;
 }
