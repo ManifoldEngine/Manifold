@@ -97,7 +97,7 @@ void LogSystem::logImpl(const std::string_view& channel, ELogLevel level, const 
 	std::stringstream ss;
 	ss << LEVEL_TO_COLOR_MAP[level];
 	ss << "[" << TimeSystem::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
-	ss << RESET << "\n";
+	ss << LogColors::RESET << "\n";
 	std::string s = ss.str();
 	std::wstring ws(s.begin(), s.end());
 	OutputDebugStringW(ws.c_str());
