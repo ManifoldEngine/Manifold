@@ -11,9 +11,9 @@ namespace Mani
 
 		std::string name = "";
 
-		double x = 0.f;
-		double y = 0.f;
-		double z = 0.f;
+		float x = 0.f;
+		float y = 0.f;
+		float z = 0.f;
 
 		bool wasPressed = false;
 		bool isPressed = false;
@@ -24,8 +24,8 @@ namespace Mani
 		[[nodiscard]] bool held() const { return isPressed; }
 		[[nodiscard]] bool released() const { return !isPressed && wasPressed; }
 
-		[[nodiscard]] Vec3d xyz() const { return { x, y, z }; }
-		[[nodiscard]] Vec2d xy() const { return { x, y }; }
-		[[nodiscard]] Vec2d xz() const { return { x, z }; }
+		[[nodiscard]] Vec3f xyz() const { return { x, y, z }; }
+		[[nodiscard]] Vec2f xy() const { return { x, y }; }
+		[[nodiscard]] Vec2f xz() const { return { x, z }; }
 	};
 }

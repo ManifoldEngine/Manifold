@@ -153,8 +153,8 @@ int Mani::OpenGLTexture2D::toOpenGLTextureFiltering(Mani::ETextureFiltering mode
 {
     switch (mode)
     {
-        case ETextureFiltering::LINEAR: return GL_LINEAR;
-        case ETextureFiltering::NEAREST: return GL_NEAREST;
+        case ETextureFiltering::Linear: return GL_LINEAR;
+        case ETextureFiltering::Nearest: return GL_NEAREST;
         default: MANI_ASSERT(false, "Unknown texture filtering mode.");
     }
     return 0;

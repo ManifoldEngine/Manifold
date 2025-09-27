@@ -166,27 +166,27 @@ void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, ECS::Entity
 	}
 	openglMaterial.name = material.name;
 	openglMaterial.color = material.color;
-	std::vector<std::pair<std::string, ShaderType>>& customParameters = openglMaterial.customParameters;
+	std::vector<std::pair<std::string, ShaderType>>& shaderParameters = openglMaterial.shaderParameters;
 
-	auto fillCustomParameters = [&customParameters]<typename T>(const std::vector<T>& customParams)
+	auto fillShaderParameters = [&shaderParameters]<typename T>(const std::vector<T>& customParams)
 	{
 		for (const T& param : customParams)
 		{
-			customParameters.push_back({ param.key, param.value });
+			shaderParameters.push_back({ param.key, param.value });
 		}
 	};
 
-	fillCustomParameters(material.shaderParam_float_values);
-	fillCustomParameters(material.shaderParam_Vec2f_values);
-	fillCustomParameters(material.shaderParam_Vec3f_values);
-	fillCustomParameters(material.shaderParam_Vec4f_values);
-	fillCustomParameters(material.shaderParam_int_values);
-	fillCustomParameters(material.shaderParam_Vec2i_values);
-	fillCustomParameters(material.shaderParam_Vec3i_values);
-	fillCustomParameters(material.shaderParam_Vec4i_values);
-	fillCustomParameters(material.shaderParam_Mat3f_values);
-	fillCustomParameters(material.shaderParam_Mat4f_values);
-	fillCustomParameters(material.shaderParam_bool_values);
+	fillShaderParameters(material.shaderParam_float_values);
+	fillShaderParameters(material.shaderParam_Vec2f_values);
+	fillShaderParameters(material.shaderParam_Vec3f_values);
+	fillShaderParameters(material.shaderParam_Vec4f_values);
+	fillShaderParameters(material.shaderParam_int_values);
+	fillShaderParameters(material.shaderParam_Vec2i_values);
+	fillShaderParameters(material.shaderParam_Vec3i_values);
+	fillShaderParameters(material.shaderParam_Vec4i_values);
+	fillShaderParameters(material.shaderParam_Mat3f_values);
+	fillShaderParameters(material.shaderParam_Mat4f_values);
+	fillShaderParameters(material.shaderParam_bool_values);
 
 	openglMaterialRes.isReady = true;
 }

@@ -6,8 +6,6 @@
 
 namespace Mani
 {
-    struct ResourceHandle;
-
     class OpenGLResourceSystemExtension : public IResourceSystemExtension
     {
         // this is all guarranteed to be called from the main thread.

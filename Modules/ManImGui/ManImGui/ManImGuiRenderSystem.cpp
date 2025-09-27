@@ -62,7 +62,7 @@ void Mani::ManImGuiRenderSystem::tick(ECS::Registry& registry)
 
 void ManImGuiRenderSystemExtension::onPostRender(ECS::Registry& registry) const
 {
-	MANI_TIME_SCOPE(ManImGuiRenderSystemExtensiononPostRender);
+	MANI_TIME_SCOPE(ManImGuiRenderSystemExtension_onPostRender);
 	ManImGuiRenderSystem::Storage& storage = *registry.getSingle<ManImGuiRenderSystem::Storage>();
 	if (storage.drawData != nullptr)
 	{

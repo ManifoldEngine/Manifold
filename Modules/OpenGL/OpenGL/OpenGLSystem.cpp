@@ -69,7 +69,13 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+    const CoreConfig& appConfig = Application::get().getConfig();
+    
     OpenGLWindowContext& context = *registry.addSingle<OpenGLWindowContext>();
+    context.width = appConfig.startupScreenWidth;
+    context.height = appConfig.startupScreenHeight;
+    context.name = appConfig.startupWindowTitle;
+
     // create the window
     context.window = glfwCreateWindow(context.width, context.height, context.name.data(), NULL, NULL);
 

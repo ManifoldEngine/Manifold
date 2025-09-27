@@ -5,6 +5,30 @@
 
 using namespace Mani;
 
+ECS::EntityId CameraStatics::getMainCameraId(ECS::Registry& registry)
+{
+	ECS::View<MainCamera, Camera> view(registry);
+	auto it = view.begin();
+	if (it == view.end())
+	{
+		return ECS::INVALID_ID;
+	}
+	return *it;
+}
+
+ECS::EntityId CameraStatics::createMainCamera(ECS::Registry& registry)
+{
+	// create Camera
+	ECS::EntityId cameraId = registry.create();
+
+	registry.add<Mani::Camera>(cameraId);
+	registry.add<Mani::Position>(cameraId, Mani::VEC3F::BACK * 5.f); // film the origin by default
+	registry.add<Mani::Rotation>(cameraId);
+	registry.add<Mani::MainCamera>(cameraId);
+
+	return cameraId;
+}
+
 float CameraStatics::getAspectRatio(const Camera& camera)
 {
 	MANI_ASSERT(!Math::isEqual(camera.height, 0.f), "height cannot be zero");
@@ -13,40 +37,67 @@ float CameraStatics::getAspectRatio(const Camera& camera)
 
 Vec2f CameraStatics::worldToScreenSpace(const Camera& camera, const Vec3f& position)
 {
-	Vec4f projectedPosition = position.homogenous() * camera.view;
+	Vec4f projectedPosition = camera.view * camera.projection * position.homogenous();
 
 	if (Math::isEqual(projectedPosition.w, 0.f) ||
 		projectedPosition.w == 0.f) // this fixes warning C4723: potential divide by 0
 	{
 		return VEC2F::ZERO;
 	}
+
 	return Vec2f(projectedPosition.x / projectedPosition.w, projectedPosition.y / projectedPosition.w);
 }
 
-Vec3f CameraStatics::screenToWorldSpace(const Camera& camera, const Vec2f& position)
+Vec3f CameraStatics::cameraPixelsToWorldSpace(const Camera& camera, const Vec2f& position, bool shouldClampPosition)
 {
+	MANI_ASSERT(!Math::isEqual(camera.width, 0) && !Math::isEqual(camera.height, 0), "Do not divide by zero");
+	const float halfWidth = camera.width / 2.f;
+	const float halfHeight = camera.height / 2.f;
+
+	float clampedX = position.x;
+	float clampedY = position.y;
+	
+	if (shouldClampPosition)
+	{
+		// clamp to camera size
+		clampedX = Math::clamp(position.x, 0.f, camera.width);
+		clampedY = Math::clamp(position.y, 0.f, camera.height);
+	}
+
+	// transform to screen space
+	const float x = (clampedX - halfWidth) / halfWidth;
+	const float y = (clampedY - halfHeight) / halfHeight;
+
+	return CameraStatics::screenToWorldSpace(camera, Vec2f{ x, y });
+}
+
+Vec3f CameraStatics::screenToWorldSpace(const Camera& camera, Vec2f position)
+{
+	// we reverse y because the screen coordinates go from top to bottom
+	position.y *= -1.f;
 	Vec4f projectedPosition = (camera.projection * camera.view).inverse() * position.homogenous();
 	if (Math::abs(projectedPosition.w) <= FLT_EPSILON)
 	{
 		return VEC3F::ZERO;
 	}
 
-	return Vec3f{
+	return Vec3f
+	{
 		projectedPosition.x / projectedPosition.w,
-		0.f,
+		projectedPosition.y / projectedPosition.w,
 		projectedPosition.z / projectedPosition.w,
 	};
 }
 
-bool Mani::CameraStatics::isInView(const Camera& camera, const Position& position, const Rotation& rotation, const Scale& scale, const BoundingSphere& boundingSphere)
+bool CameraStatics::isInView(const Camera& camera, const Position& position, const Rotation& rotation, const Scale& scale, const BoundingSphere& boundingSphere)
 {
-	MANI_TIME_SCOPE(FrustumStaticsisInView);
+	MANI_TIME_SCOPE(FrustumStatics_isInView);
 	return FrustumStatics::isSphereInside(camera.frustrum, position.value, scale.value, boundingSphere.radius);
 }
 
 Frustum FrustumStatics::create(const Camera& camera, const Vec3f& position, const Quatf& rotation)
 {
-	MANI_TIME_SCOPE(FrustumStaticscreate);
+	MANI_TIME_SCOPE(FrustumStatics_create);
 
 	Frustum frustum;
 	
@@ -56,7 +107,7 @@ Frustum FrustumStatics::create(const Camera& camera, const Vec3f& position, cons
 
 	switch (camera.mode)
 	{
-		case ECameraMode::PERSPECTIVE:
+		case ECameraMode::Perspective:
 		{
 			const float aspectRatio = CameraStatics::getAspectRatio(camera);
 			const float halfVerticalSize = camera.far * Math::tan(camera.fov);
@@ -72,7 +123,7 @@ Frustum FrustumStatics::create(const Camera& camera, const Vec3f& position, cons
 			return frustum;
 		}
 
-		case ECameraMode::ORTHOGRAPHIC:
+		case ECameraMode::Orthographic:
 		{
 			MANI_ASSERT(!Math::isEqual(camera.pixelsPerUnit, 0.f), "Do not divide by zero");
 			const float width			= camera.width / camera.pixelsPerUnit;

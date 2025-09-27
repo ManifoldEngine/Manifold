@@ -78,6 +78,11 @@ Application& Mani::Application::get()
 	return *s_application;
 }
 
+bool Mani::Application::exists()
+{
+	return s_application != nullptr;
+}
+
 void Application::run()
 {
 	m_world.initialize();

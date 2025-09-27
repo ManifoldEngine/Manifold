@@ -3,6 +3,8 @@
 #include <Core/ManiAssert.h>
 #include <Core/Vec.h>
 
+#include <Core/ECS/Entity.h>
+
 #include <Core/Components/Position.h>
 #include <Core/Components/Rotation.h>
 #include <Core/Components/Scale.h>
@@ -19,8 +21,8 @@ namespace Mani
 
 	enum class ECameraMode : uint8_t
 	{
-		PERSPECTIVE = 0,
-		ORTHOGRAPHIC
+		Perspective = 0,
+		Orthographic
 	};
 
 	struct Frustum
@@ -39,16 +41,17 @@ namespace Mani
 		Plane near;
 	};
 
+	struct MainCamera {};
+
 	struct Camera
 	{
 		float fov = 45.f;
 		float near = .1f;
 		float far = 10'000.f;
-		float width = 800.f;
-		float height = 800.f;
+		float width = 1280.f;
+		float height = 720.f;
 		
-		
-		ECameraMode mode = ECameraMode::PERSPECTIVE;
+		ECameraMode mode = ECameraMode::Perspective;
 		Mat4f projection = MAT4F::IDENTITY;
 		Mat4f view = MAT4F::IDENTITY;
 
@@ -56,14 +59,23 @@ namespace Mani
 
 		// Ortho specific parameters
 		uint32_t pixelsPerUnit = 32;
+
+		// virtual resolution overwrites the pixels per units value
+		// so that what is rendered appears as if rendered in these dimensions
+		bool useVirtualResolution = false;
+		float virtualWidth = 480.f;
+		float virtualHeight = 640.f;
 	};
 
 	namespace CameraStatics
 	{
+		ECS::EntityId getMainCameraId(ECS::Registry& registry);
+		ECS::EntityId createMainCamera(ECS::Registry& registry);
+
 		float getAspectRatio(const Camera& camera);
 		Vec2f worldToScreenSpace(const Camera& camera, const Vec3f& position);
-		Vec3f screenToWorldSpace(const Camera& camera, const Vec2f& position);
-		//Vec3f screenToWorldProjection(const ECS::Registry& regitry, const Vec2f& position, float distance);
+		Vec3f cameraPixelsToWorldSpace(const Camera& camera, const Vec2f& position, bool shouldClampPosition = true);
+		Vec3f screenToWorldSpace(const Camera& camera, Vec2f position);
 
 		bool isInView(const Camera& camera, const Position& position, const Rotation& rotation, const Scale& scale, const BoundingSphere& boundingSphere);
 	}
