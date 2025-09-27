@@ -40,8 +40,11 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 
 	// camera
 	ECS::EntityId cameraId = CameraStatics::getMainCameraId(registry);
-	MANI_ASSERT(cameraId != ECS::INVALID_ID, "trying to render without a camera");
 	auto [cameraPosition, camera] = registry.getMany<Position, Camera>(cameraId);
+	if (camera == nullptr)
+	{
+		return;
+	}
 
 	// gather all draw commands.
 	std::array<std::vector<OpenGLCommand>, Application::THREAD_COUNT> threadBuffers;
