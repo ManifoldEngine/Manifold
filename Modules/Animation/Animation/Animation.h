@@ -15,6 +15,7 @@ namespace Mani
 		struct Frame
 		{
 			std::string texturePath = "";
+			ECS::EntityId textureId = ECS::INVALID_ID;
 			Mani::Vec4f color = Mani::Colors::WHITE;
 		};
 

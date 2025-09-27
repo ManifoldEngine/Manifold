@@ -1,9 +1,17 @@
 #pragma once
 
 #include <Core/CoreFwd.h>
+#include <Resources/IResourceSystemExtension.h>
 
 namespace Mani
 {
+    class AnimationResourceSystemExtension : public IResourceSystemExtension
+    {
+        // this is all guarranteed to be called from the main thread.
+        virtual void onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const override;
+        virtual void onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const override;
+    };
+
     class AnimationSystem : public ECS::System
     {
     public:
@@ -17,5 +25,8 @@ namespace Mani
 
     public:
         virtual void tick(ECS::Registry& registry) override;
+
+    private:
+        AnimationResourceSystemExtension extension;
     };
 }

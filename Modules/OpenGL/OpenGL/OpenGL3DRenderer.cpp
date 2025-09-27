@@ -10,17 +10,13 @@
 #include <OpenGL/Render/OpenGLRenderContext.h>
 #include <OpenGL/Render/OpenGLRenderSystem.h>
 
+#include "RenderAPI/Shader.h"
+
 #include <GLFW/glfw3.h>
 
 using namespace Mani;
 
-// shader parameters
-constexpr std::string_view MODEL = "model";
-constexpr std::string_view NORMALMATRIX = "normalMatrix";
-constexpr std::string_view VIEW = "view";
-constexpr std::string_view PROJECTION = "projection";
-constexpr std::string_view VIEWPOSITION = "viewPosition";
-constexpr std::string_view COLOR = "color";
+
 
 void OpenGL3DRenderer::render(const OpenGLCommand& command, OpenGLRenderContext& context)
 {
@@ -37,16 +33,16 @@ void OpenGL3DRenderer::render(const OpenGLCommand& command, OpenGLRenderContext&
 
 	shader.use();
 	// set vertex uniforms
-	shader.setFloatMatrix4(MODEL, &(model._00));
-	shader.setFloatMatrix3(NORMALMATRIX, &(normalMatrix._00));
-	shader.setFloatMatrix4(VIEW, &(context.view._00));
-	shader.setFloatMatrix4(PROJECTION, &(context.projection._00));
+	shader.setFloatMatrix4(ShaderNames::MANI_MODEL, &(model._00));
+	shader.setFloatMatrix3(ShaderNames::MANI_NORMALMATRIX, &(normalMatrix._00));
+	shader.setFloatMatrix4(ShaderNames::MANI_VIEW, &(context.view._00));
+	shader.setFloatMatrix4(ShaderNames::MANI_PROJECTION, &(context.projection._00));
 
 	// set fragment uniforms
-	shader.setFloat3(VIEWPOSITION, context.cameraPosition.x, context.cameraPosition.y, context.cameraPosition.z);
+	shader.setFloat3(ShaderNames::MANI_VIEWPOSITION, context.cameraPosition.x, context.cameraPosition.y, context.cameraPosition.z);
 
 	const Vec4f& color = command.color;
-	shader.setFloat4(COLOR, color.x, color.y, color.z, color.w);
+	shader.setFloat4(ShaderNames::MANI_COLOR, color.x, color.y, color.z, color.w);
 
 	int textureIndex = 0;
 	for (auto& [key, texture] : command.textures)

@@ -13,5 +13,6 @@ namespace Mani
 		int rendererId = 0;
 
 		std::unordered_map<std::string, ShaderType> shaderParameters;
+		std::unordered_map<std::string, ECS::EntityId> textureParameters;
 	};
 }

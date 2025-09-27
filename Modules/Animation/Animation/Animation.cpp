@@ -8,7 +8,7 @@ void Mani::AnimationStatics::play(ECS::Registry& registry, Mani::ECS::EntityId e
 	MANI_ASSERT(animator != nullptr, "Trying to play an animation on an entity that doesn't have an animation component.");
 
 	animator->elapsed = 0.f;
-	animator->frameId = 0;
+	animator->frameId = INVALID_FRAME_ID;
 	animator->mode = playMode;
 	animator->resourceId = resourceId;
 }

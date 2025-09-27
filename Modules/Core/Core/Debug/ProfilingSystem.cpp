@@ -45,6 +45,11 @@ void Mani::ProfilingSystem::tick(Mani::ECS::Registry& registry)
 void ProfilingSystem::onTimerDestroyed(const _impl::ScopedTimer& scopeTimer)
 {
 #if MANI_DEBUG
+	if (!Application::exists())
+	{
+		return;
+	}
+
 	ECS::Registry& registry = Application::get().getWorld().getMutableRegistry();
 	if (ScopedTimerDatabase* database = registry.getSingle<ScopedTimerDatabase>())
 	{

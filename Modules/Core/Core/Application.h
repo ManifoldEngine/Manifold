@@ -17,6 +17,7 @@ namespace Mani
 		~Application();
 
 		static Application& get();
+		static bool exists();
 
 		void run();
 		void stop();
