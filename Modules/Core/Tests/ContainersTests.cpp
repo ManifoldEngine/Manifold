@@ -109,6 +109,34 @@ MANI_SECTION_BEGIN(List, "Containers")
             MANI_TEST_ASSERT(l.atOrDefault(0, -1) == 10, "atOrDefault(0) should return 10");
             MANI_TEST_ASSERT(l.atOrDefault(5, -1) == -1, "Out of bounds atOrDefault should return default (-1)");
         }
+
+        {
+            // iterate
+            Mani::List<int> l{ 1, 2, 3, 4 };
+
+            {
+                int acc = 0;
+                for (const auto& i : l)
+                {
+                    acc += i;
+                }
+                MANI_TEST_ASSERT(acc == 10, "Accumulation should equal 10");
+            }
+
+            for (auto& i : l)
+            {
+                i += 1;
+            }
+
+            {
+                int acc = 0;
+                for (const auto& i : l)
+                {
+                    acc += i;
+                }
+                MANI_TEST_ASSERT(acc == 14, "Accumulation should equal 14 after mutation");
+            }
+        }
     }
 
     MANI_SECTION_BEGIN(MoveSemantics, "move semantics")
