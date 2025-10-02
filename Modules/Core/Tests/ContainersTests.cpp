@@ -139,6 +139,34 @@ MANI_SECTION_BEGIN(List, "Containers")
         }
     }
 
+    MANI_TEST(ListRemoveSwapAt, "Should remove elements with swap")
+    {
+        Mani::List<int> list = { 10, 20, 30, 40 };
+
+        // --- Remove by index ---
+        bool removed = list.removeSwapAt(1); // remove element at index 1 (20)
+        MANI_TEST_ASSERT(removed, "Should succeed removing index 1");
+        MANI_TEST_ASSERT(list.count() == 3, "List should shrink to 3 elements");
+        MANI_TEST_ASSERT(list.contains(20) == false, "Value 20 should be gone");
+        MANI_TEST_ASSERT(list.contains(40) == true, "Value 40 should be swapped into index 1");
+
+        // --- Remove by value ---
+        removed = list.removeSwap(30); // remove element with value 30
+        MANI_TEST_ASSERT(removed, "Should succeed removing value 30");
+        MANI_TEST_ASSERT(list.count() == 2, "List should shrink to 2 elements");
+        MANI_TEST_ASSERT(list.contains(30) == false, "Value 30 should be gone");
+
+        // --- Remove non-existing value ---
+        removed = list.removeSwap(99);
+        MANI_TEST_ASSERT(removed == false, "Should fail to remove value not in list");
+        MANI_TEST_ASSERT(list.count() == 2, "List should remain unchanged");
+
+        // --- Remove invalid index ---
+        removed = list.removeSwapAt(100);
+        MANI_TEST_ASSERT(removed == false, "Should fail to remove invalid index");
+        MANI_TEST_ASSERT(list.count() == 2, "List should remain unchanged after invalid index");
+    }
+
     MANI_SECTION_BEGIN(MoveSemantics, "move semantics")
     {
         MANI_TEST(AddCopyList, "Add with copy semantics")
@@ -239,6 +267,22 @@ MANI_SECTION_BEGIN(List, "Containers")
             MANI_TEST_ASSERT(l[1].value == 20, "Inserted element should be 20");
             MANI_TEST_ASSERT(MoveTester::moves > 0, "Move constructor should be used for temporary insert");
             MANI_TEST_ASSERT(MoveTester::copies == 0, "Copy constructor should not be called");
+        }
+
+        MANI_TEST(ListAppend, "Should append elements from another list (copy)")
+        {
+            Mani::List<int> a = { 1, 2, 3 };
+            Mani::List<int> b = { 4, 5, 6 };
+
+            a.append(b);
+
+            // a should contain both
+            MANI_TEST_ASSERT(a.count() == 6, "a should contain 6 elements after append");
+            MANI_TEST_ASSERT(a[0] == 1 && a[5] == 6, "elements should be in correct order");
+
+            // b should remain intact since it was copied
+            MANI_TEST_ASSERT(b.count() == 3, "b should remain unchanged after copy-append");
+            MANI_TEST_ASSERT(b[0] == 4 && b[2] == 6, "b should still contain its original elements");
         }
     }
     MANI_SECTION_END(Insert)
@@ -410,6 +454,53 @@ MANI_SECTION_BEGIN(Map, "Containers")
         }
         MANI_TEST_ASSERT(count == 3, "Const iterator should visit all 3 elements");
     }
+
+    MANI_TEST(MapFind, "Should return optional reference to value if key exists")
+    {
+        Mani::Map<int, std::string> map;
+        map.add(1, "one");
+        map.add(2, "two");
+
+        // key exists
+        auto* opt1 = map.find(1);
+        MANI_TEST_ASSERT(opt1 != nullptr, "Should return a value for an existing key");
+        MANI_TEST_ASSERT(*opt1 == "one", "Value for key 1 should be 'one'");
+
+        auto* opt2 = map.find(2);
+        MANI_TEST_ASSERT(opt2 != nullptr, "Should return a value for an existing key");
+        MANI_TEST_ASSERT(*opt2 == "two", "Value for key 2 should be 'two'");
+
+        // key does not exist
+        auto* opt3 = map.find(3);
+        MANI_TEST_ASSERT(opt3 == nullptr, "Should return empty optional for a missing key");
+    }
+
+    MANI_TEST(Map, "Iterate and mutate values by reference")
+    {
+        Mani::Map<int, int> map;
+        map[1] = 10;
+        map[2] = 20;
+        map[3] = 30;
+
+        // Iterate by reference and mutate values
+        for (auto& [k, v] : map)
+        {
+            v += 5; // allowed (value is mutable)
+            // k = 42; // should not compile (key is const)
+        }
+
+        // Verify values updated
+        MANI_TEST_ASSERT(map[1] == 15, "Value for key 1 should be updated");
+        MANI_TEST_ASSERT(map[2] == 25, "Value for key 2 should be updated");
+        MANI_TEST_ASSERT(map[3] == 35, "Value for key 3 should be updated");
+
+        // Also test const iteration
+        const auto& cmap = map;
+        for (const auto& [k, v] : cmap)
+        {
+            MANI_TEST_ASSERT(v % 5 == 0, "Const iteration should see updated multiples of 5");
+        }
+    }
 }
 MANI_SECTION_END(Map)
 
@@ -457,7 +548,7 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
     }
     MANI_SECTION_END(ListOperators)
 
-        MANI_SECTION_BEGIN(MapOperators, "Map Copy and Move")
+    MANI_SECTION_BEGIN(MapOperators, "Map Copy and Move")
     {
         MANI_TEST(CopyConstructorMap, "Copy constructor should duplicate the map")
         {
@@ -507,6 +598,39 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
 
             MANI_TEST_ASSERT(moved.count() == 2, "Moved map should have 2 elements");
             MANI_TEST_ASSERT(original.count() == 0, "Original map should be empty after move");
+        }
+    }
+
+    MANI_TEST(MapGetOrAdd, "getOrAdd should insert or return existing value")
+    {
+        Mani::Map<int, std::string> map;
+
+        // Case 1: Key does not exist, should insert
+        {
+            std::string expected = "hello";
+            std::string& ref = map.getOrAdd(1, expected);
+
+            MANI_TEST_ASSERT(map.count() == 1, "Map should have one element after insertion");
+            MANI_TEST_ASSERT(map[1] == "hello", "Inserted value should match");
+            MANI_TEST_ASSERT(&ref == &map[1], "Returned reference should point to stored value");
+        }
+
+        // Case 2: Key already exists, should not insert again
+        {
+            std::string& ref = map.getOrAdd(1, "world");
+
+            MANI_TEST_ASSERT(map.count() == 1, "Map size should not increase if key exists");
+            MANI_TEST_ASSERT(map[1] == "hello", "Existing value should not be overwritten");
+            MANI_TEST_ASSERT(&ref == &map[1], "Returned reference should point to existing value");
+        }
+
+        // Case 3: Insert a different key
+        {
+            std::string& ref = map.getOrAdd(2, "new");
+
+            MANI_TEST_ASSERT(map.count() == 2, "Second key should be inserted");
+            MANI_TEST_ASSERT(map[2] == "new", "New value should be stored correctly");
+            MANI_TEST_ASSERT(&ref == &map[2], "Returned reference should point to new value");
         }
     }
     MANI_SECTION_END(MapOperators)

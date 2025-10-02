@@ -49,7 +49,7 @@ namespace Mani
 
 	struct ScopedTimerDatabase
 	{
-		std::unordered_map<std::string, ScopedTimerStats> scopedTimers;
+		Map<std::string, ScopedTimerStats> scopedTimers;
 	};
 }
 

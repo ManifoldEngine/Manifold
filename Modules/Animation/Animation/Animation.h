@@ -22,7 +22,7 @@ namespace Mani
 		std::string name = "";
 		float duration = 0.f;	// in seconds
 
-		std::vector<Frame> frames;
+		List<Frame> frames;
 	};
 
 	struct Animator

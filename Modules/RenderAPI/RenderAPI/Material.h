@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Core/Vec.h>
+#include <Core/Containers/List.h>
 #include <RenderAPI/Shader.h>
-#include <vector>
 #include <string>
 
 namespace Mani
@@ -27,18 +27,18 @@ namespace Mani
 		Vec4f color = VEC4F::ONE;
 
 		std::string shaderPath = "";
-		std::vector<ShaderParam_Texture> textures;
+		List<ShaderParam_Texture> textures;
 		
-		std::vector<ShaderParam_float> shaderParam_float_values;
-		std::vector<ShaderParam_Vec2f> shaderParam_Vec2f_values;
-		std::vector<ShaderParam_Vec3f> shaderParam_Vec3f_values;
-		std::vector<ShaderParam_Vec4f> shaderParam_Vec4f_values;
-		std::vector<ShaderParam_int> shaderParam_int_values;
-		std::vector<ShaderParam_Vec2i> shaderParam_Vec2i_values;
-		std::vector<ShaderParam_Vec3i> shaderParam_Vec3i_values;
-		std::vector<ShaderParam_Vec4i> shaderParam_Vec4i_values;
-		std::vector<ShaderParam_Mat3f> shaderParam_Mat3f_values;
-		std::vector<ShaderParam_Mat4f> shaderParam_Mat4f_values;
-		std::vector<ShaderParam_bool> shaderParam_bool_values;
+		List<ShaderParam_float> shaderParam_float_values;
+		List<ShaderParam_Vec2f> shaderParam_Vec2f_values;
+		List<ShaderParam_Vec3f> shaderParam_Vec3f_values;
+		List<ShaderParam_Vec4f> shaderParam_Vec4f_values;
+		List<ShaderParam_int> shaderParam_int_values;
+		List<ShaderParam_Vec2i> shaderParam_Vec2i_values;
+		List<ShaderParam_Vec3i> shaderParam_Vec3i_values;
+		List<ShaderParam_Vec4i> shaderParam_Vec4i_values;
+		List<ShaderParam_Mat3f> shaderParam_Mat3f_values;
+		List<ShaderParam_Mat4f> shaderParam_Mat4f_values;
+		List<ShaderParam_bool> shaderParam_bool_values;
 	};
 }

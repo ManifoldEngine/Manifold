@@ -8,7 +8,7 @@
 namespace Mani
 {
 	using SizeT = size_t;
-	constexpr SizeT INDEX_NONE = std::numeric_limits<SizeT>::max();
+	inline constexpr SizeT INDEX_NONE = (std::numeric_limits<SizeT>::max)();
 
 	template<typename T>
 	class List
@@ -16,15 +16,21 @@ namespace Mani
 	public:
 		using Iterator = typename std::vector<T>::iterator;
 		using IteratorConst = typename std::vector<T>::const_iterator;
-		using ReverseIterator = typename std::vector<T>::reverse_iterator;
-		using ReverseIteratorConst = typename std::vector<T>::const_reverse_iterator;
+
+		using Predicate = bool(const T&);
+
+		// STL compliance
+		using value_type = T;
+		using reference = value_type&;
+		using const_reference = const value_type&;
+		using size_type = SizeT;
 
 		// constructors
 		List() = default;
 		List(SizeT count, const T& value = T{}) : m_data(count, value) {}
 		List(const std::initializer_list<T>& initializerList) : m_data(initializerList) {}
 		List(const List<T>& other) : m_data(other.m_data) {}
-		List(List<T>&& other) : m_data(std::move(other.m_data)) {}
+		List(List<T>&& other) noexcept : m_data(std::move(other.m_data)) {}
 
 		List<T>& operator=(const List<T>& other)
 		{
@@ -59,6 +65,11 @@ namespace Mani
 		void enqueue(const T& value) { m_data.insert(m_data.begin(), value); }
 		void enqueue(T&& value) { m_data.emplace(m_data.begin(), std::forward<T>(value)); }
 		
+		void append(const List<T>& other)
+		{
+			m_data.insert(m_data.end(), other.m_data.begin(), other.m_data.end());
+		}
+		
 		void insert(SizeT index, const T& value)
 		{
 			m_data.insert(m_data.begin() + index, value);
@@ -73,6 +84,23 @@ namespace Mani
 		{
 			auto it = std::find(m_data.begin(), m_data.end(), value);
 			return it != m_data.end() && (m_data.erase(it), true);
+		}
+
+		bool removeSwap(const T& value)
+		{
+			return removeSwapAt(indexOf(value));
+		}
+
+		bool removeSwapAt(SizeT index)
+		{
+			if (index >= m_data.size())
+			{
+				return false;
+			}
+			
+			m_data[index] = std::move(m_data.back());
+			m_data.pop_back();
+			return true;
 		}
 
 		bool removeAll(const T& value)
@@ -95,7 +123,13 @@ namespace Mani
 			return std::find(m_data.begin(), m_data.end(), value) != m_data.end();
 		}
 
-		[[nodiscard]] SizeT indexOf(const T& value)
+		template<typename F = Predicate>
+		[[nodiscard]] bool containsIf(F&& f) const
+		{
+			return std::find_if(m_data.begin(), m_data.end(), f) != m_data.end();
+		}
+
+		[[nodiscard]] SizeT indexOf(const T& value) const
 		{
 			auto it = std::find(m_data.begin(), m_data.end(), value);
 			if (it == m_data.end())
@@ -103,6 +137,27 @@ namespace Mani
 				return INDEX_NONE;
 			}
 			return static_cast<SizeT>(it - m_data.begin());
+		}
+
+		template<typename F = Predicate>
+		[[nodiscard]] SizeT indexOfIf(F&& f) const
+		{
+			auto it = std::find_if(m_data.begin(), m_data.end(), f);
+			if (it == m_data.end())
+			{
+				return INDEX_NONE;
+			}
+			return static_cast<SizeT>(it - m_data.begin());
+		}
+
+		void addUnique(const T& value)
+		{
+			if (contains(value))
+			{
+				return;
+			}
+
+			add(value);
 		}
 
 		void addUnique(T&& value)
@@ -115,14 +170,11 @@ namespace Mani
 			add(std::forward<T>(value));
 		}
 
-		template<typename TPredicate = bool(const T&)>
-		bool removeIf(TPredicate&& f)
+		template<typename F = Predicate>
+		bool removeIf(F&& f)
 		{
 			const std::size_t old = m_data.size();
-			auto it = m_data.erase(std::remove_if(m_data.begin(), m_data.end(), [&f](const T& e)
-			{
-				return f(e);
-			}), m_data.end());
+			auto it = m_data.erase(std::remove_if(m_data.begin(), m_data.end(), f), m_data.end());
 			return old != m_data.size();
 		}
 

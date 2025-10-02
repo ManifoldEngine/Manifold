@@ -4,6 +4,7 @@
 #include <Core/Vec.h>
 
 #include <Core/ECS/Entity.h>
+#include <Core/ECS/Registry.h>
 
 #include <Core/Components/Position.h>
 #include <Core/Components/Rotation.h>

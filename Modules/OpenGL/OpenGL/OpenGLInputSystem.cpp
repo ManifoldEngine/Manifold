@@ -64,97 +64,97 @@ void OpenGLInputSystem::tick(ECS::Registry& registry)
     // W
     if (glfwGetKey(context.window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "W", true });
+        inputDevice.buttonBuffer.add(ButtonControl{ "W", true });
         wasd.z += 1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_W) == GLFW_RELEASE)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "W", false });
+        inputDevice.buttonBuffer.add(ButtonControl{ "W", false });
     }
 
     // S
     if (glfwGetKey(context.window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "S", true });
+        inputDevice.buttonBuffer.add(ButtonControl{ "S", true });
         wasd.z += -1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_S) == GLFW_RELEASE)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "S", false });
+        inputDevice.buttonBuffer.add(ButtonControl{ "S", false });
     }
 
     // A
     if (glfwGetKey(context.window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "A", true });
+        inputDevice.buttonBuffer.add(ButtonControl{ "A", true });
         wasd.x += -1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_A) == GLFW_RELEASE)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "A", false });
+        inputDevice.buttonBuffer.add(ButtonControl{ "A", false });
     }
 
     // D
     if (glfwGetKey(context.window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "D", true });
+        inputDevice.buttonBuffer.add(ButtonControl{ "D", true });
         wasd.x += 1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_D) == GLFW_RELEASE)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "D", false });
+        inputDevice.buttonBuffer.add(ButtonControl{ "D", false });
     }
 
     // E
     if (glfwGetKey(context.window, GLFW_KEY_E) == GLFW_PRESS)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "E", true });
+        inputDevice.buttonBuffer.add(ButtonControl{ "E", true });
         wasd.y += 1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_E) == GLFW_RELEASE)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "E", false });
+        inputDevice.buttonBuffer.add(ButtonControl{ "E", false });
     }
 
     // Q
     if (glfwGetKey(context.window, GLFW_KEY_Q) == GLFW_PRESS)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "Q", true });
+        inputDevice.buttonBuffer.add(ButtonControl{ "Q", true });
         wasd.y += -1.0f;
     }
     if (glfwGetKey(context.window, GLFW_KEY_Q) == GLFW_RELEASE)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "Q", false });
+        inputDevice.buttonBuffer.add(ButtonControl{ "Q", false });
     }
 
     // F
     if (glfwGetKey(context.window, GLFW_KEY_F) == GLFW_PRESS)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "F", true });
+        inputDevice.buttonBuffer.add(ButtonControl{ "F", true });
     }
     if (glfwGetKey(context.window, GLFW_KEY_F) == GLFW_RELEASE)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "F", false });
+        inputDevice.buttonBuffer.add(ButtonControl{ "F", false });
     }
 
     // F7
     if (glfwGetKey(context.window, GLFW_KEY_F7) == GLFW_PRESS)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "F7", true });
+        inputDevice.buttonBuffer.add(ButtonControl{ "F7", true });
     }
     if (glfwGetKey(context.window, GLFW_KEY_F7) == GLFW_RELEASE)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "F7", false });
+        inputDevice.buttonBuffer.add(ButtonControl{ "F7", false });
     }
 
     // SPACE
     if (glfwGetKey(context.window, GLFW_KEY_SPACE) == GLFW_PRESS)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "Space", true });
+        inputDevice.buttonBuffer.add(ButtonControl{ "Space", true });
     }
     if (glfwGetKey(context.window, GLFW_KEY_SPACE) == GLFW_RELEASE)
     {
-        inputDevice.buttonBuffer.emplace_back(ButtonControl{ "Space", false });
+        inputDevice.buttonBuffer.add(ButtonControl{ "Space", false });
     }
 }
 

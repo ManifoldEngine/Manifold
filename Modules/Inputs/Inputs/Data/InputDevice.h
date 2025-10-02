@@ -8,7 +8,7 @@ namespace Mani
 	struct InputDevice
 	{
 		std::string deviceName;
-		std::vector<ButtonControl> buttonBuffer;
-		std::vector<AxisControl> axis;
+		List<ButtonControl> buttonBuffer;
+		List<AxisControl> axis;
 	};
 }

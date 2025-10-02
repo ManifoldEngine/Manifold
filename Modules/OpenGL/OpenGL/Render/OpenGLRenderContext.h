@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Core/Containers/List.h>
 #include <Core/Components/Position.h>
 #include <Core/Components/Rotation.h>
 
@@ -11,7 +12,6 @@
 #include <OpenGL/Render/IOpenGLRenderExtension.h>
 
 #include <ManiMaths/Fwd.h>
-#include <vector>
 
 namespace Mani
 {
@@ -31,11 +31,11 @@ namespace Mani
 		Vec4f clearColor = { 0.f, 0.f, 0.f, 1.f };
 
 		// light
-		std::vector<DirectionalLight> directionalLights;
-		std::vector<std::tuple<PointLight, Position>> pointLights;
-		std::vector<std::tuple<Spotlight, Position, Rotation>> spotlights;
+		List<DirectionalLight> directionalLights;
+		List<std::tuple<PointLight, Position>> pointLights;
+		List<std::tuple<Spotlight, Position, Rotation>> spotlights;
 
-		std::vector<IOpenGLRenderer*> renderers;
-		std::vector<IOpenGLRenderExtension*> extensions;
+		List<IOpenGLRenderer*> renderers;
+		List<IOpenGLRenderExtension*> extensions;
 	};
 }

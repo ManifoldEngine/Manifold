@@ -18,12 +18,8 @@ void Mani::ResourceSystem::registerExtension(ECS::Registry& registry, IResourceS
 	MANI_ASSERT(extension != nullptr, "trying to register a null extension");
 	if (Storage* storage = registry.getSingle<Storage>())
 	{
-		std::vector<IResourceSystemExtension*>& extensions = storage->extensions;
-		auto it = std::find(extensions.begin(), extensions.end(), extension);
-		if (it == extensions.end())
-		{
-			extensions.push_back(extension);
-		}
+		List<IResourceSystemExtension*>& extensions = storage->extensions;
+		extensions.addUnique(extension);
 	}
 }
 
@@ -32,8 +28,8 @@ void Mani::ResourceSystem::unregisterExtension(ECS::Registry& registry, IResourc
 	MANI_ASSERT(extension != nullptr, "trying to unregister a null extension");
 	if (Storage* storage = registry.getSingle<Storage>())
 	{
-		std::vector<IResourceSystemExtension*>& extensions = storage->extensions;
-		extensions.erase(std::remove_if(extensions.begin(), extensions.end(), [extension](const auto* ext) { return ext == extension; }), extensions.end());
+		List<IResourceSystemExtension*>& extensions = storage->extensions;
+		extensions.remove(extension);
 	}
 }
 
@@ -62,7 +58,7 @@ void ResourceSystem::unloadResource(ECS::Registry& registry, ECS::EntityId inEnt
 			if (entityId == inEntityId)
 			{
 				MANI_LOG(LogResources, "Unloading asset at {}", path.string());
-				storage->pathToEntityId.erase(path);	
+				storage->pathToEntityId.remove(path);	
 				return;
 			}
 		}

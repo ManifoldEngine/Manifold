@@ -75,7 +75,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		const Resource<Animation>* animationRes = registry.get<Resource<Animation>>(animationId);
 		MANI_TEST_ASSERT(animationRes != nullptr && animationRes->isReady, "Animation should be loaded and ready");
 		const Animation& animation = animationRes->value;
-		MANI_TEST_ASSERT(animation.frames.size() == 4, "4 frames should have been loaded");
+		MANI_TEST_ASSERT(animation.frames.count() == 4, "4 frames should have been loaded");
 		for (const auto& frame : animation.frames)
 		{
 			if (!frame.texturePath.empty())
@@ -180,7 +180,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		const Resource<Animation>* animationRes = registry.get<Resource<Animation>>(animationId);
 		MANI_TEST_ASSERT(animationRes != nullptr && animationRes->isReady, "Animation should be loaded and ready");
 		const Animation& animation = animationRes->value;
-		MANI_TEST_ASSERT(animation.frames.size() == 4, "4 frames should have been loaded");
+		MANI_TEST_ASSERT(animation.frames.count() == 4, "4 frames should have been loaded");
 		for (const auto& frame : animation.frames)
 		{
 			if (!frame.texturePath.empty())

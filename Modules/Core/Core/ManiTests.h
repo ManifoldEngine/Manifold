@@ -2,15 +2,15 @@
 
 #include "ManiTests.h"
 
-#include <Core/Log/LogSystem.h>
+#include <Core/Logger.h>
 #include <ManiTests/ManiTests.h>
 
 namespace Mani
 {
 	void runTests()
 	{
-		LogSystem::s_suppress();
+		Mani::Logger::get().suppress();
 		ManiTests::run();
-		LogSystem::s_unsuppress();
+		Mani::Logger::get().unsuppress();
 	}
 }
