@@ -127,7 +127,7 @@ void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, ECS::EntityId m
 		
 		constexpr size_t vertexSize = 3 + 3 + 2;
 		OpenGLVertexBuffer vertexBuffer;
-		vertexBuffer.create(&mesh.vertices[0].position.x, (int)(sizeof(float) * (mesh.vertices.size() * vertexSize)));;
+		vertexBuffer.create(&mesh.vertices[0].position.x, (int)(sizeof(float) * (mesh.vertices.count() * vertexSize)));;
 		vertexBuffer.layout =
 		{
 			{ EShaderDataType::Float3, false },
@@ -136,7 +136,7 @@ void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, ECS::EntityId m
 		};
 
 		OpenGLIndexBuffer indexBuffer;
-		indexBuffer.create(&mesh.indices[0], (int)sizeof(uint32_t) * mesh.indices.size());
+		indexBuffer.create(&mesh.indices[0], (int)sizeof(uint32_t) * mesh.indices.count());
 
 		res.value.create();
 		res.value.addVertexBuffer(std::move(vertexBuffer));
@@ -159,20 +159,20 @@ void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, ECS::Entity
 	openglMaterial.shaderId = ResourceSystem::loadResource<Shader>(registry, material.shaderPath, tag);
 	for (const ShaderParam_Texture& texture : material.textures)
 	{
-		openglMaterial.textures.push_back({
+		openglMaterial.textures.add({
 			.key = texture.key,
 			.id = ResourceSystem::loadResource<Texture>(registry, texture.path, tag),
 		});
 	}
 	openglMaterial.name = material.name;
 	openglMaterial.color = material.color;
-	std::vector<std::pair<std::string, ShaderType>>& shaderParameters = openglMaterial.shaderParameters;
+	List<OpenGLMaterial::ShaderParam>& shaderParameters = openglMaterial.shaderParameters;
 
-	auto fillShaderParameters = [&shaderParameters]<typename T>(const std::vector<T>& customParams)
+	auto fillShaderParameters = [&shaderParameters]<typename T>(const List<T>& customParams)
 	{
 		for (const T& param : customParams)
 		{
-			shaderParameters.push_back({ param.key, param.value });
+			shaderParameters.add({ param.key, param.value });
 		}
 	};
 

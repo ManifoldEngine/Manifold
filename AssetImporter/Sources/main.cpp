@@ -8,7 +8,8 @@
 #include <MeshImporter/MeshImporter.h>
 #include <ShaderImporter/ShaderImporter.h>
 
-#include <vector>
+#include <Core/Containers/List.h>
+
 #include <memory>
 
 using namespace Mani;
@@ -46,7 +47,7 @@ void processShader(const fs::path& path)
 
 void processMesh(const fs::path& path)
 {
-	std::vector<std::shared_ptr<Mesh>> meshes;
+	Mani::List<std::shared_ptr<Mesh>> meshes;
 	if (!MeshImporter::importFromPath(path, meshes))
 	{
 		MANI_LOG_ERROR(Log, "Could not import mesh at {}", path.string());
@@ -88,7 +89,7 @@ void referenceAllShaders(const AssetImporterConfig& config, const ShaderConfig& 
 		if (extension == SHADER_EXT)
 		{
 			MANI_LOG(Log, "referencing {}", path.string());
-			shaders.paths.emplace_back(path.string());
+			shaders.paths.add(path.string());
 		}
 	};
 

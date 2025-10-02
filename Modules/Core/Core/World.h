@@ -5,12 +5,11 @@
 #include <Core/ManiAssert.h>
 #include <Core/ManiTraits.h>
 
-#include <Core/ECS/Registry.h>
-#include <Core/ECS/System.h>
+#include <Core/Containers/List.h>
 
-#include <vector>
+#include <Core/ECS/Registry.h>
+
 #include <memory>
-#include <algorithm>
 
 namespace Mani
 {
@@ -74,6 +73,8 @@ namespace Mani
 		// returns the amount of systems
 		size_t systemCount() const;
 
+		bool isInitialized() const { return m_isInitialized; }
+
 		const ECS::Registry& getRegistry() const { return m_registry; }
 		ECS::Registry& getMutableRegistry() { return m_registry; }
 
@@ -85,7 +86,7 @@ namespace Mani
 		};
 
 		ECS::Registry m_registry;
-		std::vector<SystemContainer> m_systems;
+		List<SystemContainer> m_systems;
 		bool m_isInitialized = false;
 	};
 
@@ -104,9 +105,9 @@ namespace Mani
 		auto system = std::make_shared<TSystem>();
 
 		constexpr bool isMarkedForDestruction = false;
-		m_systems.push_back(SystemContainer{ system, isMarkedForDestruction });
+		m_systems.add(SystemContainer{ system, isMarkedForDestruction });
 
-		std::sort(m_systems.begin(), m_systems.end(), [](const auto& lhs, const auto& rhs) { return lhs.system->getTickGroup() < rhs.system->getTickGroup(); });
+		m_systems.sort([](const auto& lhs, const auto& rhs) { return lhs.system->getTickGroup() < rhs.system->getTickGroup(); });
 
 		if (m_isInitialized)
 		{
@@ -223,9 +224,9 @@ namespace Mani
 			return;
 		}
 
-		for (auto it = m_systems.rbegin(); it != m_systems.rend(); it++)
+		for (SizeT i = m_systems.count() - 1; i != INDEX_NONE; i--)
 		{
-			auto& [system, _] = *it;
+			auto& [system, _] = m_systems[i];
 			system->deinitialize(m_registry, *this);
 		}
 
@@ -245,7 +246,7 @@ namespace Mani
 		{
 			// snapshot the systems that should tick. 
 			// New systems can be created during a tick and they might not be in a proper state to tick yet.
-			std::vector<SystemContainer> systems = m_systems;
+			List<SystemContainer> systems = m_systems;
 			for (auto& [system, _] : systems)
 			{
 				if (system->shouldTick(m_registry))
@@ -258,11 +259,11 @@ namespace Mani
 		m_registry.handleDeferredDestroy();
 
 		// remove uninitialized systems
-		m_systems.erase(std::remove_if(m_systems.begin(), m_systems.end(), [](const auto& container) { return container.isMarkedForDestruction; }), m_systems.end());
+		m_systems.removeIf([](const auto& container) { return container.isMarkedForDestruction; });
 	}
 
 	inline size_t World::systemCount() const
 	{
-		return m_systems.size();
+		return m_systems.count();
 	}
 }

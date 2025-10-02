@@ -47,13 +47,13 @@ void InputSystem::tick(ECS::Registry& registry)
 			// buttons
 			for (const ButtonControl& control : inputDevice->buttonBuffer)
 			{
-				auto boundActionNamesIt = inputUser->bindings.find(control.name);
-				if (boundActionNamesIt == inputUser->bindings.end())
+				List<std::string>* boundActionNames = inputUser->bindings.find(control.name);
+				if (boundActionNames == nullptr)
 				{
 					continue;
 				}
 
-				for (const std::string& actionName : boundActionNamesIt->second)
+				for (const std::string& actionName : *boundActionNames)
 				{
 					InputAction& action = inputUser->actions[actionName];
 					if (action.isPressed != control.isPressed)
@@ -67,13 +67,13 @@ void InputSystem::tick(ECS::Registry& registry)
 			// axis
 			for (const AxisControl& axis : inputDevice->axis)
 			{
-				auto boundActionNamesIt = inputUser->bindings.find(axis.name);
-				if (boundActionNamesIt == inputUser->bindings.end())
+				List<std::string>* boundActionNames = inputUser->bindings.find(axis.name);
+				if (boundActionNames == nullptr)
 				{
 					continue;
 				}
 
-				for (const std::string& actionName : boundActionNamesIt->second)
+				for (const std::string& actionName : *boundActionNames)
 				{
 					InputAction& action = inputUser->actions[actionName];
 

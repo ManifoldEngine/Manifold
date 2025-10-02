@@ -63,20 +63,20 @@ public:
 		return "My Cool Joystick";
 	}
 
-	bool consumeInputBuffer(std::vector<ButtonControl>& outBuffer)
+	bool consumeInputBuffer(List<ButtonControl>& outBuffer)
 	{
 		outBuffer = buffer;
 		buffer.clear();
 		return true;
 	}
 
-	bool getAxis(std::vector<AxisControl>& outAxis)
+	bool getAxis(List<AxisControl>& outAxis)
 	{
 		outAxis.clear();
-		outAxis.push_back(m_leftStick);
-		outAxis.push_back(m_rightStick);
-		outAxis.push_back(m_leftBumper);
-		outAxis.push_back(m_rightBumper);
+		outAxis.add(m_leftStick);
+		outAxis.add(m_rightStick);
+		outAxis.add(m_leftBumper);
+		outAxis.add(m_rightBumper);
 		return true;
 	}
 
@@ -109,7 +109,7 @@ public:
 			return;
 		}
 		m_aButton.isPressed = isPressed;
-		buffer.push_back(m_aButton);
+		buffer.add(m_aButton);
 	}
 
 	static void setBButton(bool isPressed)
@@ -119,7 +119,7 @@ public:
 			return;
 		}
 		m_bButton.isPressed = isPressed;
-		buffer.push_back(m_bButton);
+		buffer.add(m_bButton);
 	}
 
 	static void setLeftBumper(float x)
@@ -140,7 +140,7 @@ public:
 		m_rightBumper.x = x;
 	}
 
-	inline static std::vector<ButtonControl> buffer;
+	inline static List<ButtonControl> buffer;
 private:
 	inline static ECS::EntityId deviceId = ECS::INVALID_ID;
 
@@ -153,7 +153,7 @@ private:
 	inline static AxisControl m_leftBumper = { "LeftBumper" };
 };
 
-std::unordered_map<std::string, InputAction> actionTemplate =
+Map<std::string, InputAction> actionTemplate =
 {
 	{ "Jump", { "Jump" }},
 	{ "Dodge", { "Dodge" }},
@@ -161,7 +161,7 @@ std::unordered_map<std::string, InputAction> actionTemplate =
 	{ "Shoot", { "Shoot" }},
 };
 
-std::unordered_map<std::string, std::unordered_set<std::string>> inputBindingsTemplate =
+Map<std::string, List<std::string>> inputBindingsTemplate =
 {
 	{ "LeftStick", { "Move" }},
 	{ "RightStick", { "Move" }},
@@ -209,7 +209,7 @@ protected:
 
 		ECS::EntityId entityId = registry.create();
 		inputUser = registry.add<InputUser>(entityId);
-		inputUser->inputDevices.push_back(VirtualControllerSystem::getDeviceId());
+		inputUser->inputDevices.add(VirtualControllerSystem::getDeviceId());
 	}
 
 	virtual void onDeinitialize(ECS::Registry& registry, World& world) override

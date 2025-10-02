@@ -90,7 +90,7 @@ namespace Mani
 					Vec3f normal = { xPos, yPos, zPos };
 					Vec2f uv = { u, v };
 
-					mesh.vertices.push_back({ position, normal, uv });
+					mesh.vertices.add({ position, normal, uv });
 				}
 			}
 
@@ -99,13 +99,13 @@ namespace Mani
 					unsigned int i0 = y * (segments + 1) + x;
 					unsigned int i1 = i0 + segments + 1;
 
-					mesh.indices.push_back(i0);
-					mesh.indices.push_back(i1);
-					mesh.indices.push_back(i0 + 1);
+					mesh.indices.add(i0);
+					mesh.indices.add(i1);
+					mesh.indices.add(i0 + 1);
 
-					mesh.indices.push_back(i0 + 1);
-					mesh.indices.push_back(i1);
-					mesh.indices.push_back(i1 + 1);
+					mesh.indices.add(i0 + 1);
+					mesh.indices.add(i1);
+					mesh.indices.add(i1 + 1);
 				}
 			}
 
@@ -127,26 +127,26 @@ namespace Mani
 				Vec2f uvLow = { static_cast<float>(i) / segments, 0.0f };
 				Vec2f uvHigh = { static_cast<float>(i) / segments, 1.0f };
 
-				mesh.vertices.push_back({ { x * radius, -height / 2.0f, z * radius }, normal, uvLow });
-				mesh.vertices.push_back({ { x * radius,  height / 2.0f, z * radius }, normal, uvHigh });
+				mesh.vertices.add({ { x * radius, -height / 2.0f, z * radius }, normal, uvLow });
+				mesh.vertices.add({ { x * radius,  height / 2.0f, z * radius }, normal, uvHigh });
 			}
 
 			// Side indices
 			for (unsigned int i = 0; i < segments; ++i) {
 				unsigned int start = i * 2;
-				mesh.indices.push_back(start);
-				mesh.indices.push_back(start + 1);
-				mesh.indices.push_back(start + 2);
+				mesh.indices.add(start);
+				mesh.indices.add(start + 1);
+				mesh.indices.add(start + 2);
 
-				mesh.indices.push_back(start + 1);
-				mesh.indices.push_back(start + 3);
-				mesh.indices.push_back(start + 2);
+				mesh.indices.add(start + 1);
+				mesh.indices.add(start + 3);
+				mesh.indices.add(start + 2);
 			}
 
 			// Top/Bottom center vertices
-			unsigned int baseIndex = static_cast<unsigned int>(mesh.vertices.size());
-			mesh.vertices.push_back({ {0,  height / 2.0f, 0}, {0, 1, 0}, {0.5f, 0.5f} }); // top center
-			mesh.vertices.push_back({ {0, -height / 2.0f, 0}, {0, -1, 0}, {0.5f, 0.5f} }); // bottom center
+			unsigned int baseIndex = static_cast<unsigned int>(mesh.vertices.count());
+			mesh.vertices.add({ {0,  height / 2.0f, 0}, {0, 1, 0}, {0.5f, 0.5f} }); // top center
+			mesh.vertices.add({ {0, -height / 2.0f, 0}, {0, -1, 0}, {0.5f, 0.5f} }); // bottom center
 
 			// Top/Bottom caps
 			for (unsigned int i = 0; i < segments; ++i) {
@@ -155,14 +155,14 @@ namespace Mani
 				unsigned int viBottom = i * 2;
 
 				// Top cap
-				mesh.indices.push_back(baseIndex); // center
-				mesh.indices.push_back(next * 2 + 1);
-				mesh.indices.push_back(viTop);
+				mesh.indices.add(baseIndex); // center
+				mesh.indices.add(next * 2 + 1);
+				mesh.indices.add(viTop);
 
 				// Bottom cap
-				mesh.indices.push_back(baseIndex + 1); // center
-				mesh.indices.push_back(viBottom);
-				mesh.indices.push_back(next * 2);
+				mesh.indices.add(baseIndex + 1); // center
+				mesh.indices.add(viBottom);
+				mesh.indices.add(next * 2);
 			}
 
 			return mesh;

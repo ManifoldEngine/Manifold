@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
-#include <string>
+#include <Core/Containers/List.h>
 #include <ManiMaths/Fwd.h>
+#include <string>
 
 namespace Mani
 {
@@ -16,7 +16,7 @@ namespace Mani
 	struct Mesh
 	{
 		std::string name;
-		std::vector<Vertex> vertices;
-		std::vector<unsigned int> indices;
+		List<Vertex> vertices;
+		List<unsigned int> indices;
 	};
 }

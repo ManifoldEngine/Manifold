@@ -1,12 +1,11 @@
 #pragma once
 
 #include <Core/Core.h>
+#include <Core/Containers/List.h>
 
 #include <mutex>
-#include <vector>
 #include <thread>
 #include <future>
-#include <queue>
 #include <functional>
 #include <memory>
 
@@ -41,7 +40,7 @@ namespace Mani
 			m_stopRequested = false;
 			for (size_t i = 0; i < size; ++i)
 			{
-				m_threads.emplace_back([this]() { worker(); });
+				m_threads.add(std::thread{ [this]() { worker(); } });
 			}
 		}
 
@@ -62,7 +61,7 @@ namespace Mani
 			}
 		}
 
-		bool isRunning() const { return !m_threads.empty(); }
+		bool isRunning() const { return !m_threads.isEmpty(); }
 
 		template<typename TFunctor, typename... TArgs>
 		auto enqueue(TFunctor&& f, TArgs&&... args)
@@ -76,7 +75,7 @@ namespace Mani
 			std::future<TReturn> future = taskPtr->get_future();
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
-				m_queue.emplace([taskPtr]() { (*taskPtr)(); });
+				m_queue.enqueue([taskPtr]() { (*taskPtr)(); });
 			}
 			m_condition_variable.notify_one();
 			return future;
@@ -85,18 +84,17 @@ namespace Mani
 		void worker()
 		{
 			std::unique_lock<std::mutex> lock(m_mutex);
-			while (!m_stopRequested || (m_stopRequested && !m_queue.empty()))
+			while (!m_stopRequested || (m_stopRequested && !m_queue.isEmpty()))
 			{
 				m_busyThreads--;
 				m_condition_variable.wait(lock, [this]() {
-					return m_stopRequested || !m_queue.empty();
+					return m_stopRequested || !m_queue.isEmpty();
 				});
 				m_busyThreads++;
 
-				if (!m_queue.empty())
+				if (!m_queue.isEmpty())
 				{
-					auto task = std::move(m_queue.front());
-					m_queue.pop();
+					auto task = std::move(m_queue.dequeue());
 					lock.unlock();
 					task();
 					lock.lock();
@@ -110,7 +108,7 @@ namespace Mani
 
 		mutable std::mutex m_mutex;
 		std::condition_variable m_condition_variable;
-		std::vector<std::thread> m_threads;
-		std::queue<std::function<void()>> m_queue;
+		List<std::thread> m_threads;
+		List<std::function<void()>> m_queue;
 	};
 }

@@ -15,8 +15,6 @@
 #include <RenderAPI/MeshComponent.h>
 #include <RenderAPI/BoundingSphere.h>
 
-#include <vector>
-
 using namespace Mani;
 
 void OpenGLCommandBufferSystem::onInitialize(ECS::Registry& registry, World& world)
@@ -47,7 +45,7 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 	}
 
 	// gather all draw commands.
-	std::array<std::vector<OpenGLCommand>, Application::THREAD_COUNT> threadBuffers;
+	std::array<List<OpenGLCommand>, Application::THREAD_COUNT> threadBuffers;
 	ECS::View<Position, Rotation, Scale, MeshComponent> view(registry);
 	Mani::parallelFor(view, [&threadBuffers, &registry, cameraPosition, camera](ECS::EntityId entityId, size_t threadIndex)
 	{
@@ -97,26 +95,26 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 				{
 					continue;
 				}
-				command.textures.push_back({ texture.key, &res->value });
+				command.textures.add({ texture.key, &res->value });
 			}
 		}
 
 		for (const auto& [key, value] : meshComponent.shaderParameters)
 		{
-			command.customParamaters.push_back({ key, value });
+			command.customParamaters.add({ key, value });
 		}
 
-		threadBuffers[threadIndex].emplace_back(command);
+		threadBuffers[threadIndex].add(std::move(command));
 	});
 
 	// merge all thread buffers into the command buffer.
-	std::vector<OpenGLCommand> commands;
-	for (const auto& buffer : threadBuffers)
+	List<OpenGLCommand> commands;
+	for (auto&& buffer : threadBuffers)
 	{
-		commands.insert(commands.end(), buffer.begin(), buffer.end());
+		commands.append(std::move(buffer));
 	}
 
-	std::sort(commands.begin(), commands.end(), [](const OpenGLCommand& lhs, const OpenGLCommand& rhs) 
+	commands.sort([](const OpenGLCommand& lhs, const OpenGLCommand& rhs)
 	{
 		return std::tie(lhs.shader, lhs.vao, lhs.rendererId) < std::tie(rhs.shader, rhs.vao, rhs.rendererId);
 	});
@@ -134,7 +132,7 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 	// write to the current write buffer
 	writeBuffer.commands.clear();
 	writeBuffer.commands = std::move(commands);
-	MANI_LOG_VERBOSE(LogOpenGL, "wrote {} opengl to command buffer", writeBuffer.commands.size());
+	MANI_LOG_VERBOSE(LogOpenGL, "wrote {} opengl to command buffer", writeBuffer.commands.count());
 	// set the next read buffer
 	cbs.readBuffer = cbs.writeBuffer;
 	// set the next write buffer

@@ -1,7 +1,7 @@
 #pragma once
 
+#include <Core/Containers/List.h>
 #include <string>
-#include <vector>
 
 namespace Mani
 {
@@ -16,6 +16,6 @@ namespace Mani
 
 	struct ShaderCollection
 	{
-		std::vector<std::string> paths;
+		List<std::string> paths;
 	};
 }

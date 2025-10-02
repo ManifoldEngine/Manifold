@@ -10,11 +10,11 @@ namespace Mani
 	struct InputUser
 	{
 		// user actions
-		std::unordered_map<std::string, InputAction> actions;
+		Map<std::string, InputAction> actions;
 		// control to actions binding
-		std::unordered_map<std::string, std::unordered_set<std::string>> bindings;
+		Map<std::string, List<std::string>> bindings;
 		
-		std::vector<ECS::EntityId> inputDevices;
+		List<ECS::EntityId> inputDevices;
 
 		inline void setAction(const std::string& action)
 		{
@@ -23,17 +23,17 @@ namespace Mani
 
 		inline void unsetAction(const std::string& action)
 		{
-			actions.erase(action);
+			actions.remove(action);
 		}
 
 		inline void addBinding(const std::string& control, const std::string& action)
 		{
-			bindings[control].insert(action);
+			bindings[control].addUnique(action);
 		}
 
 		inline void removeBinding(const std::string& control, const std::string& action)
 		{
-			bindings[control].erase(action);
+			bindings[control].remove(action);
 		}
 	};
 }

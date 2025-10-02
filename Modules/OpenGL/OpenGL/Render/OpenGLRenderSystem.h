@@ -14,8 +14,8 @@ namespace Mani
         {
             ThreadPool renderThread{ 1 };
 
-            std::vector<IOpenGLRenderer*> renderers;
-            std::vector<IOpenGLRenderExtension*> extensions;
+            List<IOpenGLRenderer*> renderers;
+            List<IOpenGLRenderExtension*> extensions;
         };
 
         virtual std::string_view getName() const override { return "OpenGLRenderSystem"; }

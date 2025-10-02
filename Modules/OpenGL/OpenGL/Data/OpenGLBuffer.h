@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OpenGL.h"
+#include <Core/Containers/List.h>
 #include <Core/ManiAssert.h>
 
 namespace Mani
@@ -48,7 +49,7 @@ namespace Mani
 		size_t getStrideCount() const;
 		size_t getStrideSize() const;
 		
-		std::vector<BufferLayoutElement> layout;
+		List<BufferLayoutElement> layout;
 		
 		static size_t getShaderDataTypeSize(EShaderDataType type);
 		static size_t getComponentCount(EShaderDataType type);
