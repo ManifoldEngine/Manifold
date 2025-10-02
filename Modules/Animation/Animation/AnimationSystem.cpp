@@ -12,6 +12,7 @@
 
 #include <RenderAPI/MeshComponent.h>
 #include <RenderAPI/Texture.h>
+#include <RenderAPI/Shader.h>
 
 #include <Resources/ResourceSystem.h>
 
@@ -24,8 +25,7 @@ void updateEntity(ECS::Registry& registry, ECS::EntityId entityId, const Animati
 
 	if (MeshComponent* meshComponent = registry.get<MeshComponent>(entityId))
 	{
-		meshComponent->textureParameters[AnimationShaderNames::MANI_ANIM_TEXTURE_0] = frame.textureId;
-		meshComponent->shaderParameters[AnimationShaderNames::MANI_ANIM_COLOR] = frame.color;
+		meshComponent->textureParameters[ShaderNames::MANI_TEXTURE_0] = frame.textureId;
 	}
 }
 
@@ -33,8 +33,7 @@ void resetEntity(ECS::Registry& registry, ECS::EntityId entityId)
 {
 	if (MeshComponent* meshComponent = registry.get<MeshComponent>(entityId))
 	{
-		meshComponent->textureParameters.erase(AnimationShaderNames::MANI_ANIM_TEXTURE_0);
-		meshComponent->shaderParameters.erase(AnimationShaderNames::MANI_ANIM_COLOR);
+		meshComponent->textureParameters.erase(ShaderNames::MANI_TEXTURE_0);
 	}
 }
 

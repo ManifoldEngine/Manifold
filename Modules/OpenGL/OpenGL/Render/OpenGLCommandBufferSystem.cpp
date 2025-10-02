@@ -16,6 +16,7 @@
 #include <RenderAPI/BoundingSphere.h>
 
 #include <vector>
+#include <algorithm>
 
 using namespace Mani;
 
@@ -104,6 +105,30 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 		for (const auto& [key, value] : meshComponent.shaderParameters)
 		{
 			command.customParamaters.push_back({ key, value });
+		}
+
+		for (const auto& [key, value] : meshComponent.textureParameters)
+		{
+			if (Resource<OpenGLTexture2D>* res = registry.get<Resource<OpenGLTexture2D>>(value))
+			{
+				if (!res->isReady)
+				{
+					continue;
+				}
+
+				auto it = std::find_if(command.textures.begin(), command.textures.end(), [&key](const auto& texture)
+				{
+					return texture.first == key;
+				});
+				if (it != command.textures.end())
+				{
+					*it = { key, &res->value };
+				}
+				else
+				{
+					command.textures.push_back({ key, &res->value });
+				}
+			}
 		}
 
 		threadBuffers[threadIndex].emplace_back(command);
