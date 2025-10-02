@@ -2,16 +2,17 @@
 
 #include <ManiMaths/Fwd.h>
 
-#include <ECS/Entity.h>
+#include <Core/Containers/List.h>
+#include <Core/ECS/Entity.h>
 
 #include <RenderAPI/Shader.h>
 
+#include <OpenGL/Data/OpenGLMaterial.h>
 #include <OpenGL/Data/OpenGLShader.h>
 #include <OpenGL/Data/OpenGLVertexArray.h>
 #include <OpenGL/Data/OpenGLTexture.h>
 
 #include <memory>
-#include <vector>
 #include <array>
 #include <atomic>
 #include <semaphore>
@@ -25,20 +26,26 @@ namespace Mani
 
 	struct OpenGLCommand
 	{
+		struct TextureParam
+		{
+			std::string key;
+			OpenGLTexture2D* texture;
+		};
+
 		Mat4f model;
 
 		OpenGLVertexArray* vao;
 		OpenGLShader* shader;
 		Vec4f color = VEC4F::ONE;
-		std::vector<std::pair<std::string, OpenGLTexture2D*>> textures;
-		std::vector<std::pair<std::string, ShaderType>> customParamaters;
+		List<TextureParam> textures;
+		List<OpenGLMaterial::ShaderParam> customParamaters;
 
 		int rendererId = 0;
 	};
 
 	struct OpenGLCommandBuffer
 	{
-		std::vector<OpenGLCommand> commands;
+		List<OpenGLCommand> commands;
 
 		std::binary_semaphore isReadyToWrite{ 0 };
 	};

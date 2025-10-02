@@ -36,7 +36,7 @@ OpenGLVertexBuffer::OpenGLVertexBuffer(OpenGLVertexBuffer&& other) noexcept
 	m_size = other.m_size;
 
 	other.m_vertexBufferObjectId = 0;
-	other.layout.~vector();
+	other.layout.~List();
 	other.m_size = 0;
 }
 
@@ -47,7 +47,7 @@ OpenGLVertexBuffer& OpenGLVertexBuffer::operator=(OpenGLVertexBuffer&& other) no
 	m_size = other.m_size;
 
 	other.m_vertexBufferObjectId = 0;
-	other.layout.~vector();
+	other.layout.~List();
 	other.m_size = 0;
 	return *this;
 }

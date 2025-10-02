@@ -25,7 +25,7 @@ void FloatingCameraSystem::onInitialize(ECS::Registry& registry, World& world)
 	// assign all devices to this input user by default.
 	for (const auto entityId : ECS::View<InputDevice>(registry))
 	{
-		inputUser.inputDevices.push_back(entityId);
+		inputUser.inputDevices.add(entityId);
 	}
 }
 

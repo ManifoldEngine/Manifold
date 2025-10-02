@@ -1,6 +1,7 @@
 #pragma once
 
 #include "OpenGL.h"
+#include <Core/Containers/List.h>
 #include <OpenGL/Data/OpenGLBuffer.h>
 #include <vector>
 
@@ -32,7 +33,7 @@ namespace Mani
 		unsigned int m_vertexArrayObjectId = UINT32_MAX;
 		int m_attributeCount = 0;
 
-		std::vector<OpenGLVertexBuffer> m_vertexBuffers;
+		List<OpenGLVertexBuffer> m_vertexBuffers;
 		OpenGLIndexBuffer m_indexBuffer;
 	};
 }

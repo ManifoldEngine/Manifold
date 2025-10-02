@@ -53,8 +53,8 @@ namespace Mani
 	private:
 		struct Storage
 		{
-			std::vector<IResourceSystemExtension*> extensions;
-			std::unordered_map<std::filesystem::path, ECS::EntityId> pathToEntityId;
+			List<IResourceSystemExtension*> extensions;
+			Map<std::filesystem::path, ECS::EntityId> pathToEntityId;
 			std::mutex pathToEntityMutex;
 		};
 
@@ -94,10 +94,10 @@ namespace Mani
 		{
 			std::lock_guard<std::mutex> lock(storage.pathToEntityMutex);
 
-			auto it = storage.pathToEntityId.find(path);
-			if (it != storage.pathToEntityId.end())
+			
+			if (auto* entityId = storage.pathToEntityId.find(path))
 			{
-				return it->second;
+				return *entityId;
 			}
 		}
 

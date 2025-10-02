@@ -3,7 +3,6 @@
 #include <Core/ManiAssert.h>
 
 #include <Core/Log.h>
-#include <Core/Log/LogSystem.h>
 
 #include <Core/FileSystem.h>
 
@@ -53,7 +52,6 @@ Application::Application()
 	m_threadPool.start(m_config.threadPoolSize);
 
 	m_world.initialize();
-	m_world.createSystem<LogSystem>();
 
 #if MANI_DEBUG
 	m_world.createSystem<ProfilingSystem>();
@@ -69,7 +67,6 @@ Application::~Application()
 #if MANI_DEBUG
 	m_world.destroySystem<ProfilingSystem>();
 #endif
-	m_world.destroySystem<LogSystem>();
 	s_application = nullptr;
 }
 

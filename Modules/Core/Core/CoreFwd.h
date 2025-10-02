@@ -12,3 +12,6 @@
 #include <Core/Transform.h>
 
 #include <Core/Application.h>
+
+#include <Core/Containers/List.h>
+#include <Core/Containers/Map.h>

@@ -125,7 +125,7 @@ void OpenGLVertexArray::addVertexBuffer(OpenGLVertexBuffer&& buffer)
 				break;
 		}
 	}
-	m_vertexBuffers.emplace_back(std::move(buffer));
+	m_vertexBuffers.add(std::move(buffer));
 }
 
 void OpenGLVertexArray::setIndexBuffer(OpenGLIndexBuffer&& buffer)

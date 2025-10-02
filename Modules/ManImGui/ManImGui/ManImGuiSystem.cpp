@@ -101,7 +101,7 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 
 		for (const auto deviceId : ECS::View<InputDevice>(registry))
 		{
-			inputUser.inputDevices.push_back(deviceId);
+			inputUser.inputDevices.add(deviceId);
 		}
 	}
 }
@@ -125,7 +125,7 @@ void ManImGuiSystem::tick(ECS::Registry& registry)
 	for (const auto entityId : ECS::View<ManImGuiUser, InputUser>(registry))
 	{
 		auto [imguiUser, inputUser] = registry.getMany<ManImGuiUser, InputUser>(entityId);
-		const InputAction& toggleManImGui = inputUser->actions.at(TOGGLE_MANIMGUI);
+		const InputAction& toggleManImGui = inputUser->actions.get(TOGGLE_MANIMGUI);
 		handleInputs(registry, context, *imguiUser, toggleManImGui);
 		break;
 	}

@@ -20,7 +20,7 @@ using namespace Mani;
 
 void updateEntity(ECS::Registry& registry, ECS::EntityId entityId, const Animation& animation, FrameId frameId)
 {
-	MANI_ASSERT(frameId <= animation.frames.size(), "frame id out of bounds");
+	MANI_ASSERT(frameId <= animation.frames.count(), "frame id out of bounds");
 	const Animation::Frame& frame = animation.frames[frameId];
 
 	if (MeshComponent* meshComponent = registry.get<MeshComponent>(entityId))
@@ -102,7 +102,7 @@ void AnimationSystem::tick(ECS::Registry& registry)
 		const float frameDeltaInSeconds = animator.playRate * frameDelta;
 		const float elapsedRemainder = animator.elapsed - frameDeltaInSeconds;
 
-		if (animator.frameId >= animation.frames.size())
+		if (animator.frameId >= animation.frames.count())
 		{
 			switch (animator.mode)
 			{

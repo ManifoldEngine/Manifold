@@ -9,14 +9,6 @@
 
 using namespace Mani;
 
-std::vector<std::string> getSortedKeys(const std::unordered_map<std::string, ScopedTimerStats>& map)
-{
-	std::vector<std::string> keys(map.size());
-	std::transform(map.begin(), map.end(), keys.begin(), [](const auto& pair) { return pair.first; });
-	std::sort(keys.begin(), keys.end());
-	return keys;
-}
-
 void ManImGuiProfilingStatsSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<ManImGuiSystem>();
@@ -40,7 +32,7 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 		return;
 	}
 
-	const std::vector<std::string> keys = getSortedKeys(database->scopedTimers);
+	const List<std::string> keys = database->scopedTimers.keys().sort();
 
 	bool isActive = false;
 	ImGui::Begin("Profiling Stats", &isActive, ImGuiWindowFlags_MenuBar);
@@ -49,7 +41,7 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 	ImGui::Text(std::format("{:.3}fps, entity count {}", fps, registry.size()).c_str());
 	for (const auto& name : keys)
 	{
-		const auto& stats = database->scopedTimers.at(name);
+		const auto& stats = database->scopedTimers.get(name);
 
 		ImGui::Indent();
 		ImGui::Separator();
