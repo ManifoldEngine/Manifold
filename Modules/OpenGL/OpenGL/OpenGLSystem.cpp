@@ -25,7 +25,6 @@
 #include <ManiMaths/Fwd.h>
 
 #include <iostream>
-#include <vector>
 #include <memory>
 
 #ifdef __EMSCRIPTEN__

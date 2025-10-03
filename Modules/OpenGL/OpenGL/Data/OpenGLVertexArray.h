@@ -3,7 +3,6 @@
 #include "OpenGL.h"
 #include <Core/Containers/List.h>
 #include <OpenGL/Data/OpenGLBuffer.h>
-#include <vector>
 
 namespace Mani
 {

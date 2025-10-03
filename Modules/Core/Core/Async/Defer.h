@@ -1,6 +1,6 @@
 #pragma once
 
-#include <queue>
+#include <Core/Containers/List.h>
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -21,19 +21,19 @@ namespace Mani
 
 			{
 				std::lock_guard<std::mutex> lock(m_mutex);
-				m_queue.emplace([taskPtr]() { (*taskPtr)(); });
+				m_queue.enqueue([taskPtr]() { (*taskPtr)(); });
 			}
 		}
 
 		// resolves all the defered calls.
 		void resolve()
 		{
-			while (!m_queue.empty())
+			while (!m_queue.isEmpty())
 			{
-				auto f = std::move(m_queue.front());
+				auto f = std::move(m_queue.first());
 				{
 					std::lock_guard<std::mutex> lock(m_mutex);
-					m_queue.pop();
+					m_queue.dequeue();
 				}
 				f();
 			}
@@ -41,6 +41,6 @@ namespace Mani
 
 	private:
 		std::mutex m_mutex;
-		std::queue<std::function<void()>> m_queue;
+		Mani::List<std::function<void()>> m_queue;
 	};
 }

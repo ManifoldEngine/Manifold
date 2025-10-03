@@ -141,16 +141,17 @@ namespace Mani
 
 		[[nodiscard]] V& operator[](const K& key)
 		{
-			if (has(key))
+			const SizeT index = indexOfKey(key);
+			if (index != INDEX_NONE)
 			{
-				return get(key);
+				return m_data[index].value;
 			}
 
 			add(key, V{});
 			return m_data.last().value;
 		}
 
-		[[nodiscard]] const List<K>& keys() const 
+		[[nodiscard]] List<K> keys() const 
 		{
 			List<K> keys;
 			for (const auto& [key, value] : m_data)
@@ -160,7 +161,7 @@ namespace Mani
 			return keys;
 		}
 
-		[[nodiscard]] const List<V>& values() const
+		[[nodiscard]] List<V> values() const
 		{
 			List<V> values;
 			for (const auto& [key, value] : m_data)

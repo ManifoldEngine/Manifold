@@ -7,8 +7,6 @@
 #include <fstream>
 #include <mutex>
 
-#include <unordered_map>
-
 using namespace Mani;
 
 namespace LogColors

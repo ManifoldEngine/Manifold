@@ -5,7 +5,6 @@
 #include <string_view>
 #include <filesystem>
 #include <memory>
-#include <vector>
 
 struct aiNode;
 struct aiMesh;

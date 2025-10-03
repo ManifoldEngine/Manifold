@@ -41,7 +41,7 @@ namespace Mani
 			return *this;
 		}
 
-		List<T>& operator=(List<T>&& other)
+		List<T>& operator=(List<T>&& other) noexcept
 		{
 			if (this != &other)
 			{
@@ -129,6 +129,28 @@ namespace Mani
 			return std::find_if(m_data.begin(), m_data.end(), f) != m_data.end();
 		}
 
+		template<typename F = Predicate>
+		[[nodiscard]] T* findIf(F&& f)
+		{
+			auto it = std::find_if(m_data.begin(), m_data.end(), f);
+			if (it != m_data.end())
+			{
+				return &(*it);
+			}
+			return nullptr;
+		}
+
+		template<typename F = Predicate>
+		[[nodiscard]] const T* findIf(F&& f) const
+		{
+			auto it = std::find_if(m_data.begin(), m_data.end(), f);
+			if (it != m_data.end())
+			{
+				return &(*it);
+			}
+			return nullptr;
+		}
+
 		[[nodiscard]] SizeT indexOf(const T& value) const
 		{
 			auto it = std::find(m_data.begin(), m_data.end(), value);
@@ -197,7 +219,7 @@ namespace Mani
 			std::sort(m_data.begin(), m_data.end());
 		}
 
-		[[nodiscard]] List<T> sort() const
+		[[nodiscard]] List<T> sortCopy() const
 		{
 			List<T> copy = *this;
 			std::sort(copy.begin(), copy.end());

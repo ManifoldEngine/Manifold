@@ -104,6 +104,7 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 			command.customParamaters.add({ key, value });
 		}
 
+		// textures parameters can override existing textures in the material if they share the same key
 		for (const auto& [key, value] : meshComponent.textureParameters)
 		{
 			if (Resource<OpenGLTexture2D>* res = registry.get<Resource<OpenGLTexture2D>>(value))
@@ -113,22 +114,23 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 					continue;
 				}
 
-				auto it = std::find_if(command.textures.begin(), command.textures.end(), [&key](const auto& texture)
+				const SizeT index = command.textures.indexOfIf([&key](const auto& texture)
 				{
-					return texture.first == key;
+					return texture.key == key;
 				});
-				if (it != command.textures.end())
+
+				if (index != INDEX_NONE)
 				{
-					*it = { key, &res->value };
+					command.textures[index].texture = &res->value;
 				}
 				else
 				{
-					command.textures.push_back({ key, &res->value });
+					command.textures.add({ key, &res->value });
 				}
 			}
 		}
 
-		threadBuffers[threadIndex].emplace_back(command);
+		threadBuffers[threadIndex].add(std::move(command));
 	});
 
 	// merge all thread buffers into the command buffer.

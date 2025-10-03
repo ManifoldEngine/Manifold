@@ -33,7 +33,7 @@ void resetEntity(ECS::Registry& registry, ECS::EntityId entityId)
 {
 	if (MeshComponent* meshComponent = registry.get<MeshComponent>(entityId))
 	{
-		meshComponent->textureParameters.erase(ShaderNames::MANI_TEXTURE_0);
+		meshComponent->textureParameters.remove(ShaderNames::MANI_TEXTURE_0);
 	}
 }
 

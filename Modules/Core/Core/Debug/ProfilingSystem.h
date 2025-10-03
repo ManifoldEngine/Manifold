@@ -24,5 +24,8 @@ namespace Mani
 
     public:
         virtual void tick(Mani::ECS::Registry& registry) override;
+
+    private:
+        struct Storage;
     };
 }

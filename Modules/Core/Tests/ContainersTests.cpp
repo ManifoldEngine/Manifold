@@ -284,6 +284,31 @@ MANI_SECTION_BEGIN(List, "Containers")
             MANI_TEST_ASSERT(b.count() == 3, "b should remain unchanged after copy-append");
             MANI_TEST_ASSERT(b[0] == 4 && b[2] == 6, "b should still contain its original elements");
         }
+
+        MANI_TEST(List_FindIf, "Should find elements with predicate")
+        {
+            Mani::List<int> list = { 1, 2, 3, 4, 5 };
+
+            // --- find first even number ---
+            int* found = list.findIf([](int v) { return v % 2 == 0; });
+            MANI_TEST_ASSERT(found != nullptr, "Should find an even number");
+            MANI_TEST_ASSERT(*found == 2, "First even number should be 2");
+
+            // --- find first greater than 3 ---
+            found = list.findIf([](int v) { return v > 3; });
+            MANI_TEST_ASSERT(found != nullptr, "Should find a number greater than 3");
+            MANI_TEST_ASSERT(*found == 4, "First number greater than 3 should be 4");
+
+            // --- try to find something not in the list ---
+            found = list.findIf([](int v) { return v > 10; });
+            MANI_TEST_ASSERT(found == nullptr, "Should return nullptr if no element matches");
+
+            // --- const version ---
+            const Mani::List<int>& constList = list;
+            const int* cfound = constList.findIf([](int v) { return v % 2 == 1; });
+            MANI_TEST_ASSERT(cfound != nullptr, "Const findIf should work too");
+            MANI_TEST_ASSERT(*cfound == 1, "First odd number should be 1");
+        }
     }
     MANI_SECTION_END(Insert)
 
@@ -317,7 +342,7 @@ MANI_SECTION_BEGIN(List, "Containers")
             MANI_TEST_ASSERT(l[4] == 8, "Last element should be 8 after sort");
 
             const Mani::List<int> copy = l;
-            Mani::List<int> copySorted = copy.sort(); // const version that returns copy
+            Mani::List<int> copySorted = copy.sortCopy(); // const version that returns copy
             MANI_TEST_ASSERT(copySorted == l, "Copy returned from const sort() should match sorted list");
         }
 
