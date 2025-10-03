@@ -100,10 +100,9 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto& meshComponent = *registry.get<MeshComponent>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::AnimationShaderNames::MANI_ANIM_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
 			MANI_TEST_ASSERT(textureId == animation.frames[0].textureId, "The first frame should be displayed");
-			const Vec4f& color = std::get<Vec4f>(meshComponent.shaderParameters[Mani::AnimationShaderNames::MANI_ANIM_COLOR]);
-			MANI_TEST_ASSERT(color.isNearlyEqual(Mani::Colors::WHITE), "The first frame sets the mesh to be white");
+
 		}
 
 		// animation tick
@@ -113,10 +112,8 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto& meshComponent = *registry.get<MeshComponent>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::AnimationShaderNames::MANI_ANIM_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
 			MANI_TEST_ASSERT(textureId == animation.frames[1].textureId, "The first frame should be displayed");
-			const Vec4f& color = std::get<Vec4f>(meshComponent.shaderParameters[Mani::AnimationShaderNames::MANI_ANIM_COLOR]);
-			MANI_TEST_ASSERT(color.isNearlyEqual(Mani::Colors::RED), "The first frame sets the mesh to be white");
 		}
 
 		// animation tick
@@ -126,10 +123,8 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto& meshComponent = *registry.get<MeshComponent>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::AnimationShaderNames::MANI_ANIM_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
 			MANI_TEST_ASSERT(textureId == animation.frames[2].textureId, "The first frame should be displayed");
-			const Vec4f& color = std::get<Vec4f>(meshComponent.shaderParameters[Mani::AnimationShaderNames::MANI_ANIM_COLOR]);
-			MANI_TEST_ASSERT(color.isNearlyEqual(Mani::Colors::GREEN), "The first frame sets the mesh to be white");
 		}
 
 		// animation tick
@@ -139,10 +134,8 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto& meshComponent = *registry.get<MeshComponent>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::AnimationShaderNames::MANI_ANIM_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
 			MANI_TEST_ASSERT(textureId == animation.frames[3].textureId, "The first frame should be displayed");
-			const Vec4f& color = std::get<Vec4f>(meshComponent.shaderParameters[Mani::AnimationShaderNames::MANI_ANIM_COLOR]);
-			MANI_TEST_ASSERT(color.isNearlyEqual(Mani::Colors::BLUE), "The first frame sets the mesh to be white");
 		}
 		
 		// animation tick
@@ -153,8 +146,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		{
 			// One shot play mode should reset the animator and prameters once the animation is done
 			auto& meshComponent = *registry.get<MeshComponent>(entityId);
-			MANI_TEST_ASSERT(!meshComponent.textureParameters.contains(Mani::AnimationShaderNames::MANI_ANIM_TEXTURE_0), "Anim texture should have been cleared");
-			MANI_TEST_ASSERT(!meshComponent.shaderParameters.contains(Mani::AnimationShaderNames::MANI_ANIM_COLOR), "Anim shader params should have been cleared");
+			MANI_TEST_ASSERT(!meshComponent.textureParameters.has(Mani::ShaderNames::MANI_TEXTURE_0), "Anim texture should have been cleared");
 
 			auto& animator = *registry.get<Animator>(entityId);
 			MANI_TEST_ASSERT(animator.frameId == INVALID_FRAME_ID, "animator should not be playing anything");
@@ -205,10 +197,8 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto& meshComponent = *registry.get<MeshComponent>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::AnimationShaderNames::MANI_ANIM_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
 			MANI_TEST_ASSERT(textureId == animation.frames[0].textureId, "The first frame should be displayed");
-			const Vec4f& color = std::get<Vec4f>(meshComponent.shaderParameters[Mani::AnimationShaderNames::MANI_ANIM_COLOR]);
-			MANI_TEST_ASSERT(color.isNearlyEqual(Mani::Colors::WHITE), "The first frame sets the mesh to be white");
 		}
 
 		// animation tick
@@ -220,10 +210,8 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto& meshComponent = *registry.get<MeshComponent>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::AnimationShaderNames::MANI_ANIM_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
 			MANI_TEST_ASSERT(textureId == animation.frames[3].textureId, "The first frame should be displayed");
-			const Vec4f& color = std::get<Vec4f>(meshComponent.shaderParameters[Mani::AnimationShaderNames::MANI_ANIM_COLOR]);
-			MANI_TEST_ASSERT(color.isNearlyEqual(Mani::Colors::BLUE), "The first frame sets the mesh to be white");
 		}
 
 		// animation tick
@@ -234,10 +222,8 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		{
 			// should loop
 			auto& meshComponent = *registry.get<MeshComponent>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::AnimationShaderNames::MANI_ANIM_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
 			MANI_TEST_ASSERT(textureId == animation.frames[0].textureId, "The first frame should be displayed");
-			const Vec4f& color = std::get<Vec4f>(meshComponent.shaderParameters[Mani::AnimationShaderNames::MANI_ANIM_COLOR]);
-			MANI_TEST_ASSERT(color.isNearlyEqual(Mani::Colors::WHITE), "The first frame sets the mesh to be white");
 		}
 	}
 }

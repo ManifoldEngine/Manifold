@@ -3,20 +3,16 @@
     "duration": 1.0,
     "frames": [
         {
-	        "texturePath": "Engine/Modules/Animation/Tests/Assets/Texture1.txt",
-			"color": {"x": 1.0, "y": 1.0, "z": 1.0, "w": 1.0 }
+	        "texturePath": "Engine/Modules/Animation/Tests/Assets/Texture1.txt"
         },
         {
-	        "texturePath": "Engine/Modules/Animation/Tests/Assets/Texture2.txt",
-			"color": {"x": 1.0, "y": 0.0, "z": 0.0, "w": 1.0 }
+	        "texturePath": "Engine/Modules/Animation/Tests/Assets/Texture2.txt"
         },
         {
-	        "texturePath": "Engine/Modules/Animation/Tests/Assets/Texture3.txt",
-			"color": {"x": 0.0, "y": 1.0, "z": 0.0, "w": 1.0 }
+	        "texturePath": "Engine/Modules/Animation/Tests/Assets/Texture3.txt"
         },
         {
-	        "texturePath": "Engine/Modules/Animation/Tests/Assets/Texture4.txt",
-			"color": {"x": 0.0, "y": 0.0, "z": 1.0, "w": 1.0 }
+	        "texturePath": "Engine/Modules/Animation/Tests/Assets/Texture4.txt"
         }
     ]
 }

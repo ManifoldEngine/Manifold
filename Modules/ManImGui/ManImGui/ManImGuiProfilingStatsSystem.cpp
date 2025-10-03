@@ -32,7 +32,7 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 		return;
 	}
 
-	const List<std::string> keys = database->scopedTimers.keys().sort();
+	const List<std::string> keys = database->scopedTimers.keys().sortCopy();
 
 	bool isActive = false;
 	ImGui::Begin("Profiling Stats", &isActive, ImGuiWindowFlags_MenuBar);

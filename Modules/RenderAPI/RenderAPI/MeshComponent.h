@@ -1,8 +1,8 @@
 #pragma once
 
+#include <Core/Containers/Map.h>
 #include <ECS/Entity.h>
 #include <RenderAPI/Shader.h>
-#include <unordered_map>
 
 namespace Mani
 {
@@ -12,7 +12,7 @@ namespace Mani
 		ECS::EntityId materialHandle;
 		int rendererId = 0;
 
-		std::unordered_map<std::string, ShaderType> shaderParameters;
-		std::unordered_map<std::string, ECS::EntityId> textureParameters;
+		Mani::Map<std::string, ShaderType> shaderParameters;
+		Mani::Map<std::string, ECS::EntityId> textureParameters;
 	};
 }
