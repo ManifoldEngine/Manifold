@@ -83,7 +83,7 @@ void ProfilingSystem::onTimerDestroyed(const _impl::ScopedTimer& scopeTimer)
 	ECS::Registry& registry = Application::get().getWorld().getMutableRegistry();
 	if (Storage* storage = registry.getSingle<Storage>())
 	{
-		// this mighe get called from any thread
+		// this might get called from any thread
 		std::scoped_lock<std::mutex> lock(storage->mutex);
 		const double elapsed = scopeTimer.elapsed();
 

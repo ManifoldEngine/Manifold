@@ -7,6 +7,10 @@
 #include <fstream>
 #include <mutex>
 
+#if !MANI_CONSOLE_APP && MANI_WINDOWS
+#include <windows.h>
+#endif
+
 using namespace Mani;
 
 namespace LogColors
@@ -45,7 +49,7 @@ void logToStream(const std::string_view& channel, ELogLevel level, const std::st
 #else
 #if MANI_WINDOWS
 	std::stringstream ss;
-	ss << LEVEL_TO_COLOR_MAP[level];
+	ss << LEVEL_TO_COLOR_MAP.get(level);
 	ss << "[" << TimeSystem::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
 	ss << LogColors::RESET << "\n";
 	std::string s = ss.str();
