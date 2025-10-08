@@ -1,9 +1,7 @@
 #pragma once
 
 #include <Core/ECS/Entity.h>
-#include <vector>
-#include <unordered_map>
-#include <unordered_set>
+#include <Core/Containers/List.h>
 #include <typeindex>
 #include <mutex>
 
@@ -21,9 +19,11 @@ namespace Mani
 			bool destroy(ECS::EntityId entityId);
 			void deferDestroy(ECS::EntityId entityId); // destroys at the end of the tick.
 			const Entity* getEntity(ECS::EntityId entityId) const;
-			size_t size() const;
-			size_t unadjustedSize() const;
+			const Entity* getEntityAt(ECS::Index index) const;
+			ECS::Index count() const;
+			ECS::Index unadjustedCount() const;
 			bool isValid(ECS::EntityId entityId) const;
+			bool isValidIndex(ECS::Index index) const;
 
 			void* addComponent(ECS::EntityId entityId, ComponentId componentId, size_t componentSize);
 			void* getComponent(ECS::EntityId entityId, ComponentId componentId) const;
@@ -42,15 +42,15 @@ namespace Mani
 
 				inline void* get(size_t index);
 			
-				std::vector<unsigned char> data;
+				Mani::List<unsigned char> data;
 				size_t capacity;
 				size_t elementSize;
 			};
 
-			std::vector<ComponentPool*> m_componentPools;
-			std::vector<Entity> m_entities;
-			std::vector<ECS::EntityId> m_entityPool;
-			std::unordered_set<ECS::EntityId> m_markedForDestroy;
+			Mani::List<ComponentPool*> m_componentPools;
+			Mani::List<Entity> m_entities;
+			Mani::List<ECS::Index> m_entityPool;
+			Mani::List<ECS::EntityId> m_markedForDestroy;
 			mutable std::mutex m_markedForDestroyMutex;
 			
 			inline static ComponentId TYPE_ID_SEQUENCE = 0;

@@ -37,6 +37,9 @@ namespace Mani
 			// returs an entity object
 			const Entity* getEntity(ECS::EntityId entityId) const;
 
+			// returns an entity object
+			const Entity* getEntityAt(ECS::Index index) const;
+
 			// adds a TComponent to an entity
 			// returns the added component
 			template<typename TComponent, typename... TArgs>
@@ -74,7 +77,7 @@ namespace Mani
 			auto getMany(ECS::EntityId entityId) const;
 
 			// returns true if an entity has a component (fast)
-			template<typename TComponent>
+			template<typename ...TComponents>
 			bool has(ECS::EntityId entityId) const;
 
 			// adds a singleton TComponent
@@ -100,12 +103,14 @@ namespace Mani
 			bool hasSingle() const;
 
 			// returns the amount of alive entities
-			size_t size() const;
+			ECS::Index count() const;
 			// returns the amount of dead and alive entities.
 			// dead entities are pending recycling
-			size_t unadjustedSize() const;
+			ECS::Index unadjustedCount() const;
 			// returns true if an entity with entityId exists and is alive
 			bool isValid(ECS::EntityId entityId) const;
+			// returns true if an entity with index exists and is alive
+			bool isValidIndex(ECS::Index index) const;
 
 			// Converts a TComponent type into a numerical identifier.
 			template<typename TComponent>
@@ -157,11 +162,15 @@ namespace Mani
 			return static_cast<TComponent*>(m_entityContainer.getComponent(entityId, componentId));
 		}
 
-		template<typename TComponent>
+		template<typename ...TComponents>
 		inline bool Registry::has(ECS::EntityId entityId) const
 		{
-			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
-			return m_entityContainer.hasComponent(entityId, componentId);
+			auto f = [&]<typename TComponent>() -> bool
+			{
+				const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
+				return m_entityContainer.hasComponent(entityId, componentId);
+			};
+			return (f.template operator()<TComponents>() && ...);
 		}
 
 		template<typename TComponent>
@@ -262,19 +271,29 @@ namespace Mani
 			return m_entityContainer.getEntity(entityId);
 		}
 
-		inline size_t Registry::size() const
+		inline const Entity* Registry::getEntityAt(ECS::Index index) const
 		{
-			return m_entityContainer.size();
+			return m_entityContainer.getEntityAt(index);
 		}
 
-		inline size_t Registry::unadjustedSize() const
+		inline ECS::Index Registry::count() const
 		{
-			return m_entityContainer.unadjustedSize();
+			return m_entityContainer.count();
+		}
+
+		inline ECS::Index Registry::unadjustedCount() const
+		{
+			return m_entityContainer.unadjustedCount();
 		}
 
 		inline bool Registry::isValid(ECS::EntityId entityId) const
 		{
 			return m_entityContainer.isValid(entityId);
+		}
+
+		inline bool Registry::isValidIndex(ECS::Index index) const
+		{
+			return m_entityContainer.isValidIndex(index);
 		}
 
 		inline bool Registry::isMarkedForDestroy(ECS::EntityId entityId) const
