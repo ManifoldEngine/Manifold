@@ -38,7 +38,7 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 	ImGui::Begin("Profiling Stats", &isActive, ImGuiWindowFlags_MenuBar);
 	Time& time = *registry.getSingle<Time>();
 	const float fps = Math::isEqual(time.delta, 0.f) ? 0.f : 1.f / time.delta;
-	ImGui::Text(std::format("{:.3}fps, entity count {}", fps, registry.size()).c_str());
+	ImGui::Text(std::format("{:.3}fps, entity count {}", fps, registry.count()).c_str());
 	for (const auto& name : keys)
 	{
 		const auto& stats = database->scopedTimers.get(name);

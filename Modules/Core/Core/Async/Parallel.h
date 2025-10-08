@@ -15,24 +15,24 @@ namespace Mani
 	{
 		static_assert(Application::THREAD_COUNT > 0, "cannot parallel over 0 threads");
 
-		const size_t unadjustedSize = view.unadjustedSize();
-		size_t chunkSize = unadjustedSize / Application::THREAD_COUNT;
-		if (unadjustedSize % Application::THREAD_COUNT > 0)
+		const ECS::Index count = view.count();
+		ECS::Index chunkSize = static_cast<ECS::Index>(count / Application::THREAD_COUNT);
+		if (count % Application::THREAD_COUNT > 0)
 		{
 			chunkSize += 1;
 		}
 
 		ThreadPool& threadPool = Application::get().getThreadPool();
 		std::latch latch{ Application::THREAD_COUNT };
-		for (size_t threadIndex = 0; threadIndex < Application::THREAD_COUNT; threadIndex++)
+		for (ECS::Index threadIndex = 0; threadIndex < Application::THREAD_COUNT; threadIndex++)
 		{
-			ECS::EntityId start = threadIndex * chunkSize;
-			ECS::EntityId end = start + chunkSize;
+			ECS::Index start = threadIndex * chunkSize;
+			ECS::Index end = start + chunkSize;
 
 			threadPool.enqueue([&latch, &view, threadIndex, start, end, &f] 
 			{
 				const auto viewEnd = view.end();
-				for (auto it = view.at(start); *it < end && it != viewEnd; ++it)
+				for (auto it = view.at(start); it.getIndex() < end && it != viewEnd; ++it)
 				{
 					f(*it, threadIndex);
 				}

@@ -2,6 +2,7 @@
 
 #include "Bitset.h"
 #include <cstdint>
+#include <limits>
 
 namespace Mani 
 {
@@ -13,8 +14,15 @@ namespace Mani
 		using EntityId = unsigned int;
 		const EntityId INVALID_ID = UINT32_MAX;
 #else
-		using EntityId = size_t;
-		const EntityId INVALID_ID = UINT64_MAX;
+		using EntityId = unsigned long long;
+		constexpr EntityId INVALID_ID = (std::numeric_limits<EntityId>::max)();
+
+		using Index = unsigned int;
+		constexpr Index MAX_INDEX = (std::numeric_limits<Index>::max)();
+		constexpr int INDEX_BITS = sizeof(Index) * 8;
+
+		using Version = unsigned int;
+		constexpr Version MAX_VERSION = (std::numeric_limits<Version>::max)();
 #endif
 
 		using ComponentId = BitsetIndexType;
@@ -24,16 +32,13 @@ namespace Mani
 		/*
 		 * An entity. It knows about its id and the components it has.
 		 */
-		class Entity
+		struct Entity
 		{
-		public:
 			Entity() = default;
-			Entity(const Entity& other);
+			Entity(const Entity&) = delete;
+			Entity(Entity&& other) noexcept;
 			
-			EntityId id = ECS::INVALID_ID;
-
-			// todo #2: this is kinda messed up. This means that when an entity is reused it will have the same id as in its previous life.
-			bool isAlive = false;
+			EntityId getId() const;
 
 			bool hasComponent(ComponentId componentId) const;
 			bool hasComponents(const Bitset<MAX_COMPONENTS>& componentMask) const;
@@ -41,8 +46,25 @@ namespace Mani
 			void resetComponentBit(ComponentId componentId);
 			void resetComponentBits();
 
+			void setIndex(Index index);
+			Index getIndex() const;
+
+			void setVersion(Version version);
+			Version getVersion() const;
+
+			bool isAlive = false;
 		private:
+			void updateId();
+
+			EntityId m_id = INVALID_ID;
+			Index m_index = 0;
+			Version m_version = 0;
+
 			Bitset<MAX_COMPONENTS> m_components;
 		};
+
+		EntityId calculateId(Index index, ECS::Version version);
+		Index toIndex(EntityId entityId);
+		Version toVersion(EntityId version);
 	}
 }

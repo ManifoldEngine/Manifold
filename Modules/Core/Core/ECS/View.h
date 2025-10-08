@@ -20,7 +20,7 @@ namespace Mani
             View() = default;
 
             View(const Registry& registry)
-                : m_registry(&registry)
+                : m_registry(&registry), m_count(registry.unadjustedCount())
             {
                 if (sizeof...(TComponents) == 0)
                 {
@@ -43,7 +43,8 @@ namespace Mani
 
                 Iterator(
                     const Registry* inRegistry,
-                    ECS::EntityId inCurrentEntityId,
+                    ECS::Index inCurrentEntityId,
+                    ECS::Index inCount,
                     Bitset<Mani::ECS::MAX_COMPONENTS> inComponentMask,
                     bool inIsAll
                 );
@@ -57,55 +58,57 @@ namespace Mani
                 bool operator<=(const Iterator& other) const;
                 Iterator& operator++();
 
+                ECS::Index getIndex() const;
+
             private:
-                ECS::EntityId m_currentEntityId = ECS::INVALID_ID;
+                ECS::Index m_index = 0;
                 const Registry* m_registry = nullptr;
-                size_t m_size = 0;
+                ECS::Index m_count = 0;
                 Bitset<Mani::ECS::MAX_COMPONENTS> m_componentMask;
                 bool m_isAll = false;
 
-                bool isValidIndex(const ECS::EntityId id) const;
+                bool isValidIndex(const ECS::Index id) const;
             };
 
             const Iterator begin() const
             {
                 if (m_bisAll)
                 {
-                    return Iterator(m_registry, 0, m_componentMask, m_bisAll);
+                    return Iterator(m_registry, 0, m_count, m_componentMask, m_bisAll);
                 }
 
-                ECS::EntityId entityId = 0;
-                for (; entityId < m_registry->unadjustedSize(); ++entityId)
+                ECS::Index index = 0;
+                for (; index < m_count; ++index)
                 {
-                    if (!m_registry->isValid(entityId))
+                    if (!m_registry->isValidIndex(index))
                     {
                         continue;
                     }
 
-                    if (m_registry->getEntity(entityId)->hasComponents(m_componentMask))
+                    if (m_registry->getEntityAt(index)->hasComponents(m_componentMask))
                     {
                         break;
                     }
                 }
 
-                return Iterator(m_registry, entityId, m_componentMask, m_bisAll);
+                return Iterator(m_registry, index, m_count, m_componentMask, m_bisAll);
             }
 
             const Iterator end() const
             {
-                return Iterator(m_registry, m_registry->unadjustedSize(), m_componentMask, m_bisAll);
+                return Iterator(m_registry, m_count, m_count, m_componentMask, m_bisAll);
             }
 
-            const Iterator at(ECS::EntityId entityId) const
+            const Iterator at(ECS::Index index) const
             {
                 assert(m_registry != nullptr);
-                if (entityId >= m_registry->unadjustedSize())
+                if (index >= m_count)
                 {
                     return end();
                 }
 
-                Iterator it(m_registry, entityId, m_componentMask, m_bisAll);
-                if (m_registry->isValid(entityId) && m_registry->getEntity(entityId)->hasComponents(m_componentMask))
+                Iterator it(m_registry, index, m_count, m_componentMask, m_bisAll);
+                if (m_registry->isValidIndex(index) && m_registry->getEntityAt(index)->hasComponents(m_componentMask))
                 {
                     return it;
                 }
@@ -124,16 +127,9 @@ namespace Mani
                 return *end();
             }
 
-            size_t size() const 
+            ECS::Index count() const 
             {
-                assert(m_registry != nullptr);
-                return m_registry->size();
-            }
-
-            size_t unadjustedSize() const
-            {
-                assert(m_registry != nullptr);
-                return m_registry->unadjustedSize();
+                return m_count;
             }
 
             const Registry& getRegistry()
@@ -144,6 +140,7 @@ namespace Mani
 
         private:
             const Registry* m_registry = nullptr;
+            ECS::Index m_count = 0;
             Bitset<ECS::MAX_COMPONENTS> m_componentMask;
             bool m_bisAll = false;
         };
@@ -152,76 +149,77 @@ namespace Mani
         template<typename ...TComponents>
         inline View<TComponents...>::Iterator::Iterator(
             const Registry* inRegistry,
-            ECS::EntityId inCurrentEntityId,
+            ECS::Index inIndex,
+            ECS::Index inCount,
             Bitset<ECS::MAX_COMPONENTS> inComponentMask,
             bool inIsAll
         ) :
-            m_currentEntityId(inCurrentEntityId),
+            m_index(inIndex),
             m_registry(inRegistry),
-            m_size(0),
+            m_count(inCount),
             m_componentMask(inComponentMask),
             m_isAll(inIsAll)
         {
-            assert(m_registry != nullptr);
-            m_size = m_registry->unadjustedSize();
+            MANI_ASSERT(m_registry != nullptr, "Can't view a null registry");
         }
 
         template<typename ...TComponents>
         inline ECS::EntityId View<TComponents...>::Iterator::operator*() const
         {
-            return m_currentEntityId;
+            const Entity* entity = m_registry->getEntityAt(m_index);
+            MANI_ASSERT(entity != nullptr, "null entity");
+            return entity->getId();
         }
     
         template<typename ...TComponents>
         inline bool View<TComponents...>::Iterator::operator==(const Iterator& other) const
         {
             return m_registry == other.m_registry && 
-                m_size == other.m_size &&
-                m_currentEntityId == other.m_currentEntityId;
+                m_count == other.m_count &&
+                m_index == other.m_index;
         }
     
         template<typename ...TComponents>
         inline bool View<TComponents...>::Iterator::operator!=(const Iterator& other) const
         {
-            return m_registry != other.m_registry ||
-                m_size != other.m_size ||
-                m_currentEntityId != other.m_currentEntityId;
+            return !(operator==(other));
         }
 
         template<typename ...TComponents>
         inline bool View<TComponents...>::Iterator::operator>(const Iterator& other) const
         {
-            assert(m_registry == other.m_registry);
-            return m_currentEntityId > other.m_currentEntityId;
+            MANI_ASSERT(m_registry == other.m_registry, "Trying to compare two different registries");
+            return m_index > other.m_index;
         }
 
         template<typename ...TComponents>
         inline bool View<TComponents...>::Iterator::operator<(const Iterator& other) const
         {
-            assert(m_registry == other.m_registry);
-            return m_currentEntityId < other.m_currentEntityId;
+            MANI_ASSERT(m_registry == other.m_registry, "Trying to compare two different registries");
+            return m_index < other.m_index;
         }
 
         template<typename ...TComponents>
         inline bool View<TComponents...>::Iterator::operator>=(const Iterator& other) const
         {
-            assert(m_registry == other.m_registry);
-            return m_currentEntityId >= other.m_currentEntityId;
+            MANI_ASSERT(m_registry == other.m_registry, "Trying to compare two different registries");
+            return m_index >= other.m_index;
         }
 
         template<typename ...TComponents>
         inline bool View<TComponents...>::Iterator::operator<=(const Iterator& other) const
         {
-            assert(m_registry == other.m_registry);
-            return m_currentEntityId <= other.m_currentEntityId;
+            MANI_ASSERT(m_registry == other.m_registry, "Trying to compare two different registries");
+            return m_index <= other.m_index;
         }
 
         template<typename ...TComponents>
         inline View<TComponents...>::Iterator& View<TComponents...>::Iterator::operator++()
         {
-            for (m_currentEntityId++; m_currentEntityId < m_size; m_currentEntityId++)
+            m_index++;
+            for (; m_index < m_count; m_index++)
             {
-                if (isValidIndex(m_currentEntityId))
+                if (isValidIndex(m_index))
                 {
                     break; 
                 }
@@ -230,14 +228,20 @@ namespace Mani
         }
 
         template<typename ...TComponents>
-        inline bool View<TComponents...>::Iterator::isValidIndex(const ECS::EntityId id) const
+        inline ECS::Index View<TComponents...>::Iterator::getIndex() const
         {
-            if (!m_registry->isValid(id))
+            return m_index;
+        }
+
+        template<typename ...TComponents>
+        inline bool View<TComponents...>::Iterator::isValidIndex(const ECS::Index index) const
+        {
+            if (!m_registry->isValidIndex(index))
             {
                 return false;
             }
 
-            const Entity* entity = m_registry->getEntity(id);
+            const Entity* entity = m_registry->getEntityAt(index);
             return m_isAll || entity->hasComponents(m_componentMask);
         }
         // ITERATOR END

@@ -9,7 +9,7 @@ ECS::EntityContainer::ComponentPool::ComponentPool(size_t inElementsSize)
 	: elementSize(inElementsSize)
 {
 	capacity = INITIAL_COMPONENT_COUNT;
-	data = std::vector<unsigned char>(capacity * elementSize, 0);
+	data = Mani::List<unsigned char>(capacity * elementSize, 0);
 }
 
 void* ECS::EntityContainer::ComponentPool::get(size_t index)
@@ -32,23 +32,39 @@ void* ECS::EntityContainer::ComponentPool::get(size_t index)
 
 ECS::EntityId ECS::EntityContainer::create()
 {
-	if (m_entities.size() >= UINT64_MAX && m_entityPool.size() == 0)
+	if (m_entities.count() >= UINT64_MAX && m_entityPool.count() == 0)
 	{
 		return ECS::INVALID_ID;
 	}
 
-	if (m_entityPool.size() > 0)
+	ECS::Entity* entity = nullptr;
+	if (m_entityPool.count() > 0)
 	{
-		ECS::EntityId id = m_entityPool.back();
-		m_entityPool.pop_back();
-		m_entities[id].isAlive = true;
-		return id;
+		// get entity from entity pool
+		ECS::EntityId id = m_entityPool.pop();
+		entity = &m_entities[id];
+		const Version newVersion = entity->getVersion() + 1;
+		entity->setVersion(newVersion);
+
+#if MANI_DEBUG
+		if (entity->getVersion() >= ECS::MAX_VERSION)
+		{
+			MANI_LOG_WARNING(LogCore, "Entity version loopback");
+		}
+#endif
+	}
+	else
+	{
+		// create new entity
+		MANI_ASSERT(m_entities.count() < ECS::MAX_INDEX, "We're at entity capacity");
+		m_entities.add(ECS::Entity());
+		entity = &m_entities.last();
+		entity->setIndex(static_cast<ECS::Index>(m_entities.count() - 1));
+		entity->setVersion(0);
 	}
 
-	m_entities.push_back(ECS::Entity());
-	m_entities.back().id = m_entities.size() - 1;
-	m_entities.back().isAlive = true;
-	return m_entities.back().id;
+	entity->isAlive = true;
+	return entity->getId();
 }
 
 bool ECS::EntityContainer::destroy(ECS::EntityId entityId)
@@ -58,18 +74,19 @@ bool ECS::EntityContainer::destroy(ECS::EntityId entityId)
 		return false;
 	}
 
-	ECS::Entity& entity = m_entities[entityId];
+	const ECS::Index index = ECS::toIndex(entityId);
+	ECS::Entity& entity = m_entities[index];
 	entity.isAlive = false;
 	entity.resetComponentBits();
 
-	m_entityPool.push_back(entity.id);
+	m_entityPool.add(entity.getIndex());
 	return true;
 }
 
 void ECS::EntityContainer::deferDestroy(ECS::EntityId entityId)
 {
 	std::lock_guard<std::mutex> lock(m_markedForDestroyMutex);
-	m_markedForDestroy.insert(entityId);
+	m_markedForDestroy.addUnique(entityId);
 }
 
 const ECS::Entity* ECS::EntityContainer::getEntity(ECS::EntityId entityId) const
@@ -79,27 +96,43 @@ const ECS::Entity* ECS::EntityContainer::getEntity(ECS::EntityId entityId) const
 		return nullptr;
 	}
 
-	return &m_entities[entityId];
+	const ECS::Index index = ECS::toIndex(entityId);
+	return &m_entities[index];
 }
 
-size_t ECS::EntityContainer::size() const
+const ECS::Entity* ECS::EntityContainer::getEntityAt(ECS::Index index) const
 {
-	return m_entities.size() - m_entityPool.size();
+	if (!isValidIndex(index))
+	{
+		return nullptr;
+	}
+	return &m_entities[index];
 }
 
-size_t ECS::EntityContainer::unadjustedSize() const
+ECS::Index ECS::EntityContainer::count() const
 {
-	return m_entities.size();
+	return static_cast<ECS::Index>(m_entities.count() - m_entityPool.count());
+}
+
+ECS::Index ECS::EntityContainer::unadjustedCount() const
+{
+	return static_cast<ECS::Index>(m_entities.count());
 }
 
 bool ECS::EntityContainer::isValid(ECS::EntityId entityId) const
 {
-	if (entityId >= m_entities.size() || entityId == ECS::INVALID_ID)
+	if (entityId == ECS::INVALID_ID)
 	{
 		return false;
 	}
 
-	return m_entities[entityId].isAlive;
+	const ECS::Index index = ECS::toIndex(entityId);
+	return isValidIndex(index);
+}
+
+bool Mani::ECS::EntityContainer::isValidIndex(ECS::Index index) const
+{
+	return index < m_entities.count() && m_entities[index].isAlive;
 }
 
 void* ECS::EntityContainer::addComponent(ECS::EntityId entityId, ComponentId componentId, size_t componentSize)
@@ -115,19 +148,20 @@ void* ECS::EntityContainer::addComponent(ECS::EntityId entityId, ComponentId com
 		return nullptr;
 	}
 
-	if (componentId >= m_componentPools.size())
+	if (componentId >= m_componentPools.count())
 	{
-		m_componentPools.resize(componentId + 1, nullptr);
+		m_componentPools.resize(componentId + 1);
 	}
 	if (m_componentPools[componentId] == nullptr)
 	{
 		m_componentPools[componentId] = new ComponentPool(componentSize);
 	}
 
-	Entity& entity = m_entities[entityId];
+	const ECS::Index index = ECS::toIndex(entityId);
+	Entity& entity = m_entities[index];
 	entity.setComponentBit(componentId);
 
-	return m_componentPools[componentId]->get(entityId);
+	return m_componentPools[componentId]->get(index);
 }
 
 void* ECS::EntityContainer::getComponent(ECS::EntityId entityId, ComponentId componentId) const
@@ -137,7 +171,7 @@ void* ECS::EntityContainer::getComponent(ECS::EntityId entityId, ComponentId com
 		return nullptr;
 	}
 
-	if (componentId >= m_componentPools.size())
+	if (componentId >= m_componentPools.count())
 	{
 		// that component doesn't have a pool yet.
 		return nullptr;
@@ -148,7 +182,8 @@ void* ECS::EntityContainer::getComponent(ECS::EntityId entityId, ComponentId com
 		return nullptr;
 	}
 
-	return m_componentPools[componentId]->get(entityId);
+	const ECS::Index index = ECS::toIndex(entityId);
+	return m_componentPools[componentId]->get(index);
 }
 
 void* ECS::EntityContainer::removeComponent(ECS::EntityId entityId, ComponentId componentId)
@@ -164,8 +199,9 @@ void* ECS::EntityContainer::removeComponent(ECS::EntityId entityId, ComponentId 
 		return nullptr;
 	}
 
-	void* data = m_componentPools[componentId]->get(entityId);
-	Entity& entity = m_entities[entityId];
+	const ECS::Index index = ECS::toIndex(entityId);
+	void* data = m_componentPools[componentId]->get(index);
+	Entity& entity = m_entities[index];
 	entity.resetComponentBit(componentId);
 	return data;
 }
@@ -177,7 +213,8 @@ bool ECS::EntityContainer::hasComponent(ECS::EntityId entityId, ComponentId comp
 		return false;
 	}
 
-	return m_entities[entityId].hasComponent(componentId);
+	const ECS::Index index = ECS::toIndex(entityId);
+	return m_entities[index].hasComponent(componentId);
 }
 
 bool Mani::ECS::EntityContainer::isMarkedForDestroy(ECS::EntityId entityId) const

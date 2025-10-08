@@ -21,8 +21,8 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 		// create an entity
 		ECS::EntityId entityId = registry.create();
-	
-		MANI_TEST_ASSERT(entityId == 1, "Entity should have the first id.");
+		
+		MANI_TEST_ASSERT(ECS::toIndex(entityId) == 1, "Entity should have the first id.");
 		MANI_TEST_ASSERT(registry.isValid(entityId), "Entity should be valid.");
 	
 		// add a DataComponent
@@ -119,7 +119,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 		// we expect the entity to be recycled
 		entityId = registry.create();
-		MANI_TEST_ASSERT(entityId == 1, "Should be the first entity addded.");
+		MANI_TEST_ASSERT(ECS::toIndex(entityId) == 1, "Should be the first entity addded.");
 
 		// Entity should not have a DataComponent
 		dataComponent = registry.get<DataComponent>(entityId);
@@ -169,7 +169,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 		}
 
-		MANI_TEST_ASSERT(registry.size() == entityCount, "should have created 10 entities");
+		MANI_TEST_ASSERT(registry.count() == entityCount, "should have created 10 entities");
 
 		int entityCounter = 1;
 		for (ECS::EntityId entityId : ECS::View<DataComponent, OtherDataComponent>(registry))
@@ -233,7 +233,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 		}
 
-		MANI_TEST_ASSERT(registry.size() == entityCount, "should have created 10 entities");
+		MANI_TEST_ASSERT(registry.count() == entityCount, "should have created 10 entities");
 
 		// iterate over the entities with DataComponent
 		int entityCounter = 1;
@@ -288,7 +288,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			transform->scale[2] = 1.f;
 		}
 
-		MANI_TEST_ASSERT(registry.size() == 1'000'000, "Should have spawned 1'000'000 entities.");
+		MANI_TEST_ASSERT(registry.count() == 1'000'000, "Should have spawned 1'000'000 entities.");
 	}
 
 	MANI_TEST(PlayWithDynamicAllocation, "Should allow dynamic allocation")
@@ -453,7 +453,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 
 			auto it = ECS::View<MyComponent>(registry).at(3);
-			MANI_TEST_ASSERT(*it == 3, "Should be entity #3");
+			MANI_TEST_ASSERT(it.getIndex() == 3, "Should be entity #3");
 		}
 
 		struct MyOtherComponent {};
@@ -600,5 +600,77 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 		}
 	}
 	MANI_SECTION_END(ComponentDestructorSection)
+
+	MANI_TEST(EntityVersion, "An entityId should always be unique, even when reused")
+	{
+		ECS::Registry registry;
+		{
+			ECS::EntityId entityId1 = registry.create();
+			registry.destroy(entityId1);
+			ECS::EntityId entityId2 = registry.create();
+			MANI_TEST_ASSERT(entityId1 != entityId2, "should be different even if it is reused");
+		}
+	}
+
+	MANI_TEST(ViewCountCapture, "A view should only iterate on the range it captures")
+	{
+		struct MyComponent {};
+
+		ECS::Registry registry;
+		const int initialEntityCount = 5;
+		const int expectedViewCount = initialEntityCount + 1; // +1 for the singleton entity
+
+		for (int i = 0; i < initialEntityCount; i++)
+		{
+			ECS::EntityId entityId = registry.create();
+			registry.add<MyComponent>(entityId);
+		}
+
+		ECS::View<MyComponent> view(registry);
+		{
+			int count = 0;
+			for (const auto entityId : view)
+			{
+				count++;
+			}
+			MANI_TEST_ASSERT(count == initialEntityCount, "should iterate over the initial entity count amount");
+			MANI_TEST_ASSERT(view.count() == expectedViewCount, "the view should cover the initial range");
+		}
+
+		for (int i = 0; i < initialEntityCount; i++)
+		{
+			ECS::EntityId entityId = registry.create();
+			registry.add<MyComponent>(entityId);
+		}
+
+		{
+			int count = 0;
+			for (const auto entityId : view)
+			{
+				count++;
+			}
+			MANI_TEST_ASSERT(count == initialEntityCount, "should iterate over the initial entity count amount");
+			MANI_TEST_ASSERT(view.count() == expectedViewCount, "the view should cover the initial range");
+		}
+
+		{
+			ECS::View<MyComponent> destroyerView(registry);
+			const ECS::Index lastIndex = registry.count() - 1;
+			for (ECS::Index i = lastIndex; i >= lastIndex - 6; i--)
+			{
+				registry.destroy(*destroyerView.at(i));
+			}
+		}
+
+		{
+			int count = 0;
+			for (const auto entityId : view)
+			{
+				count++;
+			}
+			MANI_TEST_ASSERT(count == 3, "should iterate over the remaining entity count amount");
+			MANI_TEST_ASSERT(view.count() == expectedViewCount, "the view should cover the initial range");
+		}
+	}
 }
 MANI_SECTION_END(ECS)

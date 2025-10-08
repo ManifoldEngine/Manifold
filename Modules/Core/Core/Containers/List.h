@@ -56,7 +56,7 @@ namespace Mani
 		[[nodiscard]] bool isEmpty() const { return m_data.empty(); }
 		void reserve(SizeT inCapacity) { m_data.reserve(inCapacity); }
 		void shrink() { m_data.shrink_to_fit(); }
-		void resize(SizeT newSize) { m_data.resize(newSize); }
+		void resize(SizeT newSize) { m_data.resize(newSize, T()); }
 
 		// mutators
 		void clear() { m_data.clear(); }
