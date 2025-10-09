@@ -609,6 +609,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			registry.destroy(entityId1);
 			ECS::EntityId entityId2 = registry.create();
 			MANI_TEST_ASSERT(entityId1 != entityId2, "should be different even if it is reused");
+			MANI_TEST_ASSERT(!registry.isValid(entityId1), "entityId1 should not be valid anymore");
 		}
 	}
 
