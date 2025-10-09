@@ -127,7 +127,13 @@ bool ECS::EntityContainer::isValid(ECS::EntityId entityId) const
 	}
 
 	const ECS::Index index = ECS::toIndex(entityId);
-	return isValidIndex(index);
+	if (!isValidIndex(index))
+	{
+		return false;
+	}
+
+	const ECS::Version version = ECS::toVersion(entityId);
+	return m_entities[index].getVersion() == version;
 }
 
 bool Mani::ECS::EntityContainer::isValidIndex(ECS::Index index) const

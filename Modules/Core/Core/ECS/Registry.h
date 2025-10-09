@@ -68,6 +68,14 @@ namespace Mani
 			template<typename TComponent>
 			const TComponent* get(ECS::EntityId entityId) const;
 
+			// returns an entity's TComponent
+			template<typename TComponent>
+			TComponent& getRef(ECS::EntityId entityId);
+
+			// returns an entity's const TComponent
+			template<typename TComponent>
+			const TComponent& getRef(ECS::EntityId entityId) const;
+
 			// returns an entity's TComponent in a tuple
 			template<typename ...TComponents>
 			auto getMany(ECS::EntityId entityId);
@@ -178,6 +186,24 @@ namespace Mani
 		{
 			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
 			return static_cast<const TComponent*>(m_entityContainer.getComponent(entityId, componentId));
+		}
+
+		// returns an entity's TComponent
+		template<typename TComponent>
+		inline TComponent& Registry::getRef(ECS::EntityId entityId)
+		{
+			TComponent* component = get<TComponent>(entityId);
+			MANI_ASSERT(component != nullptr, "Trying to get a component that an entity doesn't have");
+			return *component;
+		}
+
+		// returns an entity's const TComponent
+		template<typename TComponent>
+		const TComponent& Registry::getRef(ECS::EntityId entityId) const
+		{
+			const TComponent* component = get<TComponent>(entityId);
+			MANI_ASSERT(component != nullptr, "Trying to get a component that an entity doesn't have");
+			return *component;
 		}
 
 		template<typename... TComponents>

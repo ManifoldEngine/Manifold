@@ -16,6 +16,11 @@ namespace Mani
 		static_assert(Application::THREAD_COUNT > 0, "cannot parallel over 0 threads");
 
 		const ECS::Index count = view.count();
+		if (count == 0)
+		{
+			return;
+		}
+
 		ECS::Index chunkSize = static_cast<ECS::Index>(count / Application::THREAD_COUNT);
 		if (count % Application::THREAD_COUNT > 0)
 		{
