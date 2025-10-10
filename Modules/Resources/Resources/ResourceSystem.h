@@ -93,7 +93,6 @@ namespace Mani
 		ResourceSystem::Storage& storage = *registry.getSingle<ResourceSystem::Storage>();
 		{
 			std::lock_guard<std::mutex> lock(storage.pathToEntityMutex);
-
 			
 			if (auto* entityId = storage.pathToEntityId.find(path))
 			{
