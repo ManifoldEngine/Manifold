@@ -2,8 +2,7 @@
 
 #include <Core/ManiAssert.h>
 
-#include <Inputs/Data/InputDevice.h>
-#include <Inputs/Data/InputUser.h>
+#include <Inputs/Inputs.h>
 #include <Inputs/InputSystem.h>
 #include <Inputs/Cursor.h>
 
@@ -94,14 +93,14 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 
 		registry.add<ManImGuiUser>(entityId);
 
-		// add 
-		InputUser& inputUser = *registry.add<InputUser>(entityId);
-		inputUser.setAction(TOGGLE_MANIMGUI);
-		inputUser.addBinding("F7", TOGGLE_MANIMGUI);
+		// add action
+		registry.add<InputUser>(entityId);
+		InputsStatics::addAction(registry, entityId, TOGGLE_MANIMGUI, "F7");
 
+		// assign all devices
 		for (const auto deviceId : ECS::View<InputDevice>(registry))
 		{
-			inputUser.inputDevices.add(deviceId);
+			InputsStatics::assignDevice(registry, entityId, deviceId);
 		}
 	}
 }
