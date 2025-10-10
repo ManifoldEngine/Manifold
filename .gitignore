@@ -30,3 +30,6 @@ vstools/
 
 #Python
 *__pycache__/
+
+#Mani
+*AssetImporter.exe
