@@ -74,7 +74,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 		};
 
 		world.destroySystem<SomeSystem>();
-		MANI_TEST_ASSERT(!world.has<SomeSystem>(), "Should return true when destroying a system.");
+		MANI_TEST_ASSERT(!world.has<SomeSystem>(), "Should not return true when destroying a system.");
 		MANI_TEST_ASSERT(onDeinitializeCalled, "onDeinitialize should have been called.");
 
 		world.destroySystem<SomeSystem>();
@@ -191,7 +191,7 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 
 		size_t sizeBefore = world.systemCount();
 		world.createSystem<SomeSystem>();
-		MANI_TEST_ASSERT(sizeBefore == world.systemCount(), "should not have allowed creating a system of type SomeSystem");
+		MANI_TEST_ASSERT(sizeBefore + 1 == world.systemCount(), "should have allowed creating a system of type SomeSystem");
 
 		world.destroySystem<SomeExtendedSystem>();
 		world.deinitialize();

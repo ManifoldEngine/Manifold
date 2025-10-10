@@ -10,9 +10,13 @@
 #include <Core/ECS/Registry.h>
 
 #include <memory>
+#include <limits>
 
 namespace Mani
 {
+	using SystemId = unsigned int;
+	constexpr SystemId INVALID_SYSTEM_ID = (std::numeric_limits<SystemId>::max)();
+
 	// Manages unique systems. It also owns a Registry and is in charge of distributing the registry to systems.
 	class World
 	{
@@ -24,6 +28,9 @@ namespace Mani
 		void deinitialize();
 
 		void tick();
+
+		template<typename T>
+		static SystemId getSystemId() { return SYSTEM_ID<T>; }
 
 		// creates a new TSystem : public ECS::System
 		// if the container is initialized, the system will be initialized as well
@@ -83,20 +90,26 @@ namespace Mani
 		{
 			std::shared_ptr<ECS::System> system = nullptr;
 			bool isMarkedForDestruction = false;
+			SystemId id = INVALID_SYSTEM_ID;
 		};
 
 		ECS::Registry m_registry;
 		List<SystemContainer> m_systems;
 		bool m_isInitialized = false;
+
+		inline static SystemId SYSTEM_ID_SEQUENCE = 0;
+		template<typename T>
+		inline static SystemId SYSTEM_ID = SYSTEM_ID_SEQUENCE++;
 	};
 
 	template<DerivedFrom<ECS::System> TSystem>
 	inline World& World::createSystem()
 	{
+		const SystemId id = World::getSystemId<TSystem>();
 		// check if a system of this type exists already.
-		for (const auto& [system, _]: m_systems)
+		for (const auto& container: m_systems)
 		{
-			if (std::dynamic_pointer_cast<const TSystem>(system) != nullptr)
+			if (container.id == id)
 			{
 				return *this;
 			}
@@ -105,7 +118,7 @@ namespace Mani
 		auto system = std::make_shared<TSystem>();
 
 		constexpr bool isMarkedForDestruction = false;
-		m_systems.add(SystemContainer{ system, isMarkedForDestruction });
+		m_systems.add(SystemContainer{ system, isMarkedForDestruction, id });
 
 		m_systems.sort([](const auto& lhs, const auto& rhs) { return lhs.system->getTickGroup() < rhs.system->getTickGroup(); });
 
@@ -134,11 +147,11 @@ namespace Mani
 	inline void World::initializeDependency()
 	{
 		createSystem<TSystem>();
-		for (auto& [system, _] : m_systems)
+		for (auto& container : m_systems)
 		{
-			if (isDerivedFrom<TSystem>(system))
+			if (isDerivedFrom<TSystem>(container.system))
 			{
-				system->initialize(m_registry, *this);
+				container.system->initialize(m_registry, *this);
 			}
 		}
 	}
@@ -146,9 +159,9 @@ namespace Mani
 	template<typename TSystem>
 	inline bool World::has() const
 	{
-		for (auto& [system, isMarkedForDestruction] : m_systems)
+		for (auto& container : m_systems)
 		{
-			if (!isMarkedForDestruction && isDerivedFrom<TSystem>(*system))
+			if (!container.isMarkedForDestruction && isDerivedFrom<TSystem>(*container.system))
 			{
 				return true;
 			}
@@ -172,16 +185,16 @@ namespace Mani
 	template<DerivedFrom<ECS::System> TSystem>
 	inline World& World::destroySystem()
 	{
-		for (auto it = m_systems.begin(); it != m_systems.end(); it++)
+		const SystemId id = World::getSystemId<TSystem>();
+		for (auto& container : m_systems)
 		{
-			auto& [system, isMarkedForDestruction] = *it;
-			if (std::dynamic_pointer_cast<TSystem>(system) != nullptr)
+			if (container.id == id)
 			{
 				if (m_isInitialized)
 				{
-					system->deinitialize(m_registry, *this);
+					container.system->deinitialize(m_registry, *this);
 				}
-				isMarkedForDestruction = true;
+				container.isMarkedForDestruction = true;
 				return *this;
 			}
 		}
@@ -209,9 +222,9 @@ namespace Mani
 			return;
 		}
 
-		for (auto& [system, _] : m_systems)
+		for (auto& container : m_systems)
 		{
-			system->initialize(m_registry, *this);
+			container.system->initialize(m_registry, *this);
 		}
 
 		m_isInitialized = true;
@@ -226,8 +239,8 @@ namespace Mani
 
 		for (SizeT i = m_systems.count() - 1; i != INDEX_NONE; i--)
 		{
-			auto& [system, _] = m_systems[i];
-			system->deinitialize(m_registry, *this);
+			auto& container = m_systems[i];
+			container.system->deinitialize(m_registry, *this);
 		}
 
 		// it is possible we have deferred entities left.
@@ -247,11 +260,11 @@ namespace Mani
 			// snapshot the systems that should tick. 
 			// New systems can be created during a tick and they might not be in a proper state to tick yet.
 			List<SystemContainer> systems = m_systems;
-			for (auto& [system, _] : systems)
+			for (auto& container : systems)
 			{
-				if (system->shouldTick(m_registry))
+				if (container.system->shouldTick(m_registry))
 				{
-					system->tick(m_registry);
+					container.system->tick(m_registry);
 				}
 			}
 		}
