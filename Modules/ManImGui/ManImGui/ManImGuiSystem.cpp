@@ -6,8 +6,14 @@
 #include <Inputs/InputSystem.h>
 #include <Inputs/Cursor.h>
 
-#include <ManImGui/ManImGuiWindowContext.h>
+#include <ManImGui/Components/ManImGuiWindowContext.h>
 #include <ManImGui/ManImGuiRenderSystem.h>
+#include <ManImGui/ManImGuiTopMenuBarSystem.h>
+
+// included menus
+#include <ManImGui/Menus/ManImGuiInputDebugSystem.h>
+#include <ManImGui/Menus/ManImGuiProfilingStatsSystem.h>
+#include <ManImGui/Menus/ManImGuiECSSystem.h>
 
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
@@ -86,6 +92,12 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 
 	// create manimgui systems
 	world.createSystem<ManImGuiRenderSystem>();
+	world.createSystem<ManImGuiTopMenuBarSystem>();
+
+	// menus
+	world.createSystem<ManImGuiProfilingStatsSystem>();
+	world.createSystem<ManImGuiInputDebugSystem>();
+	world.createSystem<ManImGuiECSSystem>();
 
 	{
 		world.initializeDependency<InputSystem>();
