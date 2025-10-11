@@ -265,9 +265,9 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 	{
 		struct Transform
 		{
-			float position[3];
-			float rotation[3];
-			float scale[3];
+			Mani::List<float> position = { 0.f, 0.f, 0.f };
+			Mani::List<float> rotation = { 0.f, 0.f, 0.f };
+			Mani::List<float> scale = { 0.f, 0.f, 0.f };
 		};
 
 		ECS::Registry registry;

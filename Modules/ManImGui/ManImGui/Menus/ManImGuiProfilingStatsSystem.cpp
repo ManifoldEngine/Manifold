@@ -1,7 +1,8 @@
 #include "ManImGuiProfilingStatsSystem.h"
 
-#include "ManImGuiWindowContext.h"
-#include "ManImGuiSystem.h"
+#include <ManImGui/ManImGui.h>
+#include <ManImGui/ManImGuiSystem.h>
+#include <ManImGui/ManImGuiManifoldMenuSystem.h>
 
 #include <Core/TimeSystem.h>
 #include <Core/Debug/Profiling.h>
@@ -9,17 +10,29 @@
 
 using namespace Mani;
 
+constexpr std::string_view PROFILER_NAME = "Profiler";
+
 void ManImGuiProfilingStatsSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-	world.initializeDependency<ManImGuiSystem>();
 	world.initializeDependency<TimeSystem>();
+	world.initializeDependency<ManImGuiSystem>();
+	world.initializeDependency<ManImGuiManifoldMenuSystem>();
+
+	{
+		const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
+		ManImGuiStatics::Menu::addItem(registry, debugMenuId, PROFILER_NAME);
+	}
+}
+
+bool Mani::ManImGuiProfilingStatsSystem::shouldTick(const ECS::Registry& registry) const
+{
+	return ManImGuiStatics::isShowing(registry);
 }
 
 void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 {
-	ManImGuiWindowContext* context = registry.getSingle<ManImGuiWindowContext>();
-	MANI_ASSERT(context != nullptr, "We expect the context to be accessible");
-	if (context->mode < EManImGuiMode::Show)
+	const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
+	if (!ManImGuiStatics::Menu::isOpened(registry, debugMenuId, PROFILER_NAME))
 	{
 		return;
 	}
@@ -34,8 +47,20 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 
 	const List<std::string> keys = database->scopedTimers.keys().sortCopy();
 
-	bool isActive = false;
-	ImGui::Begin("Profiling Stats", &isActive, ImGuiWindowFlags_MenuBar);
+	bool isOpened = true;
+	if (!ImGui::Begin("Profiling Stats", &isOpened, ImGuiWindowFlags_MenuBar))
+	{
+		ImGui::End();
+		return;
+	}
+
+	if (!isOpened)
+	{
+		ManImGuiStatics::Menu::close(registry, debugMenuId, PROFILER_NAME);
+		ImGui::End();
+		return;
+	}
+
 	Time& time = *registry.getSingle<Time>();
 	const float fps = Math::isEqual(time.delta, 0.f) ? 0.f : 1.f / time.delta;
 	ImGui::Text(std::format("{:.3}fps, entity count {}", fps, registry.count()).c_str());

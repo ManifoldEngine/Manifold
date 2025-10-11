@@ -2,13 +2,18 @@
 
 #include <Core/ManiAssert.h>
 
-#include <Inputs/Data/InputDevice.h>
-#include <Inputs/Data/InputUser.h>
+#include <Inputs/Inputs.h>
 #include <Inputs/InputSystem.h>
 #include <Inputs/Cursor.h>
 
-#include <ManImGui/ManImGuiWindowContext.h>
+#include <ManImGui/Components/ManImGuiWindowContext.h>
 #include <ManImGui/ManImGuiRenderSystem.h>
+#include <ManImGui/ManImGuiTopMenuBarSystem.h>
+
+// included menus
+#include <ManImGui/Menus/ManImGuiInputDebugSystem.h>
+#include <ManImGui/Menus/ManImGuiProfilingStatsSystem.h>
+#include <ManImGui/Menus/ManImGuiECSSystem.h>
 
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
@@ -87,6 +92,12 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 
 	// create manimgui systems
 	world.createSystem<ManImGuiRenderSystem>();
+	world.createSystem<ManImGuiTopMenuBarSystem>();
+
+	// menus
+	world.createSystem<ManImGuiProfilingStatsSystem>();
+	world.createSystem<ManImGuiInputDebugSystem>();
+	world.createSystem<ManImGuiECSSystem>();
 
 	{
 		world.initializeDependency<InputSystem>();
@@ -94,14 +105,14 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 
 		registry.add<ManImGuiUser>(entityId);
 
-		// add 
-		InputUser& inputUser = *registry.add<InputUser>(entityId);
-		inputUser.setAction(TOGGLE_MANIMGUI);
-		inputUser.addBinding("F7", TOGGLE_MANIMGUI);
+		// add action
+		registry.add<InputUser>(entityId);
+		InputsStatics::addAction(registry, entityId, TOGGLE_MANIMGUI, "F7");
 
+		// assign all devices
 		for (const auto deviceId : ECS::View<InputDevice>(registry))
 		{
-			inputUser.inputDevices.add(deviceId);
+			InputsStatics::assignDevice(registry, entityId, deviceId);
 		}
 	}
 }

@@ -30,9 +30,6 @@ namespace Mani
 			void* removeComponent(ECS::EntityId entityId, ComponentId componentId);
 			bool hasComponent(ECS::EntityId entityId, ComponentId componentId) const;
 
-			template<typename T>
-			ComponentId getComponentId() const { return TYPE_ID<T>; }
-
 			bool isMarkedForDestroy(ECS::EntityId entityId) const;
 			void handleDeferredDestroy();
 		private:
@@ -52,10 +49,6 @@ namespace Mani
 			Mani::List<ECS::Index> m_entityPool;
 			Mani::List<ECS::EntityId> m_markedForDestroy;
 			mutable std::mutex m_markedForDestroyMutex;
-			
-			inline static ComponentId TYPE_ID_SEQUENCE = 0;
-			template<typename T>
-			inline static ComponentId TYPE_ID = TYPE_ID_SEQUENCE++;
 		};
 	}
 }

@@ -14,7 +14,7 @@
 #include <GLFW/glfw3.h>
 
 #include <ManImGui/ManImGuiSystem.h>
-#include <ManImGui/ManImGuiWindowContext.h>
+#include <ManImGui/Components/ManImGuiWindowContext.h>
 
 using namespace Mani;
 

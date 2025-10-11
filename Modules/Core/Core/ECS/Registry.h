@@ -5,6 +5,10 @@
 #include <iostream>
 #include <tuple>
 
+#if MANI_DEBUG
+#include <Container/TypeInfoContainer.h>	
+#endif
+
 namespace Mani
 {
 	namespace ECS
@@ -120,25 +124,49 @@ namespace Mani
 			// returns true if an entity with index exists and is alive
 			bool isValidIndex(ECS::Index index) const;
 
-			// Converts a TComponent type into a numerical identifier.
-			template<typename TComponent>
-			ComponentId getComponentId() const;
-
 			// returns true if the entity will be destroyed when handleDeferredDestroy is called
 			bool isMarkedForDestroy(ECS::EntityId entityId) const;
 			
 			// destroy all entities marked for destroy
 			void handleDeferredDestroy();
 
+			// Converts a TComponent type into a numerical identifier.
+			template<typename T>
+			ComponentId getComponentId() const;
 		private:
 			ECS::EntityId m_singletonId;
 			EntityContainer m_entityContainer;
+
+			inline static ComponentId TYPE_ID_SEQUENCE = 0;
+			template<typename T>
+			inline static ComponentId TYPE_ID = TYPE_ID_SEQUENCE++;
+
+#if MANI_DEBUG
+		public:
+			const TypeInfo& getTypeInfo(ComponentId componentId) const
+			{
+				return m_typeInfoContainer.getTypeInfo(componentId);
+			}
+
+			List<TypeInfo> getTypeInfo(const Entity& entity) const
+			{
+				return m_typeInfoContainer.getTypeInfo(entity);
+			}
+
+			ComponentId reflect(const std::string_view& name) const
+			{
+				return m_typeInfoContainer.reflect(name);
+			}
+
+		private:
+			mutable TypeInfoContainer m_typeInfoContainer;
+#endif
 		};
 
 		template<typename TComponent, typename... TArgs>
 		inline TComponent* Registry::add(ECS::EntityId entityId, TArgs&&... args)
 		{
-			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
+			const ComponentId componentId = getComponentId<TComponent>();
 
 			void* buffer = m_entityContainer.addComponent(entityId, componentId, sizeof(TComponent));
 			if (buffer == nullptr)
@@ -166,7 +194,7 @@ namespace Mani
 		template<typename TComponent>
 		inline TComponent* Registry::get(ECS::EntityId entityId)
 		{
-			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
+			const ComponentId componentId = getComponentId<TComponent>();
 			return static_cast<TComponent*>(m_entityContainer.getComponent(entityId, componentId));
 		}
 
@@ -175,7 +203,7 @@ namespace Mani
 		{
 			auto f = [&]<typename TComponent>() -> bool
 			{
-				const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
+				const ComponentId componentId = getComponentId<TComponent>();
 				return m_entityContainer.hasComponent(entityId, componentId);
 			};
 			return (f.template operator()<TComponents>() && ...);
@@ -184,7 +212,7 @@ namespace Mani
 		template<typename TComponent>
 		inline const TComponent* Registry::get(ECS::EntityId entityId) const
 		{
-			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
+			const ComponentId componentId = getComponentId<TComponent>();
 			return static_cast<const TComponent*>(m_entityContainer.getComponent(entityId, componentId));
 		}
 
@@ -221,7 +249,7 @@ namespace Mani
 		template<typename TComponent>
 		inline bool Registry::remove(ECS::EntityId entityId)
 		{
-			const ComponentId componentId = m_entityContainer.getComponentId<TComponent>();
+			const ComponentId componentId = getComponentId<TComponent>();
 			if (void* data = m_entityContainer.removeComponent(entityId, componentId))
 			{
 				TComponent* component = static_cast<TComponent*>(data);
@@ -261,10 +289,13 @@ namespace Mani
 			return has<TComponent>(m_singletonId);
 		}
 
-		template<typename TComponent>
+		template<typename T>
 		inline ComponentId Registry::getComponentId() const
 		{
-			return m_entityContainer.getComponentId<TComponent>();
+#if MANI_DEBUG
+			m_typeInfoContainer.registerComponent<T>(TYPE_ID<T>);
+#endif
+			return TYPE_ID<T>;
 		}
 
 		inline Registry::Registry()
