@@ -1,31 +1,63 @@
 #include "InputSystem.h"
 
+#include <Core/Async/Parallel.h>
+
 #include <Inputs/Inputs.h>
 #include <Inputs/Cursor.h>
 
-#include <Inputs/Data/InputUser.h>
-#include <Inputs/Data/InputDevice.h>
+#include <Inputs/Components/InputUser.h>
+#include <Inputs/Components/InputDevice.h>
+#include <Inputs/Components/UniqueControlIdGenerator.h>
 
 using namespace Mani;
+
+void foreachBindings(const Map<ControlId, List<ActionId>>& bindings, List<InputAction>& actions, ControlId controlId, auto&& f)
+{
+	if (const List<ActionId>* actionBindings = bindings.find(controlId))
+	{
+		for (const ActionId actionId : *actionBindings)
+		{
+			MANI_ASSERT(actions.isValid(actionId), "Trying to access an invalid action id");
+			InputAction& action = actions[actionId];
+			f(action);
+		}
+	}
+}
+
+Vec3f toVector(EInputAxis axis)
+{
+	switch (axis)
+	{
+		case EInputAxis::Right : return VEC3F::RIGHT;
+		case EInputAxis::Left: return VEC3F::LEFT;
+		case EInputAxis::Up: return VEC3F::UP;
+		case EInputAxis::Down: return VEC3F::DOWN;
+		case EInputAxis::Forward: return VEC3F::FORWARD;
+		case EInputAxis::Back: return VEC3F::BACK;
+		default: return VEC3F::ZERO;
+	}
+}
 
 void Mani::InputSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	registry.addSingle<Cursor>();
+	registry.addSingle<UniqueControlIdGenerator>();
 }
 
 void Mani::InputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
+	registry.removeSingle<UniqueControlIdGenerator>();
 	registry.removeSingle<Cursor>();
 }
 
 void InputSystem::tick(ECS::Registry& registry)
 {
-	ECS::View<InputUser> inputUserView(registry);
-	for (const ECS::EntityId entityId : inputUserView)
+	ECS::View<InputUser> view(registry);
+	parallelFor(view, [&](const auto entityId, size_t threadIndex)
 	{
-		InputUser* inputUser = registry.get<InputUser>(entityId);
-		
-		for (auto& [name, action] : inputUser->actions)
+		// reset action axis state 
+		InputUser& inputUser = registry.getRef<InputUser>(entityId);
+		for (auto& action : inputUser.actions)
 		{
 			// axis are reset each tick.
 			action.x = 0.f;
@@ -35,69 +67,57 @@ void InputSystem::tick(ECS::Registry& registry)
 			action.wasPressed = action.isPressed;
 		}
 
-		// consume assigned input device
-		for (const ECS::EntityId deviceId : inputUser->inputDevices)
+		for (const auto deviceId : inputUser.inputDevices)
 		{
-			InputDevice* inputDevice = registry.get<InputDevice>(deviceId);
-			if (inputDevice == nullptr)
+			// button buffers
+			const InputDevice& device = registry.getRef<InputDevice>(deviceId);
+			for (const ButtonControl& control : device.buttonBuffer)
 			{
-				continue;
-			}
-
-			// buttons
-			for (const ButtonControl& control : inputDevice->buttonBuffer)
-			{
-				List<std::string>* boundActionNames = inputUser->bindings.find(control.name);
-				if (boundActionNames == nullptr)
+				if (const List<AxisActionBinding>* bindings = inputUser.buttonToAxisBindings.find(control.id))
 				{
-					continue;
-				}
-
-				for (const std::string& actionName : *boundActionNames)
-				{
-					InputAction& action = inputUser->actions[actionName];
-					if (action.isPressed != control.isPressed)
+					for (const auto& binding : *bindings)
 					{
-						MANI_LOG_VERBOSE(LogInputs, "Action {} state changed to {}", action.name, action.isPressed);
-						action.isPressed = control.isPressed;
+						MANI_ASSERT(inputUser.actions.isValid(binding.actionId), "Trying to access an invalid action id");
+						InputAction& action = inputUser.actions[binding.actionId];
+						if (control.isPressed)
+						{
+							const Vec3f delta = toVector(binding.axis);
+							action.x += delta.x;
+							action.y += delta.y;
+							action.z += delta.z;
+							MANI_LOG_VERBOSE(LogInputs, "Action {} axis changed to ({}, {}, {})", action.name, action.x, action.y, action.z);
+						}
 					}
 				}
+
+				foreachBindings(inputUser.bindings, inputUser.actions, control.id, [&control](InputAction& action)
+				{
+					if (action.isPressed != control.isPressed)
+					{
+						action.isPressed = control.isPressed;
+						MANI_LOG_VERBOSE(LogInputs, "Action {} state changed to {}", action.name, action.isPressed);
+					}
+				});
 			}
 
 			// axis
-			for (const AxisControl& axis : inputDevice->axis)
+			for (const AxisControl& control : device.axis)
 			{
-				List<std::string>* boundActionNames = inputUser->bindings.find(axis.name);
-				if (boundActionNames == nullptr)
+				foreachBindings(inputUser.bindings, inputUser.actions, control.id, [&control](InputAction& action)
 				{
-					continue;
-				}
-
-				for (const std::string& actionName : *boundActionNames)
-				{
-					InputAction& action = inputUser->actions[actionName];
-
-					action.x += axis.x;
-					action.y += axis.y;
-					action.z += axis.z;
-				}
+					action.x += control.x;
+					action.y += control.y;
+					action.z += control.z;
+					MANI_LOG_VERBOSE(LogInputs, "Action {} axis changed to ({}, {}, {})", action.name, action.x, action.y, action.z);
+				});
 			}
 		}
-
-#if MANI_DEBUG
-		for (auto& [name, action] : inputUser->actions)
-		{
-			// log action state
-			MANI_LOG_VERBOSE(LogInputs, "Action {} axis changed to ({}, {}, {})", action.name, action.x, action.y, action.z);
-		}
-#endif
-	}
+	});
 
 	// clear button buffers
-	ECS::View<InputDevice> inputDeviceView(registry);
-	for (const ECS::EntityId entityId : inputDeviceView)
+	for (const ECS::EntityId entityId : ECS::View<InputDevice>(registry))
 	{
-		InputDevice* inputDevice = registry.get<InputDevice>(entityId);
-		inputDevice->buttonBuffer.clear();
+		InputDevice& inputDevice = registry.getRef<InputDevice>(entityId);
+		inputDevice.buttonBuffer.clear();
 	}
 }

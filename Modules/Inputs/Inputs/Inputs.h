@@ -3,8 +3,9 @@
 #include <string_view>
 #include <Core/CoreFwd.h>
 // forward
-#include <Inputs/Data/InputUser.h>
-#include <Inputs/Data/InputDevice.h>
+#include <Inputs/Components/InputUser.h>
+#include <Inputs/Components/InputDevice.h>
+#include <Inputs/Data/InputHints.h>
 
 namespace Mani
 {
@@ -12,22 +13,41 @@ namespace Mani
 	
 	namespace InputsStatics
 	{
+		// tried to resolve the hint into a controlid by looking through the assigned devices of this user
+		ControlId resolveHint(const ECS::Registry& registry, ECS::EntityId entityId, EInputHints hint);
+
 		// adds an action by name to a entity with an InputUser component
 		void addAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action);
 		// removes an action by name to a entity with an InputUser component
 		void removeAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action);
 
 		// binds a control to an action for an entity with an InputUser component
-		void bindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, const std::string& control);
+		void bindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, ControlId controlId);
 		// unbinds a control to an action for an entity with an InputUser component
-		void unbindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, const std::string& control);
+		void unbindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, ControlId controlId);
+		// binds a control to an action for an entity with an InputUser component
+		void bindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputHints hint);
+		// unbinds a control to an action for an entity with an InputUser component
+		void unbindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputHints hint);
+		
+		// binds a button to an action's axis value
+		void bindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, ControlId controlId);
+		// unbinds a button to an action's axis value
+		void unbindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, ControlId controlId);
+
+		// binds a button to an action's axis value
+		void bindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, EInputHints hint);
+		// unbinds a button to an action's axis value
+		void unbindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, EInputHints hint);
 		
 		// returns the action object for an entity witn an InputUser component
-		Mani::InputAction& getAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action);
-		const Mani::InputAction& getAction(const ECS::Registry& registry, ECS::EntityId entityId, const std::string& action);
+		InputAction& getAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action);
+		const InputAction& getAction(const ECS::Registry& registry, ECS::EntityId entityId, const std::string& action);
 
 		// adds an action and then binds the control to it for an entity with an InputUser component
-		void addAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, const std::string& control);
+		void addAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, ControlId controlId);
+		// adds an action and then binds the control to it for an entity with an InputUser component
+		void addAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputHints hint);
 
 		// assigns a device to an InputUser by entity id
 		void assignDevice(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId deviceId);
@@ -41,5 +61,8 @@ namespace Mani
 
 		// finds a device's id by name
 		ECS::EntityId findDeviceByName(const ECS::Registry& registry, const std::string& name);
+
+		// generate a unique control id, used by devices to declare new controls
+		ControlId generateNextControlId(ECS::Registry& registry);
 	}
 }

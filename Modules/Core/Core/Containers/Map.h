@@ -63,6 +63,9 @@ namespace Mani
 		// capacity
 		[[nodiscard]] SizeT count() const { return m_data.count(); }
 		[[nodiscard]] bool isEmpty() const { return m_data.isEmpty(); }
+		void reserve(SizeT inCapacity) { m_data.reserve(inCapacity); }
+		void shrink() { m_data.shrink(); }
+		void resize(SizeT newSize) { m_data.resize(newSize, Entry()); }
 
 		// mutators
 		void clear() { m_data.clear(); }

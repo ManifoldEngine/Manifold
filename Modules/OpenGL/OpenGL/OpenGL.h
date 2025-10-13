@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string_view>
+#include <Inputs/Data/InputControl.h>
+#include <OpenGL/Inputs/OpenGLInputs.h>
 
 namespace Mani
 {

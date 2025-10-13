@@ -4,6 +4,9 @@
 #include <Core/CoreFwd.h>
 #include <Inputs/Cursor.h>
 
+#include <Inputs/Inputs.h>
+#include <Inputs/Components/InputDevice.h>
+
 struct GLFWwindow;
 
 namespace Mani
@@ -17,16 +20,15 @@ namespace Mani
 		virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }
 		virtual ETickGroup getTickGroup() const override { return ETickGroup::PostInput; }
 
-		virtual void tick(ECS::Registry& registry) override;
-		
-		static int maniToGLFWCursorMode(Cursor::EMode mode);
 	protected:
 		virtual void onInitialize(ECS::Registry& registry, World& world) override;
 		virtual void onDeinitialize(ECS::Registry& registry, World& world) override;
 
+	public:
+		virtual void tick(ECS::Registry& registry) override;
+
 	private:
-		static void glfwCallback_onMouseMoved(GLFWwindow* window, double x, double y);
-		static Vec2f s_mouse;
+		struct Storage;
 	};
 }
 
