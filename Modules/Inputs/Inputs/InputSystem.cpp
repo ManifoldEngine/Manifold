@@ -1,6 +1,7 @@
 #include "InputSystem.h"
 
 #include <Core/Async/Parallel.h>
+#include <Core/Debug/Profiling.h>
 
 #include <Inputs/Inputs.h>
 #include <Inputs/Cursor.h>
@@ -38,13 +39,13 @@ Vec3f toVector(EInputAxis axis)
 	}
 }
 
-void Mani::InputSystem::onInitialize(ECS::Registry& registry, World& world)
+void InputSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	registry.addSingle<Cursor>();
 	registry.addSingle<UniqueControlIdGenerator>();
 }
 
-void Mani::InputSystem::onDeinitialize(ECS::Registry& registry, World& world)
+void InputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	registry.removeSingle<UniqueControlIdGenerator>();
 	registry.removeSingle<Cursor>();
@@ -52,6 +53,8 @@ void Mani::InputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void InputSystem::tick(ECS::Registry& registry)
 {
+	MANI_TIME_SCOPE(InputSystem_tick);
+
 	ECS::View<InputUser> view(registry);
 	parallelFor(view, [&](const auto entityId, size_t threadIndex)
 	{
