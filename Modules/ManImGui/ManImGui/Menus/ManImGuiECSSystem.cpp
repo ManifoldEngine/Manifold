@@ -13,6 +13,7 @@ constexpr std::string_view ECS_NAME = "ECS";
 
 using namespace Mani;
 
+#if MANI_DEBUG
 bool isLooseMatch(const List<std::string>& tokens, const List<ECS::TypeInfo>& typeInfo)
 {
     for (const std::string_view& token : tokens)
@@ -55,6 +56,7 @@ bool queryMatches(const List<std::string>& tokens, const ECS::Registry& registry
 
     return result;
 }
+#endif
 
 bool Mani::ManImGuiECSSystem::shouldTick(const ECS::Registry& registry) const
 {
@@ -130,10 +132,10 @@ void Mani::ManImGuiECSSystem::tick(ECS::Registry& registry)
         ImGui::TableSetupColumn("Version", ImGuiTableColumnFlags_WidthStretch);
         ImGui::TableHeadersRow();
 
+#if MANI_DEBUG
         ECS::View<> view(registry);
         for (const auto entityId : view)
         {
-#if MANI_DEBUG
             const ECS::Entity& entity = *registry.getEntity(entityId);
             const List<ECS::TypeInfo> typeInfo = registry.getTypeInfo(entity);
 
@@ -179,10 +181,10 @@ void Mani::ManImGuiECSSystem::tick(ECS::Registry& registry)
 
                     ImGui::EndTable();
                 }
-#endif
                 ImGui::TreePop();
             }
         }
+#endif
 
         ImGui::PopStyleColor();
         ImGui::PopStyleVar();

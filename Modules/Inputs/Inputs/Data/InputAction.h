@@ -4,11 +4,13 @@
 
 namespace Mani
 {
+	using ActionId = Mani::SizeT;
+	constexpr ActionId INVALID_INPUT_ACTION_ID = (std::numeric_limits<ActionId>::max)();
+
 	struct InputAction
 	{
-		InputAction() = default;
-		InputAction(const std::string& inName) : name(inName) {};
-
+		// /!\ Attention: Action ids are only unique within their input user space
+		ActionId id = INVALID_INPUT_ACTION_ID;
 		std::string name = "";
 
 		float x = 0.f;

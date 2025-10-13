@@ -3,8 +3,8 @@
 #include <Core/CoreFwd.h>
 
 #include <Inputs/InputSystem.h>
-#include <Inputs/Data/InputUser.h>
-#include <Inputs/Data/InputDevice.h>
+#include <Inputs/Components/InputUser.h>
+#include <Inputs/Components/InputDevice.h>
 
 #include <ManImGui/ManImGui.h>
 #include <ManImGui/ManImGuiSystem.h>
@@ -16,6 +16,38 @@
 using namespace Mani;
 
 constexpr std::string_view INPUTS_NAME = "Inputs";
+
+std::string_view getControlName(const ECS::Registry& registry, const InputUser& inputUser, ControlId controlId)
+{
+#if MANI_DEBUG
+	for (const auto deviceId : inputUser.inputDevices)
+	{
+		const InputDevice& device = registry.getRef<InputDevice>(deviceId);
+
+		for (const auto& [hint, id] : device.buttonHints)
+		{
+			if (id != controlId)
+			{
+				continue;
+			}
+
+			if (const std::string_view* str = device.debug_hintTobuttonNames.find(hint))
+			{
+				return *str;
+			}
+		}
+
+		for (const auto& axis : device.axis)
+		{
+			if (axis.id == controlId)
+			{
+				return axis.debug_name;
+			}
+		}
+	}
+#endif
+	return "";
+}
 
 void drawInputDevice(const InputDevice& device)
 {
@@ -36,10 +68,10 @@ void drawInputDevice(const InputDevice& device)
 			for (const auto& axis : device.axis)
 			{
 				ImGui::TableNextRow();
-
+#if MANI_DEBUG
 				ImGui::TableSetColumnIndex(0);
-				ImGui::Text(axis.name.c_str());
-
+				ImGui::Text(axis.debug_name.data());
+#endif
 				ImGui::TableSetColumnIndex(1);
 				ImGui::Text("%.2f", axis.x);
 
@@ -61,19 +93,21 @@ void drawInputDevice(const InputDevice& device)
 		{
 			if (button.isPressed)
 			{
-				ImGui::Text(std::format("{} ", button.name).c_str());
+#if MANI_DEBUG
+				ImGui::Text(std::format("{} ", button.debug_name).c_str());
 				ImGui::SameLine();
+#endif
 			}
 		}
 	}
 }
 
-void drawInputActionRow(InputAction& action, const std::string& binding)
+void drawInputActionRow(const InputAction& action, const std::string_view& controlName)
 {
 	ImGui::TableNextRow();
 
 	ImGui::TableSetColumnIndex(0);
-	ImGui::Text(std::format("[{}]", binding).c_str());
+	ImGui::Text(std::format("[{}]", controlName).c_str());
 
 	ImGui::TableSetColumnIndex(1);
 	ImGui::Text(std::format("[{}]", action.name).c_str());
@@ -95,7 +129,7 @@ void drawInputActionRow(InputAction& action, const std::string& binding)
 	ImGui::TextColored(pickColor(action.isPressed), "pressed");
 }
 
-void drawInputUser(InputUser& inputUser, const ECS::EntityId id)
+void drawInputUser(const ECS::Registry& registry, const InputUser& inputUser, const ECS::EntityId id)
 {
 	const std::string title = std::format("InputUser[{}]", id);
 	ImGui::Text(title.c_str());
@@ -106,12 +140,23 @@ void drawInputUser(InputUser& inputUser, const ECS::EntityId id)
 	constexpr ImGuiTableFlags flags = ImGuiTableFlags_::ImGuiTableFlags_SizingFixedSame | ImGuiTableFlags_::ImGuiTableFlags_Borders;
 	if (ImGui::BeginTable(title.c_str(), columnsCount, flags, outerSize, innerWidth))
 	{
-		for (const auto& [binding, actionNames] : inputUser.bindings)
+		for (const auto& [controlId, actionIds] : inputUser.bindings)
 		{
-			for (const auto& actionName : actionNames)
+			const std::string_view controlName = getControlName(registry, inputUser, controlId);
+			for (const auto& actionId : actionIds)
 			{
-				InputAction& action = inputUser.actions[actionName];
-				drawInputActionRow(action, binding);
+				const InputAction& action = inputUser.actions[actionId];
+				drawInputActionRow(action, controlName);
+			}
+		}
+
+		for (const auto& [controlId, bindings] : inputUser.buttonToAxisBindings)
+		{
+			const std::string_view controlName = getControlName(registry, inputUser, controlId);
+			for (const auto& axisActionBinding : bindings)
+			{
+				const InputAction& action = inputUser.actions[axisActionBinding.actionId];
+				drawInputActionRow(action, controlName);
 			}
 		}
 		ImGui::EndTable();
@@ -176,7 +221,7 @@ void ManImGuiInputDebugSystem::tick(ECS::Registry& registry)
 		for (const auto entityId : ECS::View<InputUser>(registry))
 		{
 			InputUser& inputUser = *registry.get<InputUser>(entityId);
-			drawInputUser(inputUser, entityId);
+			drawInputUser(registry, inputUser, entityId);
 		}
 		ImGui::EndChild();
 	}

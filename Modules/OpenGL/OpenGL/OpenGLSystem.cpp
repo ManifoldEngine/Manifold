@@ -15,7 +15,7 @@
 #include <OpenGL/OpenGLDebug.h>
 #include <OpenGL/OpenGLConfig.h>
 #include <OpenGL/OpenGLWindowContext.h>
-#include <OpenGL/OpenGLInputSystem.h>
+#include <OpenGL/Inputs/OpenGLInputSystem.h>
 #include <OpenGL/Data/OpenGLShader.h>
 #include <OpenGL/Render/OpenGLResourceSystem.h>
 #include <OpenGL/Render/OpenGLCameraUpdateSystem.h>
@@ -138,6 +138,11 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
 void OpenGLSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
     terminate(registry);
+    world.destroySystem<OpenGLResourceSystem>()
+        .destroySystem<OpenGLInputSystem>()
+        .destroySystem<OpenGLCameraUpdateSystem>()
+        .destroySystem<OpenGLCommandBufferSystem>()
+        .destroySystem<OpenGLRenderSystem>();
 }
 
 void OpenGLSystem::tick(ECS::Registry& registry)
