@@ -176,17 +176,17 @@ void ManImGuiInputDebugSystem::onInitialize(ECS::Registry& registry, World& worl
 
 bool Mani::ManImGuiInputDebugSystem::shouldTick(const ECS::Registry& registry) const
 {
-	return ManImGuiStatics::isShowing(registry);
+	if (!ManImGuiStatics::isShowing(registry))
+	{
+		return false;
+	}
+
+	const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
+	return ManImGuiStatics::Menu::isOpened(registry, debugMenuId, INPUTS_NAME);
 }
 
 void ManImGuiInputDebugSystem::tick(ECS::Registry& registry)
 {
-	const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
-	if (!ManImGuiStatics::Menu::isOpened(registry, debugMenuId, INPUTS_NAME))
-	{
-		return;
-	}
-
 	bool isOpened = true;
 	if (!ImGui::Begin("Input Debug", &isOpened, ImGuiWindowFlags_MenuBar))
 	{
@@ -196,6 +196,7 @@ void ManImGuiInputDebugSystem::tick(ECS::Registry& registry)
 
 	if (!isOpened)
 	{
+		const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
 		ManImGuiStatics::Menu::close(registry, debugMenuId, INPUTS_NAME);
 		ImGui::End();
 		return;

@@ -58,11 +58,6 @@ bool queryMatches(const List<std::string>& tokens, const ECS::Registry& registry
 }
 #endif
 
-bool Mani::ManImGuiECSSystem::shouldTick(const ECS::Registry& registry) const
-{
-	return ManImGuiStatics::isShowing(registry);
-}
-
 void Mani::ManImGuiECSSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<ManImGuiSystem>();
@@ -74,14 +69,19 @@ void Mani::ManImGuiECSSystem::onInitialize(ECS::Registry& registry, World& world
 	}
 }
 
+bool Mani::ManImGuiECSSystem::shouldTick(const ECS::Registry& registry) const
+{
+    if (!ManImGuiStatics::isShowing(registry))
+    {
+        return false;
+    }
+
+    const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
+    return ManImGuiStatics::Menu::isOpened(registry, debugMenuId, ECS_NAME);
+}
+
 void Mani::ManImGuiECSSystem::tick(ECS::Registry& registry)
 {
-	const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
-	if (!ManImGuiStatics::Menu::isOpened(registry, debugMenuId, ECS_NAME))
-	{
-		return;
-	}
-
 	bool isOpened = true;
 	if (!ImGui::Begin("ECS", &isOpened, ImGuiWindowFlags_MenuBar))
 	{
@@ -91,6 +91,7 @@ void Mani::ManImGuiECSSystem::tick(ECS::Registry& registry)
 
 	if (!isOpened)
 	{
+        const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
 		ManImGuiStatics::Menu::close(registry, debugMenuId, ECS_NAME);
 		ImGui::End();
 		return;

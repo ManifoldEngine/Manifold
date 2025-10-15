@@ -26,16 +26,18 @@ void ManImGuiProfilingStatsSystem::onInitialize(ECS::Registry& registry, World& 
 
 bool Mani::ManImGuiProfilingStatsSystem::shouldTick(const ECS::Registry& registry) const
 {
-	return ManImGuiStatics::isShowing(registry);
+	if (!ManImGuiStatics::isShowing(registry))
+	{
+		return false;
+	}
+
+	const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
+	return ManImGuiStatics::Menu::isOpened(registry, debugMenuId, PROFILER_NAME);
 }
 
 void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 {
-	const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
-	if (!ManImGuiStatics::Menu::isOpened(registry, debugMenuId, PROFILER_NAME))
-	{
-		return;
-	}
+	
 
 	// this system might not be in the application's registry, but below it.
 	const ECS::Registry& appRegistry = Application::get().getWorld().getRegistry();
@@ -56,6 +58,7 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 
 	if (!isOpened)
 	{
+		const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
 		ManImGuiStatics::Menu::close(registry, debugMenuId, PROFILER_NAME);
 		ImGui::End();
 		return;
