@@ -13,34 +13,34 @@ namespace Mani
 	
 	namespace InputsStatics
 	{
-		// tried to resolve the hint into a controlid by looking through the assigned devices of this user
+		// tries to resolve the hint into a ControlId by looking through the assigned devices of this user
 		ControlId resolveHint(const ECS::Registry& registry, ECS::EntityId entityId, EInputHints hint);
 
-		// adds an action by name to a entity with an InputUser component
+		// adds an action by name to an entity with an InputUser component
 		void addAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action);
-		// removes an action by name to a entity with an InputUser component
+		// removes an action by name from an entity with an InputUser component
 		void removeAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action);
 
 		// binds a control to an action for an entity with an InputUser component
 		void bindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, ControlId controlId);
-		// unbinds a control to an action for an entity with an InputUser component
+		// unbinds a control from an action for an entity with an InputUser component
 		void unbindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, ControlId controlId);
 		// binds a control to an action for an entity with an InputUser component
 		void bindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputHints hint);
-		// unbinds a control to an action for an entity with an InputUser component
+		// unbinds a control from an action for an entity with an InputUser component
 		void unbindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputHints hint);
 		
 		// binds a button to an action's axis value
 		void bindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, ControlId controlId);
-		// unbinds a button to an action's axis value
+		// unbinds a button from an action's axis value
 		void unbindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, ControlId controlId);
 
 		// binds a button to an action's axis value
 		void bindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, EInputHints hint);
-		// unbinds a button to an action's axis value
+		// unbinds a button from an action's axis value
 		void unbindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, EInputHints hint);
 		
-		// returns the action object for an entity witn an InputUser component
+		// returns the action object for an entity with an InputUser component
 		InputAction& getAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action);
 		const InputAction& getAction(const ECS::Registry& registry, ECS::EntityId entityId, const std::string& action);
 

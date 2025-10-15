@@ -1,5 +1,7 @@
 #include "OpenGLInputSystem.h"
 
+#include <Core/Debug/Profiling.h>
+
 #include <Inputs/Inputs.h>
 #include <Inputs/InputSystem.h>
 #include <Inputs/Components/InputDevice.h>
@@ -30,11 +32,11 @@ int toGLFWCursorMode(Cursor::EMode mode)
 {
     switch (mode)
     {
-    case Cursor::EMode::Hidden:     return GLFW_CURSOR_HIDDEN;
-    case Cursor::EMode::Normal:     return GLFW_CURSOR_NORMAL;
-    case Cursor::EMode::Disabled:   return GLFW_CURSOR_DISABLED;
-    case Cursor::EMode::Captured:   return GLFW_CURSOR_CAPTURED;
-    default: return 0;
+        case Cursor::EMode::Hidden:     return GLFW_CURSOR_HIDDEN;
+        case Cursor::EMode::Normal:     return GLFW_CURSOR_NORMAL;
+        case Cursor::EMode::Disabled:   return GLFW_CURSOR_DISABLED;
+        case Cursor::EMode::Captured:   return GLFW_CURSOR_CAPTURED;
+        default: return 0;
     }
 }
 
@@ -157,6 +159,7 @@ void OpenGLInputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void OpenGLInputSystem::tick(ECS::Registry& registry)
 {
+    MANI_TIME_SCOPE(OpenGLInputSystem_tick);
     const OpenGLWindowContext& context = *registry.getSingle<OpenGLWindowContext>();
 
     // handle cursord mode.

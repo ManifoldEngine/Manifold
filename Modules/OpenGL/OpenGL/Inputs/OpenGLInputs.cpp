@@ -4,7 +4,7 @@
 
 using namespace Mani;
 
- int OpenGLInputsStatics::toOpenGLCode(EOpenGLKeyCode code)
+int OpenGLInputsStatics::toOpenGLCode(EOpenGLKeyCode code)
 {
 	switch (code)
 	{
@@ -143,7 +143,7 @@ using namespace Mani;
 	}
 }
 
- int OpenGLInputsStatics::toOpenGLCode(EOpenGLMouseCode code)
+int OpenGLInputsStatics::toOpenGLCode(EOpenGLMouseCode code)
 {
 	switch (code)
 	{
@@ -165,7 +165,7 @@ using namespace Mani;
 	}
 }
 
- std::string_view OpenGLInputsStatics::toString(EOpenGLKeyCode code)
+std::string_view OpenGLInputsStatics::toString(EOpenGLKeyCode code)
 {
 	switch (code)
 	{
@@ -297,7 +297,7 @@ using namespace Mani;
 	}
 }
 
- std::string_view OpenGLInputsStatics::toString(EOpenGLMouseCode code)
+std::string_view OpenGLInputsStatics::toString(EOpenGLMouseCode code)
 {
 	switch (code)
 	{
@@ -319,7 +319,7 @@ using namespace Mani;
 	}
 }
 
- EInputHints OpenGLInputsStatics::toHint(EOpenGLKeyCode code)
+EInputHints OpenGLInputsStatics::toHint(EOpenGLKeyCode code)
 {
 	switch (code)
 	{
@@ -450,7 +450,7 @@ using namespace Mani;
 	}
 }
 
- EInputHints OpenGLInputsStatics::toHint(EOpenGLMouseCode code)
+EInputHints OpenGLInputsStatics::toHint(EOpenGLMouseCode code)
 {
 	switch (code)
 	{
