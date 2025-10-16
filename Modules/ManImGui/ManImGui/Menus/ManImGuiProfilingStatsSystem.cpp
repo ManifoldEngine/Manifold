@@ -19,8 +19,8 @@ void ManImGuiProfilingStatsSystem::onInitialize(ECS::Registry& registry, World& 
 	world.initializeDependency<ManImGuiManifoldMenuSystem>();
 
 	{
-		const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
-		ManImGuiStatics::Menu::addItem(registry, debugMenuId, PROFILER_NAME);
+		ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
+		menu.subMenu.addItem(PROFILER_NAME);
 	}
 }
 
@@ -31,14 +31,13 @@ bool Mani::ManImGuiProfilingStatsSystem::shouldTick(const ECS::Registry& registr
 		return false;
 	}
 
-	const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
-	return ManImGuiStatics::Menu::isOpened(registry, debugMenuId, PROFILER_NAME);
+	const ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
+	return menu.subMenu.getSelected(PROFILER_NAME);
 }
 
 void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 {
 	
-
 	// this system might not be in the application's registry, but below it.
 	const ECS::Registry& appRegistry = Application::get().getWorld().getRegistry();
 	const ScopedTimerDatabase* database = appRegistry.getSingle<ScopedTimerDatabase>();
@@ -58,8 +57,8 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 
 	if (!isOpened)
 	{
-		const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
-		ManImGuiStatics::Menu::close(registry, debugMenuId, PROFILER_NAME);
+		ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
+		menu.subMenu.setSelected(PROFILER_NAME, false);
 		ImGui::End();
 		return;
 	}

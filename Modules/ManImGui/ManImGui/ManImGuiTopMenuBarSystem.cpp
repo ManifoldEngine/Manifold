@@ -8,12 +8,37 @@
 
 #include <imgui.h>
 
-bool Mani::ManImGuiTopMenuBarSystem::shouldTick(const ECS::Registry& registry) const
+using namespace Mani;
+
+bool displayMenu(ManImGuiSubMenu& menu, const std::string_view& title)
+{
+	if (menu.items.isEmpty())
+	{
+		return false;
+	}
+
+	if (ImGui::BeginMenu(title.data()))
+	{
+		for (auto& [name, item] : menu.items)
+		{
+			if (!displayMenu(item.subMenu, name))
+			{
+				ImGui::MenuItem(name.data(), nullptr, &item.selected);
+			}
+		}
+
+		ImGui::EndMenu();
+	}
+
+	return true;
+}
+
+bool ManImGuiTopMenuBarSystem::shouldTick(const ECS::Registry& registry) const
 {
 	return ManImGuiStatics::isShowing(registry);
 }
 
-void Mani::ManImGuiTopMenuBarSystem::tick(ECS::Registry& registry)
+void ManImGuiTopMenuBarSystem::tick(ECS::Registry& registry)
 {
 	if (ImGui::BeginMainMenuBar())
 	{
@@ -21,14 +46,7 @@ void Mani::ManImGuiTopMenuBarSystem::tick(ECS::Registry& registry)
 		for (const auto entityId : menuView)
 		{
 			ManImGuiMenu& menu = registry.getRef<ManImGuiMenu>(entityId);
-			if (ImGui::BeginMenu(menu.title.c_str()))
-			{
-				for (auto& [name, state] : menu.items)
-				{
-					ImGui::MenuItem(name.data(), nullptr, &state);
-				}
-				ImGui::EndMenu();
-			}
+			displayMenu(menu.subMenu, menu.title);
 		}
 
 		ImGui::EndMainMenuBar();

@@ -9,7 +9,7 @@ namespace Mani
     public:
         virtual std::string_view getName() const override { return "ManImGuiTopMenuBarSystem"; }
         virtual bool shouldTick(const ECS::Registry& registry) const override;
-        virtual ETickGroup getTickGroup() const override { return ETickGroup::Update; }
+        virtual ETickGroup getTickGroup() const override { return ETickGroup::PreUpdate; }
 
     public:
         virtual void tick(ECS::Registry& registry) override;
