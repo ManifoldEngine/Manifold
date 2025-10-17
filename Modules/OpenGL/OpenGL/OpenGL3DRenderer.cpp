@@ -16,7 +16,10 @@
 
 using namespace Mani;
 
-
+void OpenGL3DRenderer::onBegin(OpenGLRenderContext& context)
+{
+	glEnable(GL_DEPTH_TEST);
+}
 
 void OpenGL3DRenderer::render(const OpenGLCommand& command, OpenGLRenderContext& context)
 {
@@ -61,6 +64,11 @@ void OpenGL3DRenderer::render(const OpenGLCommand& command, OpenGLRenderContext&
 		MANI_ASSERT(texture != nullptr, "Unbinding null texture.");
 		texture->unbind();
 	}
+}
+
+void OpenGL3DRenderer::onEnd(OpenGLRenderContext& context)
+{
+	glDisable(GL_DEPTH_TEST);
 }
 
 void OpenGL3DRendererSystem::onInitialize(ECS::Registry& registry, World& world)

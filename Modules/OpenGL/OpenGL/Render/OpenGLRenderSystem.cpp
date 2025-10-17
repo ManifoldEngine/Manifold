@@ -78,12 +78,17 @@ void OpenGLRenderSystem::tick(ECS::Registry& registry)
 	glfwSetWindowTitle(context.openglContext->window, std::format("{} ({}fps)", context.openglContext->name, fps).c_str());
 #endif
 
+	if (context.renderers.isEmpty())
+	{
+		MANI_LOG_WARNING(LogOpenGL, "No renderer registered");
+		buffer.isReadyToWrite.release(); // skip this frame
+		return;
+	}
+
 	storage.renderThread.enqueue([&registry, &buffer, context = std::move(context)]() mutable
 	{
 		MANI_TIME_SCOPE(OpenGLRenderSystem_tick_renderthread);
 		glfwMakeContextCurrent(context.openglContext->window);
-
-		glEnable(GL_DEPTH_TEST);
 
 		// setting color state.
 		const Vec4f& clearColor = context.clearColor;
@@ -94,19 +99,42 @@ void OpenGLRenderSystem::tick(ECS::Registry& registry)
 
 		glViewport(0, 0, context.width, context.height);
 
-		size_t commandId = 0;
-		for (auto* renderer : context.renderers)
+		// command list should be sorted by renderer id.
+		// This is done so we can layer the renderers and go through command in order
+		auto commandIt = buffer.commands.begin();
+		size_t commandIndex = 0;
+		for (IOpenGLRenderer* renderer : context.renderers)
 		{
-			for (; commandId < buffer.commands.count(); commandId++)
+			MANI_ASSERT(renderer != nullptr, "null renderer");
+			
+			renderer->onBegin(context);
+			
+			for (; commandIndex < buffer.commands.count(); commandIndex++)
 			{
-				const OpenGLCommand& command = buffer.commands[commandId];
-				if (renderer->getId() != command.rendererId)
+				OpenGLCommand& command = buffer.commands[commandIndex];
+				if (command.rendererId > renderer->getId())
 				{
-					break;
+					break; // get to the corresponding renderer for the current command
 				}
+				else if (command.rendererId < renderer->getId())
+				{
+					MANI_LOG_WARNING(LogOpenGL, "No renderer exist for command with rendererId {}, commands are being skipped", command.rendererId);
+					continue;
+				}
+
+				// render
 				renderer->render(command, context);
 			}
+
+			renderer->onEnd(context);
 		}
+
+#if MANI_DEBUG
+		if (commandIndex < buffer.commands.count())
+		{
+			MANI_LOG_WARNING(LogOpenGL, "No renderer exist for command with rendererId {}, commands are being skipped", buffer.commands[commandIndex].rendererId);
+		}
+#endif
 
 		// render extension if any
 		for (auto* extension : context.extensions)

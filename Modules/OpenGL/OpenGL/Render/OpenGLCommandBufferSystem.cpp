@@ -142,7 +142,7 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 
 	commands.sort([](const OpenGLCommand& lhs, const OpenGLCommand& rhs)
 	{
-		return std::tie(lhs.shader, lhs.vao, lhs.rendererId) < std::tie(rhs.shader, rhs.vao, rhs.rendererId);
+		return std::tie(lhs.rendererId, lhs.shader, lhs.vao) < std::tie(rhs.rendererId, rhs.shader, rhs.vao);
 	});
 
 	// update command buffers
