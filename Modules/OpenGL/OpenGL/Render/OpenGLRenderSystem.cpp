@@ -6,6 +6,8 @@
 
 #include <Camera/CameraSystem.h>
 
+#include <RenderAPI/RenderContextSystem.h>
+
 #include <Resources/Resource.h>
 #include <Resources/ResourceSystem.h>
 
@@ -38,6 +40,7 @@ void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 	world.initializeDependency<TimeSystem>();
 	world.initializeDependency<CameraSystem>();
 	world.initializeDependency<OpenGLCameraUpdateSystem>();
+	world.initializeDependency<RenderContextSystem>();
 	
 	registry.addSingle<OpenGLRenderSystem::Storage>();
 	registry.addSingle<OpenGLClearColor>();
@@ -201,9 +204,11 @@ OpenGLRenderContext createContext(ECS::Registry& registry)
 	}
 
 	{
+		// renderers and extensions
 		OpenGLRenderSystem::Storage* storage = getStorageChecked(registry);
 		context.renderers = storage->renderers;
 		context.extensions = storage->extensions;
+		context.renderContext = *registry.getSingle<RenderContext>();
 	}
 
 	return context;
