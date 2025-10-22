@@ -84,12 +84,14 @@ void referenceAllShaders(const AssetImporterConfig& config, const ShaderConfig& 
 {
 	ShaderCollection shaders;
 
-	auto referenceShader = [&shaders](const fs::path& path, const fs::path& extension)
+	const auto& rootPath = FileSystem::getRootPath();
+	auto referenceShader = [&shaders, &rootPath](const fs::path& path, const fs::path& extension)
 	{
 		if (extension == SHADER_EXT)
 		{
-			MANI_LOG(Log, "referencing {}", path.string());
-			shaders.paths.add(path.string());
+			const auto& relativePath = fs::relative(path, rootPath);
+			MANI_LOG(Log, "referencing {}", relativePath.string());
+			shaders.paths.add(relativePath.string());
 		}
 	};
 
