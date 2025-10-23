@@ -15,7 +15,7 @@ group "AssetImporter"
         
         includedirs { locations.moduledir .. "/**", locations.enginedir .. "/%{prj.name}/Sources" }
 
-        links { "Core", "Resources", "RenderAPI" }
+        links { "Core", "Resources", "RenderAPI", "Sprite" }
 
         -- assimp
         local assimpPath = (locations.enginedir .. "/%{prj.name}/ThirdParties/assimp")
