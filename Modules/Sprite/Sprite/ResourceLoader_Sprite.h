@@ -5,9 +5,9 @@
 #include <Resources/Resource.h>
 #include <Resources/ResourceSystem.h>
 
-#include <Sprite/Sprite.h>
-
 #include <RenderAPI/Texture.h>
+
+#include <Sprite/Sprite.h>
 
 #include <ManiZ/Json.h>
 
@@ -25,7 +25,7 @@ namespace Mani
 
 		resource.value = ManiZ::from::json<Sprite>(std::move(content));
 
-		const std::string texturePath = resource.value.texturePath;
+		const std::string& texturePath = resource.value.texturePath;
 		MANI_ASSERT(!texturePath.empty(), "Sprite asset with an empty texture path");
 		resource.value.textureId = ResourceSystem::loadResourceSync<Texture>(registry, texturePath, tag);
 

@@ -11,6 +11,8 @@
 #include <RenderAPI/Primitives.h>
 #include <RenderAPI/Texture.h>
 
+#include <Sprite/ResourceLoader_Sprite.h>
+
 using namespace Mani;
 
 void onSpriteLoaded(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId spriteId, const std::string_view& shaderPath, uint32_t tag)
