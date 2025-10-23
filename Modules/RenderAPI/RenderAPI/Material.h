@@ -24,8 +24,6 @@ namespace Mani
 	{
 		std::string name;
 
-		Vec4f color = VEC4F::ONE;
-
 		std::string shaderPath = "";
 		List<ShaderParam_Texture> textures;
 		

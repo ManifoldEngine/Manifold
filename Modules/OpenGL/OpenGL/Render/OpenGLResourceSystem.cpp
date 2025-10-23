@@ -165,7 +165,6 @@ void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, ECS::Entity
 		});
 	}
 	openglMaterial.name = material.name;
-	openglMaterial.color = material.color;
 	List<OpenGLMaterial::ShaderParam>& shaderParameters = openglMaterial.shaderParameters;
 
 	auto fillShaderParameters = [&shaderParameters]<typename T>(const List<T>& customParams)

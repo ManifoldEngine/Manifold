@@ -3,6 +3,7 @@
 #include <Core/CoreFwd.h>
 
 #include <Resources/Resource.h>
+#include <Resources/ResourceSystem.h>
 
 #include <RenderAPI/Texture.h>
 
@@ -12,7 +13,7 @@
 namespace Mani
 {
     template<>
-    bool ResourceLoader::load<Texture>(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<Texture>& resource)
+    bool ResourceLoader::load<Texture>(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<Texture>& resource, uint32_t tag)
     {
         uint8_t stbiSetFlipVerticallyOnLoad = Mani::STBISETFLIPVERTICALLYONLOAD_DISABLED;
 

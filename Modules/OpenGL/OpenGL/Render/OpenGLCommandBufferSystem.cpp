@@ -12,7 +12,7 @@
 #include <OpenGL/Render/OpenGLCommand.h>
 #include <OpenGL/Render/OpenGLResourceSystem.h>
 
-#include <RenderAPI/MeshComponent.h>
+#include <RenderAPI/MeshRendering.h>
 #include <RenderAPI/BoundingSphere.h>
 
 using namespace Mani;
@@ -46,10 +46,10 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 
 	// gather all draw commands.
 	std::array<List<OpenGLCommand>, Application::THREAD_COUNT> threadBuffers;
-	ECS::View<Position, Rotation, Scale, MeshComponent> view(registry);
+	ECS::View<Position, Rotation, Scale, MeshRendering> view(registry);
 	Mani::parallelFor(view, [&threadBuffers, &registry, cameraPosition, camera](ECS::EntityId entityId, size_t threadIndex)
 	{
-		MeshComponent& meshComponent = *registry.get<MeshComponent>(entityId);
+		MeshRendering& meshComponent = *registry.get<MeshRendering>(entityId);
 		auto [position, rotation, scale] = Transform::getTransform(registry, entityId);
 
 		if (const BoundingSphere* boundingSphere = registry.get<BoundingSphere>(entityId))

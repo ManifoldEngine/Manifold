@@ -6,7 +6,7 @@
 
 namespace Mani
 {
-	struct MeshComponent
+	struct MeshRendering
 	{
 		ECS::EntityId meshHandle;
 		ECS::EntityId materialHandle;
