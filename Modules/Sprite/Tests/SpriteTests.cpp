@@ -5,6 +5,7 @@
 
 #include <Resources/ResourceSystem.h>
 #include <Resources/IResourceLoader.h>
+#include <Resources/Resources.h>
 
 #include <Sprite/Sprite.h>
 #include <Sprite/SpriteSystem.h>
@@ -50,9 +51,9 @@ MANI_SECTION_BEGIN(SpriteTests, "Sprites")
 		ECS::Registry& registry = world.getMutableRegistry();
 		
 		StubResourceLoader_Texture loader;
-		ResourceSystem::registerLoader(registry, &loader);
+		Resources::registerLoader(registry, &loader);
 		
-		ECS::EntityId spriteId = ResourceSystem::loadSync<Sprite>(registry, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite");
+		ECS::EntityId spriteId = Resources::loadSync<Sprite>(registry, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite");
 		const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);
 		MANI_TEST_ASSERT(spriteRes.isReady, "Sprite resource should be ready");
 
@@ -73,9 +74,9 @@ MANI_SECTION_BEGIN(SpriteTests, "Sprites")
 		ECS::Registry& registry = world.getMutableRegistry();
 
 		StubResourceLoader_Texture loader;
-		ResourceSystem::registerLoader(registry, &loader);
+		Resources::registerLoader(registry, &loader);
 
-		ECS::EntityId spriteId = ResourceSystem::loadSync<Sprite>(registry, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite");
+		ECS::EntityId spriteId = Resources::loadSync<Sprite>(registry, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite");
 		const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);
 		MANI_TEST_ASSERT(spriteRes.isReady, "Sprite resource should be ready");
 

@@ -15,6 +15,7 @@
 #include <RenderAPI/Shader.h>
 
 #include <Resources/ResourceSystem.h>
+#include <Resources/Resources.h>
 
 using namespace Mani;
 
@@ -43,12 +44,12 @@ void AnimationSystem::onInitialize(ECS::Registry& registry, World& world)
 	world.initializeDependency<CameraSystem>();
 	world.initializeDependency<ResourceSystem>();
 
-	ResourceSystem::registerExtension(registry, &extension);
+	Resources::registerExtension(registry, &extension);
 }
 
 void AnimationSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	ResourceSystem::unregisterExtension(registry, &extension);
+	Resources::unregisterExtension(registry, &extension);
 }
 
 void AnimationSystem::tick(ECS::Registry& registry)
@@ -154,7 +155,7 @@ void AnimationResourceSystemExtension::onResourceLoaded(ECS::Registry& registry,
 	Animation& animation = animationRes->value;
 	for (auto& frame : animation.frames)
 	{
-		frame.textureId = ResourceSystem::load<Texture>(registry, frame.texturePath, tag);
+		frame.textureId = Resources::load<Texture>(registry, frame.texturePath, tag);
 	}
 	animationRes->isReady = true;
 }
@@ -178,6 +179,6 @@ void AnimationResourceSystemExtension::onResourceUnloaded(ECS::Registry& registr
 	Animation& animation = animationRes->value;
 	for (auto& frame : animation.frames)
 	{
-		ResourceSystem::unload(registry, frame.textureId);
+		Resources::unload(registry, frame.textureId);
 	}
 }

@@ -1,108 +1,17 @@
 #include "ResourceSystem.h"
 
+#include <Resources/Resources.h>
+#include <Resources/Components/ResourceStorage.h>
+
 using namespace Mani;
 
 void ResourceSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-	registry.addSingle<ResourceSystem::Storage>();
+	registry.addSingle<ResourceStorage>();
 }
 
 void ResourceSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	unloadAll(registry);
-	registry.removeSingle<ResourceSystem::Storage>();
-}
-
-void Mani::ResourceSystem::registerExtension(ECS::Registry& registry, IResourceSystemExtension* extension)
-{
-	MANI_ASSERT(extension != nullptr, "trying to register a null extension");
-	if (Storage* storage = registry.getSingle<Storage>())
-	{
-		List<IResourceSystemExtension*>& extensions = storage->extensions;
-		extensions.addUnique(extension);
-	}
-}
-
-void Mani::ResourceSystem::unregisterExtension(ECS::Registry& registry, IResourceSystemExtension* extension)
-{
-	MANI_ASSERT(extension != nullptr, "trying to unregister a null extension");
-	if (Storage* storage = registry.getSingle<Storage>())
-	{
-		List<IResourceSystemExtension*>& extensions = storage->extensions;
-		extensions.remove(extension);
-	}
-}
-
-void Mani::ResourceSystem::registerLoader(ECS::Registry& registry, IResourceLoader* loader)
-{
-	MANI_ASSERT(loader != nullptr, "trying to register a null loader");
-	if (Storage* storage = registry.getSingle<Storage>())
-	{
-		std::lock_guard<std::mutex> lock(storage->resourceLoaderMutex);
-		Map<ECS::ComponentId, IResourceLoader*>& loaders = storage->loaders;
-		loaders.add(loader->getComponentId(registry), loader);
-	}
-}
-
-void Mani::ResourceSystem::unregisterLoader(ECS::Registry& registry, IResourceLoader* loader)
-{
-	MANI_ASSERT(loader != nullptr, "trying to register a null loader");
-	if (Storage* storage = registry.getSingle<Storage>())
-	{
-		std::lock_guard<std::mutex> lock(storage->resourceLoaderMutex);
-		Map<ECS::ComponentId, IResourceLoader*>& loaders = storage->loaders;
-		loaders.remove(loader->getComponentId(registry));
-	}
-}
-
-void ResourceSystem::unload(ECS::Registry& registry, ECS::EntityId inEntityId)
-{
-	if (!registry.isValid(inEntityId))
-	{
-		return;
-	}
-
-	ResourceTag* resourceTag = registry.get<ResourceTag>(inEntityId);
-	MANI_ASSERT(resourceTag != nullptr, "Valid resource exists without a resource tag");
-
-	forEachExtension(registry, [&registry, inEntityId, tag = resourceTag->tag](const IResourceSystemExtension& ext)
-	{
-		ext.onResourceUnloaded(registry, inEntityId, tag);
-	});
-
-	registry.destroy(inEntityId);
-
-	if (ResourceSystem::Storage* storage = registry.getSingle<ResourceSystem::Storage>())
-	{
-		std::lock_guard<std::mutex> lock(storage->pathToEntityMutex);
-		for (const auto& [path, entityId] : storage->pathToEntityId)
-		{
-			if (entityId == inEntityId)
-			{
-				MANI_LOG(LogResources, "Unloading asset at {}", path.string());
-				storage->pathToEntityId.remove(path);	
-				return;
-			}
-		}
-	}
-}
-
-void ResourceSystem::unloadAll(ECS::Registry& registry)
-{
-	for (const auto entityId : ECS::View<ResourceTag>(registry))
-	{
-		unload(registry, entityId);
-	}
-}
-
-void ResourceSystem::unloadTag(ECS::Registry& registry, uint32_t tag)
-{
-	for (const auto entityId : ECS::View<ResourceTag>(registry))
-	{
-		ResourceTag& resourceTag = *registry.get<ResourceTag>(entityId);
-		if (resourceTag.tag == tag)
-		{
-			unload(registry, entityId);
-		}
-	}
+	Resources::unloadAll(registry);
+	registry.removeSingle<ResourceStorage>();
 }

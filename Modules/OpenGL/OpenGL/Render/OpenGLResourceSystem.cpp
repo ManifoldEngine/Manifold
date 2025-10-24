@@ -1,5 +1,6 @@
 #include "OpenGLResourceSystem.h"
 
+#include <Resources/Resources.h>
 #include <Resources/ResourceSystem.h>
 
 #include <ECS/Entity.h>
@@ -101,14 +102,14 @@ void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, World& world)
 	world.initializeDependency<ResourceSystem>();
 
 	OpenGLResourceSystem::Storage& storage = *registry.addSingle<OpenGLResourceSystem::Storage>();
-	ResourceSystem::registerExtension(registry, &resourceExtension);
-	ResourceSystem::registerLoader(registry, &textureLoader);
+	Resources::registerExtension(registry, &resourceExtension);
+	Resources::registerLoader(registry, &textureLoader);
 }
 
 void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	ResourceSystem::unregisterLoader(registry, &textureLoader);
-	ResourceSystem::unregisterExtension(registry, &resourceExtension);
+	Resources::unregisterLoader(registry, &textureLoader);
+	Resources::unregisterExtension(registry, &resourceExtension);
 	registry.removeSingle<OpenGLResourceSystem::Storage>();
 }
 
@@ -157,12 +158,12 @@ void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, ECS::Entity
 	Resource<OpenGLMaterial>& openglMaterialRes = *registry.add<Resource<OpenGLMaterial>>(materialId);
 	OpenGLMaterial& openglMaterial = openglMaterialRes.value;
 
-	openglMaterial.shaderId = ResourceSystem::load<Shader>(registry, material.shaderPath, tag);
+	openglMaterial.shaderId = Resources::load<Shader>(registry, material.shaderPath, tag);
 	for (const ShaderParam_Texture& texture : material.textures)
 	{
 		openglMaterial.textures.add({
 			.key = texture.key,
-			.id = ResourceSystem::load<Texture>(registry, texture.path, tag),
+			.id = Resources::load<Texture>(registry, texture.path, tag),
 		});
 	}
 	openglMaterial.name = material.name;
@@ -255,7 +256,7 @@ void OpenGLResourceSystem::onMaterialUnloaded(ECS::Registry& registry, ECS::Enti
 
 	for (const auto& [key, texture] : res->value.textures)
 	{
-		ResourceSystem::unload(registry, texture);
+		Resources::unload(registry, texture);
 	}
 }
 
