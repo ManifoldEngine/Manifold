@@ -169,24 +169,24 @@ void ManImGuiInputDebugSystem::onInitialize(ECS::Registry& registry, World& worl
 	world.initializeDependency<ManImGuiManifoldMenuSystem>();
 
 	{
-		const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
-		ManImGuiStatics::Menu::addItem(registry, debugMenuId, INPUTS_NAME);
+		ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
+		menu.subMenu.addItem(INPUTS_NAME);
 	}
 }
 
 bool Mani::ManImGuiInputDebugSystem::shouldTick(const ECS::Registry& registry) const
 {
-	return ManImGuiStatics::isShowing(registry);
+	if (!ManImGuiStatics::isShowing(registry))
+	{
+		return false;
+	}
+
+	const ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
+	return menu.subMenu.getSelected(INPUTS_NAME);
 }
 
 void ManImGuiInputDebugSystem::tick(ECS::Registry& registry)
 {
-	const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
-	if (!ManImGuiStatics::Menu::isOpened(registry, debugMenuId, INPUTS_NAME))
-	{
-		return;
-	}
-
 	bool isOpened = true;
 	if (!ImGui::Begin("Input Debug", &isOpened, ImGuiWindowFlags_MenuBar))
 	{
@@ -196,7 +196,8 @@ void ManImGuiInputDebugSystem::tick(ECS::Registry& registry)
 
 	if (!isOpened)
 	{
-		ManImGuiStatics::Menu::close(registry, debugMenuId, INPUTS_NAME);
+		ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
+		menu.subMenu.setSelected(INPUTS_NAME, false);
 		ImGui::End();
 		return;
 	}

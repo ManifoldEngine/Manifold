@@ -36,7 +36,6 @@ namespace Mani
 
 		OpenGLVertexArray* vao;
 		OpenGLShader* shader;
-		Vec4f color = VEC4F::ONE;
 		List<TextureParam> textures;
 		List<OpenGLMaterial::ShaderParam> customParamaters;
 

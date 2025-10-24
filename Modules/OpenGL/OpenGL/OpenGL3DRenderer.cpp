@@ -16,7 +16,10 @@
 
 using namespace Mani;
 
-
+void OpenGL3DRenderer::onBegin(OpenGLRenderContext& context)
+{
+	glEnable(GL_DEPTH_TEST);
+}
 
 void OpenGL3DRenderer::render(const OpenGLCommand& command, OpenGLRenderContext& context)
 {
@@ -41,9 +44,6 @@ void OpenGL3DRenderer::render(const OpenGLCommand& command, OpenGLRenderContext&
 	// set fragment uniforms
 	shader.setFloat3(ShaderNames::MANI_VIEWPOSITION, context.cameraPosition.x, context.cameraPosition.y, context.cameraPosition.z);
 
-	const Vec4f& color = command.color;
-	shader.setFloat4(ShaderNames::MANI_COLOR, color.x, color.y, color.z, color.w);
-
 	int textureIndex = 0;
 	for (auto& [key, texture] : command.textures)
 	{
@@ -61,6 +61,11 @@ void OpenGL3DRenderer::render(const OpenGLCommand& command, OpenGLRenderContext&
 		MANI_ASSERT(texture != nullptr, "Unbinding null texture.");
 		texture->unbind();
 	}
+}
+
+void OpenGL3DRenderer::onEnd(OpenGLRenderContext& context)
+{
+	glDisable(GL_DEPTH_TEST);
 }
 
 void OpenGL3DRendererSystem::onInitialize(ECS::Registry& registry, World& world)

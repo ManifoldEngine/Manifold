@@ -58,30 +58,30 @@ bool queryMatches(const List<std::string>& tokens, const ECS::Registry& registry
 }
 #endif
 
-bool Mani::ManImGuiECSSystem::shouldTick(const ECS::Registry& registry) const
-{
-	return ManImGuiStatics::isShowing(registry);
-}
-
 void Mani::ManImGuiECSSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<ManImGuiSystem>();
 	world.initializeDependency<ManImGuiManifoldMenuSystem>();
 
 	{
-		const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
-		ManImGuiStatics::Menu::addItem(registry, debugMenuId, ECS_NAME);
+		ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
+        menu.subMenu.addItem(ECS_NAME);
 	}
+}
+
+bool Mani::ManImGuiECSSystem::shouldTick(const ECS::Registry& registry) const
+{
+    if (!ManImGuiStatics::isShowing(registry))
+    {
+        return false;
+    }
+
+    const ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
+    return menu.subMenu.getSelected(ECS_NAME);
 }
 
 void Mani::ManImGuiECSSystem::tick(ECS::Registry& registry)
 {
-	const ECS::EntityId debugMenuId = ManImGuiStatics::ManifoldMenu::getEntityId(registry);
-	if (!ManImGuiStatics::Menu::isOpened(registry, debugMenuId, ECS_NAME))
-	{
-		return;
-	}
-
 	bool isOpened = true;
 	if (!ImGui::Begin("ECS", &isOpened, ImGuiWindowFlags_MenuBar))
 	{
@@ -91,7 +91,8 @@ void Mani::ManImGuiECSSystem::tick(ECS::Registry& registry)
 
 	if (!isOpened)
 	{
-		ManImGuiStatics::Menu::close(registry, debugMenuId, ECS_NAME);
+        ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
+        menu.subMenu.setSelected(ECS_NAME, false);
 		ImGui::End();
 		return;
 	}

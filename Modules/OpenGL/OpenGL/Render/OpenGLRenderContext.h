@@ -7,6 +7,7 @@
 #include <RenderAPI/Light/DirectionalLight.h>
 #include <RenderAPI/Light/PointLight.h>
 #include <RenderAPI/Light/Spotlight.h>
+#include <RenderAPI/RenderContext.h>
 
 #include <OpenGL/Render/IOpenGLRenderer.h>
 #include <OpenGL/Render/IOpenGLRenderExtension.h>
@@ -37,5 +38,7 @@ namespace Mani
 
 		List<IOpenGLRenderer*> renderers;
 		List<IOpenGLRenderExtension*> extensions;
+
+		RenderContext renderContext;
 	};
 }

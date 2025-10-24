@@ -6,7 +6,9 @@
 
 #include <Resources/Resources.h>
 #include <Resources/Resource.h>
+
 #include <Resources/IResourceSystemExtension.h>
+#include <Resources/IResourceLoader.h>
 
 #include <Core/FileSystem.h>
 
@@ -16,12 +18,12 @@ namespace Mani
 {
 	class IResourceSystemExtension;
 
-	namespace ResourceLoader
+	namespace DefaultResourceLoader
 	{
 		// loads a json file into a resource. Specialize this function to define loading for specific resources.
 		// returns true if loading was successful
 		template<typename T>
-		static bool load(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<T>& resource);
+		static bool load(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<T>& resource, uint32_t tag);
 	}
 
 	class ResourceSystem : public ECS::System
@@ -46,6 +48,9 @@ namespace Mani
 		static void registerExtension(ECS::Registry& registry, IResourceSystemExtension* extension);
 		static void unregisterExtension(ECS::Registry& registry, IResourceSystemExtension* extension);
 
+		static void registerLoader(ECS::Registry& registry, IResourceLoader* loader);
+		static void unregisterLoader(ECS::Registry& registry, IResourceLoader* loader);
+
 	protected:
 		virtual void onInitialize(ECS::Registry& registry, World& world) override;
 		virtual void onDeinitialize(ECS::Registry& registry, World& world) override;
@@ -54,8 +59,11 @@ namespace Mani
 		struct Storage
 		{
 			List<IResourceSystemExtension*> extensions;
+			Map<ECS::ComponentId, IResourceLoader*> loaders;
 			Map<std::filesystem::path, ECS::EntityId> pathToEntityId;
+
 			std::mutex pathToEntityMutex;
+			std::mutex resourceLoaderMutex;
 		};
 
 		enum class ELoadMethod : uint8_t
@@ -109,7 +117,27 @@ namespace Mani
 
 		auto load = [&, entityId, path, tag, method]
 		{
-			if (!ResourceLoader::load(registry, path, resource))
+			const IResourceLoader* loader = nullptr;
+			{
+				std::lock_guard<std::mutex> lock(storage.resourceLoaderMutex);
+				const ECS::ComponentId componentId = registry.getComponentId<Resource<T>>();
+				if (auto** loaderPtr = storage.loaders.find(componentId))
+				{
+					loader = *loaderPtr;
+				}
+			}
+
+			bool wasLoaded = false;
+			if (loader != nullptr)
+			{
+				wasLoaded = loader->load(registry, path, entityId, tag);
+			}
+			else
+			{
+				wasLoaded = DefaultResourceLoader::load<T>(registry, path, resource, tag);
+			}
+
+			if (!wasLoaded)
 			{
 				MANI_LOG_ERROR(LogResources, "Could not load resource at {}", path.string());
 				return;
@@ -187,7 +215,7 @@ namespace Mani
 	}
 
 	template<typename T>
-	bool ResourceLoader::load(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<T>& resource)
+	bool DefaultResourceLoader::load(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<T>& resource, uint32_t tag)
 	{
 		std::string content;
 		if (!FileSystem::readFile(absolutePath, content))
@@ -196,7 +224,7 @@ namespace Mani
 			return false;
 		}
 
-		resource.value = ManiZ::from::json<T>(std::move(content));
+		resource.value = ManiZ::from::json<T>(content);
 		return true;
 	}
 }

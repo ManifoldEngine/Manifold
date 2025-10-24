@@ -10,7 +10,7 @@
 #include <Animation/Animation.h>
 #include <Animation/ShaderNames.h>
 
-#include <RenderAPI/MeshComponent.h>
+#include <RenderAPI/MeshRendering.h>
 #include <RenderAPI/Texture.h>
 #include <RenderAPI/Shader.h>
 
@@ -23,7 +23,7 @@ void updateEntity(ECS::Registry& registry, ECS::EntityId entityId, const Animati
 	MANI_ASSERT(frameId <= animation.frames.count(), "frame id out of bounds");
 	const Animation::Frame& frame = animation.frames[frameId];
 
-	if (MeshComponent* meshComponent = registry.get<MeshComponent>(entityId))
+	if (MeshRendering* meshComponent = registry.get<MeshRendering>(entityId))
 	{
 		meshComponent->textureParameters[ShaderNames::MANI_TEXTURE_0] = frame.textureId;
 	}
@@ -31,7 +31,7 @@ void updateEntity(ECS::Registry& registry, ECS::EntityId entityId, const Animati
 
 void resetEntity(ECS::Registry& registry, ECS::EntityId entityId)
 {
-	if (MeshComponent* meshComponent = registry.get<MeshComponent>(entityId))
+	if (MeshRendering* meshComponent = registry.get<MeshRendering>(entityId))
 	{
 		meshComponent->textureParameters.remove(ShaderNames::MANI_TEXTURE_0);
 	}

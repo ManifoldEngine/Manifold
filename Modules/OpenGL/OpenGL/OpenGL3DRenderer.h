@@ -9,7 +9,9 @@ namespace Mani
 	{
 		// Inherited via IRenderer
 		virtual int getId() const override { return 0; }
+		virtual void onBegin(OpenGLRenderContext& context) override;
 		virtual void render(const OpenGLCommand& command, OpenGLRenderContext& context) override;
+		virtual void onEnd(OpenGLRenderContext& context) override;
 	};
 
 	class OpenGL3DRendererSystem : public ECS::System

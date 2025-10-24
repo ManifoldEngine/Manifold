@@ -15,9 +15,13 @@ void FloatingCameraSystem::onInitialize(ECS::Registry& registry, World& world)
 	ECS::EntityId entityId = registry.create();
 	registry.add<FloatingCamera>(entityId);
 	
-	InputUser& inputUser = *registry.add<InputUser>(entityId);
-	InputsStatics::addAction(registry, entityId, MOVE_ACTION, "WASD");
-	InputsStatics::addAction(registry, entityId, AIM_ACTION, "Mouse");
+	registry.add<InputUser>(entityId);
+	InputsStatics::addAction(registry, entityId, MOVE_ACTION);
+	InputsStatics::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Up,		EInputHints::Keyboard_W);
+	InputsStatics::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Right,	EInputHints::Keyboard_A);
+	InputsStatics::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Down,	EInputHints::Keyboard_S);
+	InputsStatics::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Left,	EInputHints::Keyboard_D);
+	InputsStatics::addAction(registry, entityId, AIM_ACTION, EInputHints::Mouse_Axis);
 
 	// assign all devices to this input user by default.
 	for (const auto deviceId : ECS::View<InputDevice>(registry))
@@ -31,11 +35,10 @@ void FloatingCameraSystem::tick(ECS::Registry& registry)
 	ECS::View<FloatingCamera, InputUser> floatingCameraView(registry);
 	for (const ECS::EntityId entityId : floatingCameraView)
 	{
-		InputUser& inputUser = *registry.get<InputUser>(entityId);
-		FloatingCamera& floatingCamera = *registry.get<FloatingCamera>(entityId);
+		FloatingCamera& floatingCamera = registry.getRef<FloatingCamera>(entityId);
 
-		const InputAction& moveAction = inputUser.actions[MOVE_ACTION];
-		const InputAction& aimAction = inputUser.actions[AIM_ACTION];
+		const InputAction& moveAction = InputsStatics::getAction(registry, entityId, MOVE_ACTION);
+		const InputAction& aimAction = InputsStatics::getAction(registry, entityId, AIM_ACTION);
 
 		ECS::View<Position, Rotation, Camera> cameraView(registry);
 		if (cameraView.begin() == cameraView.end())

@@ -3,6 +3,7 @@
 #include <Core/CoreFwd.h>
 #include <Resources/IResourceSystemExtension.h>
 #include <Resources/ResourceSystem.h>
+#include <OpenGL/ResourceLoader_Texture.h>
 
 namespace Mani
 {
@@ -27,7 +28,9 @@ namespace Mani
 
     private:
         struct Storage;
+
         OpenGLResourceSystemExtension resourceExtension;
+        ResourceLoader_Texture textureLoader;
 
         static void onMeshLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
         static void onMaterialLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag);
