@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Core/CoreFwd.h>
+#include <Sprite/ResourceLoader_Sprite.h>
 
 namespace Mani
 {
@@ -13,5 +14,8 @@ namespace Mani
     protected:
         virtual void onInitialize(ECS::Registry& registry, World& world) override;
         virtual void onDeinitialize(ECS::Registry& registry, World& world) override;
+
+    private:
+        ResourceLoader_Sprite spriteLoader;
     };
 }

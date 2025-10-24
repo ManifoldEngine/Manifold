@@ -1,30 +1,14 @@
 #pragma once
 
 #include <Core/CoreFwd.h>
-
-#include <Resources/Resource.h>
-#include <Resources/ResourceSystem.h>
-
-#include <RenderAPI/Texture.h>
-
-#include <OpenGL/STBI.h>
-#include <OpenGL/OpenGLConfig.h>
+#include <Resources/IResourceLoader.h>
 
 namespace Mani
 {
-    template<>
-    bool ResourceLoader::load<Texture>(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<Texture>& resource, uint32_t tag)
+    class ResourceLoader_Texture : public IResourceLoader
     {
-        uint8_t stbiSetFlipVerticallyOnLoad = Mani::STBISETFLIPVERTICALLYONLOAD_DISABLED;
-
-        ECS::View<Resource<OpenGLConfig>> openGLConfigView(registry);
-        const auto it = openGLConfigView.begin();
-        if (it != openGLConfigView.end())
-        {
-            const Resource<OpenGLConfig>& configRes = *registry.get<Resource<OpenGLConfig>>(*it);
-            stbiSetFlipVerticallyOnLoad = configRes.value.stbiSetFlipVerticallyOnLoad;
-        }
-        STBI::load(absolutePath.string(), resource.value, stbiSetFlipVerticallyOnLoad);
-        return STBI::isLoaded(resource.value);
-    }
+        // Inherited via IResourceLoader
+        ECS::ComponentId getComponentId(const ECS::Registry& registry) const override;
+        bool load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const override;
+    };
 }

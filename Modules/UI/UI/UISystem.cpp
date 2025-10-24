@@ -63,5 +63,5 @@ void UISystem::tick(ECS::Registry& registry)
 	const UI::Context& uiContext = *registry.getSingle<UI::Context>();
 	
 	const Camera& uiCamera = registry.getRef<Camera>(uiContext.cameraId);
-	renderContext->shaderParameters[UI::ShaderNames::MANI_UI_CAMERA] = uiCamera.projection;
+	renderContext->shaderParameters[UI::ShaderNames::MANI_UI_PROJECTION] = uiCamera.projection;
 }

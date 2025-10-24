@@ -4,6 +4,7 @@
 #include <Core/ManiTests.h>
 
 #include <Resources/ResourceSystem.h>
+#include <Resources/IResourceLoader.h>
 
 #include <Sprite/Sprite.h>
 #include <Sprite/SpriteSystem.h>
@@ -12,9 +13,6 @@
 #include <RenderAPI/Texture.h>
 #include <RenderAPI/Primitives.h>
 #include <RenderAPI/MeshRendering.h>
-
-#include <OpenGL/ResourceLoader_Texture.h>
-#include <Sprite/ResourceLoader_Sprite.h>
 
 #ifndef MANI_WEBGL
 extern "C" __declspec(dllexport) void runTests()
@@ -25,16 +23,34 @@ extern "C" __declspec(dllexport) void runTests()
 
 using namespace Mani;
 
+class StubResourceLoader_Texture : public IResourceLoader
+{
+	virtual ECS::ComponentId getComponentId(const ECS::Registry& registry) const override
+	{
+		return registry.getComponentId<Resource<Texture>>();
+	}
+
+	virtual bool load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const override
+	{
+		Resource<Texture>& resource = registry.getRef<Resource<Texture>>(resourceId);
+		resource.value.size = { 32, 32 };
+		return true;
+	}
+};
+
 MANI_SECTION_BEGIN(SpriteTests, "Sprites")
 {
 	MANI_TEST(ShouldLoadASprite, "Should load a sprite")
 	{
 		World world;
 		world.initialize();
-		world.createSystem<SpriteSystem>()
-			 .createSystem<ResourceSystem>();
+		world.createSystem<ResourceSystem>()
+			.createSystem<SpriteSystem>();
 
 		ECS::Registry& registry = world.getMutableRegistry();
+		
+		StubResourceLoader_Texture loader;
+		ResourceSystem::registerLoader(registry, &loader);
 		
 		ECS::EntityId spriteId = ResourceSystem::loadResourceSync<Sprite>(registry, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite");
 		const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);
@@ -55,6 +71,9 @@ MANI_SECTION_BEGIN(SpriteTests, "Sprites")
 			 .createSystem<ResourceSystem>();
 
 		ECS::Registry& registry = world.getMutableRegistry();
+
+		StubResourceLoader_Texture loader;
+		ResourceSystem::registerLoader(registry, &loader);
 
 		ECS::EntityId spriteId = ResourceSystem::loadResourceSync<Sprite>(registry, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite");
 		const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);

@@ -11,11 +11,9 @@
 #include <RenderAPI/Primitives.h>
 #include <RenderAPI/Texture.h>
 
-#include <Sprite/ResourceLoader_Sprite.h>
-
 using namespace Mani;
 
-void onSpriteLoaded(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId spriteId, const std::string_view& shaderPath, uint32_t tag)
+void onSpriteLoaded(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId spriteId, const std::string_view& shaderPath, uint32_t tag, bool withBoundingSphere)
 {
 	MeshRendering& meshRendering = registry.getRef<MeshRendering>(entityId);
 	const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);
@@ -34,14 +32,17 @@ void onSpriteLoaded(ECS::Registry& registry, ECS::EntityId entityId, ECS::Entity
 	meshRendering.meshHandle = sprite.quadId;
 	meshRendering.materialHandle = ResourceSystem::injectResource<Material>(registry, std::move(material), tag);
 
-	const Texture& texture = registry.getRef<Resource<Texture>>(sprite.textureId).value;
-	BoundingSphere& bounds = *registry.add<BoundingSphere>(entityId);
-	const float sizeX = static_cast<float>(texture.size.x / sprite.texelsPerUnit);
-	const float sizeY = static_cast<float>(texture.size.y / sprite.texelsPerUnit);
-	bounds.radius = Math::sqrt(sizeX * sizeX + sizeY * sizeY);
+	if (withBoundingSphere)
+	{
+		const Texture& texture = registry.getRef<Resource<Texture>>(sprite.textureId).value;
+		BoundingSphere& bounds = *registry.add<BoundingSphere>(entityId);
+		const float sizeX = static_cast<float>(texture.size.x / sprite.texelsPerUnit);
+		const float sizeY = static_cast<float>(texture.size.y / sprite.texelsPerUnit);
+		bounds.radius = Math::sqrt(sizeX * sizeX + sizeY * sizeY);
+	}
 }
 
-void waitForSpriteResourceAsync(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId spriteId, const std::string_view& shaderPath, uint32_t tag)
+void waitForSpriteResourceAsync(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId spriteId, const std::string_view& shaderPath, uint32_t tag, bool withBoundingSphere)
 {
 	Mani::enqueueTask([&] {
 		const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);
@@ -52,7 +53,7 @@ void waitForSpriteResourceAsync(ECS::Registry& registry, ECS::EntityId entityId,
 
 		// we defer to the end of frame to avoir race read/write conflict
 		Mani::defer([&] {
-			onSpriteLoaded(registry, entityId, spriteId, shaderPath, tag);
+			onSpriteLoaded(registry, entityId, spriteId, shaderPath, tag, withBoundingSphere);
 		});
 	});
 }
@@ -75,7 +76,7 @@ ECS::EntityId SpriteStatics::getOrAddQuad(ECS::Registry& registry, const Vec2i& 
 	return quadId;
 }
 
-void SpriteStatics::loadAsyncAndAddSprite(ECS::Registry& registry, ECS::EntityId entityId, const std::string_view& spritePath, const std::string_view& shaderPath, uint32_t tag)
+void SpriteStatics::loadAsyncAndAddSprite(ECS::Registry& registry, ECS::EntityId entityId, const std::string_view& spritePath, const std::string_view& shaderPath, uint32_t tag, bool withBoundingSphere)
 {
 	MANI_ASSERT(registry.has<MeshRendering>(entityId), "Trying to add a sprite to an entity that doesn't have any mesh rendering");
 
@@ -83,9 +84,9 @@ void SpriteStatics::loadAsyncAndAddSprite(ECS::Registry& registry, ECS::EntityId
 	const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);
 	if (!spriteRes.isReady)
 	{
-		waitForSpriteResourceAsync(registry, entityId, spriteId, shaderPath, tag);
+		waitForSpriteResourceAsync(registry, entityId, spriteId, shaderPath, tag, withBoundingSphere);
 		return;
 	}
 
-	onSpriteLoaded(registry, entityId, spriteId, shaderPath, tag);
+	onSpriteLoaded(registry, entityId, spriteId, shaderPath, tag, withBoundingSphere);
 }

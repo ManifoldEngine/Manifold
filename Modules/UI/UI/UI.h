@@ -27,7 +27,7 @@ namespace Mani
 
 		namespace ShaderNames
 		{
-			const std::string MANI_UI_CAMERA = "mani_ui_projection";
+			const std::string MANI_UI_PROJECTION = "mani_ui_projection";
 			const std::string MANI_UI_FILLRATIO = "mani_ui_fillRatio";
 		}
 

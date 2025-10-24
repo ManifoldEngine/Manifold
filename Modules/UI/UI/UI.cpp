@@ -6,7 +6,6 @@
 #include <RenderAPI/Shader.h>
 
 #include <Sprite/Sprite.h>
-#include <Sprite/ResourceLoader_Sprite.h>
 
 #include <UI/Components/FillableBar.h>
 
@@ -16,7 +15,9 @@ ECS::EntityId UI::createSprite(ECS::Registry& registry, const std::string_view& 
 {
     ECS::EntityId entityId = registry.create();
     registry.add<MeshRendering>(entityId);
-    SpriteStatics::loadAsyncAndAddSprite(registry, entityId, spritePath, UI::ShaderPaths::UI_SPRITE, tag);
+    Transform::addTransform(registry, entityId);
+    constexpr bool withBoundingSphere = false;
+    SpriteStatics::loadAsyncAndAddSprite(registry, entityId, spritePath, UI::ShaderPaths::UI_SPRITE, tag, withBoundingSphere);
     
     MeshRendering& meshRendering = registry.getRef<MeshRendering>(entityId);
     meshRendering.shaderParameters[Mani::ShaderNames::MANI_COLOR] = color;
@@ -28,7 +29,9 @@ ECS::EntityId UI::createFillableBar(ECS::Registry& registry, const std::string_v
 {
     ECS::EntityId entityId = registry.create();
     registry.add<MeshRendering>(entityId);
-    SpriteStatics::loadAsyncAndAddSprite(registry, entityId, spritePath, UI::ShaderPaths::UI_FILLABLEBAR, tag);
+    Transform::addTransform(registry, entityId);
+    constexpr bool withBoundingSphere = false;
+    SpriteStatics::loadAsyncAndAddSprite(registry, entityId, spritePath, UI::ShaderPaths::UI_FILLABLEBAR, tag, withBoundingSphere);
 
     MeshRendering& meshRendering = registry.getRef<MeshRendering>(entityId);
     meshRendering.shaderParameters[Mani::UI::ShaderNames::MANI_UI_FILLRATIO] = 0.f;

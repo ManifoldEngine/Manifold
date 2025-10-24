@@ -13,12 +13,11 @@
 
 #include <OpenGL/Render/OpenGLRenderSystem.h>
 
-#include <OpenGL/ResourceLoader_Texture.h>
+#include <OpenGL/STBI.h>
 
 #include <RenderAPI/Mesh.h>
 #include <RenderAPI/Material.h>
 #include <RenderAPI/Shader.h>
-
 #include <GLFW/glfw3.h>
 
 using namespace Mani;
@@ -103,10 +102,12 @@ void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, World& world)
 
 	OpenGLResourceSystem::Storage& storage = *registry.addSingle<OpenGLResourceSystem::Storage>();
 	ResourceSystem::registerExtension(registry, &resourceExtension);
+	ResourceSystem::registerLoader(registry, &textureLoader);
 }
 
 void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
+	ResourceSystem::unregisterLoader(registry, &textureLoader);
 	ResourceSystem::unregisterExtension(registry, &resourceExtension);
 	registry.removeSingle<OpenGLResourceSystem::Storage>();
 }

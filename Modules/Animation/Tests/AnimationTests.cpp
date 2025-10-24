@@ -27,14 +27,6 @@ extern "C" __declspec(dllexport) void runTests()
 
 using namespace Mani;
 
-template<>
-bool ResourceLoader::load<Texture>(ECS::Registry& registry, const std::filesystem::path& absolutePath, Resource<Texture>& resource, uint32_t tag)
-{
-	// stub texture loading because it is graphics API specific
-	resource.isReady = true;
-	return true;
-}
-
 namespace AnimationTestsParams
 {
 	float gStubbedTimeDelta = .25f;

@@ -83,7 +83,6 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 
 			.vao = &vaoRes->value,
 			.shader = &shaderRes->value,
-			.color = material.color,
 			.rendererId = meshComponent.rendererId,
 		};
 

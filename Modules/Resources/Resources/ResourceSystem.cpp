@@ -33,6 +33,28 @@ void Mani::ResourceSystem::unregisterExtension(ECS::Registry& registry, IResourc
 	}
 }
 
+void Mani::ResourceSystem::registerLoader(ECS::Registry& registry, IResourceLoader* loader)
+{
+	MANI_ASSERT(loader != nullptr, "trying to register a null loader");
+	if (Storage* storage = registry.getSingle<Storage>())
+	{
+		std::lock_guard<std::mutex> lock(storage->resourceLoaderMutex);
+		Map<ECS::ComponentId, IResourceLoader*>& loaders = storage->loaders;
+		loaders.add(loader->getComponentId(registry), loader);
+	}
+}
+
+void Mani::ResourceSystem::unregisterLoader(ECS::Registry& registry, IResourceLoader* loader)
+{
+	MANI_ASSERT(loader != nullptr, "trying to register a null loader");
+	if (Storage* storage = registry.getSingle<Storage>())
+	{
+		std::lock_guard<std::mutex> lock(storage->resourceLoaderMutex);
+		Map<ECS::ComponentId, IResourceLoader*>& loaders = storage->loaders;
+		loaders.remove(loader->getComponentId(registry));
+	}
+}
+
 void ResourceSystem::unloadResource(ECS::Registry& registry, ECS::EntityId inEntityId)
 {
 	if (!registry.isValid(inEntityId))
