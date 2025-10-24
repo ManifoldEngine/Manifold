@@ -63,7 +63,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		CameraStatics::createMainCamera(registry);
 		
 		// animation loading
-		const ECS::EntityId animationId = ResourceSystem::loadResourceSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
+		const ECS::EntityId animationId = ResourceSystem::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
 		const Resource<Animation>* animationRes = registry.get<Resource<Animation>>(animationId);
 		MANI_TEST_ASSERT(animationRes != nullptr && animationRes->isReady, "Animation should be loaded and ready");
 		const Animation& animation = animationRes->value;
@@ -160,7 +160,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		CameraStatics::createMainCamera(registry);
 
 		// animation loading
-		const ECS::EntityId animationId = ResourceSystem::loadResourceSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
+		const ECS::EntityId animationId = ResourceSystem::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
 		const Resource<Animation>* animationRes = registry.get<Resource<Animation>>(animationId);
 		MANI_TEST_ASSERT(animationRes != nullptr && animationRes->isReady, "Animation should be loaded and ready");
 		const Animation& animation = animationRes->value;

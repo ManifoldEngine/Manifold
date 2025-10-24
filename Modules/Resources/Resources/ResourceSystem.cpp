@@ -55,7 +55,7 @@ void Mani::ResourceSystem::unregisterLoader(ECS::Registry& registry, IResourceLo
 	}
 }
 
-void ResourceSystem::unloadResource(ECS::Registry& registry, ECS::EntityId inEntityId)
+void ResourceSystem::unload(ECS::Registry& registry, ECS::EntityId inEntityId)
 {
 	if (!registry.isValid(inEntityId))
 	{
@@ -91,7 +91,7 @@ void ResourceSystem::unloadAll(ECS::Registry& registry)
 {
 	for (const auto entityId : ECS::View<ResourceTag>(registry))
 	{
-		unloadResource(registry, entityId);
+		unload(registry, entityId);
 	}
 }
 
@@ -102,7 +102,7 @@ void ResourceSystem::unloadTag(ECS::Registry& registry, uint32_t tag)
 		ResourceTag& resourceTag = *registry.get<ResourceTag>(entityId);
 		if (resourceTag.tag == tag)
 		{
-			unloadResource(registry, entityId);
+			unload(registry, entityId);
 		}
 	}
 }

@@ -157,12 +157,12 @@ void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, ECS::Entity
 	Resource<OpenGLMaterial>& openglMaterialRes = *registry.add<Resource<OpenGLMaterial>>(materialId);
 	OpenGLMaterial& openglMaterial = openglMaterialRes.value;
 
-	openglMaterial.shaderId = ResourceSystem::loadResource<Shader>(registry, material.shaderPath, tag);
+	openglMaterial.shaderId = ResourceSystem::load<Shader>(registry, material.shaderPath, tag);
 	for (const ShaderParam_Texture& texture : material.textures)
 	{
 		openglMaterial.textures.add({
 			.key = texture.key,
-			.id = ResourceSystem::loadResource<Texture>(registry, texture.path, tag),
+			.id = ResourceSystem::load<Texture>(registry, texture.path, tag),
 		});
 	}
 	openglMaterial.name = material.name;
@@ -255,7 +255,7 @@ void OpenGLResourceSystem::onMaterialUnloaded(ECS::Registry& registry, ECS::Enti
 
 	for (const auto& [key, texture] : res->value.textures)
 	{
-		ResourceSystem::unloadResource(registry, texture);
+		ResourceSystem::unload(registry, texture);
 	}
 }
 

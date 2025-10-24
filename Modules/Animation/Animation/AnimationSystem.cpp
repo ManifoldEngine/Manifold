@@ -154,7 +154,7 @@ void AnimationResourceSystemExtension::onResourceLoaded(ECS::Registry& registry,
 	Animation& animation = animationRes->value;
 	for (auto& frame : animation.frames)
 	{
-		frame.textureId = ResourceSystem::loadResource<Texture>(registry, frame.texturePath, tag);
+		frame.textureId = ResourceSystem::load<Texture>(registry, frame.texturePath, tag);
 	}
 	animationRes->isReady = true;
 }
@@ -178,6 +178,6 @@ void AnimationResourceSystemExtension::onResourceUnloaded(ECS::Registry& registr
 	Animation& animation = animationRes->value;
 	for (auto& frame : animation.frames)
 	{
-		ResourceSystem::unloadResource(registry, frame.textureId);
+		ResourceSystem::unload(registry, frame.textureId);
 	}
 }

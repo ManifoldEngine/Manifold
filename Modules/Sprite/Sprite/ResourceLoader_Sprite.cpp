@@ -31,7 +31,7 @@ bool ResourceLoader_Sprite::load(ECS::Registry& registry, const std::filesystem:
 
 	const std::string& texturePath = resource.value.texturePath;
 	MANI_ASSERT(!texturePath.empty(), "Sprite asset with an empty texture path");
-	resource.value.textureId = ResourceSystem::loadResourceSync<Texture>(registry, texturePath, tag);
+	resource.value.textureId = ResourceSystem::loadSync<Texture>(registry, texturePath, tag);
 
 	const Texture& texture = registry.getRef<Resource<Texture>>(resource.value.textureId).value;
 	const float texelsPerUnitf = static_cast<float>(resource.value.texelsPerUnit);

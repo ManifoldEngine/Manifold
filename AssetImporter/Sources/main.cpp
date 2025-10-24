@@ -145,7 +145,7 @@ int main(int argc, char** argv)
 	ECS::Registry& registry = world.getMutableRegistry();
 
 	// load asset importer config
-	const ECS::EntityId configId = ResourceSystem::loadResourceSync<AssetImporterConfig>(registry, "Config/AssetImporter.json");
+	const ECS::EntityId configId = ResourceSystem::loadSync<AssetImporterConfig>(registry, "Config/AssetImporter.json");
 	const Resource<AssetImporterConfig>& configRes = *registry.get<Resource<AssetImporterConfig>>(configId);
 	MANI_ASSERT(configRes.isReady, "Could not find Config/AssetImporter.json");
 
@@ -159,7 +159,7 @@ int main(int argc, char** argv)
 
 	// load shader config
 	const std::string shaderConfigRelPath = std::format("Config/{}", Mani::SHADERCONFIG_FILENAME);
-	const ECS::EntityId shaderConfigId = ResourceSystem::loadResourceSync<ShaderConfig>(registry, shaderConfigRelPath);
+	const ECS::EntityId shaderConfigId = ResourceSystem::loadSync<ShaderConfig>(registry, shaderConfigRelPath);
 	const Resource<ShaderConfig>& shaderConfigRes = *registry.get<Resource<ShaderConfig>>(shaderConfigId);
 	MANI_ASSERT(shaderConfigRes.isReady, "Could not find shader config at configured path");
 

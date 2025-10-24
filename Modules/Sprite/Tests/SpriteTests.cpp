@@ -52,7 +52,7 @@ MANI_SECTION_BEGIN(SpriteTests, "Sprites")
 		StubResourceLoader_Texture loader;
 		ResourceSystem::registerLoader(registry, &loader);
 		
-		ECS::EntityId spriteId = ResourceSystem::loadResourceSync<Sprite>(registry, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite");
+		ECS::EntityId spriteId = ResourceSystem::loadSync<Sprite>(registry, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite");
 		const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);
 		MANI_TEST_ASSERT(spriteRes.isReady, "Sprite resource should be ready");
 
@@ -75,7 +75,7 @@ MANI_SECTION_BEGIN(SpriteTests, "Sprites")
 		StubResourceLoader_Texture loader;
 		ResourceSystem::registerLoader(registry, &loader);
 
-		ECS::EntityId spriteId = ResourceSystem::loadResourceSync<Sprite>(registry, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite");
+		ECS::EntityId spriteId = ResourceSystem::loadSync<Sprite>(registry, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite");
 		const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);
 		MANI_TEST_ASSERT(spriteRes.isReady, "Sprite resource should be ready");
 
@@ -83,8 +83,8 @@ MANI_SECTION_BEGIN(SpriteTests, "Sprites")
 		registry.add<MeshRendering>(entityId);
 		SpriteStatics::loadAsyncAndAddSprite(registry, entityId, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite", "some/shader/path.shader", Mani::GLOBAL_RESOURCE_TAG);
 		MeshRendering& meshRendering = registry.getRef<MeshRendering>(entityId);
-		MANI_TEST_ASSERT(registry.isValid(meshRendering.meshHandle), "mesh handle should be valid");
-		MANI_TEST_ASSERT(registry.isValid(meshRendering.materialHandle), "material handle should be valid");
+		MANI_TEST_ASSERT(registry.isValid(meshRendering.meshResourceId), "mesh handle should be valid");
+		MANI_TEST_ASSERT(registry.isValid(meshRendering.materialResourceId), "material handle should be valid");
 	}
 }
 MANI_SECTION_END(SpriteTests)

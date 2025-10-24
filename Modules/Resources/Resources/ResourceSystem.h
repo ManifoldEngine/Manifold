@@ -33,17 +33,17 @@ namespace Mani
 		virtual bool shouldTick(const ECS::Registry& registry) const override { return false; }
 
 		template<typename T>
-		static ECS::EntityId loadResource(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t = 0);
+		static ECS::EntityId load(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t = 0);
 
 		template<typename T>
-		static ECS::EntityId loadResourceSync(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t = 0);
+		static ECS::EntityId loadSync(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t = 0);
 		
-		static void unloadResource(ECS::Registry& registry, ECS::EntityId inEntityId);
+		static void unload(ECS::Registry& registry, ECS::EntityId inEntityId);
 		static void unloadAll(ECS::Registry& registry);
 		static void unloadTag(ECS::Registry& registry, uint32_t tag);
 
 		template<typename T>
-		static ECS::EntityId injectResource(ECS::Registry& registry, T&& value, uint32_t = 0);
+		static ECS::EntityId inject(ECS::Registry& registry, T&& value, uint32_t = 0);
 
 		static void registerExtension(ECS::Registry& registry, IResourceSystemExtension* extension);
 		static void unregisterExtension(ECS::Registry& registry, IResourceSystemExtension* extension);
@@ -82,13 +82,13 @@ namespace Mani
 	};
 
 	template<typename T>
-	ECS::EntityId ResourceSystem::loadResource(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t tag)
+	ECS::EntityId ResourceSystem::load(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t tag)
 	{
 		return loadResource<T>(registry, relativePath, tag, ELoadMethod::Async);
 	}
 
 	template<typename T>
-	static ECS::EntityId ResourceSystem::loadResourceSync(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t tag)
+	static ECS::EntityId ResourceSystem::loadSync(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t tag)
 	{
 		return loadResource<T>(registry, relativePath, tag, ELoadMethod::Sync);
 	}
@@ -183,7 +183,7 @@ namespace Mani
 	}
 
 	template<typename T>
-	ECS::EntityId ResourceSystem::injectResource(ECS::Registry& registry, T&& value, uint32_t tag)
+	ECS::EntityId ResourceSystem::inject(ECS::Registry& registry, T&& value, uint32_t tag)
 	{
 		auto [entityId, resource] = createResource<T>(registry, tag);
 		resource.value = std::move(value);
