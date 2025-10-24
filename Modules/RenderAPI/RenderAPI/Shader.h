@@ -27,7 +27,6 @@ namespace Mani
 		const std::string MANI_NORMALMATRIX	= "mani_normalMatrix";
 		const std::string MANI_VIEW			= "mani_view";
 		const std::string MANI_PROJECTION	= "mani_projection";
-		const std::string MANI_VIEWPOSITION	= "mani_viewPosition";
 
 		const std::string MANI_COLOR		= "mani_color";
 	}

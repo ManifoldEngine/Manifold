@@ -42,7 +42,10 @@ void OpenGL3DRenderer::render(const OpenGLCommand& command, OpenGLRenderContext&
 	shader.setFloatMatrix4(ShaderNames::MANI_PROJECTION, &(context.projection._00));
 
 	// set fragment uniforms
-	shader.setFloat3(ShaderNames::MANI_VIEWPOSITION, context.cameraPosition.x, context.cameraPosition.y, context.cameraPosition.z);
+	for (const auto& [key, value] : command.customParamaters)
+	{
+		shader.setShaderType(key, value);
+	}
 
 	int textureIndex = 0;
 	for (auto& [key, texture] : command.textures)
