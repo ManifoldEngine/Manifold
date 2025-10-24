@@ -7,10 +7,10 @@
 
 #include <RenderAPI/Shader.h>
 
-#include <OpenGL/Data/OpenGLMaterial.h>
-#include <OpenGL/Data/OpenGLShader.h>
-#include <OpenGL/Data/OpenGLVertexArray.h>
-#include <OpenGL/Data/OpenGLTexture.h>
+#include <OpenGL/Resources/OpenGLMaterial.h>
+#include <OpenGL/Resources/OpenGLShader.h>
+#include <OpenGL/Resources/OpenGLVertexArray.h>
+#include <OpenGL/Resources/OpenGLTexture.h>
 
 #include <memory>
 #include <array>

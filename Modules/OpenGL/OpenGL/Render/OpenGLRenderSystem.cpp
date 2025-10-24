@@ -8,13 +8,10 @@
 
 #include <RenderAPI/RenderContextSystem.h>
 
-#include <Resources/Resource.h>
-#include <Resources/ResourceSystem.h>
-
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/OpenGLWindowContext.h>
 
-#include <OpenGL/Data/OpenGLClearColor.h>
+#include <OpenGL/Resources/OpenGLClearColor.h>
 
 #include <OpenGL/Render/IOpenGLRenderExtension.h>
 #include <OpenGL/Render/IOpenGLRenderer.h>

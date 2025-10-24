@@ -5,12 +5,12 @@
 
 #include <Camera/Camera.h>
 
-#include <Resources/Resource.h>
+#include <Resources/Components/Resource.h>
 
 #include <OpenGL/OpenGL.h>
-#include <OpenGL/Data/OpenGLMaterial.h>
+#include <OpenGL/Resources/OpenGLMaterial.h>
+#include <OpenGL/Resources/OpenGLResourceSystem.h>
 #include <OpenGL/Render/OpenGLCommand.h>
-#include <OpenGL/Render/OpenGLResourceSystem.h>
 
 #include <RenderAPI/MeshRendering.h>
 #include <RenderAPI/BoundingSphere.h>

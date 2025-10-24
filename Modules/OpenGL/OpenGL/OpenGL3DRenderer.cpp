@@ -3,8 +3,8 @@
 #include <Core/ManiAssert.h>
 #include <Core/Debug/Profiling.h>
 
-#include <OpenGL/Data/OpenGLVertexArray.h>
-#include <OpenGL/Data/OpenGLShader.h>
+#include <OpenGL/Resources/OpenGLVertexArray.h>
+#include <OpenGL/Resources/OpenGLShader.h>
 
 #include <OpenGL/Render/OpenGLCommand.h>
 #include <OpenGL/Render/OpenGLRenderContext.h>
