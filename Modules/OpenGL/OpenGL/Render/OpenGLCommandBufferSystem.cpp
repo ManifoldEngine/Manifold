@@ -60,14 +60,14 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 			}
 		}
 
-		Resource<OpenGLVertexArray>* vaoRes = registry.get<Resource<OpenGLVertexArray>>(meshComponent.meshHandle);
+		Resource<OpenGLVertexArray>* vaoRes = registry.get<Resource<OpenGLVertexArray>>(meshComponent.meshResourceId);
 		if (vaoRes == nullptr || !vaoRes->isReady)
 		{
 			// resource is not ready yet.
 			return;
 		}
 		
-		Resource<OpenGLMaterial>* materialRes = registry.get<Resource<OpenGLMaterial>>(meshComponent.materialHandle);
+		Resource<OpenGLMaterial>* materialRes = registry.get<Resource<OpenGLMaterial>>(meshComponent.materialResourceId);
 		if (materialRes == nullptr || !materialRes->isReady)
 		{
 			// resource is not ready yet.
