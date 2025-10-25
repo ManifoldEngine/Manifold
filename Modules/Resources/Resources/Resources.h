@@ -47,12 +47,12 @@ namespace Mani
 		// Asynchronously loads a resource of type T from the given relative path.
 		// Returns the entity id representing the resource.
 		template<typename T>
-		static ECS::EntityId load(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t = 0);
+		static ECS::EntityId load(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t = GLOBAL_RESOURCE_TAG);
 		
 		// Synchronously loads a resource of type T from the given relative path.
 		// Returns the entity id representing the resource.
 		template<typename T>
-		static ECS::EntityId loadSync(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t = 0);
+		static ECS::EntityId loadSync(ECS::Registry& registry, const std::filesystem::path& relativePath, uint32_t = GLOBAL_RESOURCE_TAG);
 
 		// Unloads a specific resource associated with the given entity ID.
 		static void unload(ECS::Registry& registry, ECS::EntityId inEntityId);
@@ -66,7 +66,7 @@ namespace Mani
 		// Injects an already constructed resource value into the registry.
 		// Returns the entity id representing the injected resource.
 		template<typename T>
-		static ECS::EntityId inject(ECS::Registry& registry, T&& value, uint32_t = 0);
+		static ECS::EntityId inject(ECS::Registry& registry, T&& value, uint32_t = GLOBAL_RESOURCE_TAG);
 
 		// Registers a system extension to be notified of resource-related events.
 		static void registerExtension(ECS::Registry& registry, IResourceSystemExtension* extension);

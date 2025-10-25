@@ -3,6 +3,9 @@
 #include <Core/Debug/Profiling.h>
 
 #include <FMod/FMod.h>
+#include <FMod/Resources/FModResourceSystem.h>
+#include <FMod/FModPlaySystem.h>
+#include <FMod/FModOneShotSystem.h>
 
 #include <fmod.hpp>
 #include <fmod_errors.h>
@@ -26,6 +29,10 @@ void FModSystem::onInitialize(ECS::Registry& registry, World& world)
 		MANI_LOG_ERROR(LogFMod, "Failed to initializze FMod System: {}", FMOD_ErrorString(result));
 		return;
 	}
+
+	world.createSystem<FModResourceSystem>()
+		 .createSystem<FModPlaySystem>()
+		 .createSystem<FModOneShotSystem>();
 }
 
 void FModSystem::onDeinitialize(ECS::Registry& registry, World& world)
@@ -37,6 +44,10 @@ void FModSystem::onDeinitialize(ECS::Registry& registry, World& world)
 		fmod.system->release();
 		fmod.system = nullptr;
 	}
+
+	world.destroySystem<FModResourceSystem>()
+		 .destroySystem<FModPlaySystem>()
+		 .destroySystem<FModOneShotSystem>();
 
 	registry.removeSingle<FMod>();
 }

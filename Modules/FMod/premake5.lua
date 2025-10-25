@@ -12,6 +12,8 @@ group "Engine"
 
         includedirs { locations.moduledir .. "/**" }
 
+        links { "Core", "Resources" }
+
         --fmod
         local ThirdParties = locations.moduledir .. "/%{prj.name}/ThirdParties/"
         includedirs { ThirdParties .. "FMod/api/core/inc" }
