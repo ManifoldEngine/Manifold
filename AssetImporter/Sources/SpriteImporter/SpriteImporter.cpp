@@ -10,9 +10,8 @@
 using namespace Mani;
 namespace fs = std::filesystem;
 
-bool SpriteImporter::importFromPath(const fs::path& path, std::shared_ptr<Sprite>& outSprite, uint32_t defaultTPU)
+bool SpriteImporter::importFromPath(const fs::path& path, Sprite& outSprite, uint32_t defaultTPU)
 {
-	MANI_ASSERT(outSprite != nullptr, "provided shader cannot be null");
 	const std::string filename = std::filesystem::path(path).stem().string();
 	const fs::path relatedSpritePath = path.parent_path().append(filename + ".sprite");
 	if (fs::exists(relatedSpritePath))
@@ -20,13 +19,12 @@ bool SpriteImporter::importFromPath(const fs::path& path, std::shared_ptr<Sprite
 		return false;
 	}
 	
-	outSprite->texturePath = path.string();
-	outSprite->texelsPerUnit = defaultTPU;
+	outSprite.texturePath = path.string();
+	outSprite.texelsPerUnit = defaultTPU;
 	return true;
 }
 
-bool SpriteImporter::exportToPath(const fs::path& path, const std::shared_ptr<Sprite>& sprite)
+bool SpriteImporter::exportToPath(const fs::path& path, const Sprite& sprite)
 {
-	MANI_ASSERT(sprite != nullptr, "provided shader cannot be null");
-	return FileSystem::writeFile(path, ManiZ::to::json(*sprite));
+	return FileSystem::writeFile(path, ManiZ::to::json(sprite));
 }

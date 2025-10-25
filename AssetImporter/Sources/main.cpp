@@ -1,9 +1,6 @@
 #include <Core/Log.h>
 #include <Core/FileSystem.h>
 
-#include <Resources/Resources.h>
-#include <Resources/ResourceSystem.h>
-
 #include <RenderAPI/Mesh.h>
 #include <RenderAPI/Shader.h>
 #include <RenderAPI/ShaderConfig.h>
@@ -16,7 +13,7 @@
 
 #include <Core/Containers/List.h>
 
-#include <memory>
+#include <ManiZ/ManiZ.h>
 
 using namespace Mani;
 
@@ -29,18 +26,11 @@ constexpr std::string_view MESH_EXT = ".mesh";
 constexpr std::string_view PNG_EXT = ".png";
 constexpr std::string_view SPRITE_EXT = ".sprite";
 
-struct AssetImporterConfig
-{
-	std::string enginePath = "Engine";
-	std::string projectPath = "";
-	uint32_t defaultTPU = 512;
-};
-
-AssetImporterConfig config;
+constexpr uint32_t DEFAULT_TPU = 512;
 
 void processShader(const fs::path& path)
 {
-	std::shared_ptr<Shader> shader = std::make_shared<Shader>();
+	Shader shader;
 	if (!ShaderImporter::importFromPath(path, shader))
 	{
 		MANI_LOG_ERROR(Log, "Could not import shader at {}", path.string());
@@ -48,7 +38,7 @@ void processShader(const fs::path& path)
 	}
 
 	fs::path output = path.parent_path();
-	output.append(std::format("{}{}", shader->name, SHADER_EXT));
+	output.append(std::format("{}{}", shader.name, SHADER_EXT));
 	MANI_LOG(Log, "Saving {}", output.string());
 	if (!ShaderImporter::exportToPath(output, shader))
 	{
@@ -58,17 +48,17 @@ void processShader(const fs::path& path)
 
 void processMesh(const fs::path& path)
 {
-	Mani::List<std::shared_ptr<Mesh>> meshes;
+	Mani::List<Mesh> meshes;
 	if (!MeshImporter::importFromPath(path, meshes))
 	{
 		MANI_LOG_ERROR(Log, "Could not import mesh at {}", path.string());
 		return;
 	}
 
-	for (const std::shared_ptr<Mesh>& mesh : meshes)
+	for (const Mesh& mesh : meshes)
 	{
 		fs::path output = path.parent_path();
-		output.append(std::format("{}{}", mesh->name, MESH_EXT));
+		output.append(std::format("{}{}", mesh.name, MESH_EXT));
 		MANI_LOG(Log, "Saving {}", output.string());
 		if (!MeshImporter::exportToPath(output, mesh))
 		{
@@ -79,8 +69,8 @@ void processMesh(const fs::path& path)
 
 void processSprite(const fs::path& path)
 {
-	std::shared_ptr<Sprite> sprite = std::make_shared<Sprite>();
-	if (!SpriteImporter::importFromPath(path, sprite, config.defaultTPU))
+	Sprite sprite;
+	if (!SpriteImporter::importFromPath(path, sprite, DEFAULT_TPU))
 	{
 		return;
 	}
@@ -114,7 +104,7 @@ void processAsset(const fs::path& path, const fs::path& extension)
 	}
 }
 
-void referenceAllShaders(const AssetImporterConfig& config, const ShaderConfig& shaderConfig)
+void referenceAllShaders()
 {
 	ShaderCollection shaders;
 
@@ -129,11 +119,11 @@ void referenceAllShaders(const AssetImporterConfig& config, const ShaderConfig& 
 		}
 	};
 
-	FileSystem::foreach(FileSystem::getAbsolutePath(config.enginePath), referenceShader);
-	FileSystem::foreach(FileSystem::getAbsolutePath(config.projectPath), referenceShader);
+	FileSystem::foreach(FileSystem::getEnginePath(), referenceShader);
+	FileSystem::foreach(FileSystem::getProjectPath(), referenceShader);
 
 	const std::string json = ManiZ::to::json(shaders);
-	const fs::path path = FileSystem::getAbsolutePath(shaderConfig.shaderCollectionRelativePath).append(Mani::SHADERCOLLECTION_FILENAME);
+	const fs::path path = FileSystem::getRootPath().append(Mani::SHADERCOLLECTION_FILENAME);
 	if (!FileSystem::writeFile(path, json))
 	{
 		MANI_LOG_ERROR(Log, "Could not write ShaderPaths to {}", path.string());
@@ -142,31 +132,12 @@ void referenceAllShaders(const AssetImporterConfig& config, const ShaderConfig& 
 
 int main(int argc, char** argv)
 {
-	Application app;
-	World& world = app.getWorld();
-	world.initializeDependency<ResourceSystem>();
-	ECS::Registry& registry = world.getMutableRegistry();
-
-	// load asset importer config
-	const ECS::EntityId configId = Resources::loadSync<AssetImporterConfig>(registry, "Config/AssetImporter.json");
-	const Resource<AssetImporterConfig>& configRes = *registry.get<Resource<AssetImporterConfig>>(configId);
-	MANI_ASSERT(configRes.isReady, "Could not find Config/AssetImporter.json");
-
-	config = configRes.value;
-	MANI_ASSERT(!config.enginePath.empty(), "Config engine asset path is empty");
-	MANI_ASSERT(!config.projectPath.empty(), "Config project asset path is empty");
-
 	// process assets
-	FileSystem::foreach(FileSystem::getAbsolutePath(config.enginePath), &processAsset);
-	FileSystem::foreach(FileSystem::getAbsolutePath(config.projectPath), &processAsset);
+	FileSystem::foreach(FileSystem::getEnginePath(), &processAsset);
+	FileSystem::foreach(FileSystem::getProjectPath(), &processAsset);
 
-	// load shader config
-	const std::string shaderConfigRelPath = std::format("Config/{}", Mani::SHADERCONFIG_FILENAME);
-	const ECS::EntityId shaderConfigId = Resources::loadSync<ShaderConfig>(registry, shaderConfigRelPath);
-	const Resource<ShaderConfig>& shaderConfigRes = *registry.get<Resource<ShaderConfig>>(shaderConfigId);
-	MANI_ASSERT(shaderConfigRes.isReady, "Could not find shader config at configured path");
-
-	referenceAllShaders(config, shaderConfigRes.value);
+	// reference all shaders in a single file for startup compilation
+	referenceAllShaders();
 
 	return EXIT_SUCCESS;
 }

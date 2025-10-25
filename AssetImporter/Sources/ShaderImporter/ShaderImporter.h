@@ -2,7 +2,6 @@
 
 #include <filesystem>
 #include <string>
-#include <memory>
 
 namespace Mani
 {
@@ -13,8 +12,8 @@ namespace Mani
     class ShaderImporter
     {
     public:
-        static bool importFromPath(const std::filesystem::path& path, std::shared_ptr<Shader>& outShader);
-        static bool exportToPath(const std::filesystem::path& path, const std::shared_ptr<Shader>& shader);
+        static bool importFromPath(const std::filesystem::path& path, Shader& outShader);
+        static bool exportToPath(const std::filesystem::path& path, const Shader& shader);
     
     private:
 
