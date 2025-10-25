@@ -74,10 +74,10 @@ void OpenGL3DRenderer::onEnd(OpenGLRenderContext& context)
 void OpenGL3DRendererSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<OpenGLRenderSystem>();
-	OpenGLRenderSystem::registerRenderer(registry, &renderer);
+	OpenGL::registerRenderer(registry, &renderer);
 }
 
 void OpenGL3DRendererSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	OpenGLRenderSystem::unregisterRenderer(registry, &renderer);
+	OpenGL::unregisterRenderer(registry, &renderer);
 }

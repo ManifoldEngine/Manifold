@@ -120,7 +120,7 @@ void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, ECS::EntityId m
 	const Mesh& mesh = meshRes->value;
 	
 	// VAOs need to be created in the context they're going to be used in.
-	OpenGLRenderSystem::enqueueRenderTask(registry, [&registry, &mesh, meshId] {
+	OpenGL::enqueueRenderTask(registry, [&registry, &mesh, meshId] {
 		OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
 		MANI_ASSERT(context != nullptr, "Trying to load vao without a valid context");
 		glfwMakeContextCurrent(context->window);
@@ -192,7 +192,7 @@ void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, ECS::Entity
 	openglMaterialRes.isReady = true;
 }
 
-void Mani::OpenGLResourceSystem::onShaderLoaded(ECS::Registry& registry, ECS::EntityId shaderId, uint32_t tag)
+void OpenGLResourceSystem::onShaderLoaded(ECS::Registry& registry, ECS::EntityId shaderId, uint32_t tag)
 {
 	Resource<Shader>* shaderRes = registry.get<Resource<Shader>>(shaderId);
 	MANI_ASSERT(shaderRes != nullptr, "Shader loading flow should be synchronous");
@@ -207,13 +207,13 @@ void Mani::OpenGLResourceSystem::onShaderLoaded(ECS::Registry& registry, ECS::En
 	openGLShaderRes.isReady = openGLShaderRes.value.isCompiled();
 }
 
-void Mani::OpenGLResourceSystem::onTextureLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+void OpenGLResourceSystem::onTextureLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
 {
 	Resource<Texture>* textureRes = registry.get<Resource<Texture>>(entityId);
 	MANI_ASSERT(textureRes != nullptr && textureRes->isReady, "We expect the material to have been loaded");
 	Texture& texture = textureRes->value;
 
-	OpenGLRenderSystem::enqueueRenderTask(registry, [&registry, &texture, entityId] {
+	OpenGL::enqueueRenderTask(registry, [&registry, &texture, entityId] {
 		OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
 		MANI_ASSERT(context != nullptr, "Trying to load vao without a valid context");
 		glfwMakeContextCurrent(context->window);
@@ -272,7 +272,7 @@ void OpenGLResourceSystem::onShaderUnloaded(ECS::Registry& registry, ECS::Entity
 	res->isReady = false;
 }
 
-void Mani::OpenGLResourceSystem::onTextureUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+void OpenGLResourceSystem::onTextureUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
 {
 	Resource<Texture>* res = registry.get<Resource<Texture>>(entityId);
 	if (res == nullptr)
@@ -287,7 +287,7 @@ void Mani::OpenGLResourceSystem::onTextureUnloaded(ECS::Registry& registry, ECS:
 	res->isReady = false;
 }
 
-void Mani::OpenGLResourceSystem::onTexture2DUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+void OpenGLResourceSystem::onTexture2DUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
 {
 	Resource<OpenGLTexture2D>* res = registry.get<Resource<OpenGLTexture2D>>(entityId);
 	if (res == nullptr)
