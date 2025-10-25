@@ -3,6 +3,7 @@
 #include <Camera/Camera.h>
 #include <Camera/CameraSystem.h>
 
+#include <Resources/Resources.h>
 #include <Resources/ResourceSystem.h>
 
 #include <RenderAPI/Texture.h>
@@ -18,10 +19,11 @@ using namespace Mani;
 void UISystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<CameraSystem>();
+	world.initializeDependency<ResourceSystem>();
 	world.initializeDependency<RenderContextSystem>();
 
 	UI::Context& context = *registry.addSingle<UI::Context>();
-	context.configId = ResourceSystem::loadResourceSync<UIConfig>(registry, Mani::UICONFIG_PATH);
+	context.configId = Resources::loadSync<UIConfig>(registry, Mani::UICONFIG_PATH);
 	const UIConfig& config = registry.getRef<Resource<UIConfig>>(context.configId).value;
 	
 	const ECS::EntityId mainCameraId = CameraStatics::getMainCameraId(registry);

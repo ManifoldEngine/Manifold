@@ -5,12 +5,12 @@
 
 #include <Camera/Camera.h>
 
-#include <Resources/Resource.h>
+#include <Resources/Components/Resource.h>
 
 #include <OpenGL/OpenGL.h>
-#include <OpenGL/Data/OpenGLMaterial.h>
+#include <OpenGL/Resources/OpenGLMaterial.h>
+#include <OpenGL/Resources/OpenGLResourceSystem.h>
 #include <OpenGL/Render/OpenGLCommand.h>
-#include <OpenGL/Render/OpenGLResourceSystem.h>
 
 #include <RenderAPI/MeshRendering.h>
 #include <RenderAPI/BoundingSphere.h>
@@ -60,14 +60,14 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 			}
 		}
 
-		Resource<OpenGLVertexArray>* vaoRes = registry.get<Resource<OpenGLVertexArray>>(meshComponent.meshHandle);
+		Resource<OpenGLVertexArray>* vaoRes = registry.get<Resource<OpenGLVertexArray>>(meshComponent.meshResourceId);
 		if (vaoRes == nullptr || !vaoRes->isReady)
 		{
 			// resource is not ready yet.
 			return;
 		}
 		
-		Resource<OpenGLMaterial>* materialRes = registry.get<Resource<OpenGLMaterial>>(meshComponent.materialHandle);
+		Resource<OpenGLMaterial>* materialRes = registry.get<Resource<OpenGLMaterial>>(meshComponent.materialResourceId);
 		if (materialRes == nullptr || !materialRes->isReady)
 		{
 			// resource is not ready yet.

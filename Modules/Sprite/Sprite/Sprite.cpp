@@ -2,7 +2,7 @@
 
 #include <Core/Async/Parallel.h>
 
-#include <Resources/ResourceSystem.h>
+#include <Resources/Resources.h>
 
 #include <RenderAPI/BoundingSphere.h>
 #include <RenderAPI/Material.h>
@@ -29,8 +29,8 @@ void onSpriteLoaded(ECS::Registry& registry, ECS::EntityId entityId, ECS::Entity
 		.textures = {{ Mani::ShaderNames::MANI_TEXTURE_0, texturePathString }},
 	};
 
-	meshRendering.meshHandle = sprite.quadId;
-	meshRendering.materialHandle = ResourceSystem::injectResource<Material>(registry, std::move(material), tag);
+	meshRendering.meshResourceId = sprite.quadId;
+	meshRendering.materialResourceId = Resources::inject<Material>(registry, std::move(material), tag);
 
 	if (withBoundingSphere)
 	{
@@ -71,7 +71,7 @@ ECS::EntityId SpriteStatics::getOrAddQuad(ECS::Registry& registry, const Vec2i& 
 		.x = static_cast<float>(size.x),
 		.y = static_cast<float>(size.y),
 	};
-	ECS::EntityId quadId = ResourceSystem::injectResource<Mesh>(registry, Primitives::makeQuad(sizef), Mani::GLOBAL_RESOURCE_TAG);
+	ECS::EntityId quadId = Resources::inject<Mesh>(registry, Primitives::makeQuad(sizef), Mani::GLOBAL_RESOURCE_TAG);
 	database->quads.add(size, quadId);
 	return quadId;
 }
@@ -80,7 +80,7 @@ void SpriteStatics::loadAsyncAndAddSprite(ECS::Registry& registry, ECS::EntityId
 {
 	MANI_ASSERT(registry.has<MeshRendering>(entityId), "Trying to add a sprite to an entity that doesn't have any mesh rendering");
 
-	const ECS::EntityId spriteId = ResourceSystem::loadResource<Sprite>(registry, spritePath, tag);
+	const ECS::EntityId spriteId = Resources::load<Sprite>(registry, spritePath, tag);
 	const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);
 	if (!spriteRes.isReady)
 	{

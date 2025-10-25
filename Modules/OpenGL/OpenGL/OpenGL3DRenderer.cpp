@@ -3,8 +3,8 @@
 #include <Core/ManiAssert.h>
 #include <Core/Debug/Profiling.h>
 
-#include <OpenGL/Data/OpenGLVertexArray.h>
-#include <OpenGL/Data/OpenGLShader.h>
+#include <OpenGL/Resources/OpenGLVertexArray.h>
+#include <OpenGL/Resources/OpenGLShader.h>
 
 #include <OpenGL/Render/OpenGLCommand.h>
 #include <OpenGL/Render/OpenGLRenderContext.h>
@@ -42,7 +42,10 @@ void OpenGL3DRenderer::render(const OpenGLCommand& command, OpenGLRenderContext&
 	shader.setFloatMatrix4(ShaderNames::MANI_PROJECTION, &(context.projection._00));
 
 	// set fragment uniforms
-	shader.setFloat3(ShaderNames::MANI_VIEWPOSITION, context.cameraPosition.x, context.cameraPosition.y, context.cameraPosition.z);
+	for (const auto& [key, value] : command.customParamaters)
+	{
+		shader.setShaderType(key, value);
+	}
 
 	int textureIndex = 0;
 	for (auto& [key, texture] : command.textures)
@@ -71,10 +74,10 @@ void OpenGL3DRenderer::onEnd(OpenGLRenderContext& context)
 void OpenGL3DRendererSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<OpenGLRenderSystem>();
-	OpenGLRenderSystem::registerRenderer(registry, &renderer);
+	OpenGL::registerRenderer(registry, &renderer);
 }
 
 void OpenGL3DRendererSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	OpenGLRenderSystem::unregisterRenderer(registry, &renderer);
+	OpenGL::unregisterRenderer(registry, &renderer);
 }

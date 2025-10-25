@@ -1,6 +1,6 @@
 #include "ResourceLoader_Texture.h"
 
-#include <Resources/Resource.h>
+#include <Resources/Components/Resource.h>
 #include <RenderAPI/Texture.h>
 
 #include <OpenGL/STBI.h>

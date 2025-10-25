@@ -8,31 +8,89 @@
 
 #include <RenderAPI/RenderContextSystem.h>
 
-#include <Resources/Resource.h>
-#include <Resources/ResourceSystem.h>
-
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/OpenGLWindowContext.h>
 
-#include <OpenGL/Data/OpenGLClearColor.h>
+#include <OpenGL/Resources/OpenGLClearColor.h>
 
 #include <OpenGL/Render/IOpenGLRenderExtension.h>
 #include <OpenGL/Render/IOpenGLRenderer.h>
 #include <OpenGL/Render/OpenGLCameraUpdateSystem.h>
 #include <OpenGL/Render/OpenGLCommand.h>
 #include <OpenGL/Render/OpenGLRenderContext.h>
+#include <OpenGL/Render/OpenGLRenderStorage.h>
 
 #include <GLFW/glfw3.h>
 
 using namespace Mani;
 
-OpenGLRenderContext createContext(ECS::Registry& registry);
-
-OpenGLRenderSystem::Storage* getStorageChecked(ECS::Registry& registry)
+OpenGLRenderStorage& getStorageChecked(ECS::Registry& registry)
 {
-	OpenGLRenderSystem::Storage* storage = registry.getSingle<OpenGLRenderSystem::Storage>();
+	OpenGLRenderStorage* storage = registry.getSingle<OpenGLRenderStorage>();
 	MANI_ASSERT(storage != nullptr, "trying to register an extension outside of the lifetime of the system");
-	return storage;
+	return *storage;
+}
+
+OpenGLRenderContext createContext(ECS::Registry& registry)
+{
+	OpenGLRenderContext context;
+	{
+		context.openglContext = registry.getSingle<OpenGLWindowContext>();
+	}
+
+	{
+		// camera
+		ECS::EntityId cameraId = CameraStatics::getMainCameraId(registry);
+		MANI_ASSERT(cameraId != ECS::INVALID_ID, "trying to render without a camera");
+		auto [positionPtr, cameraPtr] = registry.getMany<Position, Camera>(cameraId);
+
+		const Position& position = *positionPtr;
+		context.cameraPosition = position.value;
+
+		const Camera& camera = *cameraPtr;
+		context.view = camera.view;
+		context.projection = camera.projection;
+		context.width = static_cast<int>(camera.width);
+		context.height = static_cast<int>(camera.height);
+	}
+
+	{
+		// light
+		for (const auto entityId : ECS::View<DirectionalLight>(registry))
+		{
+			const DirectionalLight& light = *registry.get<DirectionalLight>(entityId);
+			context.directionalLights.add(light);
+		}
+		for (const auto entityId : ECS::View<PointLight, Position>(registry))
+		{
+			const PointLight& light = *registry.get<PointLight>(entityId);
+			const Position& position = *registry.get<Position>(entityId);
+			context.pointLights.add(std::tuple<PointLight, Position>{ light, position });
+		}
+		for (const auto entityId : ECS::View<Spotlight, Position, Rotation>(registry))
+		{
+			const Spotlight& light = *registry.get<Spotlight>(entityId);
+			const Position& position = *registry.get<Position>(entityId);
+			const Rotation& rotation = *registry.get<Rotation>(entityId);
+			context.spotlights.add(std::tuple<Spotlight, Position, Rotation>{ light, position, rotation });
+		}
+	}
+
+	{
+		// clear color
+		const OpenGLClearColor& clearColor = *registry.getSingle<OpenGLClearColor>();
+		context.clearColor = clearColor.color;
+	}
+
+	{
+		// renderers and extensions
+		OpenGLRenderStorage& storage = getStorageChecked(registry);
+		context.renderers = storage.renderers;
+		context.extensions = storage.extensions;
+		context.renderContext = *registry.getSingle<RenderContext>();
+	}
+
+	return context;
 }
 
 void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, World& world)
@@ -42,17 +100,17 @@ void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 	world.initializeDependency<OpenGLCameraUpdateSystem>();
 	world.initializeDependency<RenderContextSystem>();
 	
-	registry.addSingle<OpenGLRenderSystem::Storage>();
+	registry.addSingle<OpenGLRenderStorage>();
 	registry.addSingle<OpenGLClearColor>();
 }
 
 void OpenGLRenderSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	OpenGLRenderSystem::Storage& storage = *registry.getSingle<OpenGLRenderSystem::Storage>();
+	OpenGLRenderStorage& storage = *registry.getSingle<OpenGLRenderStorage>();
 	storage.renderThread.stop();
 
 	registry.removeSingle<OpenGLClearColor>();
-	registry.removeSingle<OpenGLRenderSystem::Storage>();
+	registry.removeSingle<OpenGLRenderStorage>();
 }
 
 void OpenGLRenderSystem::tick(ECS::Registry& registry)
@@ -71,7 +129,7 @@ void OpenGLRenderSystem::tick(ECS::Registry& registry)
 		return;
 	}
 
-	OpenGLRenderSystem::Storage& storage = *registry.getSingle<OpenGLRenderSystem::Storage>();
+	OpenGLRenderStorage& storage = *registry.getSingle<OpenGLRenderStorage>();
 	OpenGLRenderContext context = createContext(registry);
 	OpenGLCommandBuffer& buffer = cbs->buffers[cbs->readBuffer];
 
@@ -150,107 +208,4 @@ void OpenGLRenderSystem::tick(ECS::Registry& registry)
 
 		buffer.isReadyToWrite.release();
 	});
-}
-
-OpenGLRenderContext createContext(ECS::Registry& registry)
-{
-	OpenGLRenderContext context;
-	{
-		context.openglContext = registry.getSingle<OpenGLWindowContext>();
-	}
-
-	{
-		// camera
-		ECS::EntityId cameraId = CameraStatics::getMainCameraId(registry);
-		MANI_ASSERT(cameraId != ECS::INVALID_ID, "trying to render without a camera");
-		auto [positionPtr, cameraPtr] = registry.getMany<Position, Camera>(cameraId);
-
-		const Position& position = *positionPtr;
-		context.cameraPosition = position.value;
-
-		const Camera& camera = *cameraPtr;
-		context.view = camera.view;
-		context.projection = camera.projection;
-		context.width = static_cast<int>(camera.width);
-		context.height = static_cast<int>(camera.height);
-	}
-
-	{
-		// light
-		for (const auto entityId : ECS::View<DirectionalLight> (registry))
-		{
-			const DirectionalLight& light = *registry.get<DirectionalLight>(entityId);
-			context.directionalLights.add(light);
-		}
-		for (const auto entityId : ECS::View<PointLight, Position> (registry))
-		{
-			const PointLight& light = *registry.get<PointLight>(entityId);
-			const Position& position = *registry.get<Position>(entityId);
-			context.pointLights.add(std::tuple<PointLight, Position>{ light, position });
-		}
-		for (const auto entityId : ECS::View<Spotlight, Position, Rotation> (registry))
-		{
-			const Spotlight& light = *registry.get<Spotlight>(entityId);
-			const Position& position = *registry.get<Position>(entityId);
-			const Rotation& rotation = *registry.get<Rotation>(entityId);
-			context.spotlights.add(std::tuple<Spotlight, Position, Rotation>{ light, position, rotation });
-		}
-	}
-
-	{
-		// clear color
-		const OpenGLClearColor& clearColor = *registry.getSingle<OpenGLClearColor>();
-		context.clearColor = clearColor.color;
-	}
-
-	{
-		// renderers and extensions
-		OpenGLRenderSystem::Storage* storage = getStorageChecked(registry);
-		context.renderers = storage->renderers;
-		context.extensions = storage->extensions;
-		context.renderContext = *registry.getSingle<RenderContext>();
-	}
-
-	return context;
-}
-
-void OpenGLRenderSystem::registerExtension(ECS::Registry& registry, IOpenGLRenderExtension* extension)
-{
-	MANI_ASSERT(extension != nullptr, "Cannot register a null extension");
-	OpenGLRenderSystem::Storage* storage = getStorageChecked(registry);
-	storage->extensions.addUnique(extension);
-}
-
-void OpenGLRenderSystem::unregisterExtension(ECS::Registry& registry, IOpenGLRenderExtension* extension)
-{
-	if (OpenGLRenderSystem::Storage* storage = registry.getSingle<OpenGLRenderSystem::Storage>())
-	{
-		// no need to check on unregister as the system might have been uninitialized already.
-		List<IOpenGLRenderExtension*>& extensions = storage->extensions;
-		extensions.remove(extension);
-	}
-}
-
-void OpenGLRenderSystem::registerRenderer(ECS::Registry& registry, IOpenGLRenderer* renderer)
-{
-	MANI_ASSERT(renderer != nullptr, "Cannot register a null renderer");
-
-	OpenGLRenderSystem::Storage* storage = getStorageChecked(registry);
-	List<IOpenGLRenderer*>& renderers = storage->renderers;
-	renderers.addUnique(renderer);
-
-	renderers.sort([](const IOpenGLRenderer* lhs, const IOpenGLRenderer* rhs)
-	{
-		return lhs->getId() < rhs->getId();
-	});
-}
-
-void OpenGLRenderSystem::unregisterRenderer(ECS::Registry& registry, IOpenGLRenderer* renderer)
-{
-	if (OpenGLRenderSystem::Storage* storage = registry.getSingle<OpenGLRenderSystem::Storage>())
-	{
-		// no need to check on unregister as the system might have been uninitialized already.
-		List<IOpenGLRenderer*>& renderers = storage->renderers;
-		renderers.remove(renderer);
-	}
 }

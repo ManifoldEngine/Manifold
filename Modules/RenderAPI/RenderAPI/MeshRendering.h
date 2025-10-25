@@ -8,8 +8,8 @@ namespace Mani
 {
 	struct MeshRendering
 	{
-		ECS::EntityId meshHandle;
-		ECS::EntityId materialHandle;
+		ECS::EntityId meshResourceId;
+		ECS::EntityId materialResourceId;
 		int rendererId = 0;
 
 		Mani::Map<std::string, ShaderType> shaderParameters;
