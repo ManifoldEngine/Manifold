@@ -23,102 +23,13 @@
 
 using namespace Mani;
 
-void OpenGLResourceSystemExtension::onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
-{
-	const ECS::Entity* entity = registry.getEntity(entityId);
-	if (entity == nullptr)
-	{
-		return;
-	}
 
-	const ECS::ComponentId meshId = registry.getComponentId<Resource<Mesh>>();
-	if (entity->hasComponent(meshId))
-	{
-		OpenGLResourceSystem::onMeshLoaded(registry, entityId, tag);
-		return;
-	}
-
-	const ECS::ComponentId materialId = registry.getComponentId<Resource<Material>>();
-	if (entity->hasComponent(materialId))
-	{
-		OpenGLResourceSystem::onMaterialLoaded(registry, entityId, tag);
-		return;
-	}
-
-	const ECS::ComponentId shaderId = registry.getComponentId<Resource<Shader>>();
-	if (entity->hasComponent(shaderId))
-	{
-		OpenGLResourceSystem::onShaderLoaded(registry, entityId, tag);
-		return;
-	}
-
-	const ECS::ComponentId textureId = registry.getComponentId<Resource<Texture>>();
-	if (entity->hasComponent(textureId))
-	{
-		OpenGLResourceSystem::onTextureLoaded(registry, entityId, tag);
-	}
-}
-
-void OpenGLResourceSystemExtension::onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
-{
-	const ECS::Entity* entity = registry.getEntity(entityId);
-	if (entity == nullptr)
-	{
-		return;
-	}
-
-	const ECS::ComponentId meshId = registry.getComponentId<Resource<Mesh>>();
-	if (entity->hasComponent(meshId))
-	{
-		OpenGLResourceSystem::onMeshUnloaded(registry, entityId, tag);
-	}
-
-	const ECS::ComponentId materialId = registry.getComponentId<Resource<Material>>();
-	if (entity->hasComponent(materialId))
-	{
-		OpenGLResourceSystem::onMaterialUnloaded(registry, entityId, tag);
-	}
-
-	const ECS::ComponentId texture2DId = registry.getComponentId<Resource<OpenGLTexture2D>>();
-	if (entity->hasComponent(texture2DId))
-	{
-		OpenGLResourceSystem::onTexture2DUnloaded(registry, entityId, tag);
-	}
-
-	const ECS::ComponentId textureId = registry.getComponentId<Resource<Texture>>();
-	if (entity->hasComponent(textureId))
-	{
-		OpenGLResourceSystem::onTextureUnloaded(registry, entityId, tag);
-	}
-}
-
-struct OpenGLResourceSystem::Storage
-{
-	ECS::EntityId extensionHandle = ECS::INVALID_ID;
-};
-
-void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, World& world)
-{
-	world.initializeDependency<ResourceSystem>();
-
-	OpenGLResourceSystem::Storage& storage = *registry.addSingle<OpenGLResourceSystem::Storage>();
-	Resources::registerExtension(registry, &resourceExtension);
-	Resources::registerLoader(registry, &textureLoader);
-}
-
-void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry, World& world)
-{
-	Resources::unregisterLoader(registry, &textureLoader);
-	Resources::unregisterExtension(registry, &resourceExtension);
-	registry.removeSingle<OpenGLResourceSystem::Storage>();
-}
-
-void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, ECS::EntityId meshId, uint32_t tag) 
+void onMeshLoaded(ECS::Registry& registry, ECS::EntityId meshId, uint32_t tag)
 {
 	const Resource<Mesh>* meshRes = registry.get<Resource<Mesh>>(meshId);
 	MANI_ASSERT(meshRes != nullptr && meshRes->isReady, "We expect the mesh to have been loaded");
 	const Mesh& mesh = meshRes->value;
-	
+
 	// VAOs need to be created in the context they're going to be used in.
 	OpenGL::enqueueRenderTask(registry, [&registry, &mesh, meshId] {
 		OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
@@ -126,7 +37,7 @@ void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, ECS::EntityId m
 		glfwMakeContextCurrent(context->window);
 
 		Resource<OpenGLVertexArray>& res = *registry.add<Resource<OpenGLVertexArray>>(meshId);
-		
+
 		constexpr size_t vertexSize = 3 + 3 + 2;
 		OpenGLVertexBuffer vertexBuffer;
 		vertexBuffer.create(&mesh.vertices[0].position.x, (int)(sizeof(float) * (mesh.vertices.count() * vertexSize)));;
@@ -149,7 +60,7 @@ void OpenGLResourceSystem::onMeshLoaded(ECS::Registry& registry, ECS::EntityId m
 	});
 }
 
-void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, ECS::EntityId materialId, uint32_t tag)
+void onMaterialLoaded(ECS::Registry& registry, ECS::EntityId materialId, uint32_t tag)
 {
 	const Resource<Material>* materialRes = registry.get<Resource<Material>>(materialId);
 	MANI_ASSERT(materialRes != nullptr && materialRes->isReady, "We expect the material to have been loaded");
@@ -164,12 +75,12 @@ void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, ECS::Entity
 		openglMaterial.textures.add({
 			.key = texture.key,
 			.id = Resources::load<Texture>(registry, texture.path, tag),
-		});
+			});
 	}
 	openglMaterial.name = material.name;
 	List<OpenGLMaterial::ShaderParam>& shaderParameters = openglMaterial.shaderParameters;
 
-	auto fillShaderParameters = [&shaderParameters]<typename T>(const List<T>& customParams)
+	auto fillShaderParameters = [&shaderParameters]<typename T>(const List<T>&customParams)
 	{
 		for (const T& param : customParams)
 		{
@@ -192,7 +103,7 @@ void OpenGLResourceSystem::onMaterialLoaded(ECS::Registry& registry, ECS::Entity
 	openglMaterialRes.isReady = true;
 }
 
-void OpenGLResourceSystem::onShaderLoaded(ECS::Registry& registry, ECS::EntityId shaderId, uint32_t tag)
+void onShaderLoaded(ECS::Registry& registry, ECS::EntityId shaderId, uint32_t tag)
 {
 	Resource<Shader>* shaderRes = registry.get<Resource<Shader>>(shaderId);
 	MANI_ASSERT(shaderRes != nullptr, "Shader loading flow should be synchronous");
@@ -207,7 +118,7 @@ void OpenGLResourceSystem::onShaderLoaded(ECS::Registry& registry, ECS::EntityId
 	openGLShaderRes.isReady = openGLShaderRes.value.isCompiled();
 }
 
-void OpenGLResourceSystem::onTextureLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+void onTextureLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
 {
 	Resource<Texture>* textureRes = registry.get<Resource<Texture>>(entityId);
 	MANI_ASSERT(textureRes != nullptr && textureRes->isReady, "We expect the material to have been loaded");
@@ -232,8 +143,8 @@ void OpenGLResourceSystem::onTextureLoaded(ECS::Registry& registry, ECS::EntityI
 
 constexpr std::string_view UNLOAD_BEFORE_READY_ERROR_MESSAGE = "unloading a resource before it is ready, this is unsupported";
 
-void OpenGLResourceSystem::onMeshUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
-{ 
+void onMeshUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+{
 	Resource<OpenGLVertexArray>* res = registry.get<Resource<OpenGLVertexArray>>(entityId);
 	if (res == nullptr)
 	{
@@ -245,8 +156,8 @@ void OpenGLResourceSystem::onMeshUnloaded(ECS::Registry& registry, ECS::EntityId
 	res->isReady = false;
 }
 
-void OpenGLResourceSystem::onMaterialUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) 
-{ 
+void onMaterialUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+{
 	Resource<OpenGLMaterial>* res = registry.get<Resource<OpenGLMaterial>>(entityId);
 	if (res == nullptr)
 	{
@@ -260,8 +171,8 @@ void OpenGLResourceSystem::onMaterialUnloaded(ECS::Registry& registry, ECS::Enti
 	}
 }
 
-void OpenGLResourceSystem::onShaderUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) 
-{ 
+void onShaderUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+{
 	Resource<OpenGLShader>* res = registry.get<Resource<OpenGLShader>>(entityId);
 	if (res == nullptr)
 	{
@@ -272,7 +183,7 @@ void OpenGLResourceSystem::onShaderUnloaded(ECS::Registry& registry, ECS::Entity
 	res->isReady = false;
 }
 
-void OpenGLResourceSystem::onTextureUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+void onTextureUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
 {
 	Resource<Texture>* res = registry.get<Resource<Texture>>(entityId);
 	if (res == nullptr)
@@ -287,7 +198,7 @@ void OpenGLResourceSystem::onTextureUnloaded(ECS::Registry& registry, ECS::Entit
 	res->isReady = false;
 }
 
-void OpenGLResourceSystem::onTexture2DUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+void onTexture2DUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
 {
 	Resource<OpenGLTexture2D>* res = registry.get<Resource<OpenGLTexture2D>>(entityId);
 	if (res == nullptr)
@@ -298,3 +209,87 @@ void OpenGLResourceSystem::onTexture2DUnloaded(ECS::Registry& registry, ECS::Ent
 	res->value.unload();
 	res->isReady = false;
 }
+
+void OpenGLResourceSystemExtension::onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
+{
+	const ECS::Entity* entity = registry.getEntity(entityId);
+	if (entity == nullptr)
+	{
+		return;
+	}
+
+	const ECS::ComponentId meshId = registry.getComponentId<Resource<Mesh>>();
+	if (entity->hasComponent(meshId))
+	{
+		onMeshLoaded(registry, entityId, tag);
+		return;
+	}
+
+	const ECS::ComponentId materialId = registry.getComponentId<Resource<Material>>();
+	if (entity->hasComponent(materialId))
+	{
+		onMaterialLoaded(registry, entityId, tag);
+		return;
+	}
+
+	const ECS::ComponentId shaderId = registry.getComponentId<Resource<Shader>>();
+	if (entity->hasComponent(shaderId))
+	{
+		onShaderLoaded(registry, entityId, tag);
+		return;
+	}
+
+	const ECS::ComponentId textureId = registry.getComponentId<Resource<Texture>>();
+	if (entity->hasComponent(textureId))
+	{
+		onTextureLoaded(registry, entityId, tag);
+	}
+}
+
+void OpenGLResourceSystemExtension::onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
+{
+	const ECS::Entity* entity = registry.getEntity(entityId);
+	if (entity == nullptr)
+	{
+		return;
+	}
+
+	const ECS::ComponentId meshId = registry.getComponentId<Resource<Mesh>>();
+	if (entity->hasComponent(meshId))
+	{
+		onMeshUnloaded(registry, entityId, tag);
+	}
+
+	const ECS::ComponentId materialId = registry.getComponentId<Resource<Material>>();
+	if (entity->hasComponent(materialId))
+	{
+		onMaterialUnloaded(registry, entityId, tag);
+	}
+
+	const ECS::ComponentId texture2DId = registry.getComponentId<Resource<OpenGLTexture2D>>();
+	if (entity->hasComponent(texture2DId))
+	{
+		onTexture2DUnloaded(registry, entityId, tag);
+	}
+
+	const ECS::ComponentId textureId = registry.getComponentId<Resource<Texture>>();
+	if (entity->hasComponent(textureId))
+	{
+		onTextureUnloaded(registry, entityId, tag);
+	}
+}
+
+void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, World& world)
+{
+	world.initializeDependency<ResourceSystem>();
+
+	Resources::registerExtension(registry, &resourceExtension);
+	Resources::registerLoader(registry, &textureLoader);
+}
+
+void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry, World& world)
+{
+	Resources::unregisterLoader(registry, &textureLoader);
+	Resources::unregisterExtension(registry, &resourceExtension);
+}
+
