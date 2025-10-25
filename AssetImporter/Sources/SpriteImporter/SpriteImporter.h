@@ -13,7 +13,7 @@ namespace Mani
     class SpriteImporter
     {
     public:
-        static bool importFromPath(const std::filesystem::path& path, std::shared_ptr<Sprite>& outSprite, uint32_t defaultTPU = 512);
-        static bool exportToPath(const std::filesystem::path& path, const std::shared_ptr<Sprite>& sprite);
+        static bool importFromPath(const std::filesystem::path& path, Sprite& outSprite, uint32_t defaultTPU = 512);
+        static bool exportToPath(const std::filesystem::path& path, const Sprite& sprite);
     };
 }

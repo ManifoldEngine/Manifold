@@ -20,6 +20,10 @@ namespace Mani
 		std::filesystem::path getEnginePath();
 		// returns a path to {root}/Config
 		std::filesystem::path getConfigPath();
+		// returns a path to {}/{projectName}
+		// it is expexted that the project name is defined in the build files
+		std::filesystem::path getProjectPath();
+
 		// returns an absolute path from a root relative path
 		std::filesystem::path getAbsolutePath(const std::filesystem::path& relativePath);
 

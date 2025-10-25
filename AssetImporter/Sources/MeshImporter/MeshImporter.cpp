@@ -15,7 +15,7 @@
 
 using namespace Mani;
 
-bool MeshImporter::importFromPath(const std::filesystem::path& path, Mani::List<std::shared_ptr<Mesh>>& outMeshes)
+bool MeshImporter::importFromPath(const std::filesystem::path& path, Mani::List<Mesh>& outMeshes)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -30,20 +30,18 @@ bool MeshImporter::importFromPath(const std::filesystem::path& path, Mani::List<
 
 	for (const aiMesh* mesh : meshes)
 	{
-		std::shared_ptr<Mesh> loadedMesh = std::make_shared<Mesh>();
+		Mesh loadedMesh;
 		processMesh(mesh, scene, loadedMesh);
 		outMeshes.add(loadedMesh);
-		MANI_LOG(LogMeshImporter, "Imported {} with {} vertices from path {}", loadedMesh->name, loadedMesh->vertices.count(), path.string());
+		MANI_LOG(LogMeshImporter, "Imported {} with {} vertices from path {}", loadedMesh.name, loadedMesh.vertices.count(), path.string());
 	}
 
 	return true;
 }
 
-bool MeshImporter::exportToPath(const std::filesystem::path& path, const std::shared_ptr<Mesh>& mesh)
+bool MeshImporter::exportToPath(const std::filesystem::path& path, const Mesh& mesh)
 {
-	MANI_ASSERT(mesh != nullptr, "provided mesh cannot be null");
-
-	return FileSystem::writeFile(path, ManiZ::to::json(*mesh));
+	return FileSystem::writeFile(path, ManiZ::to::json(mesh));
 }
 
 void MeshImporter::processNode(aiNode* node, const aiScene* scene, Mani::List<const aiMesh*>& meshesAccumulator)
@@ -65,11 +63,9 @@ void MeshImporter::processNode(aiNode* node, const aiScene* scene, Mani::List<co
 	}
 }
 
-void MeshImporter::processMesh(const aiMesh* mesh, const aiScene* scene, const std::shared_ptr<Mesh>& outMesh)
+void MeshImporter::processMesh(const aiMesh* mesh, const aiScene* scene, Mesh& outMesh)
 {
-	MANI_ASSERT(outMesh != nullptr, "Out pointer recipient cannot be null");
-
-	outMesh->name = mesh->mName.C_Str();
+	outMesh.name = mesh->mName.C_Str();
 
 	// process vertices.
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
@@ -96,7 +92,7 @@ void MeshImporter::processMesh(const aiMesh* mesh, const aiScene* scene, const s
 			vertex.textureCoordinate.y = mesh->mTextureCoords[0][i].y;
 		}
 
-		outMesh->vertices.add(vertex);
+		outMesh.vertices.add(vertex);
 	}
 
 	// process indices
@@ -105,7 +101,7 @@ void MeshImporter::processMesh(const aiMesh* mesh, const aiScene* scene, const s
 		const aiFace& face = mesh->mFaces[i];
 		for (unsigned int j = 0; j < face.mNumIndices; j++)
 		{
-			outMesh->indices.add(face.mIndices[j]);
+			outMesh.indices.add(face.mIndices[j]);
 		}
 	}
 }

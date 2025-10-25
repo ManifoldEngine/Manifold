@@ -13,21 +13,19 @@
 
 using namespace Mani;
 
-bool ShaderImporter::importFromPath(const std::filesystem::path& path, std::shared_ptr<Shader>& outShader)
+bool ShaderImporter::importFromPath(const std::filesystem::path& path, Shader& outShader)
 {
-	MANI_ASSERT(outShader != nullptr, "provided shader cannot be null");
-	if (parseShaderSourceFileFromPath(path, outShader->name, outShader->vertexSource, outShader->fragmentSource))
+	if (parseShaderSourceFileFromPath(path, outShader.name, outShader.vertexSource, outShader.fragmentSource))
 	{
-		MANI_LOG(LogShaderImporter, "Imported {} from path {}", outShader->name, path.string());
+		MANI_LOG(LogShaderImporter, "Imported {} from path {}", outShader.name, path.string());
 		return true;
 	}
 	return false;
 }
 
-bool ShaderImporter::exportToPath(const std::filesystem::path& path, const std::shared_ptr<Shader>& shader)
+bool ShaderImporter::exportToPath(const std::filesystem::path& path, const Shader& shader)
 {
-	MANI_ASSERT(shader != nullptr, "provided shader cannot be null");
-	return FileSystem::writeFile(path, ManiZ::to::json(*shader));
+	return FileSystem::writeFile(path, ManiZ::to::json(shader));
 }
 
 bool ShaderImporter::parseShaderSourceFileFromPath(const std::filesystem::path& path, std::string& outFileName, std::string& outVertexSource, std::string& outFragmentSource)

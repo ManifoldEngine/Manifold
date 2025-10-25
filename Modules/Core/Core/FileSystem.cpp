@@ -56,6 +56,11 @@ std::filesystem::path Mani::FileSystem::getConfigPath()
 	return getRootPath().append("Config");
 }
 
+std::filesystem::path Mani::FileSystem::getProjectPath()
+{
+	return getRootPath().append(MANI_PROJECT_NAME);
+}
+
 std::filesystem::path Mani::FileSystem::getAbsolutePath(const std::filesystem::path& relativePath)
 {
 	return getRootPath().append(relativePath.string());
