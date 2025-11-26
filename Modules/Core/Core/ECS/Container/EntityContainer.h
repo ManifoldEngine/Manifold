@@ -11,8 +11,6 @@ namespace Mani
 	{
 		class EntityContainer
 		{
-	#define INITIAL_COMPONENT_COUNT 1000
-
 		public:
 			virtual ~EntityContainer() = default;
 			ECS::EntityId create();

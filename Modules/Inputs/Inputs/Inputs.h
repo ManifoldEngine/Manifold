@@ -53,11 +53,15 @@ namespace Mani
 		void assignDevice(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId deviceId);
 		// assigns a device to an InputUser by name, will look through all devices to find it
 		void assignDevice(ECS::Registry& registry, ECS::EntityId entityId, const std::string& deviceName);
+		// assigns all devices to an InputUser
+		void assignAllDevices(ECS::Registry& registry, ECS::EntityId entityId);
 
 		// unassigns a device to an InputUser by entity id
 		void unassignDevice(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId deviceId);
 		// unassigns a device to an InputUser by name, will look through all devices to find it
 		void unassignDevice(ECS::Registry& registry, ECS::EntityId entityId, const std::string& deviceName);
+		// unassigns all devices that are assigned to an InputUser
+		void unassignAllDevices(ECS::Registry& registry, ECS::EntityId entityId);
 
 		// finds a device's id by name
 		ECS::EntityId findDeviceByName(const ECS::Registry& registry, const std::string& name);

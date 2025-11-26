@@ -87,5 +87,31 @@ MANI_SECTION_BEGIN(Async, "Async")
 		const std::vector<ECallers> expected = { ECallers::System, ECallers::Deferred };
 		MANI_TEST_ASSERT(arbiter->callers == expected, "deferred function should have run after system's tick");
 	}
+
+	MANI_TEST(HandleLargeAmountOfQueuedTask, "Should be able to handle a large amount of tasks")
+	{
+		constexpr size_t TASK_AMOUNT = 100;
+		constexpr size_t WORK_AMOUNT = 1000;
+
+		Application app;
+		ThreadPool& threadPool = app.getThreadPool();
+
+		std::latch latch{ TASK_AMOUNT };
+		std::atomic<int> result = 0;
+		for (size_t i = 0; i < TASK_AMOUNT; i++)
+		{
+			threadPool.enqueue([&result, &latch, WORK_AMOUNT] 
+			{
+				for (size_t i = 0; i < WORK_AMOUNT; i++)
+				{
+					result++;
+				}
+				latch.count_down();
+			});
+		}
+
+		latch.wait();
+		MANI_TEST_ASSERT(result == TASK_AMOUNT * WORK_AMOUNT, "All world should have bee completed");
+	}
 }
 MANI_SECTION_END(Thread)

@@ -19,11 +19,12 @@ using namespace Mani;
 void OpenGL3DRenderer::onBegin(OpenGLRenderContext& context)
 {
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
 }
 
 void OpenGL3DRenderer::render(const OpenGLCommand& command, OpenGLRenderContext& context)
 {
-	MANI_TIME_SCOPE(OpenGLRenderSystem_tick_renderthread_render);
+	MANI_TIME_SCOPE("OpenGLRenderSystem_tick_renderthread_render");
 
 	MANI_ASSERT(command.vao != nullptr, "Resource was unloaded unexpectedly.");
 	MANI_ASSERT(command.shader != nullptr, "Resource was unloaded unexpectedly.");
@@ -68,6 +69,7 @@ void OpenGL3DRenderer::render(const OpenGLCommand& command, OpenGLRenderContext&
 
 void OpenGL3DRenderer::onEnd(OpenGLRenderContext& context)
 {
+	glDisable(GL_BLEND);
 	glDisable(GL_DEPTH_TEST);
 }
 

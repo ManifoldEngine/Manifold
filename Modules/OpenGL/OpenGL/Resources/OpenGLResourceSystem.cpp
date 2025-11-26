@@ -28,13 +28,15 @@ void onMeshLoaded(ECS::Registry& registry, ECS::EntityId meshId, uint32_t tag)
 {
 	const Resource<Mesh>* meshRes = registry.get<Resource<Mesh>>(meshId);
 	MANI_ASSERT(meshRes != nullptr && meshRes->isReady, "We expect the mesh to have been loaded");
-	const Mesh& mesh = meshRes->value;
 
 	// VAOs need to be created in the context they're going to be used in.
-	OpenGL::enqueueRenderTask(registry, [&registry, &mesh, meshId] {
+	OpenGL::enqueueRenderTask(registry, [&registry, meshId] {
 		OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
 		MANI_ASSERT(context != nullptr, "Trying to load vao without a valid context");
 		glfwMakeContextCurrent(context->window);
+
+		const Resource<Mesh>& meshRes = registry.getRef<Resource<Mesh>>(meshId);
+		const Mesh& mesh = meshRes.value;
 
 		Resource<OpenGLVertexArray>& res = *registry.add<Resource<OpenGLVertexArray>>(meshId);
 
@@ -122,20 +124,23 @@ void onTextureLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t t
 {
 	Resource<Texture>* textureRes = registry.get<Resource<Texture>>(entityId);
 	MANI_ASSERT(textureRes != nullptr && textureRes->isReady, "We expect the material to have been loaded");
-	Texture& texture = textureRes->value;
 
-	OpenGL::enqueueRenderTask(registry, [&registry, &texture, entityId] {
+	OpenGL::enqueueRenderTask(registry, [&registry, entityId] 
+	{
 		OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
 		MANI_ASSERT(context != nullptr, "Trying to load vao without a valid context");
 		glfwMakeContextCurrent(context->window);
 
-		Resource<OpenGLTexture2D>& textureRes = *registry.add<Resource<OpenGLTexture2D>>(entityId);
+		Resource<Texture>& textureRes = registry.getRef<Resource<Texture>>(entityId);
+		Texture& texture = textureRes.value;
 
-		if (!textureRes.value.load(texture))
+		Resource<OpenGLTexture2D>& openglTextureRes = *registry.add<Resource<OpenGLTexture2D>>(entityId);
+
+		if (!openglTextureRes.value.load(texture))
 		{
 			MANI_LOG_ERROR(LogOpenGL, "Failed to load texture with id {}", entityId);
 		}
-		textureRes.isReady = true;
+		openglTextureRes.isReady = true;
 		STBI::freeTexture(texture);
 		glfwMakeContextCurrent(nullptr);
 	});

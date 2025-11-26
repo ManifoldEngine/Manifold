@@ -233,6 +233,15 @@ void InputsStatics::assignDevice(ECS::Registry& registry, ECS::EntityId entityId
 	assignDevice(registry, entityId, deviceId);
 }
 
+void InputsStatics::assignAllDevices(ECS::Registry& registry, ECS::EntityId entityId)
+{
+	ECS::View<InputDevice> devices(registry);
+	for (const auto deviceId : devices)
+	{
+		InputsStatics::assignDevice(registry, entityId, deviceId);
+	}
+}
+
 void InputsStatics::unassignDevice(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId deviceId)
 {
 	InputUser& inputUser = registry.getRef<InputUser>(entityId);
@@ -244,6 +253,15 @@ void InputsStatics::unassignDevice(ECS::Registry& registry, ECS::EntityId entity
 	const ECS::EntityId deviceId = findDeviceByName(registry, deviceName);
 	MANI_ASSERT(registry.isValid(deviceId), "Could not find a valid device with name {}", deviceName);
 	unassignDevice(registry, entityId, deviceId);
+}
+
+void InputsStatics::unassignAllDevices(ECS::Registry& registry, ECS::EntityId entityId)
+{
+	ECS::View<InputDevice> devices(registry);
+	for (const auto deviceId : devices)
+	{
+		InputsStatics::unassignDevice(registry, entityId, deviceId);
+	}
 }
 
 ECS::EntityId InputsStatics::findDeviceByName(const ECS::Registry& registry, const std::string& name)

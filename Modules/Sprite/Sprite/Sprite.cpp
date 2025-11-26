@@ -44,7 +44,7 @@ void onSpriteLoaded(ECS::Registry& registry, ECS::EntityId entityId, ECS::Entity
 
 void waitForSpriteResourceAsync(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId spriteId, const std::string_view& shaderPath, uint32_t tag, bool withBoundingSphere)
 {
-	Mani::enqueueTask([&] {
+	Mani::enqueueTask([=, &registry = registry, &shaderPath = shaderPath] {
 		const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);
 		while (!spriteRes.isReady)
 		{
@@ -52,7 +52,7 @@ void waitForSpriteResourceAsync(ECS::Registry& registry, ECS::EntityId entityId,
 		}
 
 		// we defer to the end of frame to avoir race read/write conflict
-		Mani::defer([&] {
+		Mani::defer([=, &registry = registry, &shaderPath = shaderPath] {
 			onSpriteLoaded(registry, entityId, spriteId, shaderPath, tag, withBoundingSphere);
 		});
 	});

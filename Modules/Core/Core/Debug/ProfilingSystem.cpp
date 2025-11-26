@@ -96,7 +96,7 @@ void ProfilingSystem::onTimerDestroyed(const _impl::ScopedTimer& scopeTimer)
 		stats.max = elapsed;
 		stats.lastValue = elapsed;
 		
-		storage->frame.add({ scopeTimer.name, stats });
+		storage->frame.add({ std::string(scopeTimer.name), stats });
 		MANI_LOG_VERBOSE("ProfilingSystem", "{}: {}ms", scopeTimer.name, elapsed);
 	}
 #endif

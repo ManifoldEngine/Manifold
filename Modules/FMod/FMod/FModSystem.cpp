@@ -57,7 +57,6 @@ void FModSystem::tick(ECS::Registry& registry)
 	FMod& fmod = *registry.getSingle<FMod>();
 	if (fmod.system != nullptr)
 	{
-		MANI_TIME_SCOPE(FModSystem_tick_update);
 		fmod.system->update();
 	}
 }

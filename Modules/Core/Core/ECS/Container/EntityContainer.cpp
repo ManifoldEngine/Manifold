@@ -3,6 +3,8 @@
 
 using namespace Mani;
 
+constexpr size_t INITIAL_COMPONENT_COUNT = 10000;
+
 // EntityContainer::ComponentPool begin
 
 ECS::EntityContainer::ComponentPool::ComponentPool(size_t inElementsSize)
