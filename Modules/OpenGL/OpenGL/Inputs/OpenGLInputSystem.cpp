@@ -159,7 +159,6 @@ void OpenGLInputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void OpenGLInputSystem::tick(ECS::Registry& registry)
 {
-    MANI_TIME_SCOPE(OpenGLInputSystem_tick);
     const OpenGLWindowContext& context = *registry.getSingle<OpenGLWindowContext>();
 
     // handle cursord mode.

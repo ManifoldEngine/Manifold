@@ -20,27 +20,27 @@ bool OpenGLTexture2D::load(const Texture& texture)
         GLenum imageDataFormat;
         switch (m_channels)
         {
-        case 3:
-        {
-            // internal format should use the 8 bytes format
-            internalFormat = GL_RGB8;
-            // stb_image uses legacy format
-            imageDataFormat = GL_RGB;
-            break;
-        }
-        case 4:
-        {
-            // internal format should use the 8 bytes format
-            internalFormat = GL_RGBA8;
-            // stb_image uses legacy format
-            imageDataFormat = GL_RGBA;
-            break;
-        }
-        default:
-        {
-            MANI_ASSERT(false, "Unspported texture format");
-            break;
-        }
+            case 3:
+            {
+                // internal format should use the 8 bytes format
+                internalFormat = GL_RGB8;
+                // stb_image uses legacy format
+                imageDataFormat = GL_RGB;
+                break;
+            }
+            case 4:
+            {
+                // internal format should use the 8 bytes format
+                internalFormat = GL_RGBA8;
+                // stb_image uses legacy format
+                imageDataFormat = GL_RGBA;
+                break;
+            }
+            default:
+            {
+                MANI_ASSERT(false, "Unspported texture format");
+                break;
+            }
         }
 
 #ifdef MANI_WEBGL
@@ -77,10 +77,10 @@ bool OpenGLTexture2D::load(const Texture& texture)
         glTextureParameteri(m_textureId, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTextureParameteri(m_textureId, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-        glTextureParameteri(m_textureId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTextureParameteri(m_textureId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTextureParameteri(m_textureId, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTextureParameteri(m_textureId, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        m_filteringMode = GL_LINEAR;
+        m_filteringMode = GL_NEAREST;
 
         // generate texture from image data.
         glTextureSubImage2D(

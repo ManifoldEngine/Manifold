@@ -36,10 +36,28 @@ namespace Mani
 
 			threadPool.enqueue([&latch, &view, threadIndex, start, end, &f] 
 			{
+				auto it = view.at(start);
 				const auto viewEnd = view.end();
-				for (auto it = view.at(start); it.getIndex() < end && it != viewEnd; ++it)
+				if (it.getIndex() < end && it < viewEnd)
 				{
-					f(*it, threadIndex);
+					// TODO DIRTY FIX: The view count isn't representing the amount of entity in the view, but rather the total amount 
+					// of entities in the registry.
+					// This means that the amount of threads dedicated to this view might be disproportionate to the amount of work
+					//
+					// additionally it is possible that the first index is not actually part of the view and needs to be checked before
+					// being sent to the functor. This would be fixed by sparse component pools because the view count would be accurate
+					// and we would only iterate over valid memory.
+					const ECS::Registry& registry = view.getRegistry();
+					if (!registry.isValid(*it) || !registry.has<TComponents...>(*it))
+					{
+						// if the first viewed entity isn't valid for this view, go to the next one.
+						++it;
+					}
+
+					for (; it.getIndex() < end && it < viewEnd; ++it)
+					{	
+						f(*it, threadIndex);
+					}
 				}
 				latch.count_down();
 			});

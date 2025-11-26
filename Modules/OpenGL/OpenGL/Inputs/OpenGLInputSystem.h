@@ -18,7 +18,7 @@ namespace Mani
 	public:
 		virtual std::string_view getName() const override { return "OpenGLInputSystem"; }
 		virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }
-		virtual ETickGroup getTickGroup() const override { return ETickGroup::PostInput; }
+		virtual ETickGroup getTickGroup() const override { return ETickGroup::PreInput; }
 
 	protected:
 		virtual void onInitialize(ECS::Registry& registry, World& world) override;

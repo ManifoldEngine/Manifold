@@ -54,8 +54,6 @@ void AnimationSystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void AnimationSystem::tick(ECS::Registry& registry)
 {
-	MANI_TIME_SCOPE(AnimationSystem_tick);
-
 	ECS::EntityId cameraId = CameraStatics::getMainCameraId(registry);
 	MANI_ASSERT(cameraId != ECS::INVALID_ID, "trying to animate without a camera");
 	Camera& camera = *registry.get<Camera>(cameraId);

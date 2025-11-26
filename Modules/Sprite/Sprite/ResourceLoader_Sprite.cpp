@@ -1,5 +1,6 @@
 #include "ResourceLoader_Sprite.h"
 
+#include <Core/Async/Defer.h>
 #include <Core/FileSystem.h>
 
 #include <Resources/Resources.h>

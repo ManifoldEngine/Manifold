@@ -10,6 +10,8 @@
 #include <Inputs/Components/InputDevice.h>
 #include <Inputs/Components/UniqueControlIdGenerator.h>
 
+#include <ManiZ/ManiZ.h>
+
 using namespace Mani;
 
 void foreachBindings(const Map<ControlId, List<ActionId>>& bindings, List<InputAction>& actions, ControlId controlId, auto&& f)
@@ -53,11 +55,13 @@ void InputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void InputSystem::tick(ECS::Registry& registry)
 {
-	MANI_TIME_SCOPE(InputSystem_tick);
-
 	ECS::View<InputUser> view(registry);
 	parallelFor(view, [&](const auto entityId, size_t threadIndex)
 	{
+		const ECS::Entity* entity = registry.getEntity(entityId);
+		const ECS::Index entityIndex = entity->getIndex();
+		const ECS::ComponentId componentId = registry.getComponentId<InputUser>();
+	
 		// reset action axis state 
 		InputUser& inputUser = registry.getRef<InputUser>(entityId);
 		for (auto& action : inputUser.actions)

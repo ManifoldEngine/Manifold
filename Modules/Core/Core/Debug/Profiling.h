@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Core/CoreFwd.h>
+#include <Core/Containers/Map.h>
 #include <Core/Debug/ProfilingSystem.h>
 #include <string>
 #include <chrono>
@@ -11,7 +11,7 @@ namespace Mani
 	{
 		struct ScopedTimer
 		{
-			ScopedTimer(std::string nameIn) : name(nameIn)
+			ScopedTimer(const std::string_view& nameIn) : name(nameIn)
 			{
 				start = std::chrono::steady_clock::now();
 				end = start;
@@ -29,7 +29,7 @@ namespace Mani
 				return secondsToMs * std::chrono::duration<double>(end - start).count();
 			};
 
-			std::string name;
+			std::string_view name;
 			std::chrono::steady_clock::time_point start;
 			std::chrono::steady_clock::time_point end;
 		};
@@ -54,7 +54,8 @@ namespace Mani
 }
 
 #if MANI_DEBUG
-#define MANI_TIME_SCOPE(NAME) Mani::_impl::ScopedTimer scopeTimer##NAME(#NAME)
+#define MANI_TIME_SCOPE(NAME) \
+	Mani::_impl::ScopedTimer scopeTimer_##__LINE__(NAME)
 #else
 #define MANI_TIME_SCOPE(NAME)
 #endif

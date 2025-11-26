@@ -18,7 +18,6 @@ namespace Mani
 		 */
 		class Registry
 		{
-#define INITIAL_COMPONENT_COUNT 1000
 		public:
 			template<typename ...TComponents>
 			friend class View;
@@ -305,7 +304,7 @@ namespace Mani
 
 		inline Registry::~Registry()
 		{
-			destroy(m_singletonId);
+			m_entityContainer.destroy(m_singletonId);
 		}
 
 		inline ECS::EntityId Registry::create()
@@ -315,6 +314,7 @@ namespace Mani
 
 		inline bool Registry::destroy(ECS::EntityId entityId)
 		{
+			MANI_ASSERT(entityId != m_singletonId, "Something is attempting to destroy the singleton entity.");
 			return m_entityContainer.destroy(entityId);
 		}
 

@@ -28,7 +28,9 @@ namespace Mani
 		// resolves all the defered calls.
 		void resolve()
 		{
-			while (!m_queue.isEmpty())
+			// make sure we resolve only what was deferred this frame.
+			const SizeT count = m_queue.count();
+			for (SizeT i = 0; i < count; i++)
 			{
 				auto f = std::move(m_queue.first());
 				{

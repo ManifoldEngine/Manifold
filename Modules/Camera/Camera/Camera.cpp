@@ -91,13 +91,13 @@ Vec3f CameraStatics::screenToWorldSpace(const Camera& camera, Vec2f position)
 
 bool CameraStatics::isInView(const Camera& camera, const Position& position, const Rotation& rotation, const Scale& scale, const BoundingSphere& boundingSphere)
 {
-	MANI_TIME_SCOPE(FrustumStatics_isInView);
+	MANI_TIME_SCOPE("FrustumStatics_isInView");
 	return FrustumStatics::isSphereInside(camera.frustrum, position.value, scale.value, boundingSphere.radius);
 }
 
 Frustum FrustumStatics::create(const Camera& camera, const Vec3f& position, const Quatf& rotation)
 {
-	MANI_TIME_SCOPE(FrustumStatics_create);
+	MANI_TIME_SCOPE("FrustumStatics_create");
 
 	Frustum frustum;
 	

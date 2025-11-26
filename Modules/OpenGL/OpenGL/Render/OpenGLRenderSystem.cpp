@@ -115,8 +115,6 @@ void OpenGLRenderSystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void OpenGLRenderSystem::tick(ECS::Registry& registry)
 {
-	MANI_TIME_SCOPE(OpenGLRenderSystem_tick);
-
 	OpenGLCommandBufferCollection* cbs = registry.getSingle<OpenGLCommandBufferCollection>();
 	if (cbs == nullptr)
 	{
@@ -133,11 +131,11 @@ void OpenGLRenderSystem::tick(ECS::Registry& registry)
 	OpenGLRenderContext context = createContext(registry);
 	OpenGLCommandBuffer& buffer = cbs->buffers[cbs->readBuffer];
 
-#if MANI_DEBUG
+//#if MANI_DEBUG
 	Time& time = *registry.getSingle<Time>();
 	const int fps = Math::isEqual(time.delta, 0.f) ? 0 : static_cast<int>(1 / time.delta);
 	glfwSetWindowTitle(context.openglContext->window, std::format("{} ({}fps)", context.openglContext->name, fps).c_str());
-#endif
+//#endif
 
 	if (context.renderers.isEmpty())
 	{
@@ -148,7 +146,7 @@ void OpenGLRenderSystem::tick(ECS::Registry& registry)
 
 	storage.renderThread.enqueue([&registry, &buffer, context = std::move(context)]() mutable
 	{
-		MANI_TIME_SCOPE(OpenGLRenderSystem_tick_renderthread);
+		MANI_TIME_SCOPE("OpenGLRenderSystem_tick_renderthread");
 		glfwMakeContextCurrent(context.openglContext->window);
 
 		// setting color state.
