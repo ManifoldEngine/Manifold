@@ -1,15 +1,12 @@
 #pragma once
 
 #include <Core/ManiAssert.h>
+#include <Core/ManiTypes.h>
 #include <vector>
 #include <algorithm>
-#include <limits>
 
 namespace Mani
 {
-	using SizeT = size_t;
-	inline constexpr SizeT INDEX_NONE = (std::numeric_limits<SizeT>::max)();
-
 	template<typename T>
 	class List
 	{
@@ -56,7 +53,8 @@ namespace Mani
 		[[nodiscard]] bool isEmpty() const { return m_data.empty(); }
 		void reserve(SizeT inCapacity) { m_data.reserve(inCapacity); }
 		void shrink() { m_data.shrink_to_fit(); }
-		void resize(SizeT newSize) { m_data.resize(newSize, T()); }
+		void resize(SizeT newSize) { m_data.resize(newSize); }
+		void resize(SizeT newSize, T&& fillValue) { m_data.resize(newSize, fillValue); }
 
 		// mutators
 		void clear() { m_data.clear(); }
@@ -255,58 +253,70 @@ namespace Mani
 		[[nodiscard]] T& last() { return m_data.back(); }
 		[[nodiscard]] const T& last() const { return m_data.back(); }
 
-		[[nodiscard]] T& firstOrDefault(T&& value = T{})
+		[[nodiscard]] T* firstPtr()
 		{
 			if (isEmpty())
 			{
-				return value;
+				return nullptr;
 			}
-			return m_data.front();
+			return &m_data.front();
 		}
 
-		[[nodiscard]] const T& firstOrDefault(T&& value = T{}) const
+		[[nodiscard]] const T* firstPtr() const
 		{
 			if (isEmpty())
 			{
-				return value;
+				return nullptr;
 			}
-			return m_data.front();
+			return &m_data.front();
 		}
 
-		[[nodiscard]] T& lastOrDefault(T&& value = T{})
+		[[nodiscard]] T& lastPtr()
 		{
 			if (isEmpty())
 			{
-				return value;
+				return nullptr;
 			}
-			return m_data.back();
+			return &m_data.back();
 		}
 
-		[[nodiscard]] const T& lastOrDefault(T&& value = T{}) const
+		[[nodiscard]] const T* lastPtr() const
 		{
 			if (isEmpty())
 			{
-				return value;
+				return nullptr;
 			}
-			return m_data.back();
+			return &m_data.back();
 		}
 
-		[[nodiscard]] T& atOrDefault(SizeT index, T&& value = T{})
+		[[nodiscard]] T& at(SizeT index)
 		{
-			if (!isValid(index))
-			{
-				return value;
-			}
+			MANI_ASSERT(isValid(index), "Out of bounds");
 			return m_data[index];
 		}
 
-		[[nodiscard]] const T& atOrDefault(SizeT index, T&& value = T{}) const
+		[[nodiscard]] const T& at(SizeT index) const
+		{
+			MANI_ASSERT(isValid(index), "Out of bounds");
+			return m_data[index];
+		}
+
+		[[nodiscard]] T* atPtr(SizeT index)
 		{
 			if (!isValid(index))
 			{
-				return value;
+				return nullptr;
 			}
-			return m_data[index];
+			return &m_data[index];
+		}
+
+		[[nodiscard]] const T* atPtr(SizeT index) const
+		{
+			if (!isValid(index))
+			{
+				return nullptr;
+			}
+			return &m_data[index];
 		}
 
 		[[nodiscard]] std::vector<T>& data() { return m_data; }

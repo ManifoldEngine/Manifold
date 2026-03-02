@@ -1,5 +1,6 @@
 #include <Core/Containers/List.h>
 #include <Core/Containers/Map.h>
+#include <Core/Containers/SparseSet.h>
 #include <ManiZ/ManiZ.h>
 #include <ManiMaths/Vec3.h>
 #include <ManiTests/ManiTests.h>
@@ -106,8 +107,8 @@ MANI_SECTION_BEGIN(List, "Containers")
         {
             // atOrDefault
             Mani::List<int> l{ 10, 20 };
-            MANI_TEST_ASSERT(l.atOrDefault(0, -1) == 10, "atOrDefault(0) should return 10");
-            MANI_TEST_ASSERT(l.atOrDefault(5, -1) == -1, "Out of bounds atOrDefault should return default (-1)");
+            MANI_TEST_ASSERT(l.at(0) == 10, "at(0) should return 10");
+            MANI_TEST_ASSERT(l.atPtr(5) == nullptr, "Out of bounds atPtr should return nullptr because it was not added");
         }
 
         {
@@ -624,40 +625,262 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
             MANI_TEST_ASSERT(moved.count() == 2, "Moved map should have 2 elements");
             MANI_TEST_ASSERT(original.count() == 0, "Original map should be empty after move");
         }
-    }
 
-    MANI_TEST(MapGetOrAdd, "getOrAdd should insert or return existing value")
-    {
-        Mani::Map<int, std::string> map;
-
-        // Case 1: Key does not exist, should insert
+        MANI_TEST(MapGetOrAdd, "getOrAdd should insert or return existing value")
         {
-            std::string expected = "hello";
-            std::string& ref = map.getOrAdd(1, expected);
+            Mani::Map<int, std::string> map;
 
-            MANI_TEST_ASSERT(map.count() == 1, "Map should have one element after insertion");
-            MANI_TEST_ASSERT(map[1] == "hello", "Inserted value should match");
-            MANI_TEST_ASSERT(&ref == &map[1], "Returned reference should point to stored value");
-        }
+            // Case 1: Key does not exist, should insert
+            {
+                std::string expected = "hello";
+                std::string& ref = map.getOrAdd(1, expected);
 
-        // Case 2: Key already exists, should not insert again
-        {
-            std::string& ref = map.getOrAdd(1, "world");
+                MANI_TEST_ASSERT(map.count() == 1, "Map should have one element after insertion");
+                MANI_TEST_ASSERT(map[1] == "hello", "Inserted value should match");
+                MANI_TEST_ASSERT(&ref == &map[1], "Returned reference should point to stored value");
+            }
 
-            MANI_TEST_ASSERT(map.count() == 1, "Map size should not increase if key exists");
-            MANI_TEST_ASSERT(map[1] == "hello", "Existing value should not be overwritten");
-            MANI_TEST_ASSERT(&ref == &map[1], "Returned reference should point to existing value");
-        }
+            // Case 2: Key already exists, should not insert again
+            {
+                std::string& ref = map.getOrAdd(1, "world");
 
-        // Case 3: Insert a different key
-        {
-            std::string& ref = map.getOrAdd(2, "new");
+                MANI_TEST_ASSERT(map.count() == 1, "Map size should not increase if key exists");
+                MANI_TEST_ASSERT(map[1] == "hello", "Existing value should not be overwritten");
+                MANI_TEST_ASSERT(&ref == &map[1], "Returned reference should point to existing value");
+            }
 
-            MANI_TEST_ASSERT(map.count() == 2, "Second key should be inserted");
-            MANI_TEST_ASSERT(map[2] == "new", "New value should be stored correctly");
-            MANI_TEST_ASSERT(&ref == &map[2], "Returned reference should point to new value");
+            // Case 3: Insert a different key
+            {
+                std::string& ref = map.getOrAdd(2, "new");
+
+                MANI_TEST_ASSERT(map.count() == 2, "Second key should be inserted");
+                MANI_TEST_ASSERT(map[2] == "new", "New value should be stored correctly");
+                MANI_TEST_ASSERT(&ref == &map[2], "Returned reference should point to new value");
+            }
         }
     }
     MANI_SECTION_END(MapOperators)
+
+    MANI_SECTION_BEGIN(SparseSet, "SparseSet operations")
+    {
+        MANI_TEST(SparseSetBasic, "Should be able to construct and use the basic functionalities of a sparse set")
+        {
+            struct MyComponent
+            {
+                int x = 1;
+                int y = 1;
+            };
+            
+            Mani::SparseSet<MyComponent> sparseSet;
+            
+            {
+                MyComponent& component = sparseSet.set(3);
+                component.x = 5;
+                component.y = 10;
+                MANI_TEST_ASSERT(sparseSet.count() == 1, "One element was added");
+            }
+            {
+                MyComponent& component = sparseSet.get(3);
+                MANI_TEST_ASSERT(component.x == 5, "Should be equal to new value");
+                MANI_TEST_ASSERT(component.y == 10, "Should be equal to new value");
+            }
+            {
+                MyComponent* ptr = sparseSet.getPtr(5);
+                MANI_TEST_ASSERT(ptr == nullptr, "5 wasn't created yet.");
+            }
+            {
+                for (MyComponent& component : sparseSet.getDense())
+                {
+                    MANI_TEST_ASSERT(component.x == 5, "Should be equal to new value");
+                    MANI_TEST_ASSERT(component.y == 10, "Should be equal to new value");
+                }
+            }
+            {
+                const bool result = sparseSet.remove(3);
+                MANI_TEST_ASSERT(result, "should have removed element");
+                MANI_TEST_ASSERT(sparseSet.isEmpty(), "should be empty");
+            }
+        }
+
+        MANI_TEST(SparseSetMultipleInsert, "Should handle multiple non-contiguous inserts")
+        {
+            Mani::SparseSet<int> sparseSet;
+
+            sparseSet.set(10) = 100;
+            sparseSet.set(42) = 420;
+            sparseSet.set(7) = 70;
+
+            MANI_TEST_ASSERT(sparseSet.count() == 3, "Three elements inserted");
+
+            MANI_TEST_ASSERT(sparseSet.get(10) == 100, "Correct value at 10");
+            MANI_TEST_ASSERT(sparseSet.get(42) == 420, "Correct value at 42");
+            MANI_TEST_ASSERT(sparseSet.get(7) == 70, "Correct value at 7");
+        }
+
+        MANI_TEST(SparseSetDuplicateInsert, "Setting same index twice should not increase count")
+        {
+            Mani::SparseSet<int> sparseSet;
+
+            sparseSet.set(5) = 1;
+            sparseSet.set(5) = 2;
+
+            MANI_TEST_ASSERT(sparseSet.count() == 1, "Should not duplicate element");
+            MANI_TEST_ASSERT(sparseSet.get(5) == 2, "Value should be updated");
+        }
+
+        MANI_TEST(SparseSetRemoveInvalid, "Removing non-existing element should fail")
+        {
+            Mani::SparseSet<int> sparseSet;
+
+            MANI_TEST_ASSERT(!sparseSet.remove(99), "Removing non-existent index should return false");
+        }
+
+        MANI_TEST(SparseSetSwapRemove, "Removing element should maintain valid mapping after swap")
+        {
+            Mani::SparseSet<int> sparseSet;
+
+            sparseSet.set(1) = 10;
+            sparseSet.set(2) = 20;
+            sparseSet.set(3) = 30;
+
+            MANI_TEST_ASSERT(sparseSet.count() == 3, "Three elements");
+
+            sparseSet.remove(2);
+
+            MANI_TEST_ASSERT(sparseSet.count() == 2, "Two elements remain");
+            MANI_TEST_ASSERT(sparseSet.getPtr(2) == nullptr, "Removed element should not exist");
+
+            MANI_TEST_ASSERT(sparseSet.get(1) == 10, "Element 1 still valid");
+            MANI_TEST_ASSERT(sparseSet.get(3) == 30, "Element 3 still valid");
+        }
+
+        MANI_TEST(SparseSetRemoveLast, "Removing last dense element should work")
+        {
+            Mani::SparseSet<int> sparseSet;
+
+            sparseSet.set(10) = 100;
+            sparseSet.set(20) = 200;
+
+            sparseSet.remove(20);
+
+            MANI_TEST_ASSERT(sparseSet.count() == 1, "One element left");
+            MANI_TEST_ASSERT(sparseSet.get(10) == 100, "Remaining element intact");
+        }
+
+        MANI_TEST(SparseSetReinsert, "Should allow reinsertion after removal")
+        {
+            Mani::SparseSet<int> sparseSet;
+
+            sparseSet.set(8) = 80;
+            sparseSet.remove(8);
+
+            MANI_TEST_ASSERT(sparseSet.getPtr(8) == nullptr, "Removed element gone");
+
+            sparseSet.set(8) = 99;
+
+            MANI_TEST_ASSERT(sparseSet.count() == 1, "One element after reinsertion");
+            MANI_TEST_ASSERT(sparseSet.get(8) == 99, "Value correctly reinserted");
+        }
+
+        MANI_TEST(SparseSetDenseIntegrity, "Dense array should contain exactly active elements")
+        {
+            Mani::SparseSet<int> sparseSet;
+
+            sparseSet.set(3) = 30;
+            sparseSet.set(6) = 60;
+            sparseSet.set(9) = 90;
+
+            Mani::SizeT sum = 0;
+            for (int value : sparseSet.getDense())
+            {
+                sum += value;
+            }
+
+            MANI_TEST_ASSERT(sum == 180, "Dense values should match inserted values");
+        }
+
+        MANI_TEST(SparseSetRemoveFirstWithSwap, "Removing first element should correctly remap swapped element")
+        {
+            Mani::SparseSet<int> sparseSet;
+
+            sparseSet.set(100) = 1;
+            sparseSet.set(200) = 2;
+            sparseSet.set(300) = 3;
+
+            sparseSet.remove(100);
+
+            MANI_TEST_ASSERT(sparseSet.getPtr(100) == nullptr, "100 removed");
+            MANI_TEST_ASSERT(sparseSet.get(200) == 2, "200 still valid");
+            MANI_TEST_ASSERT(sparseSet.get(300) == 3, "300 still valid");
+        }
+
+        MANI_TEST(SparseSetPageBoundary, "Should correctly handle indices across page boundaries")
+        {
+            Mani::SparseSet<int> sparseSet;
+
+            constexpr Mani::SizeT pageSize = 2048;
+
+            // Insert values around the boundary
+            const Mani::SizeT indices[] =
+            {
+                pageSize - 2,   // 2046
+                pageSize - 1,   // 2047 (last of page 0)
+                pageSize,       // 2048 (first of page 1)
+                pageSize + 1,   // 2049
+                pageSize * 2 + 5 // deep into page 2
+            };
+
+            // Insert
+            for (Mani::SizeT i = 0; i < 5; ++i)
+            {
+                sparseSet.set(indices[i]) = static_cast<int>(indices[i] * 10);
+            }
+
+            MANI_TEST_ASSERT(sparseSet.count() == 5, "All boundary elements inserted");
+
+            // Verify all values are accessible
+            for (Mani::SizeT i = 0; i < 5; ++i)
+            {
+                MANI_TEST_ASSERT(
+                    sparseSet.get(indices[i]) == static_cast<int>(indices[i] * 10),
+                    "Value across page boundary should match"
+                );
+            }
+
+            // Remove one from first page and one from second page
+            sparseSet.remove(pageSize - 1);
+            sparseSet.remove(pageSize);
+
+            MANI_TEST_ASSERT(sparseSet.count() == 3, "Two elements removed");
+
+            MANI_TEST_ASSERT(sparseSet.getPtr(pageSize - 1) == nullptr, "Removed page 0 element gone");
+            MANI_TEST_ASSERT(sparseSet.getPtr(pageSize) == nullptr, "Removed page 1 element gone");
+
+            // Ensure remaining elements are intact
+            MANI_TEST_ASSERT(sparseSet.get(pageSize - 2) == static_cast<int>((pageSize - 2) * 10), "Remaining element valid");
+            MANI_TEST_ASSERT(sparseSet.get(pageSize + 1) == static_cast<int>((pageSize + 1) * 10), "Remaining element valid");
+            MANI_TEST_ASSERT(sparseSet.get(pageSize * 2 + 5) == static_cast<int>((pageSize * 2 + 5) * 10), "Deep page element valid");
+
+            // Reinsert previously removed values
+            sparseSet.set(pageSize - 1) = 1111;
+            sparseSet.set(pageSize) = 2222;
+
+            MANI_TEST_ASSERT(sparseSet.count() == 5, "Reinsertion successful");
+
+            MANI_TEST_ASSERT(sparseSet.get(pageSize - 1) == 1111, "Reinserted page 0 element valid");
+            MANI_TEST_ASSERT(sparseSet.get(pageSize) == 2222, "Reinserted page 1 element valid");
+
+            // Final dense integrity check
+            Mani::SizeT seen = 0;
+            for (int value : sparseSet.getDense())
+            {
+                (void)value;
+                ++seen;
+            }
+
+            MANI_TEST_ASSERT(seen == sparseSet.count(), "Dense array count matches sparse count");
+        }
+    }
+    MANI_SECTION_END(SparseSet)
 }
 MANI_SECTION_END(CopyMoveOperators)

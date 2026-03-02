@@ -32,7 +32,7 @@ bool ECS::Entity::hasComponent(ComponentId componentId) const
 	return m_components.test(componentId);
 }
 
-bool ECS::Entity::hasComponents(const Bitset<MAX_COMPONENTS>& componentMask) const
+bool ECS::Entity::hasComponents(const ComponentMask& componentMask) const
 {
 	return componentMask == (componentMask & m_components);
 }

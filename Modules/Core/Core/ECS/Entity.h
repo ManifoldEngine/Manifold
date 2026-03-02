@@ -25,6 +25,7 @@ namespace Mani
 		constexpr Version MAX_VERSION = (std::numeric_limits<Version>::max)();
 #endif
 
+		using ComponentMask = Bitset<MAX_COMPONENTS>;
 		using ComponentId = BitsetIndexType;
 
 		bool isValid(EntityId entityId);
@@ -41,7 +42,7 @@ namespace Mani
 			EntityId getId() const;
 
 			bool hasComponent(ComponentId componentId) const;
-			bool hasComponents(const Bitset<MAX_COMPONENTS>& componentMask) const;
+			bool hasComponents(const ComponentMask& componentMask) const;
 			void setComponentBit(ComponentId componentId);
 			void resetComponentBit(ComponentId componentId);
 			void resetComponentBits();
@@ -60,7 +61,7 @@ namespace Mani
 			Index m_index = 0;
 			Version m_version = 0;
 
-			Bitset<MAX_COMPONENTS> m_components;
+			ComponentMask m_components;
 		};
 
 		EntityId calculateId(Index index, ECS::Version version);
