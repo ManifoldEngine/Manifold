@@ -1,9 +1,13 @@
 #include <Core/Containers/List.h>
 #include <Core/Containers/Map.h>
 #include <Core/Containers/SparseSet.h>
+#include <Core/Containers/SparseArray.h>
+#include <Core/ManiTypes.h>
+
 #include <ManiZ/ManiZ.h>
 #include <ManiMaths/Vec3.h>
 #include <ManiTests/ManiTests.h>
+
 
 struct MoveTester
 {
@@ -674,9 +678,7 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
             Mani::SparseSet<MyComponent> sparseSet;
             
             {
-                MyComponent& component = sparseSet.set(3);
-                component.x = 5;
-                component.y = 10;
+                sparseSet.insert(3, MyComponent{5, 10});
                 MANI_TEST_ASSERT(sparseSet.count() == 1, "One element was added");
             }
             {
@@ -696,8 +698,8 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
                 }
             }
             {
-                const bool result = sparseSet.remove(3);
-                MANI_TEST_ASSERT(result, "should have removed element");
+                const Mani::SizeT result = sparseSet.removeSwap(3);
+                MANI_TEST_ASSERT(result == Mani::INDEX_NONE, "should have removed element");
                 MANI_TEST_ASSERT(sparseSet.isEmpty(), "should be empty");
             }
         }
@@ -706,9 +708,9 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
         {
             Mani::SparseSet<int> sparseSet;
 
-            sparseSet.set(10) = 100;
-            sparseSet.set(42) = 420;
-            sparseSet.set(7) = 70;
+            sparseSet.insert(10, 100);
+            sparseSet.insert(42, 420);
+            sparseSet.insert(7, 70);
 
             MANI_TEST_ASSERT(sparseSet.count() == 3, "Three elements inserted");
 
@@ -721,8 +723,8 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
         {
             Mani::SparseSet<int> sparseSet;
 
-            sparseSet.set(5) = 1;
-            sparseSet.set(5) = 2;
+            sparseSet.insert(5, 1);
+            sparseSet.insert(5, 2);
 
             MANI_TEST_ASSERT(sparseSet.count() == 1, "Should not duplicate element");
             MANI_TEST_ASSERT(sparseSet.get(5) == 2, "Value should be updated");
@@ -732,20 +734,20 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
         {
             Mani::SparseSet<int> sparseSet;
 
-            MANI_TEST_ASSERT(!sparseSet.remove(99), "Removing non-existent index should return false");
+            MANI_TEST_ASSERT(sparseSet.removeSwap(99) == Mani::INDEX_NONE, "Removing non-existent index should return false");
         }
 
         MANI_TEST(SparseSetSwapRemove, "Removing element should maintain valid mapping after swap")
         {
             Mani::SparseSet<int> sparseSet;
 
-            sparseSet.set(1) = 10;
-            sparseSet.set(2) = 20;
-            sparseSet.set(3) = 30;
+            sparseSet.insert(1, 10);
+            sparseSet.insert(2, 20);
+            sparseSet.insert(3, 30);
 
             MANI_TEST_ASSERT(sparseSet.count() == 3, "Three elements");
 
-            sparseSet.remove(2);
+            sparseSet.removeSwap(2);
 
             MANI_TEST_ASSERT(sparseSet.count() == 2, "Two elements remain");
             MANI_TEST_ASSERT(sparseSet.getPtr(2) == nullptr, "Removed element should not exist");
@@ -758,10 +760,10 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
         {
             Mani::SparseSet<int> sparseSet;
 
-            sparseSet.set(10) = 100;
-            sparseSet.set(20) = 200;
+            sparseSet.insert(10, 100);
+            sparseSet.insert(20, 200);
 
-            sparseSet.remove(20);
+            sparseSet.removeSwap(20);
 
             MANI_TEST_ASSERT(sparseSet.count() == 1, "One element left");
             MANI_TEST_ASSERT(sparseSet.get(10) == 100, "Remaining element intact");
@@ -771,12 +773,12 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
         {
             Mani::SparseSet<int> sparseSet;
 
-            sparseSet.set(8) = 80;
-            sparseSet.remove(8);
+            sparseSet.insert(8, 80);
+            sparseSet.removeSwap(8);
 
             MANI_TEST_ASSERT(sparseSet.getPtr(8) == nullptr, "Removed element gone");
 
-            sparseSet.set(8) = 99;
+            sparseSet.insert(8, 99);
 
             MANI_TEST_ASSERT(sparseSet.count() == 1, "One element after reinsertion");
             MANI_TEST_ASSERT(sparseSet.get(8) == 99, "Value correctly reinserted");
@@ -786,9 +788,9 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
         {
             Mani::SparseSet<int> sparseSet;
 
-            sparseSet.set(3) = 30;
-            sparseSet.set(6) = 60;
-            sparseSet.set(9) = 90;
+            sparseSet.insert(3, 30);
+            sparseSet.insert(6, 60);
+            sparseSet.insert(9, 90);
 
             Mani::SizeT sum = 0;
             for (int value : sparseSet.getDense())
@@ -803,11 +805,11 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
         {
             Mani::SparseSet<int> sparseSet;
 
-            sparseSet.set(100) = 1;
-            sparseSet.set(200) = 2;
-            sparseSet.set(300) = 3;
+            sparseSet.insert(100, 1);
+            sparseSet.insert(200, 2);
+            sparseSet.insert(300, 3);
 
-            sparseSet.remove(100);
+            sparseSet.removeSwap(100);
 
             MANI_TEST_ASSERT(sparseSet.getPtr(100) == nullptr, "100 removed");
             MANI_TEST_ASSERT(sparseSet.get(200) == 2, "200 still valid");
@@ -833,7 +835,7 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
             // Insert
             for (Mani::SizeT i = 0; i < 5; ++i)
             {
-                sparseSet.set(indices[i]) = static_cast<int>(indices[i] * 10);
+                sparseSet.insert(indices[i], static_cast<int>(indices[i] * 10));
             }
 
             MANI_TEST_ASSERT(sparseSet.count() == 5, "All boundary elements inserted");
@@ -848,8 +850,8 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
             }
 
             // Remove one from first page and one from second page
-            sparseSet.remove(pageSize - 1);
-            sparseSet.remove(pageSize);
+            sparseSet.removeSwap(pageSize - 1);
+            sparseSet.removeSwap(pageSize);
 
             MANI_TEST_ASSERT(sparseSet.count() == 3, "Two elements removed");
 
@@ -862,8 +864,8 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
             MANI_TEST_ASSERT(sparseSet.get(pageSize * 2 + 5) == static_cast<int>((pageSize * 2 + 5) * 10), "Deep page element valid");
 
             // Reinsert previously removed values
-            sparseSet.set(pageSize - 1) = 1111;
-            sparseSet.set(pageSize) = 2222;
+            sparseSet.insert(pageSize - 1, 1111);
+            sparseSet.insert(pageSize, 2222);
 
             MANI_TEST_ASSERT(sparseSet.count() == 5, "Reinsertion successful");
 
@@ -882,5 +884,87 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
         }
     }
     MANI_SECTION_END(SparseSet)
+
+    MANI_SECTION_BEGIN(SparseArray, "Sparse Array, a fixed size Sparse Set")
+    {
+        MANI_TEST(SparseArrayBasics, "Fixed Size SparseArray")
+        {
+            struct A {};
+            constexpr Mani::SizeT capacity = 10;
+            constexpr bool allowRealloc = false;
+            Mani::SparseArray<A, capacity> arr;
+            for (Mani::SizeT i = 0; i < capacity; i++)
+            {
+                arr.set(i, A());
+            }
+
+            // sparset.insert(capacity, A()); // Crashes
+        }
+
+        MANI_TEST(FixedSizeSparseArrayShouldHaveStablePointers, "Fixed Size Sparse Sets should have stable pointer")
+        {
+            struct A
+            {
+                int value;
+            };
+
+            constexpr Mani::SizeT capacity = 10;
+            constexpr bool allowRealloc = false;
+            Mani::SparseArray<A, capacity> arr;
+
+            // Fill partially
+            for (Mani::SizeT i = 0; i < capacity / 2; i++)
+            {
+                arr.set(i, A{ static_cast<int>(i) });
+            }
+
+            // Capture pointers
+            A* ptrs[capacity / 2];
+            for (Mani::SizeT i = 0; i < capacity / 2; i++)
+            {
+                ptrs[i] = &arr.get(i);
+            }
+
+            // Insert more elements (should not invalidate existing pointers)
+            for (Mani::SizeT i = capacity / 2; i < capacity; i++)
+            {
+                arr.set(i, A{ static_cast<int>(i) });
+            }
+
+            // Validate pointers still point to correct data
+            for (Mani::SizeT i = 0; i < capacity / 2; i++)
+            {
+                MANI_TEST_ASSERT(ptrs[i] == &arr.get(i), "Pointer address changed");
+                MANI_TEST_ASSERT(ptrs[i]->value == static_cast<int>(i), "Pointer data corrupted");
+            }
+
+            // Remove some unrelated elements
+            for (Mani::SizeT i = capacity / 2; i < capacity; i++)
+            {
+                arr.unset(i);
+            }
+
+            // Validate again after removals
+            for (Mani::SizeT i = 0; i < capacity / 2; i++)
+            {
+                MANI_TEST_ASSERT(ptrs[i] == &arr.get(i), "Pointer address changed after removal");
+                MANI_TEST_ASSERT(ptrs[i]->value == static_cast<int>(i), "Pointer data corrupted after removal");
+            }
+
+            arr.unset(0);
+            MANI_TEST_ASSERT(arr.toDenseIndex(0) == Mani::INDEX_NONE, "should have discarded index 0");
+
+            for (Mani::SizeT i = 1; i < capacity / 2; i++)
+            {
+                MANI_TEST_ASSERT(ptrs[i] == &arr.get(i), "Pointer address changed after removal");
+                MANI_TEST_ASSERT(ptrs[i]->value == static_cast<int>(i), "Pointer data corrupted after removal");
+            }
+
+            arr.set(0, A(5));
+            MANI_TEST_ASSERT(arr.toDenseIndex(0) == 0, "should reuse the first index");
+            MANI_TEST_ASSERT(arr.get(0).value == 5, "Should be equal to the set value");
+        }
+    }
+    MANI_SECTION_END(SparseArray)
 }
 MANI_SECTION_END(CopyMoveOperators)

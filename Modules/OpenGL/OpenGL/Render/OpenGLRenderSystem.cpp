@@ -24,70 +24,55 @@
 
 using namespace Mani;
 
-OpenGLRenderStorage& getStorageChecked(ECS::Registry& registry)
-{
-	OpenGLRenderStorage* storage = registry.getSingle<OpenGLRenderStorage>();
-	MANI_ASSERT(storage != nullptr, "trying to register an extension outside of the lifetime of the system");
-	return *storage;
-}
-
 OpenGLRenderContext createContext(ECS::Registry& registry)
 {
 	OpenGLRenderContext context;
-	{
-		context.openglContext = registry.getSingle<OpenGLWindowContext>();
-	}
 
 	{
 		// camera
 		ECS::EntityId cameraId = CameraStatics::getMainCameraId(registry);
 		MANI_ASSERT(cameraId != ECS::INVALID_ID, "trying to render without a camera");
-		auto [positionPtr, cameraPtr] = registry.getMany<Position, Camera>(cameraId);
+		auto position = registry.get<Position>(cameraId);
+		auto camera = registry.get<Camera>(cameraId);
 
-		const Position& position = *positionPtr;
-		context.cameraPosition = position.value;
+		context.cameraPosition = position->value;
 
-		const Camera& camera = *cameraPtr;
-		context.view = camera.view;
-		context.projection = camera.projection;
-		context.width = static_cast<int>(camera.width);
-		context.height = static_cast<int>(camera.height);
+		context.view = camera->view;
+		context.projection = camera->projection;
+		context.width = static_cast<int>(camera->width);
+		context.height = static_cast<int>(camera->height);
 	}
 
 	{
 		// light
-		for (const auto entityId : ECS::View<DirectionalLight>(registry))
+		for (const auto [entityId, light] : ECS::ConstView<DirectionalLight>(registry))
 		{
-			const DirectionalLight& light = *registry.get<DirectionalLight>(entityId);
 			context.directionalLights.add(light);
 		}
-		for (const auto entityId : ECS::View<PointLight, Position>(registry))
+		for (const auto [entityId, light, position] : ECS::ConstView<PointLight, Position>(registry))
 		{
-			const PointLight& light = *registry.get<PointLight>(entityId);
-			const Position& position = *registry.get<Position>(entityId);
 			context.pointLights.add(std::tuple<PointLight, Position>{ light, position });
 		}
-		for (const auto entityId : ECS::View<Spotlight, Position, Rotation>(registry))
+		for (const auto [entityId, light, position, rotation] : ECS::ConstView<Spotlight, Position, Rotation>(registry))
 		{
-			const Spotlight& light = *registry.get<Spotlight>(entityId);
-			const Position& position = *registry.get<Position>(entityId);
-			const Rotation& rotation = *registry.get<Rotation>(entityId);
 			context.spotlights.add(std::tuple<Spotlight, Position, Rotation>{ light, position, rotation });
 		}
 	}
 
 	{
 		// clear color
-		const OpenGLClearColor& clearColor = *registry.getSingle<OpenGLClearColor>();
-		context.clearColor = clearColor.color;
+		Ref<OpenGLClearColor> clearColor = registry.getSingle<OpenGLClearColor>();
+		context.clearColor = clearColor->color;
 	}
 
 	{
 		// renderers and extensions
-		OpenGLRenderStorage& storage = getStorageChecked(registry);
+		OpenGLRenderStorage& storage = registry.getSinglePinned<OpenGLRenderStorage>();
 		context.renderers = storage.renderers;
 		context.extensions = storage.extensions;
-		context.renderContext = *registry.getSingle<RenderContext>();
+
+		Ref<RenderContext> renderContext = registry.getSingle<RenderContext>();
+		context.renderContext = *renderContext;
 	}
 
 	return context;
@@ -100,22 +85,25 @@ void OpenGLRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 	world.initializeDependency<OpenGLCameraUpdateSystem>();
 	world.initializeDependency<RenderContextSystem>();
 	
-	registry.addSingle<OpenGLRenderStorage>();
 	registry.addSingle<OpenGLClearColor>();
+	OpenGLRenderStorage& storage = registry.addSinglePinned<OpenGLRenderStorage>();
+	storage.renderThread = &m_renderThread;
 }
 
 void OpenGLRenderSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	OpenGLRenderStorage& storage = *registry.getSingle<OpenGLRenderStorage>();
-	storage.renderThread.stop();
+	OpenGLRenderStorage& storage = registry.getSinglePinned<OpenGLRenderStorage>();
+	storage.renderThread = nullptr;
+	
+	m_renderThread.stop();
 
 	registry.removeSingle<OpenGLClearColor>();
-	registry.removeSingle<OpenGLRenderStorage>();
+	registry.removeSinglePinned<OpenGLRenderStorage>();
 }
 
 void OpenGLRenderSystem::tick(ECS::Registry& registry)
 {
-	OpenGLCommandBufferCollection* cbs = registry.getSingle<OpenGLCommandBufferCollection>();
+	OpenGLCommandBuffers* cbs = registry.findSinglePinned<OpenGLCommandBuffers>();
 	if (cbs == nullptr)
 	{
 		MANI_LOG_WARNING(LogOpenGL, "Trying to push opengl commands without a command buffer");
@@ -127,27 +115,29 @@ void OpenGLRenderSystem::tick(ECS::Registry& registry)
 		return;
 	}
 
-	OpenGLRenderStorage& storage = *registry.getSingle<OpenGLRenderStorage>();
 	OpenGLRenderContext context = createContext(registry);
 	OpenGLCommandBuffer& buffer = cbs->buffers[cbs->readBuffer];
 
-//#if MANI_DEBUG
-	Time& time = *registry.getSingle<Time>();
-	const int fps = Math::isEqual(time.delta, 0.f) ? 0 : static_cast<int>(1 / time.delta);
-	glfwSetWindowTitle(context.openglContext->window, std::format("{} ({}fps)", context.openglContext->name, fps).c_str());
-//#endif
+#if MANI_DEBUG // display fps in window title
+	OpenGLWindowContext& openglContext = registry.getSinglePinned<OpenGLWindowContext>();
+	Ref<Time> time = registry.getSingle<Time>();
+	const int fps = Math::isEqual(time->delta, 0.f) ? 0 : static_cast<int>(1 / time->delta);
+	glfwSetWindowTitle(openglContext.window, std::format("{} ({}fps)", openglContext.name, fps).c_str());
+#endif
 
 	if (context.renderers.isEmpty())
 	{
 		MANI_LOG_WARNING(LogOpenGL, "No renderer registered");
-		buffer.isReadyToWrite.release(); // skip this frame
+		MANI_ASSERT(buffer.isReadyToWrite != nullptr, "Invalid buffer");
+		buffer.isReadyToWrite->release(); // skip this frame
 		return;
 	}
 
-	storage.renderThread.enqueue([&registry, &buffer, context = std::move(context)]() mutable
+	m_renderThread.enqueue([&registry, &buffer, context = std::move(context)]() mutable
 	{
+		OpenGLWindowContext& openglContext = registry.getSinglePinned<OpenGLWindowContext>();
 		MANI_TIME_SCOPE("OpenGLRenderSystem_tick_renderthread");
-		glfwMakeContextCurrent(context.openglContext->window);
+		glfwMakeContextCurrent(openglContext.window);
 
 		// setting color state.
 		const Vec4f& clearColor = context.clearColor;
@@ -201,9 +191,10 @@ void OpenGLRenderSystem::tick(ECS::Registry& registry)
 			extension->onPostRender(registry);
 		}
 
-		glfwSwapBuffers(context.openglContext->window);
+		glfwSwapBuffers(openglContext.window);
 		glfwMakeContextCurrent(nullptr);
 
-		buffer.isReadyToWrite.release();
+		MANI_ASSERT(buffer.isReadyToWrite != nullptr, "Invalid buffer");
+		buffer.isReadyToWrite->release();
 	});
 }

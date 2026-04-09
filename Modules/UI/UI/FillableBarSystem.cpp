@@ -11,11 +11,9 @@ using namespace Mani;
 
 void FillableBarSystem::tick(Mani::ECS::Registry& registry)
 {
-	Mani::ECS::View<FillableBar, Mani::MeshRendering> view(registry);
-	Mani::parallelFor(view, [&](const auto entityId, size_t threadIndex) 
+	ECS::View<FillableBar, MeshRendering> view(registry);
+	parallelFor(view, [&](ECS::EntityId entityId, FillableBar& bar, MeshRendering& meshRendering) 
 	{
-		const FillableBar& bar = registry.getRef<FillableBar>(entityId);
-		Mani::MeshRendering& meshComp = registry.getRef<Mani::MeshRendering>(entityId);
-		meshComp.shaderParameters[UI::ShaderNames::MANI_UI_FILLRATIO] = bar.amount;
+		meshRendering.shaderParameters[UI::ShaderNames::MANI_UI_FILLRATIO] = bar.amount;
 	});
 }

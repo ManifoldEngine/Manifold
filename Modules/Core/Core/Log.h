@@ -3,10 +3,11 @@
 #include <Core/Logger.h>
 #include <string_view>
 #include <format>
+#include <limits>
 
 namespace Mani 
 {
-	constexpr std::string_view Log = "Log";
+	constexpr LogChannel Log("Log");
 }
 
 #if MANI_DEBUG && !MANI_WEBGL

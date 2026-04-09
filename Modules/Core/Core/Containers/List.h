@@ -13,6 +13,8 @@ namespace Mani
 	public:
 		using Iterator = typename std::vector<T>::iterator;
 		using IteratorConst = typename std::vector<T>::const_iterator;
+		using ReverseIterator = typename std::vector<T>::reverse_iterator;
+		using ReverseIteratorConst = typename std::vector<T>::const_reverse_iterator;
 
 		using Predicate = bool(const T&);
 
@@ -115,6 +117,11 @@ namespace Mani
 			return value;
 		}
 
+		void swap(SizeT i1, SizeT i2)
+		{
+			std::swap(m_data[i1], m_data[i2]);
+		}
+
 		// algo
 		[[nodiscard]] bool contains(const T& value) const
 		{
@@ -205,9 +212,14 @@ namespace Mani
 			m_data.erase(it);
 		}
 
+		void removeLast()
+		{
+			m_data.pop_back();
+		}
+
 		T pop()
 		{
-			T value = last();
+			T value = std::move(last());
 			m_data.pop_back();
 			return value;
 		}
@@ -246,8 +258,8 @@ namespace Mani
 
 		// access
 		[[nodiscard]] bool isValid(SizeT index) const { return index < m_data.size(); }
-		[[nodiscard]] T& operator[](SizeT index) { return m_data[index]; }
-		[[nodiscard]] const T& operator[](SizeT index) const { return m_data[index]; }
+		[[nodiscard]] T& operator[](SizeT index) { MANI_ASSERT(isValid(index), "Out of bounds"); return m_data[index]; }
+		[[nodiscard]] const T& operator[](SizeT index) const { MANI_ASSERT(isValid(index), "Out of bounds"); return m_data[index]; }
 		[[nodiscard]] T& first() { return m_data.front(); }
 		[[nodiscard]] const T& first() const { return m_data.front(); }
 		[[nodiscard]] T& last() { return m_data.back(); }
@@ -319,8 +331,8 @@ namespace Mani
 			return &m_data[index];
 		}
 
-		[[nodiscard]] std::vector<T>& data() { return m_data; }
-		[[nodiscard]] const std::vector<T>& data() const { return m_data; }
+		[[nodiscard]] T* data() { return m_data.data(); }
+		[[nodiscard]] const T* data() const { return m_data.data(); }
 
 		// iterators
 		Iterator begin() { return m_data.begin(); }
@@ -328,8 +340,12 @@ namespace Mani
 		Iterator end() { return m_data.end(); }
 		IteratorConst end() const { return m_data.end(); }
 
+		ReverseIterator rbegin() { return m_data.rbegin(); }
+		ReverseIteratorConst rbegin() const { return m_data.rbegin(); }
+		ReverseIterator rend() { return m_data.rend(); }
+		ReverseIteratorConst rend() const { return m_data.rend(); }
+		
 		// comparison
-
 		bool operator==(const Mani::List<T>& other) const
 		{
 			return m_data == other.m_data;

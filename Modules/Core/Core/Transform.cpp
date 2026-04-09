@@ -47,20 +47,3 @@ Vec3f Transform::right(const Quatf& q)
 {
 	return q.rotate(VEC3F::RIGHT).normalize();
 }
-
-std::tuple<Position&, Rotation&, Scale&> Mani::Transform::addTransform(ECS::Registry& registry, ECS::EntityId entityId)
-{
-	MANI_ASSERT(registry.isValid(entityId), "Trying to add a transform to an invalid entity.");
-	Position& position = *registry.add<Position>(entityId);
-	Rotation& rotation = *registry.add<Rotation>(entityId);
-	Scale& scale = *registry.add<Scale>(entityId);
-	return { position, rotation, scale };
-}
-
-std::tuple<Position*, Rotation*, Scale*> Mani::Transform::getTransform(ECS::Registry& registry, ECS::EntityId entityId)
-{
-	Position* position = registry.get<Position>(entityId);
-	Rotation* rotation = registry.get<Rotation>(entityId);
-	Scale* scale = registry.get<Scale>(entityId);
-	return { position, rotation, scale };
-}

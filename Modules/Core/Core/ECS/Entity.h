@@ -6,9 +6,12 @@
 
 namespace Mani 
 {
+	template<typename T>
+	class List;
+
 	namespace ECS
 	{
-		const int MAX_COMPONENTS = 128;
+		constexpr int MAX_COMPONENTS = 128;
 
 #if MANI_WEBGL
 		using EntityId = unsigned int;
@@ -23,10 +26,12 @@ namespace Mani
 
 		using Version = unsigned int;
 		constexpr Version MAX_VERSION = (std::numeric_limits<Version>::max)();
+		constexpr int VERSION_BITS = sizeof(Version) * 8;
 #endif
 
 		using ComponentMask = Bitset<MAX_COMPONENTS>;
 		using ComponentId = BitsetIndexType;
+		constexpr ComponentId INVALID_COMPONENT_ID = std::numeric_limits<ComponentId>::max();
 
 		bool isValid(EntityId entityId);
 
@@ -35,37 +40,23 @@ namespace Mani
 		 */
 		struct Entity
 		{
-			Entity() = default;
-			Entity(const Entity&) = delete;
-			Entity(Entity&& other) noexcept;
-			
+			Entity(ECS::Index index);
+
 			EntityId getId() const;
-
-			bool hasComponent(ComponentId componentId) const;
-			bool hasComponents(const ComponentMask& componentMask) const;
-			void setComponentBit(ComponentId componentId);
-			void resetComponentBit(ComponentId componentId);
-			void resetComponentBits();
-
-			void setIndex(Index index);
 			Index getIndex() const;
 
-			void setVersion(Version version);
-			Version getVersion() const;
-
 			bool isAlive = false;
+			ComponentMask components;
+			ComponentMask pinned;
+			Version version = 0;
+
 		private:
-			void updateId();
-
-			EntityId m_id = INVALID_ID;
 			Index m_index = 0;
-			Version m_version = 0;
-
-			ComponentMask m_components;
 		};
 
-		EntityId calculateId(Index index, ECS::Version version);
+		EntityId calculateId(Version version, Index index);
 		Index toIndex(EntityId entityId);
 		Version toVersion(EntityId version);
+		Mani::List<ComponentId> toComponentIds(const ComponentMask& mask);
 	}
 }

@@ -18,8 +18,6 @@
 
 namespace Mani
 {
-	const std::string_view LogCamera = "LogCamera";
-
 	enum class ECameraMode : uint8_t
 	{
 		Perspective = 0,

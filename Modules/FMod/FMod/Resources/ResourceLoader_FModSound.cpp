@@ -9,19 +9,12 @@
 
 using namespace Mani;
 
-ECS::ComponentId Mani::ResourceLoader_FModSound::getComponentId(const ECS::Registry& registry) const
-{
-    return registry.getComponentId<Resource<FModSound>>();
-}
-
 bool Mani::ResourceLoader_FModSound::load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
 {
-    FMod* fmod = registry.getSingle<FMod>();
-    MANI_ASSERT(fmod != nullptr, "FModSystem is expected to initialized at this point.");
-    FMOD::System* system = fmod->system;
+    Ref<FMod> fmod = registry.getSingle<FMod>();
 
-    Resource<FModSound>& resource = registry.getRef<Resource<FModSound>>(resourceId);
-    FMOD_RESULT result = system->createSound(absolutePath.string().c_str(), FMOD_DEFAULT, 0, &(resource.value.sound));
+    Ref<Resource<FModSound>> resource = registry.get<Resource<FModSound>>(resourceId);
+    FMOD_RESULT result = fmod->system->createSound(absolutePath.string().c_str(), FMOD_DEFAULT, 0, &(resource->value.sound));
 
     if (result != FMOD_OK)
     {

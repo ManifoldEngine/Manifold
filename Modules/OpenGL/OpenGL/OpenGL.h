@@ -11,8 +11,8 @@
 
 namespace Mani
 {
-	const std::string_view LogOpenGL = "OpenGL";
-	const std::string_view LogOpenGLAPI = "OPENGL_CALLBACK";
+	constexpr LogChannel LogOpenGL("OpenGL");
+	constexpr LogChannel LogOpenGLAPI("OPENGL_CALLBACK");
 
 	namespace OpenGL
 	{
@@ -35,9 +35,8 @@ namespace Mani
 	template<typename TFunctor, typename ...TArgs>
 	void OpenGL::enqueueRenderTask(ECS::Registry& registry, TFunctor&& f, TArgs && ...args)
 	{
-		if (OpenGLRenderStorage* storage = registry.getSingle<OpenGLRenderStorage>())
-		{
-			storage->renderThread.enqueue(std::forward<TFunctor>(f), std::forward<TArgs>(args)...);
-		}
+		OpenGLRenderStorage& storage = registry.getSinglePinned<OpenGLRenderStorage>();
+		MANI_ASSERT(storage.renderThread != nullptr, "Render Storage initialized with null render thread");
+		storage.renderThread->enqueue(std::forward<TFunctor>(f), std::forward<TArgs>(args)...);
 	}
 }

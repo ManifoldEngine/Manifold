@@ -53,9 +53,9 @@ namespace Mani
 	};
 }
 
-#if MANI_DEBUG
-#define MANI_TIME_SCOPE(NAME) \
-	Mani::_impl::ScopedTimer scopeTimer_##__LINE__(NAME)
-#else
+//#if MANI_DEBUG
+//#define MANI_TIME_SCOPE(NAME) \
+//	Mani::_impl::ScopedTimer scopeTimer_##__LINE__(NAME)
+//#else
 #define MANI_TIME_SCOPE(NAME)
-#endif
+//#endif

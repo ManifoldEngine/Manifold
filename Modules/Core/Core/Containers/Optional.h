@@ -12,7 +12,7 @@ namespace Mani
 		constexpr Optional() = default;
 
 		template<class... Ts, std::enable_if_t<std::is_constructible_v<T, Ts...>, int> = 0>
-		constexpr Optional(Ts... args) : m_data(args...)
+		constexpr Optional(Ts&&... args) : m_data(args...)
 		{
 		}
 

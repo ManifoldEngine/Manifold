@@ -19,8 +19,8 @@ void ManImGuiProfilingStatsSystem::onInitialize(ECS::Registry& registry, World& 
 	world.initializeDependency<ManImGuiManifoldMenuSystem>();
 
 	{
-		ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
-		menu.subMenu.addItem(PROFILER_NAME);
+		Ref<ManImGuiMenu> menu = ManImGuiStatics::Manifold::getMenu(registry);
+		menu->subMenu.addItem(PROFILER_NAME);
 	}
 }
 
@@ -31,8 +31,8 @@ bool Mani::ManImGuiProfilingStatsSystem::shouldTick(const ECS::Registry& registr
 		return false;
 	}
 
-	const ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
-	return menu.subMenu.getSelected(PROFILER_NAME);
+	Ref<const ManImGuiMenu> menu = ManImGuiStatics::Manifold::getMenu(registry);
+	return menu->subMenu.getSelected(PROFILER_NAME);
 }
 
 void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
@@ -40,8 +40,8 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 	
 	// this system might not be in the application's registry, but below it.
 	const ECS::Registry& appRegistry = Application::get().getWorld().getRegistry();
-	const ScopedTimerDatabase* database = appRegistry.getSingle<ScopedTimerDatabase>();
-	if (database == nullptr)
+	Ref<const ScopedTimerDatabase> database = appRegistry.findSingle<ScopedTimerDatabase>();
+	if (!database.isValid())
 	{
 		return;
 	}
@@ -57,14 +57,14 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 
 	if (!isOpened)
 	{
-		ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
-		menu.subMenu.setSelected(PROFILER_NAME, false);
+		Ref<ManImGuiMenu> menu = ManImGuiStatics::Manifold::getMenu(registry);
+		menu->subMenu.setSelected(PROFILER_NAME, false);
 		ImGui::End();
 		return;
 	}
 
-	Time& time = *registry.getSingle<Time>();
-	const float fps = Math::isEqual(time.delta, 0.f) ? 0.f : 1.f / time.delta;
+	Ref<Time> time = registry.getSingle<Time>();
+	const float fps = Math::isEqual(time->delta, 0.f) ? 0.f : 1.f / time->delta;
 	ImGui::Text(std::format("{:.3}fps, entity count {}", fps, registry.count()).c_str());
 	for (const auto& name : keys)
 	{

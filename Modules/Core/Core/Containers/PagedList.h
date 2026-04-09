@@ -54,7 +54,7 @@ namespace Mani
 		[[nodiscard]] Mani::Optional<T> safeGet(SizeT index) const
 		{
 			const SizeT page = toPage(index);
-			if (!m_pages->isValid(page))
+			if (!m_pages->isValid(page) || m_pages->at(page) == nullptr)
 			{
 				return Mani::Optional<T>();
 			}
@@ -114,6 +114,15 @@ namespace Mani
 			const SizeT page = toPage(index);
 			MANI_ASSERT(m_pages->isValid(page), "Trying to get an invalid page.");
 			Page* pagePtr = m_pages->at(page).get();
+			MANI_ASSERT(pagePtr != nullptr, "Trying to get a uninitialized page.");
+			return *pagePtr;
+		}
+
+		[[nodiscard]] const Page& getPage(SizeT index) const
+		{
+			const SizeT page = toPage(index);
+			MANI_ASSERT(m_pages->isValid(page), "Trying to get an invalid page.");
+			const Page* pagePtr = m_pages->at(page).get();
 			MANI_ASSERT(pagePtr != nullptr, "Trying to get a uninitialized page.");
 			return *pagePtr;
 		}

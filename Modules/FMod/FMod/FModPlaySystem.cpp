@@ -1,6 +1,6 @@
 #include "FModPlaySystem.h"
 
-#include <Resources/Components/Resource.h>
+#include <Resources/Resources.h>
 
 #include <FMod/FMod.h>
 #include <FMod/Resources/FModSound.h>
@@ -13,8 +13,8 @@ using namespace Mani;
 
 bool FModPlaySystem::shouldTick(const ECS::Registry& registry) const
 {
-    const FModPlayQueue& queue = *registry.getSingle<FModPlayQueue>();
-    return !queue.value.isEmpty();
+    Ref<const FModPlayQueue> queue = registry.getSingle<FModPlayQueue>();
+    return !queue->value.isEmpty();
 }
 
 void FModPlaySystem::onInitialize(ECS::Registry& registry, World& world)
@@ -29,37 +29,37 @@ void FModPlaySystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void FModPlaySystem::tick(ECS::Registry& registry)
 {
-    FMod& fmod = FModStatics::getFModChecked(registry);
+    Ref<FMod> fmod = FModStatics::getFModChecked(registry);
 
-    FModPlayQueue& queue = *registry.getSingle<FModPlayQueue>();
+    Ref<FModPlayQueue> queue = registry.getSingle<FModPlayQueue>();
     List<ECS::EntityId> channelsPendingLoading;
-    while (!queue.value.isEmpty())
+    while (!queue->value.isEmpty())
     {
-        ECS::EntityId channelId = queue.value.dequeue();
-        FModChannel& channel = registry.getRef<FModChannel>(channelId);
+        ECS::EntityId channelId = queue->value.dequeue();
+        Ref<FModChannel> channel = registry.get<FModChannel>(channelId);
 
-        Resource<FModSound>& resource = registry.getRef<Resource<FModSound>>(channel.resourceId);
-        if (!resource.isReady)
+        if (!Resources::isReady(registry, channel->resourceId))
         {
             channelsPendingLoading.add(channelId);
             continue;
         }
 
+        Ref<Resource<FModSound>> resource = registry.get<Resource<FModSound>>(channel->resourceId);
         constexpr FMOD::ChannelGroup* group = nullptr;
         constexpr bool isPaused = false;
-        fmod.system->playSound(resource.value.sound, group, isPaused, &channel.value);
+        fmod->system->playSound(resource->value.sound, group, isPaused, &channel->value);
         if (!registry.has<FModOneShot>(channelId))
         {
-            channel.value->setMode(FMOD_LOOP_NORMAL);
+            channel->value->setMode(FMOD_LOOP_NORMAL);
         }
 
-        channel.value->setPaused(channel.isPaused);
-        channel.value->setVolume(channel.volume);
+        channel->value->setPaused(channel->isPaused);
+        channel->value->setVolume(channel->volume);
     }
 
     // channels that are pending loading are put back into the queue
     for (const ECS::EntityId entityId : channelsPendingLoading)
     {
-        queue.value.enqueue(entityId);
+        queue->value.enqueue(entityId);
     }
 }

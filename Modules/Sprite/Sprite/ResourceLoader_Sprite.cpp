@@ -11,14 +11,9 @@
 
 using namespace Mani;
 
-ECS::ComponentId ResourceLoader_Sprite::getComponentId(const ECS::Registry& registry) const
-{
-	return registry.getComponentId<Resource<Sprite>>();
-}
-
 bool ResourceLoader_Sprite::load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
 {
-	Resource<Sprite>& resource = registry.getRef<Resource<Sprite>>(resourceId);
+	Ref<Resource<Sprite>> resource = registry.get<Resource<Sprite>>(resourceId);
 
 	std::string content;
 	if (!FileSystem::readFile(absolutePath, content))
@@ -27,21 +22,30 @@ bool ResourceLoader_Sprite::load(ECS::Registry& registry, const std::filesystem:
 		return false;
 	}
 
-	resource.value = ManiZ::from::json<Sprite>(std::move(content));
+	resource->value = ManiZ::from::json<Sprite>(std::move(content));
 
-	const std::string& texturePath = resource.value.texturePath;
+	const std::string& texturePath = resource->value.texturePath;
 	MANI_ASSERT(!texturePath.empty(), "Sprite asset with an empty texture path");
-	resource.value.textureId = Resources::loadSync<Texture>(registry, texturePath, tag);
 
-	const Texture& texture = registry.getRef<Resource<Texture>>(resource.value.textureId).value;
-	const float texelsPerUnitf = static_cast<float>(resource.value.texelsPerUnit);
+	const ECS::EntityId textureId = Resources::loadSync<Texture>(registry, texturePath, tag);
+	resource = registry.get<Resource<Sprite>>(resourceId); // refresh the reference, we added a texture component
+	resource->value.textureId = textureId;
+
+	Ref<Resource<Texture>> texture = registry.get<Resource<Texture>>(resource->value.textureId);
+	const float texelsPerUnitf = static_cast<float>(resource->value.texelsPerUnit);
 	MANI_ASSERT(texelsPerUnitf > 0.f, "tpu of 0 doesn't make sense");
 
 	const Vec2i size{
-		.x = Math::ceilToInt(static_cast<float>(texture.size.x) / texelsPerUnitf),
-		.y = Math::ceilToInt(static_cast<float>(texture.size.y) / texelsPerUnitf),
+		.x = Math::ceilToInt(static_cast<float>(texture->value.size.x) / texelsPerUnitf),
+		.y = Math::ceilToInt(static_cast<float>(texture->value.size.y) / texelsPerUnitf),
 	};
 
-	resource.value.quadId = SpriteStatics::getOrAddQuad(registry, size);
+	const ECS::EntityId quadId = SpriteStatics::getOrAddQuad(registry, size);
+	resource = registry.get<Resource<Sprite>>(resourceId);
+	resource->value.quadId = quadId;
 	return true;
+}
+
+void ResourceLoader_Sprite::postLoad(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
+{
 }

@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <Log.h>
 #include <string_view>
 
 // Debug utilities
@@ -11,11 +12,13 @@
 		#else	
 			#define MANI_DEBUGBREAK()
 		#endif
-		#define MANI_ASSERT_ENABLED
 	#endif
+	#define MANI_ASSERT_ENABLED 1
+#else
+	#define MANI_ASSERT_ENABLED 0
 #endif
 
 namespace Mani
 {
-	const std::string_view LogCore = "LogCore";
+	constexpr LogChannel LogCore("LogCore");
 }

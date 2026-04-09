@@ -42,10 +42,8 @@ void ManImGuiTopMenuBarSystem::tick(ECS::Registry& registry)
 {
 	if (ImGui::BeginMainMenuBar())
 	{
-		ECS::View<ManImGuiMenu> menuView(registry);
-		for (const auto entityId : menuView)
+		for (auto [entityId, menu] : ECS::View<ManImGuiMenu>(registry))
 		{
-			ManImGuiMenu& menu = registry.getRef<ManImGuiMenu>(entityId);
 			displayMenu(menu.subMenu, menu.title);
 		}
 

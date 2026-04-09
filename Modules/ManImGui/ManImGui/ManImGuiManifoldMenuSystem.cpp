@@ -14,17 +14,18 @@ struct ManImGuiManifoldMenuSystem::Storage
 
 void ManImGuiManifoldMenuSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-	auto& storage = *registry.addSingle<Storage>();
-	ECS::EntityId entityId = registry.create();
+	auto storage = registry.addSingle<Storage>();
+	const ECS::EntityId entityId = registry.create();
+	storage->menuEntityId = entityId;
+
 	registry.add<ManImGuiManifoldMenu>(entityId);
-	ManImGuiMenu& menu = *registry.add<ManImGuiMenu>(entityId);
-	menu.title = "Manifold";
-	storage.menuEntityId = entityId;
+	Ref<ManImGuiMenu> menu = registry.add<ManImGuiMenu>(entityId);
+	menu->title = "Manifold";
 }
 
 void ManImGuiManifoldMenuSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	auto& storage = *registry.getSingle<Storage>();
-	registry.destroy(storage.menuEntityId);
+	auto storage = registry.getSingle<Storage>();
+	registry.destroy(storage->menuEntityId);
 	registry.removeSingle<Storage>();
 }

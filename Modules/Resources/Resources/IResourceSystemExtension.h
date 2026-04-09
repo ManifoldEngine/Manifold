@@ -12,4 +12,10 @@ namespace Mani
 		// Always called on the main thread through Mani::defer
 		virtual void onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const = 0;
 	};
+
+	template<typename T>
+	struct ResourceSystemExtension
+	{
+		T* value = nullptr;
+	};
 }

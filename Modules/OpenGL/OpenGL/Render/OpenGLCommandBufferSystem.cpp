@@ -5,7 +5,7 @@
 
 #include <Camera/Camera.h>
 
-#include <Resources/Components/Resource.h>
+#include <Resources/Resources.h>
 
 #include <OpenGL/OpenGL.h>
 #include <OpenGL/Resources/OpenGLMaterial.h>
@@ -19,76 +19,75 @@ using namespace Mani;
 
 void OpenGLCommandBufferSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-	OpenGLCommandBufferCollection& cbs = *registry.addSingle<OpenGLCommandBufferCollection>();
+	OpenGLCommandBuffers& cbs = registry.addSinglePinned<OpenGLCommandBuffers>();
 	// release all command buffers so they're ready to receive commands.
-	for (auto& buffer : cbs.buffers)
+	for (SizeT i = 0; i < OpenGL::COMMAND_BUFFER_AMOUNT; i++)
 	{
-		buffer.isReadyToWrite.release();
+		OpenGLCommandBuffer& buffer = cbs.buffers[i];
+		buffer.isReadyToWrite = m_semaphores[i].getPtr();
+		buffer.isReadyToWrite->release();
 	}
 }
 
 void OpenGLCommandBufferSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	registry.removeSingle<OpenGLCommandBufferCollection>();
+	registry.removeSinglePinned<OpenGLCommandBuffers>();
+	for (SizeT i = 0; i < OpenGL::COMMAND_BUFFER_AMOUNT; i++)
+	{
+		m_semaphores[i].getPtr()->acquire();
+	}
 }
 
 void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 {
 	// camera
 	ECS::EntityId cameraId = CameraStatics::getMainCameraId(registry);
-	auto [cameraPosition, camera] = registry.getMany<Position, Camera>(cameraId);
-	if (camera == nullptr)
-	{
-		return;
-	}
+	MANI_ASSERT(cameraId != ECS::INVALID_ID, "Trying to render without a camera");
+	auto cameraPosition = registry.get<Position>(cameraId);
+	auto camera = registry.get<Camera>(cameraId);
 
 	// gather all draw commands.
 	std::array<List<OpenGLCommand>, Application::THREAD_COUNT> threadBuffers;
-	ECS::View<Position, Rotation, Scale, MeshRendering> view(registry);
-	Mani::parallelFor(view, [&threadBuffers, &registry, cameraPosition, camera](ECS::EntityId entityId, size_t threadIndex)
+	ECS::ConstView<Position, Rotation, Scale, MeshRendering> view(registry);
+	Mani::parallelFor(view, [&threadBuffers, &registry, &cameraPosition, &camera](SizeT threadIdx, ECS::EntityId entityId, const Position& position, const Rotation& rotation, const Scale& scale, const MeshRendering& meshRendering)
 	{
-		MeshRendering& meshComponent = *registry.get<MeshRendering>(entityId);
-		auto [position, rotation, scale] = Transform::getTransform(registry, entityId);
-
-		if (const BoundingSphere* boundingSphere = registry.get<BoundingSphere>(entityId))
+		if (Ref<BoundingSphere> bounds = registry.find<BoundingSphere>(entityId))
 		{
-			if (!CameraStatics::isInView(*camera, *position, *rotation, *scale, *boundingSphere))
+			if (!CameraStatics::isInView(*camera, position, rotation, scale, *bounds))
 			{
 				return;
 			}
 		}
 
-		Resource<OpenGLVertexArray>* vaoRes = registry.get<Resource<OpenGLVertexArray>>(meshComponent.meshResourceId);
-		if (vaoRes == nullptr || !vaoRes->isReady)
+		Ref<Resource<OpenGLVertexArray>> vaoRes = registry.find<Resource<OpenGLVertexArray>>(meshRendering.meshResourceId);
+		if (!vaoRes.isValid() || !Resources::isReady(registry, meshRendering.meshResourceId))
 		{
 			// resource is not ready yet.
 			return;
 		}
 		
-		Resource<OpenGLMaterial>* materialRes = registry.get<Resource<OpenGLMaterial>>(meshComponent.materialResourceId);
-		if (materialRes == nullptr || !materialRes->isReady)
+		Ref<Resource<OpenGLMaterial>> materialRes = registry.find<Resource<OpenGLMaterial>>(meshRendering.materialResourceId);
+		if (!materialRes.isValid() || !Resources::isReady(registry, meshRendering.materialResourceId))
 		{
 			// resource is not ready yet.
 			return;
 		}
 
-		const OpenGLMaterial& material = materialRes->value;
-		Resource<OpenGLShader>* shaderRes = registry.get<Resource<OpenGLShader>>(material.shaderId);
-		MANI_ASSERT(shaderRes != nullptr, "We expect the shader to exist at this point.");
+		Ref<Resource<OpenGLShader>> shaderRes = registry.get<Resource<OpenGLShader>>(materialRes->value.shaderId);
 		
 		OpenGLCommand command = {
-			.model = Transform::model(*position, *rotation, *scale),
+			.model = Transform::model(position, rotation, scale),
 
 			.vao = &vaoRes->value,
 			.shader = &shaderRes->value,
-			.rendererId = meshComponent.rendererId,
+			.rendererId = meshRendering.rendererId,
 		};
 
-		for (const auto& texture : material.textures)
+		for (const auto& texture : materialRes->value.textures)
 		{
-			if (Resource<OpenGLTexture2D>* res = registry.get<Resource<OpenGLTexture2D>>(texture.id))
+			if (Ref<Resource<OpenGLTexture2D>> res = registry.find<Resource<OpenGLTexture2D>>(texture.id))
 			{
-				if (!res->isReady)
+				if (!Resources::isReady(registry, texture.id))
 				{
 					continue;
 				}
@@ -96,17 +95,17 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 			}
 		}
 
-		for (const auto& [key, value] : meshComponent.shaderParameters)
+		for (const auto& [key, value] : meshRendering.shaderParameters)
 		{
 			command.customParamaters.add({ key, value });
 		}
 
 		// textures parameters can override existing textures in the material if they share the same key
-		for (const auto& [key, value] : meshComponent.textureParameters)
+		for (const auto& [key, resourceId] : meshRendering.textureParameters)
 		{
-			if (Resource<OpenGLTexture2D>* res = registry.get<Resource<OpenGLTexture2D>>(value))
+			if (Ref<Resource<OpenGLTexture2D>> res = registry.find<Resource<OpenGLTexture2D>>(resourceId))
 			{
-				if (!res->isReady)
+				if (!Resources::isReady(registry, resourceId))
 				{
 					continue;
 				}
@@ -127,7 +126,7 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 			}
 		}
 
-		threadBuffers[threadIndex].add(std::move(command));
+		threadBuffers[threadIdx].add(std::move(command));
 	});
 
 	// merge all thread buffers into the command buffer.
@@ -143,13 +142,14 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 	});
 
 	// update command buffers
-	OpenGLCommandBufferCollection& cbs = *registry.getSingle<OpenGLCommandBufferCollection>();
+	OpenGLCommandBuffers& cbs = registry.getSinglePinned<OpenGLCommandBuffers>();
 
 	// get next write buffer
 	OpenGLCommandBuffer& writeBuffer = cbs.buffers[cbs.writeBuffer];
 
+	MANI_ASSERT(writeBuffer.isReadyToWrite != nullptr, "Invalid buffer");
 	// wait for the write buffer to finish rendering if needed.
-	writeBuffer.isReadyToWrite.acquire();
+	writeBuffer.isReadyToWrite->acquire();
 
 	// clear read command buffer
 	// write to the current write buffer

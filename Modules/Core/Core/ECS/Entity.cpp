@@ -1,95 +1,54 @@
 #include "Entity.h"
 
-using namespace Mani;
+#include <Core/Containers/List.h>
 
-bool ECS::isValid(ECS::EntityId entityId)
+namespace Mani
 {
-	return entityId != ECS::INVALID_ID;
-}
+	bool ECS::isValid(ECS::EntityId entityId)
+	{
+		return entityId != ECS::INVALID_ID;
+	}
 
-ECS::Entity::Entity(Entity&& other) noexcept
-{
-	isAlive = other.isAlive;
-	m_id = other.m_id;
-	m_index = other.m_index;
-	m_version = other.m_version;
-	m_components = other.m_components;
+	ECS::Entity::Entity(ECS::Index index) : m_index(index)
+	{
+	}
 
-	other.isAlive = false;
-	other.m_id = INVALID_ID;
-	other.m_index = 0;
-	other.m_version = 0;
-	other.m_components.reset();
-}
+	ECS::EntityId ECS::Entity::getId() const
+	{
+		return ECS::calculateId(version, m_index);;
+	}
+	
+	ECS::Index ECS::Entity::getIndex() const
+	{
+		return m_index;
+	}
 
-ECS::EntityId ECS::Entity::getId() const
-{
-	return m_id;
-}
+	ECS::EntityId ECS::calculateId(Version version, Index index)
+	{
+		return (static_cast<ECS::EntityId>(version) << VERSION_BITS) | static_cast<ECS::EntityId>(index);
+	}
 
-bool ECS::Entity::hasComponent(ComponentId componentId) const
-{
-	return m_components.test(componentId);
-}
+	ECS::Index ECS::toIndex(EntityId entityId)
+	{
+		return entityId & MAX_VERSION;
+	}
 
-bool ECS::Entity::hasComponents(const ComponentMask& componentMask) const
-{
-	return componentMask == (componentMask & m_components);
-}
+	ECS::Version ECS::toVersion(EntityId entityId)
+	{
+		return entityId >> VERSION_BITS;
+	}
 
-void ECS::Entity::setComponentBit(ComponentId componentId)
-{
-	m_components.set(componentId, true);
-}
-
-void ECS::Entity::resetComponentBit(ComponentId componentId)
-{
-	m_components.set(componentId, false);
-}
-
-void ECS::Entity::resetComponentBits()
-{
-	m_components.reset();
-}
-
-void ECS::Entity::setIndex(ECS::Index index)
-{
-	m_index = index;
-	updateId();
-}
-
-ECS::Index ECS::Entity::getIndex() const
-{
-	return m_index;
-}
-
-void ECS::Entity::setVersion(ECS::Version version)
-{
-	m_version = version;
-	updateId();
-}
-
-ECS::Version ECS::Entity::getVersion() const
-{
-	return m_version;
-}
-
-void ECS::Entity::updateId()
-{
-	m_id = ECS::calculateId(m_index, m_version);
-}
-
-ECS::EntityId ECS::calculateId(Index index, Version version)
-{
-	return (static_cast<ECS::EntityId>(index) << INDEX_BITS) | static_cast<ECS::EntityId>(version);
-}
-
-ECS::Index ECS::toIndex(EntityId entityId)
-{
-	return entityId >> INDEX_BITS;
-}
-
-ECS::Version ECS::toVersion(EntityId entityId)
-{
-	return entityId & MAX_INDEX;
+	Mani::List<ECS::ComponentId> ECS::toComponentIds(const ECS::ComponentMask& mask)
+	{
+		Mani::List<ComponentId> ids;
+		ids.reserve(MAX_COMPONENTS);
+		for (ECS::ComponentId id = 0; id < MAX_COMPONENTS; id++)
+		{
+			if (mask.test(id))
+			{
+				ids.add(id);
+			}
+		}
+		return ids;
+	}
 }

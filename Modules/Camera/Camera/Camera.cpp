@@ -7,13 +7,8 @@ using namespace Mani;
 
 ECS::EntityId CameraStatics::getMainCameraId(ECS::Registry& registry)
 {
-	ECS::View<MainCamera, Camera> view(registry);
-	auto it = view.begin();
-	if (it == view.end())
-	{
-		return ECS::INVALID_ID;
-	}
-	return *it;
+	ECS::ConstView<MainCamera, Camera> view(registry);
+	return view.begin().getEntityId();
 }
 
 ECS::EntityId CameraStatics::createMainCamera(ECS::Registry& registry)

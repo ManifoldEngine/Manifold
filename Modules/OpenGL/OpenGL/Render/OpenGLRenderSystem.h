@@ -20,5 +20,8 @@ namespace Mani
 
     public:
         virtual void tick(ECS::Registry& registry) override;
+
+    private:
+        ThreadPool m_renderThread{ 1 };
     };
 }

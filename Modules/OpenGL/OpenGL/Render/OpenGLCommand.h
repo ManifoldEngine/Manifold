@@ -7,13 +7,14 @@
 
 #include <RenderAPI/Shader.h>
 
+#include <Core/Containers/Array.h>
+
 #include <OpenGL/Resources/OpenGLMaterial.h>
 #include <OpenGL/Resources/OpenGLShader.h>
 #include <OpenGL/Resources/OpenGLVertexArray.h>
 #include <OpenGL/Resources/OpenGLTexture.h>
 
 #include <memory>
-#include <array>
 #include <atomic>
 #include <semaphore>
 
@@ -34,8 +35,8 @@ namespace Mani
 
 		Mat4f model;
 
-		OpenGLVertexArray* vao;
-		OpenGLShader* shader;
+		const OpenGLVertexArray* vao;
+		const OpenGLShader* shader;
 		List<TextureParam> textures;
 		List<OpenGLMaterial::ShaderParam> customParamaters;
 
@@ -46,12 +47,12 @@ namespace Mani
 	{
 		List<OpenGLCommand> commands;
 
-		std::binary_semaphore isReadyToWrite{ 0 };
+		std::binary_semaphore* isReadyToWrite = nullptr;
 	};
 
-	struct OpenGLCommandBufferCollection
+	struct OpenGLCommandBuffers
 	{
-		std::array<OpenGLCommandBuffer, OpenGL::COMMAND_BUFFER_AMOUNT> buffers;
+		Mani::Array<OpenGLCommandBuffer, OpenGL::COMMAND_BUFFER_AMOUNT> buffers;
 		
 		unsigned int readBuffer = OpenGL::COMMAND_BUFFER_AMOUNT;
 		unsigned int writeBuffer = 0;

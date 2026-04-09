@@ -47,6 +47,8 @@ Application::Application()
 	MANI_ASSERT(s_application == nullptr, "an Application instance already exists.");
 	s_application = this;
 
+	m_threadId = Mani::thisThreadId();
+	
 	m_config = loadConfig();
 
 	m_threadPool.start(m_config.threadPoolSize);

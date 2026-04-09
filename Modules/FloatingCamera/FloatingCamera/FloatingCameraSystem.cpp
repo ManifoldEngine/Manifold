@@ -24,7 +24,7 @@ void FloatingCameraSystem::onInitialize(ECS::Registry& registry, World& world)
 	InputsStatics::addAction(registry, entityId, AIM_ACTION, EInputHints::Mouse_Axis);
 
 	// assign all devices to this input user by default.
-	for (const auto deviceId : ECS::View<InputDevice>(registry))
+	for (const auto [deviceId, _] : ECS::ConstView<InputDevice>(registry))
 	{
 		InputsStatics::assignDevice(registry, entityId, deviceId);
 	}
@@ -32,30 +32,28 @@ void FloatingCameraSystem::onInitialize(ECS::Registry& registry, World& world)
 
 void FloatingCameraSystem::tick(ECS::Registry& registry)
 {
-	ECS::View<FloatingCamera, InputUser> floatingCameraView(registry);
-	for (const ECS::EntityId entityId : floatingCameraView)
+	Ref<Time> time = registry.getSingle<Time>();
+	ECS::View<FloatingCamera, InputUser> view(registry);
+	for (auto [entityId, floatingCamera, inputUser] : view)
 	{
-		FloatingCamera& floatingCamera = registry.getRef<FloatingCamera>(entityId);
-
 		const InputAction& moveAction = InputsStatics::getAction(registry, entityId, MOVE_ACTION);
 		const InputAction& aimAction = InputsStatics::getAction(registry, entityId, AIM_ACTION);
 
-		ECS::View<Position, Rotation, Camera> cameraView(registry);
-		if (cameraView.begin() == cameraView.end())
+		ECS::EntityId cameraId = CameraStatics::getMainCameraId(registry);
+		if (cameraId != ECS::INVALID_ID)
 		{
 			MANI_LOG_ERROR(LogFloatingCamera, "Could not find a camera in the world");
 			continue;
 		}
 
-		const ECS::EntityId cameraId = *cameraView.begin();
-		Position& position = *registry.get<Position>(cameraId);
-		Rotation& rotation = *registry.get<Rotation>(cameraId);
-
-		Time& time = *registry.getSingle<Time>();
-		position.value +=  (Transform::right(rotation) * static_cast<float>(moveAction.x) +
-							Transform::up(rotation) * static_cast<float>(moveAction.y) +
-							Transform::forward(rotation) * static_cast<float>(moveAction.z)) *
-							time.delta * floatingCamera.cameraSpeed;
+		auto position = registry.get<Position>(cameraId);
+		auto rotation = registry.get<Rotation>(cameraId);
+		auto camera = registry.get<Camera>(cameraId);
+		
+		position->value +=  (Transform::right(*rotation) * static_cast<float>(moveAction.x) +
+							Transform::up(*rotation) * static_cast<float>(moveAction.y) +
+							Transform::forward(*rotation) * static_cast<float>(moveAction.z)) *
+							time->delta * floatingCamera.cameraSpeed;
 
 		const float aimX = static_cast<float>(aimAction.x);
 		const float aimY = static_cast<float>(aimAction.y);
@@ -75,7 +73,7 @@ void FloatingCameraSystem::tick(ECS::Registry& registry)
 		Quatf quatYaw = Quatf::axisAngleDeg(yaw, VEC3F::UP);
 
 		// it is crucial to respect this order of operation to avoid unintended roll.
-		rotation.value = quatYaw * rotation.value * quatPitch;
+		rotation->value = quatYaw * rotation->value * quatPitch;
 
 		floatingCamera.previousCameraX = aimX;
 		floatingCamera.previousCameraY = aimY;

@@ -21,7 +21,6 @@ using namespace Mani;
 struct ManImGuiRenderSystem::Storage
 {
 	ImDrawData* drawData = nullptr;
-	std::binary_semaphore isDrawDataBeingRead{ 0 };
 };
 
 void ManImGuiRenderSystem::onInitialize(ECS::Registry& registry, World& world)
@@ -29,29 +28,29 @@ void ManImGuiRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 	world.initializeDependency<ManImGuiSystem>();
 	world.initializeDependency<OpenGLRenderSystem>();
 
-	ManImGuiRenderSystem::Storage& storage = *registry.addSingle<ManImGuiRenderSystem::Storage>();
-	storage.isDrawDataBeingRead.release();
+	registry.addSinglePinned<ManImGuiRenderSystem::Storage>();
 
 	OpenGL::registerExtension(registry, &extension);
+	extension.isDrawDataBeingRead.release();
 }
 
 void ManImGuiRenderSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	OpenGL::unregisterExtension(registry, &extension);
-	registry.removeSingle<ManImGuiRenderSystem::Storage>();
+	registry.removeSinglePinned<ManImGuiRenderSystem::Storage>();
 }
 
 void Mani::ManImGuiRenderSystem::tick(ECS::Registry& registry)
 {
-	ManImGuiRenderSystem::Storage& storage = *registry.getSingle<ManImGuiRenderSystem::Storage>();
-	ManImGuiWindowContext& context = *registry.getSingle<ManImGuiWindowContext>();
+	ManImGuiRenderSystem::Storage& storage = registry.getSinglePinned<ManImGuiRenderSystem::Storage>();
+	Ref<ManImGuiWindowContext> context = registry.getSingle<ManImGuiWindowContext>();
 
-	switch (context.mode)
+	switch (context->mode)
 	{
 		case EManImGuiMode::Hidden: break;	
 		case EManImGuiMode::Show:
 		{
-			storage.isDrawDataBeingRead.acquire();
+			extension.isDrawDataBeingRead.acquire();
 			MANI_ASSERT(storage.drawData == nullptr, "Draw data should have been consumed by that point.");
 			ImGui::Render();
 			storage.drawData = ImGui::GetDrawData();
@@ -63,11 +62,11 @@ void Mani::ManImGuiRenderSystem::tick(ECS::Registry& registry)
 void ManImGuiRenderSystemExtension::onPostRender(ECS::Registry& registry) const
 {
 	MANI_TIME_SCOPE("ManImGuiRenderSystemExtension_onPostRender");
-	ManImGuiRenderSystem::Storage& storage = *registry.getSingle<ManImGuiRenderSystem::Storage>();
+	ManImGuiRenderSystem::Storage& storage = registry.getSinglePinned<ManImGuiRenderSystem::Storage>();
 	if (storage.drawData != nullptr)
 	{
 		ImGui_ImplOpenGL3_RenderDrawData(storage.drawData);
 		storage.drawData = nullptr;
-		storage.isDrawDataBeingRead.release();
+		isDrawDataBeingRead.release();
 	}
 }

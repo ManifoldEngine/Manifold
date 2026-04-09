@@ -3,60 +3,160 @@
 #include <Core/Application.h>
 #include <Core/ECS/Registry.h>
 #include <Core/ECS/View.h>
+#include <Core/ECS/CommandBuffer.h>
 
 #include <ManiMaths/Maths.h>
+#include <tuple>
 #include <latch>
 #include <type_traits>
 
 namespace Mani
-{
-	template<typename... TComponents, typename TFunctor = void(const ECS::EntityId, size_t)>
-	void parallelFor(ECS::View<TComponents...>& view, TFunctor&& f)
-	{
-		static_assert(Application::THREAD_COUNT > 0, "cannot parallel over 0 threads");
+{	
+	constexpr SizeT DEFAULT_MIN_CHUNK_SIZE = 100;
 
-		const ECS::Index count = view.count();
+	template<typename... Ts, typename TFunctor>
+	void parallelForWithCmd(ECS::View<Ts...>& view, TFunctor&& f, SizeT minChunkSize = DEFAULT_MIN_CHUNK_SIZE)
+	{
+		// go wide
+		MANI_ASSERT(minChunkSize > 0, "Cannot cut up the work into chunks of 0");
+		static_assert(Application::THREAD_COUNT > 0, "cannot parallel over 0 threads");
+		SizeT count = view.count();
 		if (count == 0)
 		{
 			return;
 		}
 
-		ECS::Index chunkSize = static_cast<ECS::Index>(count / Application::THREAD_COUNT);
+		const SizeT workPerThread = count / Application::THREAD_COUNT;
+		SizeT chunkSize = workPerThread;
 		if (count % Application::THREAD_COUNT > 0)
 		{
 			chunkSize += 1;
 		}
 
-		ThreadPool& threadPool = Application::get().getThreadPool();
-		std::latch latch{ Application::THREAD_COUNT };
-		for (ECS::Index threadIndex = 0; threadIndex < Application::THREAD_COUNT; threadIndex++)
+		if (workPerThread == 0 || chunkSize < minChunkSize)
 		{
-			ECS::Index start = threadIndex * chunkSize;
-			ECS::Index end = start + chunkSize;
-
-			threadPool.enqueue([&latch, &view, threadIndex, start, end, &f] 
+			// too wide
+			if constexpr (std::is_invocable_v<TFunctor, ECS::CommandBuffer&, SizeT, ECS::EntityId, Ts&...>)
 			{
-				auto it = view.at(start);
-				const auto viewEnd = view.end();
-				if (it.getIndex() < end && it < viewEnd)
-				{
-					// TODO DIRTY FIX: The view count isn't representing the amount of entity in the view, but rather the total amount 
-					// of entities in the registry.
-					// This means that the amount of threads dedicated to this view might be disproportionate to the amount of work
-					//
-					// additionally it is possible that the first index is not actually part of the view and needs to be checked before
-					// being sent to the functor. This would be fixed by sparse component pools because the view count would be accurate
-					// and we would only iterate over valid memory.
-					const ECS::Registry& registry = view.getRegistry();
-					if (!registry.isValid(*it) || !registry.has<TComponents...>(*it))
-					{
-						// if the first viewed entity isn't valid for this view, go to the next one.
-						++it;
-					}
+				Mani::foreachWithCmd(view, std::forward<TFunctor>(f), 0);
+			}
+			else if constexpr (std::is_invocable_v<TFunctor, ECS::CommandBuffer&, ECS::EntityId, Ts&...>)
+			{
+				Mani::foreachWithCmd(view, std::forward<TFunctor>(f));
+			}
+			else
+			{
+				static_assert(false, "Bad lambda");
+			}
+			return;
+		}
 
-					for (; it.getIndex() < end && it < viewEnd; ++it)
-					{	
-						f(*it, threadIndex);
+		Mani::List<ECS::CommandBuffer> cmdBuffers(Application::THREAD_COUNT, ECS::CommandBuffer(view.getRegistry()));
+
+		ThreadPool& threadPool = Application::get().getThreadPool();
+		std::latch latch{ static_cast<ptrdiff_t>(Application::THREAD_COUNT) };
+
+		for (SizeT threadIdx = 0; threadIdx < Application::THREAD_COUNT; threadIdx++)
+		{
+			const SizeT startIndex = threadIdx * chunkSize;
+			const SizeT endIndex = Math::minT(startIndex + chunkSize, count);
+			ECS::CommandBuffer& cmd = cmdBuffers[threadIdx];
+			threadPool.enqueue([&latch, &view, &cmd, threadIdx, startIndex, endIndex, &f] mutable
+			{
+				auto base = view.begin();
+				auto it = base + startIndex;
+				const auto end = base + endIndex;
+				for (; it != end; ++it)
+				{
+					if constexpr (std::is_invocable_v<TFunctor, ECS::CommandBuffer&, SizeT, ECS::EntityId, Ts&...>)
+					{
+						it.apply(f, cmd, threadIdx);
+					}
+					else if constexpr (std::is_invocable_v<TFunctor, ECS::CommandBuffer&, ECS::EntityId, Ts&...>)
+					{
+						it.apply(f, cmd);
+					}
+					else
+					{
+						static_assert(false, "Bad lambda");
+					}
+				}
+				latch.count_down();
+			});
+		}
+
+		latch.wait();
+
+		view.unlock();
+		for (auto& cmd : cmdBuffers)
+		{
+			cmd.execute();
+		}
+		view.lock();
+	}
+
+	template<typename... Ts, typename TFunctor, typename TRegistry, typename TArchetype>
+	void parallelFor(ECS::BaseView<TRegistry, TArchetype, Ts...>& view, TFunctor&& f, SizeT minChunkSize = DEFAULT_MIN_CHUNK_SIZE)
+	{
+		// go wide
+		MANI_ASSERT(minChunkSize > 0, "Cannot cut up the work into chunks of 0");
+		static_assert(Application::THREAD_COUNT > 0, "cannot go wide over 0 threads");
+		SizeT count = view.count();
+		if (count == 0)
+		{
+			return;
+		}
+
+		const SizeT workPerThread = count / Application::THREAD_COUNT;
+		SizeT chunkSize = workPerThread;
+		if (count % Application::THREAD_COUNT > 0)
+		{
+			chunkSize += 1;
+		}
+
+		if (workPerThread == 0 || chunkSize < minChunkSize)
+		{
+			// too wide
+			if constexpr (std::is_invocable_v<TFunctor, SizeT, ECS::EntityId, Ts&...>)
+			{
+				Mani::foreach(view, std::forward<TFunctor>(f), 0);
+			}
+			else if constexpr (std::is_invocable_v<TFunctor, ECS::EntityId, Ts&...>)
+			{
+				Mani::foreach(view, std::forward<TFunctor>(f));
+			}
+			else
+			{
+				static_assert(false, "Bad lambda");
+			}
+			return;
+		}
+		
+		ThreadPool& threadPool = Application::get().getThreadPool();
+		std::latch latch{ static_cast<ptrdiff_t>(Application::THREAD_COUNT) };
+
+		for (SizeT threadIdx = 0; threadIdx < Application::THREAD_COUNT; threadIdx++)
+		{
+			const SizeT startIndex = threadIdx * chunkSize;
+			const SizeT endIndex = Math::minT(startIndex + chunkSize, count);
+			threadPool.enqueue([&latch, &view, threadIdx, startIndex, endIndex, &f] mutable
+			{
+				auto base = view.begin();
+				auto it = base + startIndex;
+				const auto end = base + endIndex;
+				for (; it < end; ++it)
+				{
+					if constexpr (std::is_invocable_v<TFunctor, SizeT, ECS::EntityId, Ts&...>)
+					{
+						it.apply(f, threadIdx);
+					}
+					else if constexpr (std::is_invocable_v<TFunctor, ECS::EntityId, Ts&...>)
+					{
+						it.apply(f);
+					}
+					else
+					{
+						static_assert(false, "Bad lambda");
 					}
 				}
 				latch.count_down();

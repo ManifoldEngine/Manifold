@@ -36,21 +36,21 @@ namespace Mani
 			MANI_ASSERT(!isRunning(), "Trying to start a thread pool that is already running.");
 
 			m_threads.reserve(size);
-			m_busyThreads = size;
 			m_stopRequested = false;
 			for (size_t i = 0; i < size; ++i)
 			{
-				m_threads.add(std::thread{ [this]() { worker(); } });
+				m_threads.add(std::thread([this]() { worker(); }));
 			}
 		}
 
 		void stop()
 		{
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
+				std::scoped_lock<std::mutex> lock(m_mutex);
 				m_stopRequested = true;
-				m_condition_variable.notify_all();
 			}
+
+			m_condition_variable.notify_all();
 
 			for (std::thread& thread : m_threads)
 			{
@@ -59,6 +59,7 @@ namespace Mani
 					thread.join();
 				}
 			}
+			m_threads.clear();
 		}
 
 		bool isRunning() const { return !m_threads.isEmpty(); }
@@ -66,16 +67,27 @@ namespace Mani
 		template<typename TFunctor, typename... TArgs>
 		auto enqueue(TFunctor&& f, TArgs&&... args)
 		{
-			using TReturn = decltype(f(args...));
+			using TReturn = std::invoke_result_t<TFunctor, TArgs...>;
 
-			auto taskPtr = std::make_shared<std::packaged_task<TReturn()>>(
-				std::bind(std::forward<TFunctor>(f), std::forward<TArgs>(args)...)
+			//auto taskPtr = std::make_shared<std::packaged_task<TReturn()>>(
+			//	[f = std::forward<TFunctor>(f), ...args = std::forward<TArgs>(args)]() mutable
+			//	{
+			//		return std::invoke(std::move(f), std::move(args)...);
+			//	}
+			//);
+
+			std::packaged_task<TReturn()> task(
+				[f = std::forward<TFunctor>(f), ...args = std::forward<TArgs>(args)]() mutable
+				{
+					return std::invoke(std::move(f), std::move(args)...);
+				}
 			);
 
-			std::future<TReturn> future = taskPtr->get_future();
+			std::future<TReturn> future = task.get_future();
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
-				m_queue.enqueue([taskPtr]() { (*taskPtr)(); });
+				std::scoped_lock<std::mutex> lock(m_mutex);
+				MANI_ASSERT(!m_stopRequested, "enqueue on stopped Worker");
+				m_queue.enqueue([t = std::move(task)]() mutable { t(); });
 			}
 			m_condition_variable.notify_one();
 			return future;
@@ -84,31 +96,29 @@ namespace Mani
 		void worker()
 		{
 			std::unique_lock<std::mutex> lock(m_mutex);
-			while (!m_stopRequested || (m_stopRequested && !m_queue.isEmpty()))
+			while (!m_stopRequested || !m_queue.isEmpty())
 			{
-				m_busyThreads--;
 				m_condition_variable.wait(lock, [this]() {
 					return m_stopRequested || !m_queue.isEmpty();
 				});
-				m_busyThreads++;
 
-				if (!m_queue.isEmpty())
+				if (m_stopRequested && m_queue.isEmpty())
 				{
-					auto task = std::move(m_queue.dequeue());
-					lock.unlock();
-					task();
-					lock.lock();
+					break;
 				}
+
+				auto task = std::move(m_queue.dequeue());
+				lock.unlock();
+				task();
+				lock.lock();
 			}
 		};
 
-		size_t m_size = 0;
-		size_t m_busyThreads = 0;
 		bool m_stopRequested = false;
 
 		mutable std::mutex m_mutex;
 		std::condition_variable m_condition_variable;
 		List<std::thread> m_threads;
-		List<std::function<void()>> m_queue;
+		List<std::move_only_function<void()>> m_queue;
 	};
 }

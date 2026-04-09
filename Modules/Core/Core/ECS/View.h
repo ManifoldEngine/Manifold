@@ -1,249 +1,276 @@
 #pragma once
 
-#include "Registry.h"
-#include "Entity.h"
-#include "Bitset.h"
-#include <ManiMaths/Maths.h>
-#include <cassert>
+#include <Core/ECS/Entity.h>
+#include <Core/ECS/Registry.h>
+#include <Core/ECS/Archetype.h>
+#include <Core/ECS/CommandBuffer.h>
+#include <Core/ManiTraits.h>
+#include <tuple>
 
 namespace Mani
 {
-    namespace ECS
-    {
-        /*
-         * Allows a client to iterate over a view of entities with a specified set of components
-         */
-        template<typename ...TComponents>
-        class View
-        {
-        public:
-            View() = default;
+	namespace ECS
+	{
+		template<class TRegistry, class TArchetype, typename ...Ts>
+		requires(DerivedFrom<TRegistry, Registry> && DerivedFrom<TArchetype, Archetype>)
+		class BaseView
+		{
+		public:
+			BaseView() = default;
+			BaseView(TRegistry& registry) : 
+				m_registry(&registry),
+				m_mask(registry.getMask<Bare<Ts>...>()),
+				m_locks(true)
+			{
+				for (auto& [mask, archetype] : registry.m_archetypes)
+				{
+					if (mask.contains(m_mask))
+					{
+						m_archetypes.add(&archetype);
+					}
+				}
 
-            View(const Registry& registry)
-                : m_registry(&registry), m_count(registry.unadjustedCount())
-            {
-                if (sizeof...(TComponents) == 0)
-                {
-                    m_bisAll = true;
-                }
-                else
-                {
-                    // The compiler complains if we allocate an array of size 0. So, we start the array with 0.
-                    const ComponentId componentIds[] = { 0, registry.getComponentId<TComponents>() ... };
-                    for (size_t i = 1; i < (sizeof...(TComponents) + 1); ++i)
-                    {
-                        m_componentMask.set(componentIds[i]);
-                    }
-                }
-            }
+				if (m_locks)
+				{
+					m_registry->lock();
+				}
+			}
 
-            struct Iterator
-            {
-                Iterator() = default;
+			~BaseView()
+			{
+				if (m_locks && m_registry != nullptr)
+				{
+					m_registry->unlock();
+				}
+			}
 
-                Iterator(
-                    const Registry* inRegistry,
-                    ECS::Index inCurrentEntityId,
-                    ECS::Index inCount,
-                    Bitset<Mani::ECS::MAX_COMPONENTS> inComponentMask,
-                    bool inIsAll
-                );
+			BaseView(const BaseView&) = delete;
+			BaseView(BaseView&) = delete;
+			BaseView& operator=(const BaseView&) = delete;
 
-                ECS::EntityId operator*() const;
-                bool operator==(const Iterator& other) const;
-                bool operator!=(const Iterator& other) const;
-                bool operator>(const Iterator& other) const;
-                bool operator<(const Iterator& other) const;
-                bool operator>=(const Iterator& other) const;
-                bool operator<=(const Iterator& other) const;
-                Iterator& operator++();
+			struct Iterator
+			{
+				Iterator() = default;
+				Iterator(const BaseView& view, SizeT archetypeIndex, SizeT localIndex) :
+					m_view(&view),
+					m_archetypeIndex(archetypeIndex),
+					m_localIndex(localIndex)
+				{
+					m_totalIndex = 0;
 
-                ECS::Index getIndex() const;
+					// Accumulate indices up to the archetype index
+					for (SizeT index = 0; index < m_archetypeIndex; index++)
+					{
+						m_totalIndex += view.m_archetypes[index]->count();
+					}
 
-            private:
-                ECS::Index m_index = 0;
-                const Registry* m_registry = nullptr;
-                ECS::Index m_count = 0;
-                Bitset<Mani::ECS::MAX_COMPONENTS> m_componentMask;
-                bool m_isAll = false;
+					// then add the current archetype's index
+					m_totalIndex += m_localIndex;
+				}
 
-                bool isValidIndex(const ECS::Index id) const;
-            };
+				[[nodiscard]] std::tuple<ECS::EntityId, Ts&...> operator*() const
+				{
+					MANI_ASSERT(m_view != nullptr, "Null view in iterator.");
+					const Mani::List<TArchetype*>& archetypes = m_view->m_archetypes;
+					MANI_ASSERT(archetypes.isValid(m_archetypeIndex) && m_localIndex < archetypes[m_archetypeIndex]->count(), "Out of bounds.");
+					TArchetype& archetype = *(archetypes[m_archetypeIndex]);
+					const Mani::List<ECS::EntityId>& entityIds = archetype.getEntityIds();
+					MANI_ASSERT(entityIds.isValid(m_localIndex), "Out of bounds.");
+					const TRegistry& registry = m_view->getRegistry();
 
-            const Iterator begin() const
-            {
-                if (m_bisAll)
-                {
-                    return Iterator(m_registry, 0, m_count, m_componentMask, m_bisAll);
-                }
+					return std::tuple<ECS::EntityId, Ts&...>(
+						entityIds[m_localIndex],
+						archetype.getComponents<Bare<Ts>>(registry.getComponentId<Ts>())[m_localIndex]...
+					);
+				}
 
-                ECS::Index index = 0;
-                for (; index < m_count; ++index)
-                {
-                    if (!m_registry->isValidIndex(index))
-                    {
-                        continue;
-                    }
+				template<typename TFunctor = void(EntityId, Ts&...), typename ...TArgs>
+				void apply(TFunctor&& f, TArgs&& ...args)
+				{
+					MANI_ASSERT(m_view != nullptr, "Null view in iterator.");
+					const Mani::List<TArchetype*>& archetypes = m_view->m_archetypes;
+					MANI_ASSERT(archetypes.isValid(m_archetypeIndex) && m_localIndex < archetypes[m_archetypeIndex]->count(), "Out of bounds.");
+					TArchetype& archetype = *(archetypes[m_archetypeIndex]);
+					const Mani::List<ECS::EntityId>& entityIds = archetype.getEntityIds();
+					MANI_ASSERT(entityIds.isValid(m_localIndex), "Out of bounds.");
+					const TRegistry& registry = m_view->getRegistry();
 
-                    if (m_registry->getEntityAt(index)->hasComponents(m_componentMask))
-                    {
-                        break;
-                    }
-                }
+					f(args..., entityIds[m_localIndex], archetype.getComponents<Bare<Ts>>(registry.getComponentId<Ts>())[m_localIndex]...);
+				}
 
-                return Iterator(m_registry, index, m_count, m_componentMask, m_bisAll);
-            }
+				ECS::EntityId getEntityId() const
+				{
+					MANI_ASSERT(m_view != nullptr, "Null view in iterator.");
+					const Mani::List<TArchetype*>& archetypes = m_view->m_archetypes;
+					if (!archetypes.isValid(m_archetypeIndex) || m_localIndex >= archetypes[m_archetypeIndex]->count())
+					{
+						return ECS::INVALID_ID;
+					}
 
-            const Iterator end() const
-            {
-                return Iterator(m_registry, m_count, m_count, m_componentMask, m_bisAll);
-            }
+					TArchetype& archetype = *(archetypes[m_archetypeIndex]);
+					const Mani::List<ECS::EntityId>& entityIds = archetype.getEntityIds();
+					if (!entityIds.isValid(m_localIndex))
+					{
+						return ECS::INVALID_ID;
+					}
 
-            const Iterator at(ECS::Index index) const
-            {
-                assert(m_registry != nullptr);
-                if (index >= m_count)
-                {
-                    return end();
-                }
+					return entityIds[m_localIndex];
+				}
 
-                Iterator it(m_registry, index, m_count, m_componentMask, m_bisAll);
-                if (m_registry->isValidIndex(index) && m_registry->getEntityAt(index)->hasComponents(m_componentMask))
-                {
-                    return it;
-                }
+				[[nodiscard]] bool operator==	(const Iterator& other) const { MANI_ASSERT(m_view == other.m_view, MATCHING_VIEWS_MESSAGE); return m_totalIndex ==	other.m_totalIndex; }
+				[[nodiscard]] bool operator!=	(const Iterator& other) const { MANI_ASSERT(m_view == other.m_view, MATCHING_VIEWS_MESSAGE); return m_totalIndex !=	other.m_totalIndex; }
+				[[nodiscard]] bool operator>	(const Iterator& other) const { MANI_ASSERT(m_view == other.m_view, MATCHING_VIEWS_MESSAGE); return m_totalIndex >	other.m_totalIndex; }
+				[[nodiscard]] bool operator<	(const Iterator& other) const { MANI_ASSERT(m_view == other.m_view, MATCHING_VIEWS_MESSAGE); return m_totalIndex <	other.m_totalIndex; }
+				[[nodiscard]] bool operator>=	(const Iterator& other) const { MANI_ASSERT(m_view == other.m_view, MATCHING_VIEWS_MESSAGE); return m_totalIndex >=	other.m_totalIndex; }
+				[[nodiscard]] bool operator<=	(const Iterator& other) const { MANI_ASSERT(m_view == other.m_view, MATCHING_VIEWS_MESSAGE); return m_totalIndex <=	other.m_totalIndex; }
 
-                ++it;
-                return it;
-            }
+				Iterator& operator++()
+				{
+					MANI_ASSERT(m_view != nullptr, "Null view in iterator.");
 
-            ECS::EntityId first() const
-            {
-                return *begin();
-            }
+					m_localIndex++;
+					m_totalIndex++;
 
-            ECS::EntityId last() const
-            {
-                return *end();
-            }
+					const Mani::List<TArchetype*>& archetypes = m_view->m_archetypes;
+					for (; m_archetypeIndex < archetypes.count(); m_archetypeIndex++)
+					{
+						TArchetype& archetype = *archetypes[m_archetypeIndex];
+						if (m_localIndex < archetype.count())
+						{
+							break;
+						}
 
-            ECS::Index count() const 
-            {
-                return m_count;
-            }
+						m_localIndex = 0;
+					}
 
-            const Registry& getRegistry()
-            {
-                assert(m_registry != nullptr);
-                return *m_registry;
-            }
+					return *this;
+				}
 
-        private:
-            const Registry* m_registry = nullptr;
-            ECS::Index m_count = 0;
-            Bitset<ECS::MAX_COMPONENTS> m_componentMask;
-            bool m_bisAll = false;
-        };
+				[[nodiscard]] Iterator operator+(SizeT offset) const
+				{
+					Iterator result(*this);
+					for (SizeT i = 0; i < offset; i++)
+					{
+						++result;
+					}
+					return result;
+				}
 
-        // ITERATOR BEGIN
-        template<typename ...TComponents>
-        inline View<TComponents...>::Iterator::Iterator(
-            const Registry* inRegistry,
-            ECS::Index inIndex,
-            ECS::Index inCount,
-            Bitset<ECS::MAX_COMPONENTS> inComponentMask,
-            bool inIsAll
-        ) :
-            m_index(inIndex),
-            m_registry(inRegistry),
-            m_count(inCount),
-            m_componentMask(inComponentMask),
-            m_isAll(inIsAll)
-        {
-            MANI_ASSERT(m_registry != nullptr, "Can't view a null registry");
-        }
+			private:
+				const BaseView* m_view = nullptr;
+				SizeT m_archetypeIndex = INDEX_NONE;
+				SizeT m_localIndex = INDEX_NONE;
+				SizeT m_totalIndex = INDEX_NONE;
 
-        template<typename ...TComponents>
-        inline ECS::EntityId View<TComponents...>::Iterator::operator*() const
-        {
-            const Entity* entity = m_registry->getEntityAt(m_index);
-            MANI_ASSERT(entity != nullptr, "null entity");
-            return entity->getId();
-        }
-    
-        template<typename ...TComponents>
-        inline bool View<TComponents...>::Iterator::operator==(const Iterator& other) const
-        {
-            return m_registry == other.m_registry && 
-                m_count == other.m_count &&
-                m_index == other.m_index;
-        }
-    
-        template<typename ...TComponents>
-        inline bool View<TComponents...>::Iterator::operator!=(const Iterator& other) const
-        {
-            return !(operator==(other));
-        }
+				static inline constexpr std::string_view MATCHING_VIEWS_MESSAGE = "Comparing iterators from different views";
+			};
 
-        template<typename ...TComponents>
-        inline bool View<TComponents...>::Iterator::operator>(const Iterator& other) const
-        {
-            MANI_ASSERT(m_registry == other.m_registry, "Trying to compare two different registries");
-            return m_index > other.m_index;
-        }
+			Iterator begin() const
+			{
+				SizeT archetypeIndex = 0;
+				// iterate up to the first archetypes that has data
+				for (; archetypeIndex < m_archetypes.count(); archetypeIndex++)
+				{
+					if (m_archetypes[archetypeIndex]->count() > 0)
+					{
+						break;
+					}
+				}
+				return Iterator(*this, archetypeIndex, 0);
+			}
 
-        template<typename ...TComponents>
-        inline bool View<TComponents...>::Iterator::operator<(const Iterator& other) const
-        {
-            MANI_ASSERT(m_registry == other.m_registry, "Trying to compare two different registries");
-            return m_index < other.m_index;
-        }
+			Iterator end() const
+			{
+				if (m_archetypes.isEmpty())
+				{
+					return begin();
+				}
 
-        template<typename ...TComponents>
-        inline bool View<TComponents...>::Iterator::operator>=(const Iterator& other) const
-        {
-            MANI_ASSERT(m_registry == other.m_registry, "Trying to compare two different registries");
-            return m_index >= other.m_index;
-        }
+				return Iterator(*this, m_archetypes.count(), 0);
+			}
 
-        template<typename ...TComponents>
-        inline bool View<TComponents...>::Iterator::operator<=(const Iterator& other) const
-        {
-            MANI_ASSERT(m_registry == other.m_registry, "Trying to compare two different registries");
-            return m_index <= other.m_index;
-        }
+			// locks the view's registry
+			void lock()
+			{
+				MANI_ASSERT(!m_locks, "trying to lock a view that already has the registry locked out.");
+				MANI_ASSERT(m_registry != nullptr, "View with a null registry");
+				m_registry->lock();
+				m_locks = true;
+			}
 
-        template<typename ...TComponents>
-        inline View<TComponents...>::Iterator& View<TComponents...>::Iterator::operator++()
-        {
-            m_index++;
-            for (; m_index < m_count; m_index++)
-            {
-                if (isValidIndex(m_index))
-                {
-                    break; 
-                }
-            }
-            return *this;
-        }
+			// unlocks the view's registry.
+			//	/!\ This allows modyfing entity archetypes during a view's lifetime. 
+			//	/!\ unlocking the view and modifying it during iteration will lead to invalid memory acces,
+			//	/!\ crashes, or memory corruption errors. I hope you know what you're doing king.
+			void unlock()
+			{
+				MANI_ASSERT(m_locks, "trying to unlock a view that doesn't have the registry locked out.");
+				MANI_ASSERT(m_registry != nullptr, "View with a null registry");
+				m_registry->unlock();
+				m_locks = false;
+			}
 
-        template<typename ...TComponents>
-        inline ECS::Index View<TComponents...>::Iterator::getIndex() const
-        {
-            return m_index;
-        }
+			TRegistry& getRegistry() const
+			{
+				MANI_ASSERT(m_registry != nullptr, "View with a null registry");
+				return *m_registry;
+			}
 
-        template<typename ...TComponents>
-        inline bool View<TComponents...>::Iterator::isValidIndex(const ECS::Index index) const
-        {
-            if (!m_registry->isValidIndex(index))
-            {
-                return false;
-            }
+			SizeT count() const 
+			{
+				SizeT count = 0;
+				for (TArchetype* arch : m_archetypes)
+				{
+					MANI_ASSERT(arch != nullptr, "Null archetype in view");
+					count += arch->count();
+				}
+				return count;
+			}
+			ECS::ComponentMask getMask() const { return m_mask; }
 
-            const Entity* entity = m_registry->getEntityAt(index);
-            return m_isAll || entity->hasComponents(m_componentMask);
-        }
-        // ITERATOR END
-    }
+		private:
+			TRegistry* m_registry = nullptr;
+			Mani::List<TArchetype*> m_archetypes;
+			ECS::ComponentMask m_mask;
+			bool m_locks = true;
+		};
+
+		template<typename ...Ts>
+		class View : public BaseView<Registry, Archetype, Ts...>
+		{
+		public:
+			View() : BaseView<Registry, Archetype, Ts...>() {};
+			View(Registry& registry) : BaseView<Registry, Archetype, Ts...>(registry) {};
+		};
+
+		template<typename ...Ts>
+		class ConstView : public BaseView<const Registry, const Archetype, const Ts...>
+		{
+		public:
+			ConstView() : BaseView<const Registry, const Archetype, const Ts...>() {};
+			ConstView(const Registry& registry) : BaseView<const Registry, const Archetype, const Ts...>(registry) {};
+		};
+	}
+
+	template<typename... Ts, typename TFunctor, typename TRegistry, typename TArchetype, typename ...TArgs>
+	void foreach(ECS::BaseView<TRegistry, TArchetype, Ts...>& view, TFunctor&& f, TArgs&&... args)
+	{
+		for (auto it = view.begin(); it != view.end(); ++it)
+		{
+			it.apply(f, args...);
+		}
+	}
+
+	template<typename... Ts, typename TFunctor, typename ...TArgs>
+	void foreachWithCmd(ECS::View<Ts...>& view, TFunctor&& f, TArgs&&... args)
+	{
+		ECS::CommandBuffer cmd(view.getRegistry());
+		for (auto it = view.begin(); it != view.end(); ++it)
+		{
+			it.apply(f, cmd, args...);
+		}
+		view.unlock();
+		cmd.execute();
+		view.lock();
+	}
 }

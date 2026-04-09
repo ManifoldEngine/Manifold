@@ -4,8 +4,6 @@
 #include "Rotation.h"
 #include "Scale.h"
 
-#include <Core/ECS/Registry.h>
-
 #include <ManiMaths/Fwd.h>
 
 namespace Mani
@@ -21,8 +19,5 @@ namespace Mani
 		Vec3f forward(const Quatf& q);
 		Vec3f up(const Quatf& q);
 		Vec3f right(const Quatf& q);
-
-		std::tuple<Position&, Rotation&, Scale&> addTransform(ECS::Registry& registry, ECS::EntityId entityId);
-		std::tuple<Position*, Rotation*, Scale*> getTransform(ECS::Registry& registry, ECS::EntityId entityId);
 	};
 }

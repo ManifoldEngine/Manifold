@@ -23,28 +23,28 @@ GLenum toOpenGLType(EShaderDataType type)
 	}
 }
 
-OpenGLVertexArray::OpenGLVertexArray(OpenGLVertexArray&& other) noexcept
-{
-	m_vertexArrayObjectId = other.m_vertexArrayObjectId;
-	m_attributeCount = other.m_attributeCount;
-	m_vertexBuffers = std::move(other.m_vertexBuffers);
-	m_indexBuffer = std::move(other.m_indexBuffer);
-	
-	other.m_vertexArrayObjectId = 0;
-	other.m_attributeCount = 0;
-}
-
-OpenGLVertexArray& OpenGLVertexArray::operator=(OpenGLVertexArray&& other) noexcept
-{
-	m_vertexArrayObjectId = other.m_vertexArrayObjectId;
-	m_attributeCount = other.m_attributeCount;
-	m_vertexBuffers = std::move(other.m_vertexBuffers);
-	m_indexBuffer = std::move(other.m_indexBuffer);
-
-	other.m_vertexArrayObjectId = 0;
-	other.m_attributeCount = 0;
-	return *this;
-}
+//OpenGLVertexArray::OpenGLVertexArray(OpenGLVertexArray&& other) noexcept
+//{
+//	m_vertexArrayObjectId = other.m_vertexArrayObjectId;
+//	m_attributeCount = other.m_attributeCount;
+//	m_vertexBuffers = std::move(other.m_vertexBuffers);
+//	m_indexBuffer = std::move(other.m_indexBuffer);
+//	
+//	other.m_vertexArrayObjectId = 0;
+//	other.m_attributeCount = 0;
+//}
+//
+//OpenGLVertexArray& OpenGLVertexArray::operator=(OpenGLVertexArray&& other) noexcept
+//{
+//	m_vertexArrayObjectId = other.m_vertexArrayObjectId;
+//	m_attributeCount = other.m_attributeCount;
+//	m_vertexBuffers = std::move(other.m_vertexBuffers);
+//	m_indexBuffer = std::move(other.m_indexBuffer);
+//
+//	other.m_vertexArrayObjectId = 0;
+//	other.m_attributeCount = 0;
+//	return *this;
+//}
 
 void Mani::OpenGLVertexArray::create()
 {

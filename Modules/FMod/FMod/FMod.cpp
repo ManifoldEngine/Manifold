@@ -18,92 +18,85 @@ ECS::EntityId createChannel(ECS::Registry& registry)
 	return entityId;
 }
 
-FModPlayQueue& getFModPlayQueueChecked(ECS::Registry& registry)
+Ref<FMod> FModStatics::getFModChecked(ECS::Registry& registry)
 {
-	FModPlayQueue* queue = registry.getSingle<FModPlayQueue>();
-	MANI_ASSERT(queue != nullptr, "FModPlaySystem isn't initialized.");
-	return *queue;
-}
-
-FMod& FModStatics::getFModChecked(ECS::Registry& registry)
-{
-	FMod* fmod = registry.getSingle<FMod>();
-	MANI_ASSERT(fmod != nullptr, "FModSystem isn't initialized.");
-	return *fmod;
+	Ref<FMod> fmod = registry.getSingle<FMod>();
+	MANI_ASSERT(fmod.isValid(), "FModSystem isn't initialized.");
+	return fmod;
 }
 
 ECS::EntityId FModStatics::play(ECS::Registry& registry, ECS::EntityId resourceId)
 {
-	MANI_ASSERT(registry.has<Resource<FModSound>>(resourceId) || registry.has<Resource<FModStream>>(resourceId), "trying to play something that is not a FModSound");
-	FModPlayQueue& queue = getFModPlayQueueChecked(registry);
-	ECS::EntityId entityId = createChannel(registry);
+	MANI_ASSERT(registry.has<Resource<FModSound>>(resourceId), "trying to play something that is not a FModSound");
+	Ref<FModPlayQueue> queue = registry.getSingle<FModPlayQueue>();
+	ECS::EntityId channelId = createChannel(registry);
 
-	FModChannel& channel = registry.getRef<FModChannel>(entityId);
-	channel.resourceId = resourceId;
+	Ref<FModChannel> channel = registry.get<FModChannel>(channelId);
+	channel->resourceId = resourceId;
 
-	registry.add<FModOneShot>(entityId);
+	registry.add<FModOneShot>(channelId);
 	
-	queue.value.enqueue(entityId);
-	return entityId;
+	queue->value.enqueue(channelId);
+	return channelId;
 }
 
 ECS::EntityId FModStatics::loop(ECS::Registry& registry, ECS::EntityId resourceId)
 {
-	MANI_ASSERT(registry.has<Resource<FModSound>>(resourceId) || registry.has<Resource<FModStream>>(resourceId), "trying to play something that is not a FModSound");
-	FModPlayQueue& queue = getFModPlayQueueChecked(registry);
-	ECS::EntityId entityId = createChannel(registry);
+	MANI_ASSERT(registry.has<Resource<FModSound>>(resourceId), "trying to play something that is not a FModSound");
+	Ref<FModPlayQueue> queue = registry.getSingle<FModPlayQueue>();
+	ECS::EntityId channelId = createChannel(registry);
 
-	FModChannel& channel = registry.getRef<FModChannel>(entityId);
-	channel.resourceId = resourceId;
+	Ref<FModChannel> channel = registry.get<FModChannel>(channelId);
+	channel->resourceId = resourceId;
 	
-	queue.value.enqueue(entityId);
-	return entityId;
+	queue->value.enqueue(channelId);
+	return channelId;
 }
 
-void FModStatics::pause(ECS::Registry& registry, ECS::EntityId entityId)
+void FModStatics::pause(ECS::Registry& registry, ECS::EntityId channelId)
 {
-	FMod& fmod = FModStatics::getFModChecked(registry);
-	FModChannel& channel = registry.getRef<FModChannel>(entityId);
-	channel.isPaused = true;
-	if (channel.value != nullptr)
+	Ref<FMod> fmod = FModStatics::getFModChecked(registry);
+	Ref<FModChannel> channel = registry.get<FModChannel>(channelId);
+	channel->isPaused = true;
+	if (channel->value != nullptr)
 	{
-		channel.value->setPaused(channel.isPaused);
+		channel->value->setPaused(channel->isPaused);
 	}
 }
 
-void FModStatics::resume(ECS::Registry& registry, ECS::EntityId entityId)
+void FModStatics::resume(ECS::Registry& registry, ECS::EntityId channelId)
 {
-	FMod& fmod = FModStatics::getFModChecked(registry);
-	FModChannel& channel = registry.getRef<FModChannel>(entityId);
-	channel.isPaused = false;
-	if (channel.value != nullptr)
+	Ref<FMod> fmod = FModStatics::getFModChecked(registry);
+	Ref<FModChannel> channel = registry.get<FModChannel>(channelId);
+	channel->isPaused = false;
+	if (channel->value != nullptr)
 	{
-		channel.value->setPaused(channel.isPaused);
+		channel->value->setPaused(channel->isPaused);
 	}
 }
 
-void FModStatics::setVolume(ECS::Registry& registry, ECS::EntityId entityId, float volume)
+void FModStatics::setVolume(ECS::Registry& registry, ECS::EntityId channelId, float volume)
 {
-	FMod& fmod = FModStatics::getFModChecked(registry);
-	FModChannel& channel = registry.getRef<FModChannel>(entityId);
-	channel.volume = volume;
-	if (channel.value != nullptr)
+	Ref<FMod> fmod = FModStatics::getFModChecked(registry);
+	Ref<FModChannel> channel = registry.get<FModChannel>(channelId);
+	channel->volume = volume;
+	if (channel->value != nullptr)
 	{
-		channel.value->setVolume(channel.volume);
+		channel->value->setVolume(channel->volume);
 	}
 }
 
-void FModStatics::stop(ECS::Registry& registry, ECS::EntityId entityId)
+void FModStatics::stop(ECS::Registry& registry, ECS::EntityId channelId)
 {
-	FMod& fmod = FModStatics::getFModChecked(registry);
-	FModChannel& channel = registry.getRef<FModChannel>(entityId);
-	if (channel.value != nullptr)
+	Ref<FMod> fmod = FModStatics::getFModChecked(registry);
+	Ref<FModChannel> channel = registry.get<FModChannel>(channelId);
+	if (channel->value != nullptr)
 	{
-		channel.value->stop();
+		channel->value->stop();
 		return;
 	}
 
-	FModPlayQueue& queue = getFModPlayQueueChecked(registry);
-	queue.value.remove(entityId);
-	registry.destroy(entityId);
+	Ref<FModPlayQueue> queue = registry.getSingle<FModPlayQueue>();
+	queue->value.remove(channelId);
+	registry.destroy(channelId);
 }

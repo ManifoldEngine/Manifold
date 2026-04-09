@@ -26,15 +26,10 @@ using namespace Mani;
 
 class StubResourceLoader_Texture : public IResourceLoader
 {
-	virtual ECS::ComponentId getComponentId(const ECS::Registry& registry) const override
-	{
-		return registry.getComponentId<Resource<Texture>>();
-	}
-
 	virtual bool load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const override
 	{
-		Resource<Texture>& resource = registry.getRef<Resource<Texture>>(resourceId);
-		resource.value.size = { 32, 32 };
+		Ref<Resource<Texture>> resource = registry.get<Resource<Texture>>(resourceId);
+		resource->value.size = { 32, 32 };
 		return true;
 	}
 };
@@ -51,17 +46,17 @@ MANI_SECTION_BEGIN(SpriteTests, "Sprites")
 		ECS::Registry& registry = world.getMutableRegistry();
 		
 		StubResourceLoader_Texture loader;
-		Resources::registerLoader(registry, &loader);
+		Resources::registerLoaderFor<Texture>(registry, &loader);
 		
 		ECS::EntityId spriteId = Resources::loadSync<Sprite>(registry, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite");
-		const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);
-		MANI_TEST_ASSERT(spriteRes.isReady, "Sprite resource should be ready");
+		Ref<Resource<Sprite>> sprite = registry.get<Resource<Sprite>>(spriteId); // should not asset
+		MANI_TEST_ASSERT(Resources::isReady(registry, spriteId), "Sprite resource should be ready");
 
-		const Resource<Texture>& textureRes = registry.getRef<Resource<Texture>>(spriteRes.value.textureId);
-		MANI_TEST_ASSERT(textureRes.isReady, "Texture should be ready");
+		Ref<Resource<Texture>> texture = registry.get<Resource<Texture>>(sprite->value.textureId); // should not asset
+		MANI_TEST_ASSERT(Resources::isReady(registry, sprite->value.textureId), "Texture should be ready");
 
-		const Resource<Mesh>& meshRes = registry.getRef<Resource<Mesh>>(spriteRes.value.quadId);
-		MANI_TEST_ASSERT(meshRes.isReady, "Texture should be ready");
+		Ref<Resource<Mesh>> mesh = registry.get<Resource<Mesh>>(sprite->value.quadId); // should not asset
+		MANI_TEST_ASSERT(Resources::isReady(registry, sprite->value.quadId), "Texture should be ready");
 	}
 
 	MANI_TEST(ShouldAddASpriteToAMeshRendering, "Should setup a mesh rendering for sprite rendering")
@@ -74,18 +69,19 @@ MANI_SECTION_BEGIN(SpriteTests, "Sprites")
 		ECS::Registry& registry = world.getMutableRegistry();
 
 		StubResourceLoader_Texture loader;
-		Resources::registerLoader(registry, &loader);
+		Resources::registerLoaderFor<Texture>(registry, &loader);
 
 		ECS::EntityId spriteId = Resources::loadSync<Sprite>(registry, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite");
-		const Resource<Sprite>& spriteRes = registry.getRef<Resource<Sprite>>(spriteId);
-		MANI_TEST_ASSERT(spriteRes.isReady, "Sprite resource should be ready");
+		Ref<Resource<Sprite>> sprite = registry.get<Resource<Sprite>>(spriteId); // should not assert
+		MANI_TEST_ASSERT(Resources::isReady(registry, spriteId), "Sprite resource should be ready");
 
 		ECS::EntityId entityId = registry.create();
-		registry.add<MeshRendering>(entityId);
-		SpriteStatics::loadAsyncAndAddSprite(registry, entityId, "Engine/Modules/Sprite/Tests/Assets/blue_square.sprite", "some/shader/path.shader", Mani::GLOBAL_RESOURCE_TAG);
-		MeshRendering& meshRendering = registry.getRef<MeshRendering>(entityId);
-		MANI_TEST_ASSERT(registry.isValid(meshRendering.meshResourceId), "mesh handle should be valid");
-		MANI_TEST_ASSERT(registry.isValid(meshRendering.materialResourceId), "material handle should be valid");
+		constexpr Vec2i size{ 1, 1 };
+		constexpr uint32_t TPU = 1;
+		SpriteStatics::addSprite(registry, entityId, size, TPU, "Engine/Modules/Sprites/Tests/Assets/blue_square.sprite", "some/shader/path.shader", Mani::GLOBAL_RESOURCE_TAG);
+		Ref<MeshRendering> meshRendering = registry.get<MeshRendering>(entityId);
+		MANI_TEST_ASSERT(registry.isValid(meshRendering->meshResourceId), "mesh handle should be valid");
+		MANI_TEST_ASSERT(registry.isValid(meshRendering->materialResourceId), "material handle should be valid");
 	}
 }
 MANI_SECTION_END(SpriteTests)

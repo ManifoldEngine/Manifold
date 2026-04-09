@@ -21,6 +21,16 @@ namespace Mani
 		using const_reference = const value_type&;
 		using size_type = SizeT;
 
+		// constructors
+		Array() = default;
+		Array(const std::initializer_list<T>& initializerList)
+		{
+			MANI_ASSERT(initializerList.size() == Size, "Initializer list size mismatch");
+			std::copy(initializerList.begin(), initializerList.end(), m_data.begin());
+		}
+		Array(const Array<T, Size>& other) : m_data(other.m_data) {}
+		Array(Array<T, Size>&& other) noexcept : m_data(std::move(other.m_data)) {}
+
 		Array<T, Size>& operator=(const Array<T, Size>& other)
 		{
 			if (this != &other)
@@ -140,8 +150,8 @@ namespace Mani
 
 		// access
 		[[nodiscard]] bool isValid(SizeT index) const { return index < m_data.size(); }
-		[[nodiscard]] T& operator[](SizeT index) { return m_data[index]; }
-		[[nodiscard]] const T& operator[](SizeT index) const { return m_data[index]; }
+		[[nodiscard]] T& operator[](SizeT index) { MANI_ASSERT(isValid(index), "Out of bounds."); return m_data[index]; }
+		[[nodiscard]] const T& operator[](SizeT index) const { MANI_ASSERT(isValid(index), "Out of bounds."); return m_data[index]; }
 		[[nodiscard]] T& first() { return m_data.front(); }
 		[[nodiscard]] const T& first() const { return m_data.front(); }
 		[[nodiscard]] T& last() { return m_data.back(); }
@@ -170,12 +180,12 @@ namespace Mani
 
 		// comparison
 
-		bool operator==(const Mani::List<T>& other) const
+		bool operator==(const Mani::Array<T, Size>& other) const
 		{
 			return m_data == other.m_data;
 		}
 
-		bool operator!=(const Mani::List<T>& other) const
+		bool operator!=(const Mani::Array<T, Size>& other) const
 		{
 			return m_data != other.m_data;
 		}

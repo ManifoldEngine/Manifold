@@ -22,22 +22,22 @@ std::string_view getControlName(const ECS::Registry& registry, const InputUser& 
 #if MANI_DEBUG
 	for (const auto deviceId : inputUser.inputDevices)
 	{
-		const InputDevice& device = registry.getRef<InputDevice>(deviceId);
+		Ref<const InputDevice> device = registry.get<InputDevice>(deviceId);
 
-		for (const auto& [hint, id] : device.buttonHints)
+		for (const auto& [hint, id] : device->buttonHints)
 		{
 			if (id != controlId)
 			{
 				continue;
 			}
 
-			if (const std::string_view* str = device.debug_hintTobuttonNames.find(hint))
+			if (const std::string_view* str = device->debug_hintTobuttonNames.find(hint))
 			{
 				return *str;
 			}
 		}
 
-		for (const auto& axis : device.axis)
+		for (const auto& axis : device->axis)
 		{
 			if (axis.id == controlId)
 			{
@@ -169,8 +169,8 @@ void ManImGuiInputDebugSystem::onInitialize(ECS::Registry& registry, World& worl
 	world.initializeDependency<ManImGuiManifoldMenuSystem>();
 
 	{
-		ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
-		menu.subMenu.addItem(INPUTS_NAME);
+		Ref<ManImGuiMenu> menu = ManImGuiStatics::Manifold::getMenu(registry);
+		menu->subMenu.addItem(INPUTS_NAME);
 	}
 }
 
@@ -181,8 +181,8 @@ bool Mani::ManImGuiInputDebugSystem::shouldTick(const ECS::Registry& registry) c
 		return false;
 	}
 
-	const ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
-	return menu.subMenu.getSelected(INPUTS_NAME);
+	Ref<const ManImGuiMenu> menu = ManImGuiStatics::Manifold::getMenu(registry);
+	return menu->subMenu.getSelected(INPUTS_NAME);
 }
 
 void ManImGuiInputDebugSystem::tick(ECS::Registry& registry)
@@ -196,8 +196,8 @@ void ManImGuiInputDebugSystem::tick(ECS::Registry& registry)
 
 	if (!isOpened)
 	{
-		ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
-		menu.subMenu.setSelected(INPUTS_NAME, false);
+		Ref<ManImGuiMenu> menu = ManImGuiStatics::Manifold::getMenu(registry);
+		menu->subMenu.setSelected(INPUTS_NAME, false);
 		ImGui::End();
 		return;
 	}
@@ -206,10 +206,9 @@ void ManImGuiInputDebugSystem::tick(ECS::Registry& registry)
 		// Devices
 		constexpr ImGuiChildFlags flags = ImGuiChildFlags_::ImGuiChildFlags_Border | ImGuiChildFlags_::ImGuiChildFlags_AutoResizeY;
 		ImGui::BeginChild("Devices", ImVec2{ 0.f, 0.f }, flags);
-		for (const auto entityId : ECS::View<InputDevice>(registry))
+		for (const auto [entityId, device] : ECS::ConstView<InputDevice>(registry))
 		{
 			ImGui::Separator();
-			InputDevice& device = *registry.get<InputDevice>(entityId);
 			drawInputDevice(device);
 		}
 		ImGui::EndChild();
@@ -219,10 +218,9 @@ void ManImGuiInputDebugSystem::tick(ECS::Registry& registry)
 		// Input Actions
 		constexpr ImGuiChildFlags flags = ImGuiChildFlags_::ImGuiChildFlags_Border | ImGuiChildFlags_::ImGuiChildFlags_AutoResizeY;
 		ImGui::BeginChild("Inputs Users", ImVec2{ 0.f, 0.f }, flags);
-		for (const auto entityId : ECS::View<InputUser>(registry))
+		for (const auto [entityId, user] : ECS::ConstView<InputUser>(registry))
 		{
-			InputUser& inputUser = *registry.get<InputUser>(entityId);
-			drawInputUser(registry, inputUser, entityId);
+			drawInputUser(registry, user, entityId);
 		}
 		ImGui::EndChild();
 	}

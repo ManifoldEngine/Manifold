@@ -15,6 +15,12 @@ namespace Mani
 		Error,
 	};
 
+	struct LogChannel
+	{
+		std::string_view name = "";
+		ELogLevel level = ELogLevel::Log;
+	};
+
 	class Logger
 	{
 	public:
@@ -30,8 +36,7 @@ namespace Mani
 		Logger(const Logger&) = delete;
 		Logger& operator=(const Logger&) = delete;
 
-		void log(const std::string_view& channel, ELogLevel level, const std::string_view& log);
-		void setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel);
+		void log(const LogChannel& channel, ELogLevel level, const std::string_view& log);
 		void setFile(const std::filesystem::path& path);
 
 		void suppress();

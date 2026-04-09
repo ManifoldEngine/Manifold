@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <filesystem>
 
 namespace Mani
 {
@@ -14,6 +15,18 @@ namespace Mani
 	struct Resource
 	{
 		T value;
-		std::atomic<bool> isReady = false;
+	};
+
+	struct ResourcePath
+	{
+		std::filesystem::path value;
+	};
+
+	struct ResourceReady {};
+
+	template<typename T>
+	struct ResourceLoader
+	{
+		class IResourceLoader* value = nullptr;
 	};
 }

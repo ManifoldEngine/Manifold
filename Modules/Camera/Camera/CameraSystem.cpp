@@ -27,12 +27,8 @@ bool CameraSystem::shouldTick(const ECS::Registry& registry) const
 
 void CameraSystem::tick(ECS::Registry& registry)
 {
-    for (const ECS::EntityId& entityId : ECS::View<Position, Rotation, Camera>(registry))
+    for (auto [entityId, position, rotation, camera] : ECS::View<Position, Rotation, Camera>(registry))
     {
-        Position& position = *registry.get<Position>(entityId);
-        Rotation& rotation = *registry.get<Rotation>(entityId);
-        Camera& camera = *registry.get<Camera>(entityId);
-
         camera.view = Mat4f::lookAt(position.value, position.value + Transform::forward(rotation), Transform::up(rotation));
         camera.frustrum = FrustumStatics::create(camera, position.value, rotation.value);
 

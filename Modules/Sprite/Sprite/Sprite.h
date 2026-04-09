@@ -4,7 +4,7 @@
 
 namespace Mani
 {
-	constexpr std::string_view LogSprite = "Sprite";
+	constexpr LogChannel LogSprite("Sprite");
 
 	struct Sprite
 	{
@@ -26,5 +26,7 @@ namespace Mani
 		void loadAsyncAndAddSprite(ECS::Registry& registry, ECS::EntityId entityId, const std::string_view& spritePath, const std::string_view& shaderPath, uint32_t tag, bool withBoundingSphere = true);
 
 		ECS::EntityId getOrAddQuad(ECS::Registry& registry, const Vec2i& size);
+
+		void addSprite(ECS::Registry& registry, ECS::EntityId entityId, const Vec2i& size, uint32_t texelsPerUnits, const std::string_view& texturePath, const std::string_view& shaderPath, uint32_t tag, bool withBoundingSphere = true);
 	}
 }

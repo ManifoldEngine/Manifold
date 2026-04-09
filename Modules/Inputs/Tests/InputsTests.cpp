@@ -18,13 +18,13 @@ using namespace Mani;
 class VirtualController
 {
 public:
-	VirtualController(ECS::Registry& registry)
-		: m_registry(&registry)
+	VirtualController(ECS::Registry& registry) : 
+        m_registry(&registry)
 	{
 		m_deviceId = m_registry->create();
-		InputDevice& device = *m_registry->add<InputDevice>(m_deviceId);
-		device.deviceName = "Virtual Controller";
-		device.axis.add(AxisControl{
+		Ref<InputDevice> device = m_registry->add<InputDevice>(m_deviceId);
+		device->deviceName = "Virtual Controller";
+		device->axis.add(AxisControl{
 			.id = leftJoystickId,
             .hint = EInputHints::Gamepad_Left_Stick,
 		});
@@ -39,7 +39,7 @@ public:
 		
 		leftJoystickId = InputsStatics::generateNextControlId(registry);
 
-        device.buttonHints = {
+        device->buttonHints = {
             { EInputHints::Gamepad_Bottom_FaceButton, aButtonId },
             { EInputHints::Gamepad_Right_FaceButton, bButtonId },
 
@@ -60,22 +60,22 @@ public:
 
 	void setLeftJoystick(const Mani::Vec2f& pos)
 	{
-		InputDevice& device = m_registry->getRef<InputDevice>(m_deviceId);
+		Ref<InputDevice> device = m_registry->get<InputDevice>(m_deviceId);
 		const Mani::Vec2f& p = pos.normalize();
-		device.axis[0].x = p.x;
-		device.axis[0].y = p.y;
+		device->axis[0].x = p.x;
+		device->axis[0].y = p.y;
 	}
 
 	void press(ControlId buttonId)
 	{
-		InputDevice& device = m_registry->getRef<InputDevice>(m_deviceId);
-		device.buttonBuffer.add(ButtonControl{ .id = buttonId, .isPressed = true });
+		Ref<InputDevice> device = m_registry->get<InputDevice>(m_deviceId);
+		device->buttonBuffer.add(ButtonControl{ .id = buttonId, .isPressed = true });
 	}
 
 	void release(ControlId buttonId)
 	{
-		InputDevice& device = m_registry->getRef<InputDevice>(m_deviceId);
-		device.buttonBuffer.add(ButtonControl{ .id = buttonId, .isPressed = false });
+		Ref<InputDevice> device = m_registry->get<InputDevice>(m_deviceId);
+		device->buttonBuffer.add(ButtonControl{ .id = buttonId, .isPressed = false });
 	}
 
 	ECS::EntityId getDeviceId() const { return m_deviceId; }
@@ -173,13 +173,13 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         registry.add<InputUser>(userId);
 
         InputsStatics::addAction(registry, userId, "jump");
-        const InputUser& user = registry.getRef<InputUser>(userId);
+        Ref<InputUser> user = registry.get<InputUser>(userId);
         
-        MANI_TEST_ASSERT(user.actions.findIf([](const InputAction& action) { return action.name == "jump"; }), "action added");
+        MANI_TEST_ASSERT(user->actions.findIf([](const InputAction& action) { return action.name == "jump"; }), "action added");
 
         InputsStatics::removeAction(registry, userId, "jump");
-        const InputUser& user2 = registry.getRef<InputUser>(userId);
-        MANI_TEST_ASSERT(!user2.actions.findIf([](const InputAction& action) { return action.name == "jump"; }), "action removed");
+        Ref<InputUser> user2 = registry.get<InputUser>(userId);
+        MANI_TEST_ASSERT(!user2->actions.findIf([](const InputAction& action) { return action.name == "jump"; }), "action removed");
     }
 
     MANI_TEST(BindUnbindAction, "Should bind and unbind a control to an action")
@@ -252,12 +252,12 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         registry.add<InputUser>(userId);
 
         InputsStatics::assignDevice(registry, userId, "Virtual Controller");
-        const InputUser& user = registry.getRef<InputUser>(userId);
-        MANI_TEST_ASSERT(!user.inputDevices.isEmpty(), "assigned by name");
+        Ref<InputUser> user = registry.get<InputUser>(userId);
+        MANI_TEST_ASSERT(!user->inputDevices.isEmpty(), "assigned by name");
 
         InputsStatics::unassignDevice(registry, userId, "Virtual Controller");
-        const InputUser& user2 = registry.getRef<InputUser>(userId);
-        MANI_TEST_ASSERT(user2.inputDevices.isEmpty(), "unassigned by name");
+        Ref<InputUser> user2 = registry.get<InputUser>(userId);
+        MANI_TEST_ASSERT(user2->inputDevices.isEmpty(), "unassigned by name");
     }
 
 	MANI_TEST(FindDeviceByName, "Should locate a device by name")
