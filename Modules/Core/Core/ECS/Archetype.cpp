@@ -67,15 +67,15 @@ namespace Mani
 			}
 		}
 
-		Archetype Archetype::makeNew(SizeT capacity)
+		std::unique_ptr<Archetype> Archetype::makeNew(SizeT capacity)
 		{
-			Archetype arch(capacity);
+			std::unique_ptr<Archetype> arch = std::make_unique<Archetype>(capacity);
 			for (SizeT index = 0; index < m_componentIds.count(); index++)
 			{
 				const ECS::ComponentId componentId = m_componentIds[index];
-				arch.m_componentIds.add(componentId);
-				arch.m_components.add(m_components[index]->makeNew(capacity));
-				arch.m_componentIndices[componentId] = index;
+				arch->m_componentIds.add(componentId);
+				arch->m_components.add(m_components[index]->makeNew(capacity));
+				arch->m_componentIndices[componentId] = index;
 			}
 			return arch;
 		}

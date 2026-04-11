@@ -3,6 +3,8 @@
 #include <Core/ECS/Registry.h>
 #include <Log.h>
 
+#include <ManiZ/Reflection.h>
+
 using namespace Mani;
 
 std::string_view ECS::System::getName() const

@@ -26,7 +26,7 @@ namespace Mani
 				{
 					if (mask.contains(m_mask))
 					{
-						m_archetypes.add(&archetype);
+						m_archetypes.add(archetype.get());
 					}
 				}
 

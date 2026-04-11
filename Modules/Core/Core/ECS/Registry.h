@@ -414,8 +414,8 @@ namespace Mani
 				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
 				const ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
 				MANI_ASSERT(entity.components.test(getComponentId<T>()), COMPONENT_NOT_FOUND_MESSAGE, ManiZ::RFL::getTypeName<T>());
-				Archetype& archetype = m_archetypes.get(entity.components);
-				return Ref(archetype.get<T>(entityId, getComponentId<T>()), *this, archetype);
+				auto& archetype = m_archetypes.get(entity.components);
+				return Ref(archetype->get<T>(entityId, getComponentId<T>()), *this, *archetype);
 			}
 
 			// returns an entity's T component as a const reference
@@ -425,8 +425,8 @@ namespace Mani
 				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
 				const ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
 				MANI_ASSERT(entity.components.test(getComponentId<T>()), COMPONENT_NOT_FOUND_MESSAGE, ManiZ::RFL::getTypeName<T>());
-				const Archetype& archetype = m_archetypes.get(entity.components);
-				return Ref(archetype.get<T>(entityId, getComponentId<T>()), *this, archetype);
+				const auto& archetype = m_archetypes.get(entity.components);
+				return Ref(archetype->get<T>(entityId, getComponentId<T>()), *this, *archetype);
 			}
 
 			// returns an entity's T component as a pointer
@@ -445,8 +445,8 @@ namespace Mani
 					return Ref<T>::INVALID();
 				}
 
-				Archetype& archetype = m_archetypes.get(entity.components);
-				return Ref(archetype.get<T>(entityId, componentId), *this, archetype);
+				auto& archetype = m_archetypes.get(entity.components);
+				return Ref(archetype->get<T>(entityId, componentId), *this, *archetype);
 			}
 
 			// returns an entity's T component as a const pointer
@@ -465,8 +465,8 @@ namespace Mani
 					return Ref<const T>::INVALID();
 				}
 
-				const Archetype& archetype = m_archetypes.get(entity.components);
-				return Ref(archetype.get<T>(entityId, componentId), *this, archetype);
+				const auto& archetype = m_archetypes.get(entity.components);
+				return Ref(archetype->get<T>(entityId, componentId), *this, *archetype);
 			}
 
 			// returns the singleton's T component as a reference
@@ -624,8 +624,9 @@ namespace Mani
 				const ECS::Index index = ECS::toIndex(entityId);
 				ECS::Entity& entity = m_entities[index];
 
-				if (Archetype* archetype = m_archetypes.find(entity.components))
+				if (auto* archetypePtr = m_archetypes.find(entity.components))
 				{
+					auto& archetype = *archetypePtr;
 					for (const auto& componentId : archetype->getComponentIds())
 					{
 						TYPE_DESTRUCTORS.get(componentId)(archetype->getRaw(entityId, componentId));
@@ -668,27 +669,36 @@ namespace Mani
 			std::tuple<Archetype*, Archetype*> getArchetypes(ECS::ComponentMask oldMask, ECS::ComponentMask newMask)
 			{
 				MANI_ASSERT(oldMask.count() != newMask.count(), "Attempting to get archetypes with the same component count");
+				auto findArchetype = [this](const ECS::ComponentMask& mask) -> Archetype*
+				{
+					if (auto* archetype = m_archetypes.find(mask))
+					{
+						return archetype->get();
+					}
+					return nullptr;
+				};
+
 				const Mani::Array<ECS::ComponentId, sizeof... (Ts)> componentIds = { this->template getAndRegisterComponentId<Ts>()... };
-				Archetype* newArchetype = m_archetypes.find(newMask);
+				Archetype* oldArchetype = findArchetype(oldMask);
+				Archetype* newArchetype = findArchetype(newMask);
 
 				if (newArchetype == nullptr && newMask.any())
 				{
-					Archetype* oldArchetype = m_archetypes.find(oldMask);
 					constexpr SizeT capacity = INITIAL_COMPONENT_CAPACITY;
 					if (oldArchetype == nullptr)
 					{
-						newArchetype = &m_archetypes.add(newMask, Archetype(capacity));
+						newArchetype = m_archetypes.add(newMask, std::make_unique<Archetype>(capacity)).get();
 					}
 					else
 					{
-						newArchetype = &m_archetypes.add(newMask, oldArchetype->makeNew(capacity));
+						newArchetype = m_archetypes.add(newMask, oldArchetype->makeNew(capacity)).get();
 					}
 
 					[&]<SizeT... Is>(std::index_sequence<Is...>)
 					{
 						if (newMask.count() > oldMask.count())
 						{
-							newArchetype->addComponentPools<Ts...>(componentIds[Is]...);
+							 newArchetype->addComponentPools<Ts...>(componentIds[Is]...);
 						}
 						else
 						{
@@ -699,10 +709,9 @@ namespace Mani
 				}
 
 				// make sure we get the old archetype after the new archetype in case a new archetype was added.
-				Archetype* oldArchetype = m_archetypes.find(oldMask);
 				MANI_ASSERT(!oldMask.any() || oldArchetype != nullptr, "did not manage to get the old archetype");
 				MANI_ASSERT(!newMask.any() || newArchetype != nullptr, "did not manage to create the new archetype");
-				return { oldArchetype, newArchetype };
+				return { oldArchetype, newArchetype};
 			}
 
 			void lock() const
@@ -767,7 +776,7 @@ namespace Mani
 			mutable std::mutex m_markedForDestroyMutex;
 
 			// Components
-			Mani::Map<ECS::ComponentMask, Archetype> m_archetypes;
+			Mani::Map<ECS::ComponentMask, std::unique_ptr<Archetype>> m_archetypes;
 			Mani::Array<std::unique_ptr<IComponentPool>, ECS::MAX_COMPONENTS> m_pinned;
 
 			// Type magement

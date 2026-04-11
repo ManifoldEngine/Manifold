@@ -69,13 +69,6 @@ namespace Mani
 		{
 			using TReturn = std::invoke_result_t<TFunctor, TArgs...>;
 
-			//auto taskPtr = std::make_shared<std::packaged_task<TReturn()>>(
-			//	[f = std::forward<TFunctor>(f), ...args = std::forward<TArgs>(args)]() mutable
-			//	{
-			//		return std::invoke(std::move(f), std::move(args)...);
-			//	}
-			//);
-
 			std::packaged_task<TReturn()> task(
 				[f = std::forward<TFunctor>(f), ...args = std::forward<TArgs>(args)]() mutable
 				{

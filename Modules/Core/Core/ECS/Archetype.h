@@ -83,7 +83,7 @@ namespace Mani
 			const Mani::List<ECS::ComponentId>& getComponentIds() const { return m_componentIds; }
 			const Mani::List<ECS::EntityId>& getEntityIds() const { return m_entities.getDenseIndices(); }
 			
-			Archetype makeNew(SizeT capacity);
+			std::unique_ptr<Archetype> makeNew(SizeT capacity);
 
 			template<typename T>
 			void addComponentPool(ECS::ComponentId componentId)
