@@ -59,22 +59,26 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 			}
 		}
 
-		Ref<Resource<OpenGLVertexArray>> vaoRes = registry.find<Resource<OpenGLVertexArray>>(meshRendering.meshResourceId);
-		if (!vaoRes.isValid() || !Resources::isReady(registry, meshRendering.meshResourceId))
+		const Resource<OpenGLVertexArray>* vaoRes = registry.findPinned<Resource<OpenGLVertexArray>>(meshRendering.meshResourceId);
+		if (vaoRes == nullptr || !Resources::isReady(registry, meshRendering.meshResourceId))
 		{
 			// resource is not ready yet.
 			return;
 		}
 		
-		Ref<Resource<OpenGLMaterial>> materialRes = registry.find<Resource<OpenGLMaterial>>(meshRendering.materialResourceId);
-		if (!materialRes.isValid() || !Resources::isReady(registry, meshRendering.materialResourceId))
+		const Resource<OpenGLMaterial>* materialRes = registry.findPinned<Resource<OpenGLMaterial>>(meshRendering.materialResourceId);
+		if (materialRes == nullptr || !Resources::isReady(registry, meshRendering.materialResourceId))
 		{
 			// resource is not ready yet.
 			return;
 		}
 
-		Ref<Resource<OpenGLShader>> shaderRes = registry.get<Resource<OpenGLShader>>(materialRes->value.shaderId);
-		
+		const Resource<OpenGLShader>* shaderRes = registry.findPinned<Resource<OpenGLShader>>(materialRes->value.shaderId);
+		if (shaderRes == nullptr || !Resources::isReady(registry, materialRes->value.shaderId))
+		{
+			return;
+		}
+
 		OpenGLCommand command = {
 			.model = Transform::model(position, rotation, scale),
 
@@ -85,7 +89,7 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 
 		for (const auto& texture : materialRes->value.textures)
 		{
-			if (Ref<Resource<OpenGLTexture2D>> res = registry.find<Resource<OpenGLTexture2D>>(texture.id))
+			if (Resource<OpenGLTexture2D>* res = registry.findPinned<Resource<OpenGLTexture2D>>(texture.id))
 			{
 				if (!Resources::isReady(registry, texture.id))
 				{
@@ -103,7 +107,7 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 		// textures parameters can override existing textures in the material if they share the same key
 		for (const auto& [key, resourceId] : meshRendering.textureParameters)
 		{
-			if (Ref<Resource<OpenGLTexture2D>> res = registry.find<Resource<OpenGLTexture2D>>(resourceId))
+			if (Resource<OpenGLTexture2D>* res = registry.findPinned<Resource<OpenGLTexture2D>>(resourceId))
 			{
 				if (!Resources::isReady(registry, resourceId))
 				{

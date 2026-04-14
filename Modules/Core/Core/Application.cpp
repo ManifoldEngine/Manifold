@@ -25,7 +25,7 @@ using ns = std::chrono::nanoseconds;
 CoreConfig loadConfig()
 {
 	CoreConfig config;
-	const std::filesystem::path path = FileSystem::getConfigPath().append(Mani::CONFIG_FILENAME);
+	const Path path = FileSystem::getConfigPath().append(Mani::CONFIG_FILENAME);
 	std::string content;
 	if (FileSystem::readFile(path, content))
 	{

@@ -11,7 +11,7 @@
 
 using namespace Mani;
 
-bool ResourceLoader_Sprite::load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
+bool ResourceLoader_Sprite::load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
 {
 	Ref<Resource<Sprite>> resource = registry.get<Resource<Sprite>>(resourceId);
 
@@ -46,6 +46,6 @@ bool ResourceLoader_Sprite::load(ECS::Registry& registry, const std::filesystem:
 	return true;
 }
 
-void ResourceLoader_Sprite::postLoad(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
+void ResourceLoader_Sprite::postLoad(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const
 {
 }

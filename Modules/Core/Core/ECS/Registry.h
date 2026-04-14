@@ -44,9 +44,9 @@ namespace Mani
 			template<class TRegistry, typename ...Ts>
 			requires(DerivedFrom<TRegistry, Registry>)
 			friend class BasePinnedView;
-
+			
 			template<typename T>
-			using Ref = ComponentRef<T, Registry>;
+			using Ref = ECS::ComponentRef<T>;
 
 			template<typename T>
 			using ComponentPool = Mani::SparseArray<T, PINNED_COMPONENTS_CAPACITY, ECS::EntityId>;
@@ -209,7 +209,7 @@ namespace Mani
 
 				T* component = newArchetype->get<T>(entityId, componentId);
 				component = new (component) T(std::forward<TArgs>(args)...);
-				return Ref(component, *this, *newArchetype);
+				return Ref(component, *newArchetype);
 			}
 
 			// adds all T components to an entity
@@ -252,7 +252,7 @@ namespace Mani
 				{
 					T* component = newArchetype->get<T>(entityId, getComponentId<T>());
 					component = new (component) T();
-					return Ref(component, *this, *newArchetype);
+					return Ref(component, *newArchetype);
 				};
 				return std::tuple<Ref<Ts>...>(init.template operator()<Ts>()...);
 			}
@@ -415,7 +415,7 @@ namespace Mani
 				const ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
 				MANI_ASSERT(entity.components.test(getComponentId<T>()), COMPONENT_NOT_FOUND_MESSAGE, ManiZ::RFL::getTypeName<T>());
 				auto& archetype = m_archetypes.get(entity.components);
-				return Ref(archetype->get<T>(entityId, getComponentId<T>()), *this, *archetype);
+				return Ref(archetype->get<T>(entityId, getComponentId<T>()), *archetype);
 			}
 
 			// returns an entity's T component as a const reference
@@ -426,7 +426,7 @@ namespace Mani
 				const ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
 				MANI_ASSERT(entity.components.test(getComponentId<T>()), COMPONENT_NOT_FOUND_MESSAGE, ManiZ::RFL::getTypeName<T>());
 				const auto& archetype = m_archetypes.get(entity.components);
-				return Ref(archetype->get<T>(entityId, getComponentId<T>()), *this, *archetype);
+				return Ref<const T>(archetype->get<T>(entityId, getComponentId<T>()), *archetype);
 			}
 
 			// returns an entity's T component as a pointer
@@ -446,7 +446,7 @@ namespace Mani
 				}
 
 				auto& archetype = m_archetypes.get(entity.components);
-				return Ref(archetype->get<T>(entityId, componentId), *this, *archetype);
+				return Ref(archetype->get<T>(entityId, componentId), *archetype);
 			}
 
 			// returns an entity's T component as a const pointer
@@ -466,7 +466,7 @@ namespace Mani
 				}
 
 				const auto& archetype = m_archetypes.get(entity.components);
-				return Ref(archetype->get<T>(entityId, componentId), *this, *archetype);
+				return Ref<const T>(archetype->get<T>(entityId, componentId), *archetype);
 			}
 
 			// returns the singleton's T component as a reference
@@ -561,7 +561,11 @@ namespace Mani
 			template<typename ...Ts>
 			[[nodiscard]] bool has(ECS::EntityId entityId) const
 			{
-				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
+				if (!isValid(entityId))
+				{
+					return false;
+				}
+
 				const ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
 				return entity.components.contains(getMask<Ts...>());
 			}
@@ -577,7 +581,11 @@ namespace Mani
 			template<typename ...Ts>
 			[[nodiscard]] bool hasPinned(ECS::EntityId entityId) const
 			{
-				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
+				if (!isValid(entityId))
+				{
+					return false;
+				}
+
 				const ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
 				return entity.pinned.contains(getMask<Ts...>());
 			}
@@ -596,8 +604,6 @@ namespace Mani
 			{
 				return m_entities.count() - m_recyclableIndices.count();
 			}
-
-			[[nodiscard]] SizeT getVersion() const { return m_version.load(std::memory_order_acquire); }
 
 			// destroy all entities marked for destroy
 			void handleDeferredDestroy()
@@ -705,7 +711,6 @@ namespace Mani
 							newArchetype->removeComponentPools<Ts...>(componentIds[Is]...);
 						}
 					}(std::index_sequence_for<Ts...>{});
-					incVersion(); // possible archetypes map reallocation
 				}
 
 				// make sure we get the old archetype after the new archetype in case a new archetype was added.
@@ -723,15 +728,6 @@ namespace Mani
 			{
 				MANI_ASSERT(m_locks > 0, "unlock before lock.");
 				m_locks--;
-			}
-
-			void incVersion()
-			{
-#ifdef MANI_DEBUG
-				constexpr SizeT maxVersion = std::numeric_limits<SizeT>::max();
-				if (m_version == maxVersion) { MANI_LOG_WARNING(Mani::LogCore, "Registry version loopback"); }
-#endif
-				m_version++;
 			}
 
 			template<typename T>
@@ -792,7 +788,6 @@ namespace Mani
 
 			// internals
 			mutable std::atomic<SizeT> m_locks;
-			std::atomic<SizeT> m_version = 0;
 
 			inline static constexpr std::string_view INVALID_ENTITY_MESSAGE = "Entity {} is invalid";
 			inline static constexpr std::string_view COMPONENT_NOT_FOUND_MESSAGE = "Entity {} does not have component";
@@ -811,7 +806,7 @@ namespace Mani
 
 	// exposed outside for convenience
 	template<typename T>
-	using Ref = ECS::ComponentRef<T, ECS::Registry>;
+	using Ref = ECS::ComponentRef<T>;
 	template<typename T>
 	using LazyRef = ECS::LazyComponentRef<T, ECS::Registry>;
 }

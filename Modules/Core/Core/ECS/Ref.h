@@ -12,20 +12,17 @@ namespace Mani
 {
 	namespace ECS
 	{
-		template<typename T, typename TRegistry>
+		template<typename T>
 		struct ComponentRef
 		{
 			static constexpr ComponentRef INVALID() { return {}; }
 
 			ComponentRef() = default;
 
-			ComponentRef(T* v, const TRegistry& registry, const Archetype& archetype) :
+			ComponentRef(T* v, const Archetype& archetype) :
 				m_ptr(v),
-				m_registry(&registry),
 				m_archetype(&archetype),
-
-				m_version(registry.getVersion()),
-				m_archetypeVersion(archetype.getVersion())
+				m_version(archetype.getVersion())
 			{
 			}
 
@@ -54,20 +51,15 @@ namespace Mani
 
 			bool isValid() const
 			{
-				return m_ptr != nullptr
-					&& m_version == m_registry->getVersion()
-					&& m_archetypeVersion == m_archetype->getVersion();
+				return m_ptr != nullptr && m_version == m_archetype->getVersion();
 			}
 
 		private:
 			T* m_ptr = nullptr;
-			const TRegistry* m_registry = nullptr;
 			const Archetype* m_archetype = nullptr;
-
 			SizeT m_version = 0;
-			SizeT m_archetypeVersion = 0;
 
-			inline static constexpr std::string_view DANGLING_REF_MESSAGE = "Dangling reference, get a new Ref to {} from the registry, or make a LazyRef<{}> (warning, slow)";
+			inline static constexpr std::string_view DANGLING_REF_MESSAGE = "Dangling reference, get a new Ref to {} from the registry, or make a LazyRef<{}> (warning, slower)";
 #if MANI_ASSERT_ENABLED
 			inline static constexpr std::string_view TYPE_NAME = ManiZ::RFL::getTypeName<T>();
 #else
@@ -90,7 +82,7 @@ namespace Mani
 				return m_registry->get<T>(m_entityId)->value;
 			}
 
-			ComponentRef<T, TRegistry> operator->() const
+			ComponentRef<T> operator->() const
 			{
 				return m_registry->get<T>(m_entityId);
 			}

@@ -1,33 +1,33 @@
 #pragma once
 
 #include <Core/Core.h>
+#include <Core/ManiTypes.h>
 #include <string>
-#include <filesystem>
 
 namespace Mani
 {
 	namespace FileSystem
 	{
 		// dumps a file to a string
-		bool readFile(const std::filesystem::path& filePath, std::string& outResult);
+		bool readFile(const Path& filePath, std::string& outResult);
 
 		// dumps a string to a file
-		bool writeFile(const std::filesystem::path& filePath, const std::string& content);
+		bool writeFile(const Path& filePath, const std::string& content);
 		
 		// returns a path to the root of the project
-		std::filesystem::path getRootPath();
+		Path getRootPath();
 		// returns a path to {root}/Engine
-		std::filesystem::path getEnginePath();
+		Path getEnginePath();
 		// returns a path to {root}/Config
-		std::filesystem::path getConfigPath();
+		Path getConfigPath();
 		// returns a path to {}/{projectName}
 		// it is expexted that the project name is defined in the build files
-		std::filesystem::path getProjectPath();
+		Path getProjectPath();
 
 		// returns an absolute path from a root relative path
-		std::filesystem::path getAbsolutePath(const std::filesystem::path& relativePath);
+		Path getAbsolutePath(const Path& relativePath);
 
-		void foreach(const std::filesystem::path& path, auto&& f)
+		void foreach(const Path& path, auto&& f)
 		{
 			namespace fs = std::filesystem;
 			for (const auto& entry : fs::recursive_directory_iterator(path))

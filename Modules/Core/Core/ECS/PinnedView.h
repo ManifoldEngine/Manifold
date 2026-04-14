@@ -19,7 +19,7 @@ namespace Mani
 				m_registry(&registry)
 			{
 				m_mask = registry.getMask<Ts...>();
-				(m_pools.add(registry.getPinnedComponentPoolPtr<Ts>()), ...);
+				(tryAdd<Ts>(m_pools, registry), ...);
 
 				m_pools.sort([](const Registry::IComponentPool* lhs, const Registry::IComponentPool* rhs)
 				{
@@ -32,13 +32,14 @@ namespace Mani
 				Iterator() = default;
 				Iterator(const BasePinnedView& view, SizeT index) :
 					m_registry(&view.getRegistry()),
+					m_indices(nullptr),
 					m_mask(view.m_mask),
 					m_index(index)
 				{
 					if (!view.m_pools.isEmpty())
 					{
 						const Registry::IComponentPool* pool = view.m_pools.first();
-						m_indices = pool->getDenseIndices();
+						m_indices = &pool->getDenseIndices();
 						m_count = pool->count();
 					}
 				}
@@ -54,13 +55,13 @@ namespace Mani
 				[[nodiscard]] std::tuple<ECS::EntityId, Ts&...> operator*() const
 				{
 					MANI_ASSERT(m_registry != nullptr, "Null registry in view");
-					MANI_ASSERT(m_indices.isValid(m_index), "Out of bounds");
-					const ECS::Index entityIdx = static_cast<ECS::Index>(m_indices[m_index]);
+					MANI_ASSERT(m_indices->isValid(m_index), "Out of bounds");
+					const ECS::Index entityIdx = static_cast<ECS::Index>(m_indices->at(m_index));
 					const ECS::Entity* entity = m_registry->getEntityAt(entityIdx);
 					MANI_ASSERT(entity != nullptr, "Null entity in view");
 					const ECS::EntityId entityId = entity->getId();
 					return std::tuple<ECS::EntityId, Ts&...>(
-						m_indices[m_index],
+						m_indices->at(m_index),
 						m_registry->getPinned<Ts>(entityId)...
 					);
 				}
@@ -69,10 +70,10 @@ namespace Mani
 				{
 					for (m_index += 1; m_index < m_count; m_index++)
 					{
-						const ECS::Index index = static_cast<ECS::Index>(m_indices[m_index]);
+						const ECS::Index index = static_cast<ECS::Index>(m_indices->at(m_index));
 						if (const ECS::Entity* entity = m_registry->getEntityAt(index))
 						{
-							if (entity->components.contains(m_mask))
+							if (entity->pinned.contains(m_mask))
 							{
 								return *this;
 							}
@@ -80,10 +81,25 @@ namespace Mani
 					}
 					return *this;
 				}
+
+				ECS::EntityId getEntityId() const
+				{
+					MANI_ASSERT(isValidIndex(), "out of bouds");
+					return m_registry->getEntityAt(static_cast<ECS::Index>(m_indices->at(m_index)))->getId();
+				}
+
+				bool isValidIndex() const
+				{
+					return m_index < m_count 
+						&& m_registry
+						   ->getEntityAt(static_cast<ECS::Index>(m_indices->at(m_index)))
+						   ->pinned.contains(m_mask);
+				}
+
 			private:
 				TRegistry* m_registry = nullptr;
+				const Mani::Array<SizeT, ECS::PINNED_COMPONENTS_CAPACITY>* m_indices = nullptr;
 				ECS::ComponentMask m_mask;
-				Mani::Array<SizeT, ECS::PINNED_COMPONENTS_CAPACITY> m_indices;
 				SizeT m_count = 0;
 				SizeT m_index = INDEX_NONE;
 
@@ -92,7 +108,18 @@ namespace Mani
 
 			Iterator begin() const
 			{
-				return Iterator(*this, 0);
+				Iterator it(*this, 0);
+				const SizeT n = count();
+				for (SizeT i = 0; i < n; i++)
+				{
+					if (it.isValidIndex())
+					{
+						break;
+					}
+					++it;
+				}
+				
+				return it;
 			}
 
 			Iterator end() const
@@ -109,6 +136,16 @@ namespace Mani
 			SizeT count() const { return !m_pools.isEmpty() ? m_pools.first()->count() : 0; }
 			ECS::ComponentMask getMask() const { return m_mask; }
 		private:
+
+			template<typename T>
+			static void tryAdd(Mani::List<const Registry::IComponentPool*>& pools, TRegistry& registry)
+			{
+				if (auto* pool = registry.getPinnedComponentPoolPtr<T>())
+				{
+					pools.add(pool);
+				}
+			}
+
 			TRegistry* m_registry = nullptr;
 			ECS::ComponentMask m_mask;
 			Mani::List<const Registry::IComponentPool*> m_pools;

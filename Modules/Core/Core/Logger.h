@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Core/ManiTypes.h>
 #include <string_view>
 #include <memory>
 #include <filesystem>
@@ -37,7 +38,7 @@ namespace Mani
 		Logger& operator=(const Logger&) = delete;
 
 		void log(const LogChannel& channel, ELogLevel level, const std::string_view& log);
-		void setFile(const std::filesystem::path& path);
+		void setFile(const Path& path);
 
 		void suppress();
 		void unsuppress();

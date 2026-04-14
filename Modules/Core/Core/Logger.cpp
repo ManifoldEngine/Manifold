@@ -1,6 +1,7 @@
 #include "Logger.h"
 
 #include <Core/Application.h>
+#include <Core/ManiTypes.h>
 #include <Core/Containers/Map.h>
 #include <Core/TimeSystem.h>
 
@@ -89,7 +90,7 @@ void Logger::log(const LogChannel& channel, ELogLevel level, const std::string_v
 	}
 }
 
-void Mani::Logger::setFile(const std::filesystem::path& path)
+void Mani::Logger::setFile(const Path& path)
 {
 	MANI_ASSERT_APP_THREAD;
 

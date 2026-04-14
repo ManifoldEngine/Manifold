@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Core/CoreFwd.h>
+#include <Resources/Components/Resource.h>
 
 namespace Mani
 {
@@ -25,7 +26,7 @@ namespace Mani
 		//   tag: An optional tag used to group or categorize resources.
 		//
 		// Returns true if the resource was successfully loaded.
-		virtual bool load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const = 0;
+		virtual bool load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const = 0;
 
 		// Called after loading, is guaranteed to be called on the registry's thread 
 		// use this to do any main thread syncing like adding components or creating entities
@@ -35,6 +36,6 @@ namespace Mani
 		//   absolutePath: The absolute filesystem path to the resource file.
 		//   resourceId: The entity ID representing the resource. Access with registry.get<Resource<T>>(resourceId)
 		//   tag: An optional tag used to group or categorize resources.
-		virtual void postLoad(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const {};
+		virtual void postLoad(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const {};
 	};
 }

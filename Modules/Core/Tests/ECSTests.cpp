@@ -622,21 +622,6 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 
 			{
-				ECS::Registry registry;
-
-				const ECS::EntityId e1 = registry.create();
-				Ref<A> a = registry.add<A>(e1);
-
-				const ECS::EntityId e2 = registry.create();
-				// Force many archetypes
-				registry.add<B>(e2);
-				registry.add<C>(e2);
-				registry.add<D>(e2);
-
-				MANI_TEST_ASSERT(!a.isValid(), "should be invalid after archetype container realloc");
-			}
-
-			{
 				const ECS::EntityId e = registry.create();
 				registry.addMany<A, B, C>(e);
 
@@ -753,6 +738,59 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 				MANI_TEST_ASSERT(b.value == 69, "should view B with the correct value");
 				MANI_TEST_ASSERT(registry.has<A>(e), "should have A (this time as an archetype");
 			}
+		}
+
+		MANI_TEST(PinnedViewEmptyDoesNotIterate, "Iterating an empty pinned view should not execute loop body")
+		{
+			struct A {};
+			struct B {};
+
+			ECS::Registry registry;
+
+			const ECS::EntityId e = registry.create();
+
+			// Only add A, not B -> view<A, B> should be empty
+			registry.addPinned<A>(e);
+
+			bool didIterate = false;
+
+			for (const auto [entityId, a, b] : ECS::PinnedView<A, B>(registry))
+			{
+				didIterate = true;
+			}
+
+			MANI_TEST_ASSERT(!didIterate, "Loop body should not execute for empty view");
+		}
+
+		MANI_TEST(PinnedViewIteratesSmallestSet, "PinnedView should iterate over the smallest component set")
+		{
+			struct A {};
+			struct B {};
+
+			ECS::Registry registry;
+
+			// Create entities
+			const ECS::EntityId e1 = registry.create();
+			const ECS::EntityId e2 = registry.create();
+			const ECS::EntityId e3 = registry.create();
+
+			// A exists on 3 entities
+			registry.addPinned<A>(e1);
+			registry.addPinned<A>(e2);
+			registry.addPinned<A>(e3);
+
+			// B exists only on 1 entity
+			registry.addPinned<B>(e2);
+
+			int count = 0;
+
+			for (const auto [entityId, a, b] : ECS::PinnedView<A, B>(registry))
+			{
+				++count;
+				MANI_TEST_ASSERT(entityId == e2, "Only entity with both A and B should be iterated");
+			}
+
+			MANI_TEST_ASSERT(count == 1, "Iteration count should match smallest matching set (B)");
 		}
 
 		MANI_TEST(ShouldNotAllowToPinAnExistingComponent, "Should not allow to pin an existing component")

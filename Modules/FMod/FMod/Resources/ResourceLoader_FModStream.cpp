@@ -10,7 +10,7 @@
 
 using namespace Mani;
 
-bool ResourceLoader_FModStream::load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
+bool ResourceLoader_FModStream::load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
 {
     Ref<FMod> fmod = registry.getSingle<FMod>();
     
@@ -27,7 +27,7 @@ bool ResourceLoader_FModStream::load(ECS::Registry& registry, const std::filesys
     return success;
 }
 
-void ResourceLoader_FModStream::postLoad(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
+void ResourceLoader_FModStream::postLoad(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
 {
     // add the FModSound resource so it can be processed like a normal sound.
     Ref<Resource<FModStream>> resource = registry.get<Resource<FModStream>>(resourceId);

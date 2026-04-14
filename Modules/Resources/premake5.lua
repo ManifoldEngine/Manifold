@@ -12,3 +12,15 @@ group "Engine"
 
         includedirs { locations.moduledir .. "/**" }
 group ""
+
+group "_TestLibs"
+    project "ResourcesTests"
+        kind "SharedLib"
+        location (locations.moduledir .. "/Resources/Tests/")
+
+        files { locations.moduledir .. "/Resources/Tests/**.h", locations.moduledir .. "/Resources/Tests/**.cpp" }
+
+        links { "Core", "Resources" }
+
+        includedirs { locations.moduledir .. "/**" }
+group""

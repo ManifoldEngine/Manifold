@@ -84,7 +84,8 @@ void SpriteStatics::addSprite(ECS::Registry& registry, ECS::EntityId entityId, c
 		.textures = {{ Mani::ShaderNames::MANI_TEXTURE_0, texturePathString }},
 	};
 
-	Ref<MeshRendering> rendering = registry.add<MeshRendering>(entityId);
+	registry.add<MeshRendering>(entityId);
+	LazyRef<MeshRendering> rendering(entityId, registry);
 	rendering->meshResourceId = SpriteStatics::getOrAddQuad(registry, size);
 	rendering->materialResourceId = Resources::inject<Material>(registry, std::move(material), tag);
 

@@ -9,7 +9,7 @@
 
 using namespace Mani;
 
-bool Mani::ResourceLoader_FModSound::load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
+bool Mani::ResourceLoader_FModSound::load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
 {
     Ref<FMod> fmod = registry.getSingle<FMod>();
 

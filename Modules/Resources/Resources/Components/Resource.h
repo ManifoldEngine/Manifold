@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Core/ManiTypes.h>
 #include <atomic>
 #include <filesystem>
 
@@ -19,7 +20,7 @@ namespace Mani
 
 	struct ResourcePath
 	{
-		std::filesystem::path value;
+		Path value;
 	};
 
 	struct ResourceReady {};
@@ -28,5 +29,11 @@ namespace Mani
 	struct ResourceLoader
 	{
 		class IResourceLoader* value = nullptr;
+	};
+
+	enum class EResourceLoadMethod : uint8_t
+	{
+		Async = 0,
+		Sync,
 	};
 }

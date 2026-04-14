@@ -64,7 +64,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		
 		// animation loading
 		const ECS::EntityId animationId = Resources::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
-		Ref<Resource<Animation>> animation = registry.find<Resource<Animation>>(animationId);
+		LazyRef<Resource<Animation>> animation(animationId, registry);
 		MANI_TEST_ASSERT(animation.isValid() && Resources::isReady(registry, animationId), "Animation should be loaded and ready");
 		MANI_TEST_ASSERT(animation->value.frames.count() == 4, "4 frames should have been loaded");
 		for (const auto& frame : animation->value.frames)
@@ -160,7 +160,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		// animation loading
 		const ECS::EntityId animationId = Resources::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
-		Ref<Resource<Animation>> animation = registry.find<Resource<Animation>>(animationId);
+		LazyRef<Resource<Animation>> animation(animationId, registry);
 		MANI_TEST_ASSERT(animation.isValid() && Resources::isReady(registry, animationId), "Animation should be loaded and ready");
 		MANI_TEST_ASSERT(animation->value.frames.count() == 4, "4 frames should have been loaded");
 		for (const auto& frame : animation->value.frames)

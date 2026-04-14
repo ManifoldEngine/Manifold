@@ -26,7 +26,7 @@ using namespace Mani;
 
 class StubResourceLoader_Texture : public IResourceLoader
 {
-	virtual bool load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const override
+	virtual bool load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const override
 	{
 		Ref<Resource<Texture>> resource = registry.get<Resource<Texture>>(resourceId);
 		resource->value.size = { 32, 32 };
