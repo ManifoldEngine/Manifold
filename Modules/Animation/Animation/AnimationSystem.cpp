@@ -19,10 +19,10 @@
 
 using namespace Mani;
 
-void updateEntity(ECS::Registry& registry, ECS::EntityId entityId, const Ref<Resource<Animation>>& animation, FrameId frameId)
+void updateEntity(ECS::Registry& registry, ECS::EntityId entityId, const LoadedAnimation& animation, FrameId frameId)
 {
-	MANI_ASSERT(frameId <= animation->value.frames.count(), "frame id out of bounds");
-	const Animation::Frame& frame = animation->value.frames[frameId];
+	MANI_ASSERT(frameId <= animation.frames.count(), "frame id out of bounds");
+	const LoadedAnimation::Frame& frame = animation.frames[frameId];
 
 	if (Ref<MeshRendering> meshComponent = registry.find<MeshRendering>(entityId))
 	{
@@ -77,7 +77,7 @@ void AnimationSystem::tick(ECS::Registry& registry)
 			return;
 		}
 
-		Ref<Resource<Animation>> animation = registry.get<Resource<Animation>>(animator.resourceId);
+		const LoadedAnimation& animation = registry.getPinned<LoadedAnimation>(animator.resourceId);
 		if (animator.frameId == INVALID_FRAME_ID)
 		{
 			// play the first frame.
@@ -97,7 +97,7 @@ void AnimationSystem::tick(ECS::Registry& registry)
 		const float frameDeltaInSeconds = animator.playRate * frameDelta;
 		const float elapsedRemainder = animator.elapsed - frameDeltaInSeconds;
 
-		if (animator.frameId >= animation->value.frames.count())
+		if (animator.frameId >= animation.frames.count())
 		{
 			switch (animator.mode)
 			{
@@ -132,29 +132,28 @@ void AnimationSystem::tick(ECS::Registry& registry)
 
 void AnimationResourceSystemExtension::onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
 {
-	if (!registry.has<Resource<Animation>>(entityId))
+	if (!registry.hasPinned<Resource<Animation>>(entityId))
 	{
 		return;
 	}
 
-	Ref<Resource<Animation>> animation = registry.find<Resource<Animation>>(entityId);
-	MANI_ASSERT(animation.isValid(), "animation should be loaded at this point");
-	for (auto& frame : animation->value.frames)
+	const Animation& animation = registry.getPinned<Resource<Animation>>(entityId).value;
+	LoadedAnimation& loadedAnimation = registry.addPinned<LoadedAnimation>(entityId);
+	for (const auto& frame : animation.frames)
 	{
-		frame.textureId = Resources::load<Texture>(registry, frame.texturePath, tag);
+		loadedAnimation.frames.add(LoadedAnimation::Frame{ .textureId = Resources::load<Texture>(registry, frame.texturePath, tag) });
 	}
 }
 
 void AnimationResourceSystemExtension::onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
 {
-	if (!registry.has<Resource<Animation>>(entityId))
+	if (!registry.hasPinned<Resource<Animation>>(entityId))
 	{
 		return;
 	}
 
-	Ref<Resource<Animation>> animation = registry.find<Resource<Animation>>(entityId);
-	MANI_ASSERT(animation.isValid() && Resources::isReady(registry, entityId), "animation should be loaded at this point");
-	for (auto& frame : animation->value.frames)
+	const LoadedAnimation& animation = registry.getPinned<LoadedAnimation>(entityId);
+	for (auto& frame : animation.frames)
 	{
 		Resources::unload(registry, frame.textureId);
 	}

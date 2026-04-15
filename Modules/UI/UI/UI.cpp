@@ -23,7 +23,7 @@ ECS::EntityId UI::createSprite(ECS::Registry& registry, const Vec2f& size, ECS::
     registry.addMany<Position, Rotation, Scale>(entityId);
 
     constexpr bool withBoundingSphere = false;
-    Sprite::addRendering(registry, entityId, size, textureId, materialId, tag, withBoundingSphere);
+    Sprites::addRendering(registry, entityId, size, textureId, materialId, tag, withBoundingSphere);
 
     Ref<MeshRendering> meshRendering = registry.get<MeshRendering>(entityId);
     meshRendering->rendererId = Mani::RendererIds::UI_PASS;
@@ -36,7 +36,7 @@ ECS::EntityId UI::createFillableBar(ECS::Registry& registry, const Vec2f& size, 
     registry.addMany<Position, Rotation, Scale>(entityId);
 
     constexpr bool withBoundingSphere = false;
-    Sprite::addRendering(registry, entityId, size, textureId, materialId, tag, withBoundingSphere);
+    Sprites::addRendering(registry, entityId, size, textureId, materialId, tag, withBoundingSphere);
 
     Ref<MeshRendering> meshRendering = registry.get<MeshRendering>(entityId);
     meshRendering->shaderParameters[Mani::UI::ShaderNames::MANI_UI_FILLRATIO] = 0.f;

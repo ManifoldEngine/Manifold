@@ -10,7 +10,7 @@
 
 using namespace Mani;
 
-ECS::EntityId Sprite::getQuad(ECS::Registry& registry, const Vec2f& size, uint32_t tag)
+ECS::EntityId Sprites::getQuad(ECS::Registry& registry, const Vec2f& size, uint32_t tag)
 {
 	ECS::EntityId quadId = ECS::INVALID_ID;
 
@@ -32,7 +32,7 @@ ECS::EntityId Sprite::getQuad(ECS::Registry& registry, const Vec2f& size, uint32
 	return quadId;
 }
 
-void Sprite::addRendering(ECS::Registry& registry, ECS::EntityId entityId, const Vec2f& size, ECS::EntityId textureId, ECS::EntityId materialId, uint32_t tag, bool withBoundingSphere)
+void Sprites::addRendering(ECS::Registry& registry, ECS::EntityId entityId, const Vec2f& size, ECS::EntityId textureId, ECS::EntityId materialId, uint32_t tag, bool withBoundingSphere)
 {
 	const ECS::EntityId quadId = getQuad(registry, size, tag);
 

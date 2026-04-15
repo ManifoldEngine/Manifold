@@ -15,11 +15,20 @@ namespace Mani
 		struct Frame
 		{
 			std::string texturePath = "";
-			ECS::EntityId textureId = ECS::INVALID_ID;
 		};
 
 		std::string name = "";
 		float duration = 0.f;	// in seconds
+
+		List<Frame> frames;
+	};
+
+	struct LoadedAnimation
+	{
+		struct Frame
+		{
+			ECS::EntityId textureId = ECS::INVALID_ID;
+		};
 
 		List<Frame> frames;
 	};
@@ -41,7 +50,7 @@ namespace Mani
 		bool shouldCull = true;
 	};
 
-	namespace AnimationStatics
+	namespace Animations
 	{
 		void play(ECS::Registry& registry, Mani::ECS::EntityId entityId, Mani::ECS::EntityId resourceId, Animator::EPlayMode playMode = Animator::EPlayMode::OneShot);
 	}
