@@ -11,7 +11,7 @@ struct aiScene;
 
 namespace Mani
 {
-    const std::string_view LogMeshImporter = "MeshImporter";
+    constexpr LogChannel LogMeshImporter("MeshImporter");
 
     struct Mesh;
 

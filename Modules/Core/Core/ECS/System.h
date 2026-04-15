@@ -6,6 +6,12 @@
 
 namespace Mani
 {
+	enum class ETick : bool
+	{
+		Disabled = false,
+		Enabled = true,
+	};
+
 	enum class ETickGroup : uint8_t
 	{
 		Begin		= 0,
@@ -53,7 +59,7 @@ namespace Mani
 			bool m_isInitialized = false;
 		};
 
-		template<typename T, bool ShouldTick = false>
+		template<typename T, ETick Ticks = ETick::Disabled>
 		class SystemT : public System
 		{
 		public:
@@ -63,7 +69,7 @@ namespace Mani
 				return name;
 			}
 
-			virtual bool shouldTick(const ECS::Registry& registry) const override { return ShouldTick; }
+			virtual bool shouldTick(const ECS::Registry& registry) const override { return static_cast<bool>(Ticks); }
 		};
 	}
 }

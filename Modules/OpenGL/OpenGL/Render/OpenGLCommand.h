@@ -29,7 +29,7 @@ namespace Mani
 	{
 		struct TextureParam
 		{
-			std::string key;
+			std::string_view key;
 			OpenGLTexture2D* texture;
 		};
 

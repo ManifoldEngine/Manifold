@@ -250,13 +250,13 @@ void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<ResourceSystem>();
 
-	Resources::registerExtension(registry, &resourceExtension);
-	Resources::registerLoaderFor<Texture>(registry, &textureLoader);
+	Resources::registerExtension(registry, &m_resourceExtension);
+	Resources::registerLoaderFor<Texture>(registry, &m_textureLoader);
 }
 
 void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
 	Resources::unregisterLoaderFor<Texture>(registry);
-	Resources::unregisterExtension(registry, &resourceExtension);
+	Resources::unregisterExtension(registry, &m_resourceExtension);
 }
 

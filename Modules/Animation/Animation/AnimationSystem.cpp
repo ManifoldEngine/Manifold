@@ -10,7 +10,7 @@
 #include <Animation/Animation.h>
 #include <Animation/ShaderNames.h>
 
-#include <RenderAPI/MeshRendering.h>
+#include <RenderAPI/Components/MeshRendering.h>
 #include <RenderAPI/Texture.h>
 #include <RenderAPI/Shader.h>
 

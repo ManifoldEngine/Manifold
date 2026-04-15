@@ -10,7 +10,7 @@
 #include <Core/Components/Rotation.h>
 #include <Core/Components/Scale.h>
 
-#include <RenderAPI/BoundingSphere.h>
+#include <RenderAPI/Components/BoundingSphere.h>
 
 #include <ManiMaths/Fwd.h>
 #include <Log.h>

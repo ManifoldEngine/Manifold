@@ -1,6 +1,12 @@
 #pragma once
 
-struct FillableBar
+namespace Mani
 {
-	float amount = 0.f;
-};
+	namespace UI
+	{
+		struct FillableBar
+		{
+			float amount = 0.f;
+		};
+	}
+}

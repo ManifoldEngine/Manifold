@@ -6,24 +6,24 @@ using namespace Mani;
 
 Mat4f Transform::model(const Position& p, const Rotation& q, const Scale& s)
 {
-	return MAT4F::IDENTITY.translate(p.value)
-						  .rotate(q.value)
-						  .scale(s.value);
+	return MAT4F::IDENTITY.translate(p)
+						  .rotate(q)
+						  .scale(s);
 }
 
 Vec3f Transform::forward(const Rotation& q)
 {
-	return q.value.rotate(VEC3F::FORWARD).normalize();
+	return q.rotate(VEC3F::FORWARD).normalize();
 }
 
 Vec3f Transform::up(const Rotation& q)
 {
-	return q.value.rotate(VEC3F::UP).normalize();
+	return q.rotate(VEC3F::UP).normalize();
 }
 
 Vec3f Transform::right(const Rotation& q)
 {
-	return q.value.rotate(VEC3F::RIGHT).normalize();
+	return q.rotate(VEC3F::RIGHT).normalize();
 }
 
 Mat4f Transform::model(const Vec3f& p, const Quatf& q, const Vec3f& s)

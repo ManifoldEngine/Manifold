@@ -29,7 +29,14 @@ void Resources::unload(ECS::Registry& registry, ECS::EntityId inEntityId)
 	}
 
 	Ref<ResourceTag> resourceTag = registry.get<ResourceTag>(inEntityId);
-	
+
+#if MANI_DEBUG
+	if (Ref<ResourcePath> path = registry.find<ResourcePath>(inEntityId))
+	{
+		MANI_LOG(LogResources, "Unloading resource at {}", path->value.string());
+	}
+#endif
+
 	forEachExtension(registry, [&registry, inEntityId, tag = resourceTag->tag](const IResourceSystemExtension& ext)
 	{
 		ext.onResourceUnloaded(registry, inEntityId, tag);

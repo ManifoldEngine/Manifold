@@ -10,11 +10,17 @@
 #include <OpenGL/Render/OpenGLRenderContext.h>
 #include <OpenGL/Render/OpenGLRenderSystem.h>
 
-#include "RenderAPI/Shader.h"
+#include <RenderAPI/Shader.h>
+#include <RenderAPI/RendererIds.h>
 
 #include <GLFW/glfw3.h>
 
 using namespace Mani;
+
+int OpenGL3DRenderer::getId() const
+{
+	return Mani::RendererIds::FIRST_PASS;
+}
 
 void OpenGL3DRenderer::onBegin(OpenGLRenderContext& context)
 {

@@ -5,11 +5,8 @@
 #include <RenderAPI/Shader.h>
 #include <RenderAPI/ShaderConfig.h>
 
-#include <Sprite/Sprite.h>
-
 #include <MeshImporter/MeshImporter.h>
 #include <ShaderImporter/ShaderImporter.h>
-#include <SpriteImporter/SpriteImporter.h>
 
 #include <Core/Containers/List.h>
 
@@ -24,7 +21,6 @@ constexpr std::string_view SHADER_EXT = ".shader";
 constexpr std::string_view FBX_EXT = ".fbx";
 constexpr std::string_view MESH_EXT = ".mesh";
 constexpr std::string_view PNG_EXT = ".png";
-constexpr std::string_view SPRITE_EXT = ".sprite";
 
 constexpr uint32_t DEFAULT_TPU = 512;
 
@@ -67,24 +63,6 @@ void processMesh(const fs::path& path)
 	}
 }
 
-void processSprite(const fs::path& path)
-{
-	Sprite sprite;
-	if (!SpriteImporter::importFromPath(path, sprite, DEFAULT_TPU))
-	{
-		return;
-	}
-
-	fs::path output = path.parent_path();
-	const std::string filename = std::filesystem::path(path).stem().string();
-	output.append(std::format("{}{}", filename, SPRITE_EXT));
-	MANI_LOG(Log, "Saving {}", output.string());
-	if (!SpriteImporter::exportToPath(output, sprite))
-	{
-		MANI_LOG_ERROR(Log, "Could not save sprite at {}", output.string());
-	}
-}
-
 void processAsset(const fs::path& path, const fs::path& extension)
 {
 	if (extension == GLSL_EXT)
@@ -96,11 +74,6 @@ void processAsset(const fs::path& path, const fs::path& extension)
 	{
 		MANI_LOG(Log, "importing {}", path.string());
 		processMesh(path);
-	}
-	else if (extension == PNG_EXT)
-	{
-		MANI_LOG(Log, "importing {}", path.string());
-		processSprite(path);
 	}
 }
 

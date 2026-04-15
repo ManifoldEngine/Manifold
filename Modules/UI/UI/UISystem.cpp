@@ -21,31 +21,32 @@ void UISystem::onInitialize(ECS::Registry& registry, World& world)
 	world.initializeDependency<CameraSystem>();
 	world.initializeDependency<ResourceSystem>();
 	world.initializeDependency<RenderContextSystem>();
-
-	Ref<UI::Context> context = registry.addSingle<UI::Context>();
-	context->configId = Resources::loadSync<UIConfig>(registry, Mani::UICONFIG_PATH);
-	Ref<Resource<UIConfig>> config = registry.get<Resource<UIConfig>>(context->configId);
 	
-	const ECS::EntityId mainCameraId = CameraStatics::getMainCameraId(registry);
-	Ref<Camera> mainCamera = registry.get<Camera>(mainCameraId);
+	const auto configId = Resources::loadSync<UIConfig>(registry, Mani::UICONFIG_PATH);
+	const UIConfig& config = registry.getPinned<Resource<UIConfig>>(configId).value;
 
 	// create UICamera
-	context->cameraId = registry.create();
+	const auto cameraId = registry.create();
 
-	registry.addMany<Position, Rotation, UICamera>(context->cameraId);
-	Ref<Camera> uiCamera = registry.add<Camera>(context->cameraId);
+	registry.addMany<Position, Rotation, UICamera>(cameraId);
+	Ref<Camera> uiCamera = registry.add<Camera>(cameraId);
 
+	const ECS::EntityId mainCameraId = CameraStatics::getMainCameraId(registry);
+	Ref<Camera> mainCamera = registry.get<Camera>(mainCameraId);
 	uiCamera->width = mainCamera->width;
 	uiCamera->height = mainCamera->height;
 	uiCamera->near = -1'000.f;
 	uiCamera->far = 1'000.f;
-
+	
 	uiCamera->mode = ECameraMode::Orthographic;
-	uiCamera->pixelsPerUnit = config->value.ppu;
+	uiCamera->pixelsPerUnit = config.ppu;
 	uiCamera->useVirtualResolution = true;
-	uiCamera->virtualWidth = config->value.virtualWidth;
-	uiCamera->virtualHeight = config->value.virtualHeight;
+	uiCamera->virtualWidth = config.virtualWidth;
+	uiCamera->virtualHeight = config.virtualHeight;
 
+	Ref<UI::Context> context = registry.addSingle<UI::Context>();
+	context->configId = configId;
+	context->cameraId = cameraId;
 	world.createSystem<FillableBarSystem>();
 }
 
@@ -63,5 +64,5 @@ void UISystem::tick(ECS::Registry& registry)
 	Ref<UI::Context> uiContext = registry.getSingle<UI::Context>();
 	
 	Ref<Camera> uiCamera = registry.get<Camera>(uiContext->cameraId);
-	renderContext->shaderParameters[UI::ShaderNames::MANI_UI_PROJECTION] = uiCamera->projection;
+	renderContext->shaderParameters[ShaderNames::MANI_UI_PROJECTION] = uiCamera->projection;
 }

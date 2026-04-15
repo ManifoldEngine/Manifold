@@ -25,7 +25,7 @@ namespace Mani
         virtual void onDeinitialize(ECS::Registry& registry, World& world) override;
 
     private:
-        OpenGLResourceSystemExtension resourceExtension;
-        ResourceLoader_Texture textureLoader;
+        OpenGLResourceSystemExtension m_resourceExtension;
+        ResourceLoader_Texture m_textureLoader;
     };
 }

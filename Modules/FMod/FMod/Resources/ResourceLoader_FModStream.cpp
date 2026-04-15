@@ -27,7 +27,7 @@ bool ResourceLoader_FModStream::load(ECS::Registry& registry, const Path& absolu
     return success;
 }
 
-void ResourceLoader_FModStream::postLoad(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
+void ResourceLoader_FModStream::postLoad(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const
 {
     // add the FModSound resource so it can be processed like a normal sound.
     Ref<Resource<FModStream>> resource = registry.get<Resource<FModStream>>(resourceId);

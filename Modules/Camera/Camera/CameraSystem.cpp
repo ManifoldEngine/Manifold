@@ -29,8 +29,8 @@ void CameraSystem::tick(ECS::Registry& registry)
 {
     for (auto [entityId, position, rotation, camera] : ECS::View<Position, Rotation, Camera>(registry))
     {
-        camera.view = Mat4f::lookAt(position.value, position.value + Transform::forward(rotation), Transform::up(rotation));
-        camera.frustrum = FrustumStatics::create(camera, position.value, rotation.value);
+        camera.view = Mat4f::lookAt(position, position + Transform::forward(rotation), Transform::up(rotation));
+        camera.frustrum = FrustumStatics::create(camera, position, rotation);
 
         switch (camera.mode)
         {

@@ -12,8 +12,9 @@
 #include <OpenGL/Resources/OpenGLResourceSystem.h>
 #include <OpenGL/Render/OpenGLCommand.h>
 
-#include <RenderAPI/MeshRendering.h>
-#include <RenderAPI/BoundingSphere.h>
+#include <RenderAPI/Components/MeshRendering.h>
+#include <RenderAPI/Components/SpriteRendering.h>
+#include <RenderAPI/Components/BoundingSphere.h>
 
 using namespace Mani;
 
@@ -99,11 +100,6 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 			}
 		}
 
-		for (const auto& [key, value] : meshRendering.shaderParameters)
-		{
-			command.customParamaters.add({ key, value });
-		}
-
 		// textures parameters can override existing textures in the material if they share the same key
 		for (const auto& [key, resourceId] : meshRendering.textureParameters)
 		{
@@ -127,6 +123,30 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 				{
 					command.textures.add({ key, &res->value });
 				}
+			}
+		}
+
+		for (const auto& shaderParam : materialRes->value.shaderParameters)
+		{
+			command.customParamaters.add({ shaderParam.key, shaderParam.value });
+		}
+
+		for (const auto& [key, value] : meshRendering.shaderParameters)
+		{
+			command.customParamaters.add({ key, value });
+		}
+
+		if (Ref<SpriteRendering> spriteRendering = registry.find<SpriteRendering>(entityId))
+		{
+			command.customParamaters.add({ ShaderNames::MANI_SPRITE_WORLD_SIZE, spriteRendering->size });
+
+			if (Resources::isReady(registry, spriteRendering->textureId))
+			{
+				auto& openglTex = registry.getPinned<Resource<OpenGLTexture2D>>(spriteRendering->textureId);
+				command.textures.add({ ShaderNames::MANI_SPRITE_TEXTURE, &openglTex.value});
+
+				const auto& tex = registry.getPinned<Resource<Texture>>(spriteRendering->textureId);
+				command.customParamaters.add({ ShaderNames::MANI_SPRITE_TEXTURE_SIZE, tex.value.size });
 			}
 		}
 

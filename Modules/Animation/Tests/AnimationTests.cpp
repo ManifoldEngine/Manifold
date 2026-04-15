@@ -10,7 +10,7 @@
 
 #include <Camera/Camera.h>
 
-#include <RenderAPI/MeshRendering.h>
+#include <RenderAPI/Components/MeshRendering.h>
 #include <RenderAPI/Texture.h>
 
 #include <Resources/Resources.h>
@@ -64,8 +64,8 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		
 		// animation loading
 		const ECS::EntityId animationId = Resources::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
-		LazyRef<Resource<Animation>> animation(animationId, registry);
-		MANI_TEST_ASSERT(animation.isValid() && Resources::isReady(registry, animationId), "Animation should be loaded and ready");
+		const Resource<Animation>* animation = registry.findPinned<Resource<Animation>>(animationId);
+		MANI_TEST_ASSERT(animation != nullptr && Resources::isReady(registry, animationId), "Animation should be loaded and ready");
 		MANI_TEST_ASSERT(animation->value.frames.count() == 4, "4 frames should have been loaded");
 		for (const auto& frame : animation->value.frames)
 		{

@@ -155,6 +155,8 @@ namespace Mani
 			}
 		};
 
+		MANI_LOG(LogResources, "Loading resource at {}...", path.string());
+
 		switch (method)
 		{
 			case EResourceLoadMethod::Async:
@@ -261,7 +263,7 @@ namespace Mani
 		std::string content;
 		if (!FileSystem::readFile(absolutePath, content))
 		{
-			MANI_LOG_ERROR(LogResources, "Could not find asset at path {}", absolutePath.string());
+			MANI_LOG_ERROR(LogResources, "Could not find file at path {}", absolutePath.string());
 			return false;
 		}
 

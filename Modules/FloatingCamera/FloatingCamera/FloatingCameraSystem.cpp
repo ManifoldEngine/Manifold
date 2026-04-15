@@ -50,10 +50,10 @@ void FloatingCameraSystem::tick(ECS::Registry& registry)
 		auto rotation = registry.get<Rotation>(cameraId);
 		auto camera = registry.get<Camera>(cameraId);
 		
-		position->value +=  (Transform::right(*rotation) * static_cast<float>(moveAction.x) +
-							Transform::up(*rotation) * static_cast<float>(moveAction.y) +
-							Transform::forward(*rotation) * static_cast<float>(moveAction.z)) *
-							time->delta * floatingCamera.cameraSpeed;
+		*position +=   (Transform::right(*rotation) * static_cast<float>(moveAction.x) +
+				 		Transform::up(*rotation) * static_cast<float>(moveAction.y) +
+						Transform::forward(*rotation) * static_cast<float>(moveAction.z)) *
+						time->delta * floatingCamera.cameraSpeed;
 
 		const float aimX = static_cast<float>(aimAction.x);
 		const float aimY = static_cast<float>(aimAction.y);
@@ -73,7 +73,7 @@ void FloatingCameraSystem::tick(ECS::Registry& registry)
 		Quatf quatYaw = Quatf::axisAngleDeg(yaw, VEC3F::UP);
 
 		// it is crucial to respect this order of operation to avoid unintended roll.
-		rotation->value = quatYaw * rotation->value * quatPitch;
+		*rotation = quatYaw * (*rotation) * quatPitch;
 
 		floatingCamera.previousCameraX = aimX;
 		floatingCamera.previousCameraY = aimY;

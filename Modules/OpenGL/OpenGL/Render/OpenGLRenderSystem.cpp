@@ -35,7 +35,7 @@ OpenGLRenderContext createContext(ECS::Registry& registry)
 		auto position = registry.get<Position>(cameraId);
 		auto camera = registry.get<Camera>(cameraId);
 
-		context.cameraPosition = position->value;
+		context.cameraPosition = *position;
 
 		context.view = camera->view;
 		context.projection = camera->projection;

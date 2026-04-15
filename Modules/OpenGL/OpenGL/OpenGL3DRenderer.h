@@ -8,7 +8,7 @@ namespace Mani
 	class OpenGL3DRenderer : public IOpenGLRenderer
 	{
 		// Inherited via IRenderer
-		virtual int getId() const override { return 0; }
+		virtual int getId() const override;
 		virtual void onBegin(OpenGLRenderContext& context) override;
 		virtual void render(const OpenGLCommand& command, OpenGLRenderContext& context) override;
 		virtual void onEnd(OpenGLRenderContext& context) override;

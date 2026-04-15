@@ -1,11 +1,12 @@
 #pragma once
 
+#include <Core/Log.h>
 #include <filesystem>
 #include <string>
 
 namespace Mani
 {
-    const std::string_view LogShaderImporter = "ShaderImporter";
+    constexpr LogChannel LogShaderImporter("ShaderImporter");
 
     struct Shader;
 

@@ -12,7 +12,7 @@ namespace Mani
 		ECS::EntityId materialResourceId;
 		int rendererId = 0;
 
-		Mani::Map<std::string, ShaderType> shaderParameters;
-		Mani::Map<std::string, ECS::EntityId> textureParameters;
+		Mani::Map<std::string_view, ShaderType> shaderParameters;
+		Mani::Map<std::string_view, ECS::EntityId> textureParameters;
 	};
 }

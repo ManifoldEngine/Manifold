@@ -790,7 +790,7 @@ namespace Mani
 			mutable std::atomic<SizeT> m_locks;
 
 			inline static constexpr std::string_view INVALID_ENTITY_MESSAGE = "Entity {} is invalid";
-			inline static constexpr std::string_view COMPONENT_NOT_FOUND_MESSAGE = "Entity {} does not have component";
+			inline static constexpr std::string_view COMPONENT_NOT_FOUND_MESSAGE = "Entity does not have component {}";
 
 			void ASSERT_SAME_THREAD() const
 			{

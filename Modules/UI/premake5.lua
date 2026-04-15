@@ -9,7 +9,7 @@ group "Engine"
             locations.moduledir .. "/%{prj.name}/**.cpp" 
         }
 
-        links { "Core", "RenderAPI", "Camera", "Resources", "Sprite" }
+        links { "Core", "RenderAPI", "Camera", "Resources" }
 
         includedirs { locations.moduledir .. "/**" }
 group ""
