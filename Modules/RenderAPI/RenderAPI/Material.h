@@ -7,24 +7,24 @@
 
 namespace Mani
 {
-	struct ShaderParam_Texture { std::string key = ""; std::string path = ""; };
-	struct ShaderParam_float { std::string key = ""; float value = 0.f; };
-	struct ShaderParam_Vec2f { std::string key = ""; Vec2f value = VEC2F::ZERO; };
-	struct ShaderParam_Vec3f { std::string key = ""; Vec3f value = VEC3F::ZERO; };
-	struct ShaderParam_Vec4f { std::string key = ""; Vec4f value = VEC4F::ZERO; };
-	struct ShaderParam_int { std::string key = ""; int value = 0; };
-	struct ShaderParam_Vec2i { std::string key = ""; Vec2i value = VEC2I::ZERO; };
-	struct ShaderParam_Vec3i { std::string key = ""; Vec3i value = VEC3I::ZERO; };
-	struct ShaderParam_Vec4i { std::string key = ""; Vec4i value = VEC4I::ZERO; };
-	struct ShaderParam_Mat3f { std::string key = ""; Mat3f value = MAT4F::IDENTITY; };
-	struct ShaderParam_Mat4f { std::string key = ""; Mat4f value = MAT3F::IDENTITY; };
-	struct ShaderParam_bool { std::string key = ""; bool value = false; };
+	struct ShaderParam_Texture { std::string_view key = ""; std::string_view path = ""; };
+	struct ShaderParam_float { std::string_view key = ""; float value = 0.f; };
+	struct ShaderParam_Vec2f { std::string_view key = ""; Vec2f value = VEC2F::ZERO; };
+	struct ShaderParam_Vec3f { std::string_view key = ""; Vec3f value = VEC3F::ZERO; };
+	struct ShaderParam_Vec4f { std::string_view key = ""; Vec4f value = VEC4F::ZERO; };
+	struct ShaderParam_int { std::string_view key = ""; int value = 0; };
+	struct ShaderParam_Vec2i { std::string_view key = ""; Vec2i value = VEC2I::ZERO; };
+	struct ShaderParam_Vec3i { std::string_view key = ""; Vec3i value = VEC3I::ZERO; };
+	struct ShaderParam_Vec4i { std::string_view key = ""; Vec4i value = VEC4I::ZERO; };
+	struct ShaderParam_Mat3f { std::string_view key = ""; Mat3f value = MAT4F::IDENTITY; };
+	struct ShaderParam_Mat4f { std::string_view key = ""; Mat4f value = MAT3F::IDENTITY; };
+	struct ShaderParam_bool { std::string_view key = ""; bool value = false; };
 
 	struct Material
 	{
-		std::string name;
+		std::string_view name;
 
-		std::string shaderPath = "";
+		std::string_view shaderPath = "";
 		List<ShaderParam_Texture> textures;
 		
 		List<ShaderParam_float> shaderParam_float_values;

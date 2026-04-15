@@ -20,8 +20,6 @@ namespace Mani
 
 	struct OpenGLRenderContext
 	{
-		const OpenGLWindowContext* openglContext = nullptr;
-
 		// camera
 		Mat4f view = MAT4F::IDENTITY;
 		Mat4f projection = MAT4F::IDENTITY;

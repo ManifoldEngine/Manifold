@@ -1,6 +1,7 @@
 #include "MeshImporter.h"
 
 #include <Core/ManiAssert.h>
+#include <Core/ManiTypes.h>
 #include <Core/FileSystem.h>
 #include <Core/Containers/List.h>
 
@@ -15,7 +16,7 @@
 
 using namespace Mani;
 
-bool MeshImporter::importFromPath(const std::filesystem::path& path, Mani::List<Mesh>& outMeshes)
+bool MeshImporter::importFromPath(const Path& path, Mani::List<Mesh>& outMeshes)
 {
 	Assimp::Importer importer;
 	const aiScene* scene = importer.ReadFile(path.string(), aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -39,7 +40,7 @@ bool MeshImporter::importFromPath(const std::filesystem::path& path, Mani::List<
 	return true;
 }
 
-bool MeshImporter::exportToPath(const std::filesystem::path& path, const Mesh& mesh)
+bool MeshImporter::exportToPath(const Path& path, const Mesh& mesh)
 {
 	return FileSystem::writeFile(path, ManiZ::to::json(mesh));
 }

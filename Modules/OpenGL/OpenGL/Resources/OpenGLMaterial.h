@@ -12,17 +12,17 @@ namespace Mani
 	{
 		struct Texture
 		{
-			std::string key = "";
-			ECS::EntityId id;
+			std::string_view key = "";
+			ECS::EntityId id = ECS::INVALID_ID;
 		};
 
 		struct ShaderParam
 		{
-			std::string key;
+			std::string_view key = "";
 			ShaderType value;
 		};
 
-		std::string name;
+		std::string_view name;
 
 		Vec4f color = VEC4F::ONE;
 

@@ -76,10 +76,11 @@ namespace Mani
 			m_data.add({ key, value });
 		}
 
-		void add(const K& key, V&& value)
+		V& add(const K& key, V&& value)
 		{
 			MANI_ASSERT(!has(key), "key already exists");
 			m_data.add({ key, std::forward<V>(value) });
+			return m_data.last().value;
 		}
 
 		bool remove(const K& key)
@@ -102,13 +103,13 @@ namespace Mani
 		[[nodiscard]] V& get(const K& key)
 		{
 			MANI_ASSERT(has(key), "key does not exists");
-			return m_data[indexOfKey(key)].value;
+			return getEntry(key)->value;
 		}
 
 		[[nodiscard]] const V& get(const K& key) const
 		{
 			MANI_ASSERT(has(key), "key does not exists");
-			return m_data[indexOfKey(key)].value;
+			return getEntry(key)->value;
 		}
 
 		[[nodiscard]] V& getOrAdd(const K& key, const V& value)
@@ -124,22 +125,20 @@ namespace Mani
 
 		[[nodiscard]] const V* find(const K& key) const
 		{
-			const SizeT index = indexOfKey(key);
-			if (index == INDEX_NONE)
+			if (const Entry* entry = getEntry(key))
 			{
-				return nullptr;
+				return &(entry->value);
 			}
-			return &m_data[index].value;
+			return nullptr;
 		}
 
 		[[nodiscard]] V* find(const K& key)
 		{
-			const SizeT index = indexOfKey(key);
-			if (index == INDEX_NONE)
+			if (Entry* entry = getEntry(key))
 			{
-				return nullptr;
+				return &(entry->value);
 			}
-			return &m_data[index].value;
+			return nullptr;
 		}
 
 		[[nodiscard]] V& operator[](const K& key)
@@ -183,6 +182,22 @@ namespace Mani
 		SizeT indexOfKey(const K& key) const
 		{
 			return m_data.indexOfIf([&key](const Entry& entry)
+			{
+				return entry.key == key;
+			});
+		}
+
+		Entry* getEntry(const K& key)
+		{
+			return m_data.findIf([&key](const Entry& entry)
+			{
+				return entry.key == key;
+			});
+		}
+
+		const Entry* getEntry(const K& key) const
+		{
+			return m_data.findIf([&key](const Entry& entry)
 			{
 				return entry.key == key;
 			});

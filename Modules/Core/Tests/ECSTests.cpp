@@ -1,677 +1,834 @@
 #include <ManiTests/ManiTests.h>
 #include <Core/ECS/Registry.h>
 #include <Core/ECS/View.h>
-#include <Core/ECS/Bitset.h>
+#include <Core/ECS/PinnedView.h>
+#include <Core/ECS/CommandBuffer.h>
 
-#include <memory>
+#include <string>
+#include <random>
+#include <mutex>
+
+namespace ECSTestHelpers
+{
+	std::string randomString(size_t n) {
+		static constexpr char c[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+		static thread_local std::mt19937 r{ std::random_device{}() };
+		static std::uniform_int_distribution<size_t>d(0, sizeof(c) - 2);
+		
+		std::string s(n, '\0'); 
+		for (auto& x : s)
+		{
+			x = c[d(r)];
+		}
+		return s;
+	}
+}
 
 using namespace Mani;
 
 MANI_SECTION_BEGIN(ECS, "ECS")
 {
-	MANI_TEST(CreateEditDestroyEntities, "Should create a registry, create an entity, add a component, edit the component, then destroy the entity")
+	MANI_SECTION_BEGIN(Archetype, "Archetype")
 	{
-		struct DataComponent 
+		MANI_TEST(EntityLifecycle, "Create, add, mutate, destroy")
 		{
-			int someData = 5;
-		};
+			struct Data { int value = 5; };
 
-		// create a registry
-		ECS::Registry registry;
-
-		// create an entity
-		ECS::EntityId entityId = registry.create();
-		
-		MANI_TEST_ASSERT(ECS::toIndex(entityId) == 1, "Entity should have the first id.");
-		MANI_TEST_ASSERT(registry.isValid(entityId), "Entity should be valid.");
-	
-		// add a DataComponent
-		auto* component = registry.add<DataComponent>(entityId);
-	
-		MANI_TEST_ASSERT(component != nullptr, "Component should not be a nullptr.");
-		if (component == nullptr)
-		{
-			return;
-		}
-
-		// edit the data
-		component->someData += 10;
-
-		// get the component again to verify the pointer points to the correct location.
-		auto* componentFromRegistry = registry.get<DataComponent>(entityId);
-	
-		MANI_TEST_ASSERT(componentFromRegistry != nullptr, "Component should not be a nullptr.");
-		if (componentFromRegistry == nullptr)
-		{
-			return;
-		}
-
-		MANI_TEST_ASSERT(component->someData == componentFromRegistry->someData, "We should be able to retrieve our component data");
-	
-		// destroy the entity, should destroy the component too.
-		MANI_TEST_ASSERT(registry.destroy(entityId), "The Entity should have been destroyed");
-	
-		MANI_TEST_ASSERT(!registry.isValid(entityId), "Entity should not be valid anymore");
-
-		auto* componentFromRegistryAfterDelete = registry.get<DataComponent>(entityId);
-		MANI_TEST_ASSERT(componentFromRegistryAfterDelete == nullptr, "Entity's component should be nullptr after delete.");
-	}
-
-	MANI_TEST(AddAndRemoveComponents, "Should create a registry and an entity, then add and remove a component")
-	{
-		struct DataComponent
-		{
-			int someData = 5;
-		};
-
-		// create a registry
-		ECS::Registry registry;
-
-		// create an entity
-		ECS::EntityId entityId = registry.create();
-	
-		// add a DataComponent
-		DataComponent* dataComponent = registry.add<DataComponent>(entityId);
-		MANI_TEST_ASSERT(dataComponent != nullptr, "Component should not be a nullptr.");
-		if (dataComponent == nullptr)
-		{
-			return;
-		}
-
-		const bool didRemoveDataComponent = registry.remove<DataComponent>(entityId);
-		MANI_TEST_ASSERT(didRemoveDataComponent, "Should have removed the Data component");
-
-		dataComponent = registry.get<DataComponent>(entityId);
-		MANI_TEST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
-	}
-
-	MANI_TEST(RecycleEntities, "Should create a registry and an entity, then properly recycle the entity and its components")
-	{
-		struct DataComponent
-		{
-			int someData = 5;
-		};
-
-		struct OtherDataComponent {
-			int someOtherData = 10;
-		};
-
-		// create a registry
-		ECS::Registry registry;
-
-		// create an entity
-		ECS::EntityId entityId = registry.create();
-
-		// add a DataComponent
-		DataComponent* dataComponent = registry.add<DataComponent>(entityId);
-		MANI_TEST_ASSERT(dataComponent != nullptr, "Component should not be a nullptr.");
-		if (dataComponent == nullptr)
-		{
-			return;
-		}
-
-		// destroy the entity, which should be added to the entity pool
-		const bool didDestroy = registry.destroy(entityId);
-		MANI_TEST_ASSERT(didDestroy, "Should have detroyed entity");
-
-		dataComponent = registry.get<DataComponent>(entityId);
-		MANI_TEST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
-
-		// we expect the entity to be recycled
-		entityId = registry.create();
-		MANI_TEST_ASSERT(ECS::toIndex(entityId) == 1, "Should be the first entity addded.");
-
-		// Entity should not have a DataComponent
-		dataComponent = registry.get<DataComponent>(entityId);
-		MANI_TEST_ASSERT(dataComponent == nullptr, "Component should be a nullptr.");
-
-		OtherDataComponent* otherDataComponent = registry.add<OtherDataComponent>(entityId);
-		MANI_TEST_ASSERT(otherDataComponent != nullptr, "Component should not be a nullptr.");
-		if (otherDataComponent == nullptr)
-		{
-			return;
-		}
-
-		otherDataComponent->someOtherData += 10;
-
-		OtherDataComponent* otherOtherDataComponent = registry.get<OtherDataComponent>(entityId);
-		MANI_TEST_ASSERT(otherOtherDataComponent != nullptr, "Other Component should not be a nullptr.");
-		if (otherOtherDataComponent == nullptr)
-		{
-			return;
-		}
-
-		MANI_TEST_ASSERT(otherOtherDataComponent->someOtherData == otherDataComponent->someOtherData, "we should be able to mutate a component of a recycled entity.");
-	}
-
-	MANI_TEST(CreateRegistryView, "Should create a registry view and iterate through it")
-	{
-		struct DataComponent {
-			int someData = 5;
-		};
-
-		struct OtherDataComponent {
-			int someOtherData = 10;
-		};
-
-		// create a registry
-		ECS::Registry registry;
-
-		// create e few entities, all of them with DataComponent, some of them with OtherDataComponent
-		const int entityCount = 10;
-		for (int i = 1; i < entityCount; i++)
-		{
-			const ECS::EntityId entityId = registry.create();
-			registry.add<DataComponent>(entityId);
-			if (i % 2 == 0)
-			{
-				registry.add<OtherDataComponent>(entityId);
-			}
-		}
-
-		MANI_TEST_ASSERT(registry.count() == entityCount, "should have created 10 entities");
-
-		int entityCounter = 1;
-		for (ECS::EntityId entityId : ECS::View<DataComponent, OtherDataComponent>(registry))
-		{
-			entityCounter++;
-
-			auto* component = registry.get<DataComponent>(entityId);
-			MANI_TEST_ASSERT(component != nullptr, "should have a DataComponent");
-
-			auto* otherComponent = registry.get<OtherDataComponent>(entityId);
-			MANI_TEST_ASSERT(otherComponent != nullptr, "should have a OtherDataComponent");
-		}
-		MANI_TEST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent and OtherDataComponent in the registry view");
-
-		// iterate over the entities with DataComponent
-		entityCounter = 1;
-		for (ECS::EntityId entityId : ECS::View<DataComponent>(registry))
-		{
-			entityCounter++;
-			auto* component = registry.get<DataComponent>(entityId);
-			MANI_TEST_ASSERT(component != nullptr, "should have a DataComponent");
-		}
-		MANI_TEST_ASSERT(entityCounter == entityCount, "There should be 10 entities with DataComponent in the registry view");
-
-		entityCounter = 1;
-		for (ECS::EntityId entityId : ECS::View<OtherDataComponent>(registry))
-		{
-			entityCounter++;
-			auto* otherComponent = registry.get<OtherDataComponent>(entityId);
-			MANI_TEST_ASSERT(otherComponent != nullptr, "should have a OtherDataComponent");
-		}
-		MANI_TEST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with OtherDataComponent in the registry view");
-
-
-		entityCounter = 0;
-		for (ECS::EntityId entityId : ECS::View<>(registry))
-		{
-			entityCounter++;
-		}
-		MANI_TEST_ASSERT(entityCounter == 10, "Should iterate over all entities");
-	}
-
-	MANI_TEST(ChaoticEntityCreation, "We should be able to create entities, some without component, and some with components")
-	{
-		struct DataComponent {
-			int someData = 5;
-		};
-
-		// create a registry
-		ECS::Registry registry;
-
-		// create e few entities, all of them with DataComponent, some of them with OtherDataComponent
-		int entityCount = 10;
-		// entity ids start at 1 to leave room for the singleton entity
-		for (int i = 1; i < entityCount; i++)
-		{
-			const ECS::EntityId entityId = registry.create();
-			if (i % 2 == 0)
-			{
-				registry.add<DataComponent>(entityId);
-			}
-		}
-
-		MANI_TEST_ASSERT(registry.count() == entityCount, "should have created 10 entities");
-
-		// iterate over the entities with DataComponent
-		int entityCounter = 1;
-		for (ECS::EntityId entityId : ECS::View<DataComponent>(registry))
-		{
-			entityCounter++;
-			auto* component = registry.get<DataComponent>(entityId);
-			MANI_TEST_ASSERT(component != nullptr, "should have a DataComponent");
-		}
-		MANI_TEST_ASSERT(entityCounter == entityCount / 2, "There should be 5 entities with DataComponent in the registry view");
-	}
-
-	MANI_TEST(ComponentIdAssignation, "ComponentIds should be consecutive")
-	{	
-		struct Component0 {};
-		struct Component1 {};
-		struct Component2 {};
-
-		ECS::Registry registry;
-		const ECS::ComponentId componentId0 = registry.getComponentId<Component0>();
-		const ECS::ComponentId componentId1 = registry.getComponentId<Component1>();
-		const ECS::ComponentId componentId2 = registry.getComponentId<Component2>();
-		
-		MANI_TEST_ASSERT(componentId1 - componentId0 == 1, "The second componentid should follow the first one");
-		MANI_TEST_ASSERT(componentId2 - componentId1 == 1, "The third componentid should follow the second one");
-	}
-
-	MANI_TEST(Spawn1000000Entities, "Should spawn 1'000'000 entities with a transform")
-	{
-		struct Transform
-		{
-			Mani::List<float> position = { 0.f, 0.f, 0.f };
-			Mani::List<float> rotation = { 0.f, 0.f, 0.f };
-			Mani::List<float> scale = { 0.f, 0.f, 0.f };
-		};
-
-		ECS::Registry registry;
-		for (int i = 1; i < 1'000'000; ++i)
-		{
-			const ECS::EntityId entityId = registry.create();
-			Transform* transform = registry.add<Transform>(entityId);
-			transform->position[0] = 1.f;
-			transform->position[1] = 1.f;
-			transform->position[2] = 1.f;
-
-			transform->rotation[0] = 1.f;
-			transform->rotation[1] = 1.f;
-			transform->rotation[2] = 1.f;
-
-			transform->scale[0] = 1.f;
-			transform->scale[1] = 1.f;
-			transform->scale[2] = 1.f;
-		}
-
-		MANI_TEST_ASSERT(registry.count() == 1'000'000, "Should have spawned 1'000'000 entities.");
-	}
-
-	MANI_TEST(PlayWithDynamicAllocation, "Should allow dynamic allocation")
-	{
-		struct DynamicComponent
-		{
-			std::vector<float> vector = { 1.f, 2.f, 3.f };
-		};
-
-		ECS::Registry registry;
-		const ECS::EntityId entity1 = registry.create();
-		const ECS::EntityId entity2 = registry.create();
-
-		DynamicComponent* component1 = registry.add<DynamicComponent>(entity1);
-		DynamicComponent* component2 = registry.add<DynamicComponent>(entity2);
-		for (int i = 0; i < 1000; ++i)
-		{
-			component1->vector.push_back(i + 1 * 1000.f);
-		}
-
-		MANI_TEST_ASSERT(component2->vector[0] - 1.f <= 1.192092896e-07F, "first vector element should be equal to the original value");
-		MANI_TEST_ASSERT(component2->vector[1] - 2.f <= 1.192092896e-07F, "second vector element should be equal to the original value");
-		MANI_TEST_ASSERT(component2->vector[2] - 3.f <= 1.192092896e-07F, "third vector element should be equal to the original value");
-	}
-
-	MANI_TEST(EntityHasComponent, "Should return true if the entity has the component or not")
-	{
-		struct Component {};
-
-		ECS::Registry registry;
-
-		const ECS::EntityId entityId = registry.create();
-
-		MANI_TEST_ASSERT(registry.has<Component>(entityId) == false, "Should not have the component yet");
-
-		registry.add<Component>(entityId);
-
-		MANI_TEST_ASSERT(registry.has<Component>(entityId) == true, "Should now have the component");
-	}
-
-	MANI_TEST(BitsetTests, "Should set, test and reset a bitset properly")
-	{
-		Bitset<64> bitset;
-		MANI_TEST_ASSERT(bitset.any() == false, "fresh bitset should not be set");
-		bitset.set(0);
-		MANI_TEST_ASSERT(bitset.test(0) == true, "bit 0 should have been set");
-		MANI_TEST_ASSERT(bitset.test(1) == false, "bit 0 should not have been set");
-		bitset.reset();
-		MANI_TEST_ASSERT(bitset.any() == false, "fresh bitset should not be set");
-		
-
-		bitset.set(5);
-		Bitset<64> otherBitset;
-		otherBitset.set(5);
-		MANI_TEST_ASSERT(bitset == otherBitset, "bitsets should be equal");
-		otherBitset.reset();
-		MANI_TEST_ASSERT(bitset != otherBitset, "Bitsets should not be equal anymore");
-
-		bitset.reset();
-		bitset.set(56);
-		MANI_TEST_ASSERT(bitset.test(56) == true, "bit 56 should have been set");
-
-		bitset.reset();
-		bitset.set(1);
-		bitset.set(5);
-		bitset.set(56);
-
-		otherBitset.reset();
-		otherBitset.set(1);
-		otherBitset.set(5);
-		otherBitset.set(56);
-
-		MANI_TEST_ASSERT(bitset == (bitset & otherBitset), "should be able to mask bitsets");
-
-		bitset.reset();
-		bitset.set(1);
-		bitset.set(5);
-		bitset.set(38);
-
-		otherBitset.reset();
-		otherBitset.set(4);
-		otherBitset.set(15);
-		otherBitset.set(64);
-
-		Bitset<64> resultBitset;
-		resultBitset.set(1);
-		resultBitset.set(5);
-		resultBitset.set(38);
-		resultBitset.set(4);
-		resultBitset.set(15);
-		resultBitset.set(64);
-
-		MANI_TEST_ASSERT(resultBitset == (bitset | otherBitset), "should be able to add bitsets");
-	}
-	
-	MANI_TEST(DoNotAssumeRegistrySizeContainsAllIndices, "Should iterate over all the entities")
-	{
-		struct Component {};
-
-		ECS::Registry registry;
-
-		const ECS::EntityId entity1 = registry.create();
-		registry.add<Component>(entity1);
-		const ECS::EntityId entity2 = registry.create();
-		registry.add<Component>(entity2);
-		
-		size_t count = 0;
-		for (const ECS::EntityId entityId : ECS::View<Component>(registry))
-		{
-			count++;
-		}
-
-		MANI_TEST_ASSERT(count == 2, "All entities should have been visited");
-
-		registry.destroy(entity1);
-
-		count = 0;
-		for (const ECS::EntityId entityId : ECS::View<Component>(registry))
-		{
-			count++;
-		}
-
-		MANI_TEST_ASSERT(count == 1, "All entities should have been visited");
-	}
-
-	MANI_TEST(CreateEntitiesDuringIteration, "Should be able to create entities during ECS::View iteration without fail")
-	{
-		struct Component {};
-		struct CommonComponent {};
-		struct OtherComponent {};
-
-		ECS::Registry registry;
-
-		{
-			const ECS::EntityId entityId = registry.create();
-			registry.add<Component>(entityId);
-			registry.add<CommonComponent>(entityId);
-		}
-
-		ECS::View<Component> view(registry);
-		for (const ECS::EntityId entityId : view)
-		{
-			Component* comp = registry.get<Component>(entityId);
-			MANI_TEST_ASSERT(comp != nullptr && registry.isValid(entityId), "Entity should be valid");
-
-			const ECS::EntityId newId = registry.create();
-			registry.add<CommonComponent>(newId);
-			registry.add<OtherComponent>(newId);
-		}
-	}
-
-	MANI_TEST(RegistryViewAt, "should be able to construct a view iterator at a specific position")
-	{
-		struct MyComponent {};
-		{
 			ECS::Registry registry;
 
-			for (int i = 0; i < 6; ++i)
-			{
-				const ECS::EntityId entityId = registry.create();
-				registry.add<MyComponent>(entityId);
-			}
+			ECS::EntityId e = registry.create();
+			MANI_TEST_ASSERT(registry.isValid(e), "Entity should be valid");
 
-			auto it = ECS::View<MyComponent>(registry).at(3);
-			MANI_TEST_ASSERT(it.getIndex() == 3, "Should be entity #3");
+			Ref<Data> c = registry.add<Data>(e);
+			c->value += 10;
+
+			Ref<Data> retrieved = registry.get<Data>(e);
+			MANI_TEST_ASSERT(retrieved->value == 15, "Component mutation should persist");
+
+			registry.destroy(e);
+			MANI_TEST_ASSERT(!registry.isValid(e), "Entity should be destroyed");
+			MANI_TEST_ASSERT(!registry.find<Data>(e).isValid(), "Component should be gone");
 		}
 
-		struct MyOtherComponent {};
+		MANI_TEST(AddRemoveComponent, "Add/remove component")
 		{
-			ECS::Registry registry;
-
-			for (int i = 0; i < 6; ++i)
-			{
-				const ECS::EntityId entityId = registry.create();
-				registry.add<MyComponent>(entityId);
-			}
-			{
-				const ECS::EntityId entityId = registry.create();
-				registry.add<MyOtherComponent>(entityId);
-				
-				auto it = ECS::View<MyOtherComponent>(registry).at(3);
-				MANI_TEST_ASSERT(*it == entityId, "Should have iterated over to the entity that has MyOtherComponent");
-			}
-		}
-	}
-	
-	MANI_SECTION_BEGIN(Templates, "template operations")
-	{
-		template<typename T>
-		struct Component
-		{
-			T data;
-		};
-
-		MANI_TEST(TemplatedComponents, "Should store templated components appropriatly")
-		{
-			ECS::Registry registry;
-
-			{
-				const ECS::EntityId entityId = registry.create();
-				auto* component = registry.add<Component<int>>(entityId);
-				component->data = 5;
-
-				auto* retrieved = registry.get<Component<int>>(entityId);
-				MANI_TEST_ASSERT(retrieved != nullptr && retrieved->data == 5, "Should create and retrieve templated component");
-			}
-		}
-	}
-	MANI_SECTION_END(Templates)
-
-	MANI_TEST(ComponentTuples, "Should be able to get components in a tuple format")
-	{
-		struct Component1 {};
-		struct Component2 {};
-		struct Component3 {};
-
-		ECS::Registry registry;
-		{
-			ECS::EntityId entityId = registry.create();
-			auto [c1, c2, c3] = registry.addMany<Component1, Component2, Component3>(entityId);
-			{
-				auto [c11, c22, c33] = registry.getMany<Component1, Component2, Component3>(entityId);
-				MANI_TEST_ASSERT(c1 == c11, "should be equal");
-				MANI_TEST_ASSERT(c2 == c22, "should be equal");
-				MANI_TEST_ASSERT(c3 == c33, "should be equal");
-			}
-
-			{
-				auto [c11, c33] = registry.getMany<Component1, Component3>(entityId);
-				MANI_TEST_ASSERT(c1 == c11, "should be equal");
-				MANI_TEST_ASSERT(c3 == c33, "should be equal");
-			}
-
-			auto [s1, s3] = registry.removeMany<Component1, Component3>(entityId);
-			MANI_TEST_ASSERT(s1 == true, "should have succeeded");
-			MANI_TEST_ASSERT(s3 == true, "should have succeeded");
-
-			MANI_TEST_ASSERT(!registry.has<Component1>(entityId), "should not have Comp1");
-			MANI_TEST_ASSERT(registry.has<Component2>(entityId), "should still have Comp2");
-			MANI_TEST_ASSERT(!registry.has<Component3>(entityId), "should not have Comp3");
-		}
-	}
-
-	MANI_TEST(ComponentConstructorParameters, "Should forward a component's constructor parameters")
-	{
-		struct Component 
-		{
-			int a = 0;
-			int b = 0;
-			int c = 0;
-		};
-
-		ECS::Registry registry;
-		{
-			ECS::EntityId entityId = registry.create();
-			Component& comp = *registry.add<Component>(entityId, 1, 2, 3);
-			MANI_TEST_ASSERT(comp.a == 1, "should be equal to the forwarded ctor value");
-			MANI_TEST_ASSERT(comp.b == 2, "should be equal to the forwarded ctor value");
-			MANI_TEST_ASSERT(comp.c == 3, "should be equal to the forwarded ctor value");
-		}
-	}
-
-	MANI_TEST(ComponentConstructorParametersOutOfOrder, "Should forward a component's in order constructor parameters")
-	{
-		struct Component
-		{
-			int a = 0;
-			std::string b = "";
-			bool c = false;
-		};
-
-		ECS::Registry registry;
-		{
-			ECS::EntityId entityId = registry.create();
-			
-			//Component& comp = *registry.add<Component>(entityId, "coucou", true, 3); // should not compile
-			Component& comp = *registry.add<Component>(entityId, 3, "coucou", true); // should compile
-
-			MANI_TEST_ASSERT(comp.a == 3, "should be equal to the forwarded ctor value");
-			MANI_TEST_ASSERT(comp.b == "coucou", "should be equal to the forwarded ctor value");
-			MANI_TEST_ASSERT(comp.c == true, "should be equal to the forwarded ctor value");
-		}
-	}
-
-	MANI_SECTION_BEGIN(ComponentDestructorSection, "Destructor section")
-	{
-		inline bool WAS_DTOR_CALLED = false;
-
-		struct DtorComponent
-		{
-			std::shared_ptr<float> DONTDOTHISHEAPALLOCATIONISBADMKAY = nullptr;
-			
-			~DtorComponent()
-			{
-				WAS_DTOR_CALLED = true;
-			}
-		};
-
-		MANI_TEST(ShouldCallComponentDestructorWhenRemoved, "Should call component destructor when removed")
-		{
+			struct Data {};
 
 			ECS::Registry registry;
+			ECS::EntityId e = registry.create();
+
+			registry.add<Data>(e);
+			MANI_TEST_ASSERT(registry.has<Data>(e), "Should have component");
+
+			registry.remove<Data>(e);
+			MANI_TEST_ASSERT(!registry.has<Data>(e), "Should not have component anymore");
+		}
+
+		MANI_TEST(EntityRecycling, "Recycled entities should not leak components")
+		{
+			struct A {};
+			struct B {};
+
+			ECS::Registry registry;
+
+			ECS::EntityId e1 = registry.create();
+			registry.add<A>(e1);
+
+			registry.destroy(e1);
+
+			ECS::EntityId e2 = registry.create();
+
+			MANI_TEST_ASSERT(e1 != e2, "Version should differ");
+			MANI_TEST_ASSERT(!registry.has<A>(e2), "Recycled entity should not inherit components");
+
+			registry.add<B>(e2);
+			MANI_TEST_ASSERT(registry.has<B>(e2), "Should be able to reuse entity cleanly");
+		}
+
+		MANI_TEST(ViewIteration, "Basic view iteration")
+		{
+			struct A {};
+			struct B {};
+
+			ECS::Registry registry;
+
+			for (int i = 0; i < 10; ++i)
 			{
-				ECS::EntityId entityId = registry.create();
-				registry.add<DtorComponent>(entityId, std::make_shared<float>(420.69f));
-				registry.remove<DtorComponent>(entityId);
-				MANI_TEST_ASSERT(WAS_DTOR_CALLED, "destructor should have been called");
+				ECS::EntityId e = registry.create();
+				registry.add<A>(e);
+				if (i % 2 == 0)
+				{
+					registry.add<B>(e);
+				}
+			}
+
+			int countAB = 0;
+			for (auto [entityId, a, b] : ECS::View<A, B>(registry))
+			{
+				countAB++;
+			}
+
+			MANI_TEST_ASSERT(countAB == 5, "Should match entities with A+B");
+
+			int countA = 0;
+			for (auto [entityId, a] : ECS::View<A>(registry))
+			{
+				countA++;
+			}
+
+			MANI_TEST_ASSERT(countA == 10, "Should match all A");
+		}
+
+		MANI_TEST(CreateDuringIteration, "Creating entities during iteration should not break")
+		{
+			struct A {};
+			struct B {};
+
+			ECS::Registry registry;
+
+			ECS::EntityId e = registry.create();
+			registry.add<A>(e);
+
+			for (auto [entityId, a] : ECS::View<A>(registry))
+			{
+				ECS::EntityId newE = registry.create();
+			}
+
+			MANI_TEST_ASSERT(registry.count() == 3, "Should have created additional entities safely");
+		}
+
+		MANI_TEST(CommandBufferAdd, "Deferred add should apply after execute")
+		{
+			struct A {};
+			struct B { int value = 0; };
+
+			ECS::Registry registry;
+
+			ECS::EntityId e = registry.create();
+			registry.add<A>(e);
+
+			ECS::CommandBuffer cmd(registry);
+			for (auto [entityId, a] : ECS::View<A>(registry))
+			{
+				B& b = cmd.add<B>(entityId);
+				b.value = 42;
+			}
+
+			MANI_TEST_ASSERT(!registry.has<B>(e), "Should not exist before execute");
+
+			cmd.execute();
+
+			MANI_TEST_ASSERT(registry.has<B>(e), "Should exist after execute");
+			MANI_TEST_ASSERT(registry.get<B>(e)->value == 42, "Data should persist");
+		}
+
+		MANI_TEST(CommandScopeAdd, "Deferred add should apply after execute when it goes out of scope")
+		{
+			struct A {};
+			struct B { int value = 0; };
+
+			ECS::Registry registry;
+
+			ECS::EntityId e = registry.create();
+			registry.add<A>(e);
+
+			{
+				ECS::CommandScope cmd(registry);
+				ECS::View<A> view(registry);
+				for (auto [entityId, a] : view)
+				{
+					B& b = cmd.add<B>(entityId);
+					b.value = 42;
+				}
+				MANI_TEST_ASSERT(!registry.has<B>(e), "Should not exist before execute");
+			}
+
+			MANI_TEST_ASSERT(registry.has<B>(e), "Should exist after execute");
+			MANI_TEST_ASSERT(registry.get<B>(e)->value == 42, "Data should persist");
+		}
+
+		MANI_TEST(CommandScopeAutoExecute, "CommandScope should auto execute")
+		{
+			struct A {};
+			struct B {};
+
+			ECS::Registry registry;
+
+			ECS::EntityId e = registry.create();
+			registry.add<A>(e);
+
+			{
+				ECS::CommandScope cmd(registry);
+				cmd.add<B>(e);
+			}
+
+			MANI_TEST_ASSERT(registry.has<B>(e), "Should have executed on scope end");
+		}
+
+		MANI_TEST(ComponentTuples, "addMany / getMany / removeMany")
+		{
+			struct A {};
+			struct B {};
+			struct C {};
+
+			ECS::Registry registry;
+
+			ECS::EntityId e = registry.create();
+
+			auto [a, b, c] = registry.addMany<A, B, C>(e);
+
+			MANI_TEST_ASSERT((registry.has<A, B, C>(e)), "should have A, B, and C");
+
+			registry.removeMany<A, C>(e);
+			MANI_TEST_ASSERT(!registry.has<A>(e) && !registry.has<C>(e), "Should remove A and C");
+
+			MANI_TEST_ASSERT(!registry.has<A>(e), "A removed");
+			MANI_TEST_ASSERT(registry.has<B>(e), "B remains");
+		}
+
+		MANI_TEST(ComponentConstruction, "Constructor args forwarding")
+		{
+			struct Comp
+			{
+				int a, b, c;
+			};
+
+			ECS::Registry registry;
+			ECS::EntityId e = registry.create();
+
+			Ref<Comp> comp = registry.add<Comp>(e, 1, 2, 3);
+
+			MANI_TEST_ASSERT(comp->a == 1, "a ok");
+			MANI_TEST_ASSERT(comp->b == 2, "b ok");
+			MANI_TEST_ASSERT(comp->c == 3, "c ok");
+		}
+
+		MANI_TEST(ComponentDestructor, "Destructor should be called on remove")
+		{
+			static bool called = false;
+
+			struct D
+			{
+				~D() { called = true; }
+			};
+
+			ECS::Registry registry;
+			ECS::EntityId e = registry.create();
+
+			registry.add<D>(e);
+			registry.remove<D>(e);
+
+			MANI_TEST_ASSERT(called, "Destructor should have run");
+		}
+
+		MANI_TEST(ManyEntitiesManyArchetypes, "Should handle many entities spread across multiple archetypes")
+		{
+			struct A {};
+			struct B {};
+			struct C {};
+			struct D {};
+
+			ECS::Registry registry;
+
+			const int entityCount = 128'374;
+
+			int countA = 0;
+			int countAB = 0;
+			int countABC = 0;
+			int countABCD = 0;
+
+			for (int i = 0; i < entityCount; ++i)
+			{
+				ECS::EntityId e = registry.create();
+
+				// Deterministic distribution across archetypes
+				if (i % 2 == 0)
+				{
+					registry.add<A>(e);
+					countA++;
+				}
+				if (i % 3 == 0)
+				{
+					registry.add<B>(e);
+				}
+				if (i % 5 == 0)
+				{
+					registry.add<C>(e);
+				}
+				if (i % 7 == 0)
+				{
+					registry.add<D>(e);
+				}
+
+				// Track exact combinations
+				if (registry.has<A, B>(e)) countAB++;
+				if (registry.has<A, B, C>(e)) countABC++;
+				if (registry.has<A, B, C, D>(e)) countABCD++;
+			}
+
+			// Validate via views
+			int viewA = 0;
+			for (auto [entityId, a] : ECS::View<A>(registry))
+			{
+				viewA++;
+			}
+			MANI_TEST_ASSERT(viewA == countA, "View<A> count mismatch");
+
+			int viewAB = 0;
+			for (auto [entityId, a, b] : ECS::View<A, B>(registry))
+			{
+				viewAB++;
+			}
+			MANI_TEST_ASSERT(viewAB == countAB, "View<A,B> count mismatch");
+
+			int viewABC = 0;
+			for (auto [entityId, a, b, c] : ECS::View<A, B, C>(registry))
+			{
+				viewABC++;
+			}
+			MANI_TEST_ASSERT(viewABC == countABC, "View<A,B,C> count mismatch");
+
+			int viewABCD = 0;
+			for (auto [entityId, a, b, c, d] : ECS::View<A, B, C, D>(registry))
+			{
+				viewABCD++;
+			}
+			MANI_TEST_ASSERT(viewABCD == countABCD, "View<A,B,C,D> count mismatch");
+
+			MANI_TEST_ASSERT(registry.count() == entityCount + 1, "Total entity count mismatch (+1 for singleton)");
+		}
+
+		MANI_TEST(ArchetypeMemoryMovement, "Dynamic memory should be preserved as entities are moved from one archetype to the other")
+		{
+			struct D
+			{
+				struct SomeData
+				{
+					int a = 420;
+					int b = 69;
+					int c = 42069;
+					std::string d = "coucou";
+				};
+
+				//std::mutex mutex; doesn't compile
+				Mani::List<SomeData> data;
+			};
+
+			struct E
+			{
+				int a = 1;
+				int b = 2;
+				int c = 3;
+			};
+
+			ECS::Registry registry;
+			ECS::EntityId id = registry.create();
+
+			{
+				Ref<D> d = registry.add<D>(id);
+				d->data.add(D::SomeData());
+				d->data.add(D::SomeData());
+				d->data.add(D::SomeData());
+			}
+
+			registry.add<E>(id);
+
+			{
+				Ref<D> d = registry.get<D>(id);
+				for (const auto& data : d->data)
+				{
+					MANI_TEST_ASSERT(data.a == 420, "should be equal");
+					MANI_TEST_ASSERT(data.b == 69, "should be equal");
+					MANI_TEST_ASSERT(data.c == 42069, "should be equal");
+					MANI_TEST_ASSERT(data.d == "coucou", "should be equal");
+				}
+			}
+
+			{
+				Ref<E> e = registry.get<E>(id);
+				MANI_TEST_ASSERT(e->a == 1, "should be equal");
+				MANI_TEST_ASSERT(e->b == 2, "should be equal");
+				MANI_TEST_ASSERT(e->c == 3, "should be equal");
+			}
+
+			// should also work with singletons
+
+			Mani::Array<std::string, 3> strings
+			{
+				ECSTestHelpers::randomString(512),
+				ECSTestHelpers::randomString(512),
+				ECSTestHelpers::randomString(512),
+			};
+
+			{
+				Ref<D> d = registry.addSingle<D>();
+				d->data.add(D::SomeData{ .d = strings[0] });
+				d->data.add(D::SomeData{ .d = strings[1] });
+				d->data.add(D::SomeData{ .d = strings[2] });
+			}
+
+			registry.addSingle<E>();
+			registry.addSingle<float>();
+
+			{
+				Ref<D> d = registry.getSingle<D>();
+				for (SizeT i = 0; i < d->data.count(); i++)
+				{
+					MANI_TEST_ASSERT(d->data[i].a == 420, "should be equal");
+					MANI_TEST_ASSERT(d->data[i].b == 69, "should be equal");
+					MANI_TEST_ASSERT(d->data[i].c == 42069, "should be equal");
+					MANI_TEST_ASSERT(d->data[i].d == strings[i], "should be equal");
+				}
+			}
+
+			{
+				Ref<E> e = registry.getSingle<E>();
+				MANI_TEST_ASSERT(e->a == 1, "should be equal");
+				MANI_TEST_ASSERT(e->b == 2, "should be equal");
+				MANI_TEST_ASSERT(e->c == 3, "should be equal");
+			}
+		}
+
+		MANI_TEST(GetEntityIdFromView, "Should safely get an entityId from a view's iterator")
+		{
+			struct A {};
+
+			{
+				ECS::Registry registry;
+				const ECS::EntityId entityId = registry.create();
+				registry.add<A>(entityId);
+
+				{
+					ECS::ConstView<A> view(registry);
+					MANI_TEST_ASSERT(view.begin().getEntityId() == entityId, "EntityId should be included in the view");
+				}
+
+				{
+					ECS::ConstView<> view(registry);
+					MANI_TEST_ASSERT(view.begin().getEntityId() == entityId, "EntityId should be included in the empty view");
+				}
+			}
+
+			{
+				ECS::Registry registry;
+
+				{
+					ECS::View<> view(registry);
+					MANI_TEST_ASSERT(view.begin().getEntityId() == ECS::INVALID_ID, "No entity should exist in the view");
+				}
+
+				struct B {};
+				const ECS::EntityId entityId = registry.create();
+				registry.add<B>(entityId);
+				{
+					ECS::View<A> view(registry);
+					MANI_TEST_ASSERT(view.begin().getEntityId() == ECS::INVALID_ID, "entity should not be included in the view");
+				}
+			}
+		}
+
+		MANI_TEST(UsingDynamicallyAllocatedDataStructures, "Should safely handle dynamically allocated data structures")
+		{
+			struct A
+			{
+				Mani::List<double> data;
+			};
+
+			struct B {};
+
+			ECS::Registry registry;
+			const auto e1 = registry.create();
+			{
+				Ref<A> a1 = registry.add<A>(e1);
+
+				a1->data.add(1);
+				a1->data.add(2);
+				a1->data.add(3);
+			}
+
+			const auto e2 = registry.create();
+			registry.add<A>(e2);
+
+			{
+				SizeT i = 0;
+				const Mani::Array<double, 4> ref{ 1, 2, 3, 4 };
+				Ref<A> a1 = registry.get<A>(e1);
+				for (auto& value : a1->data)
+				{
+					MANI_TEST_ASSERT(a1->data[i] == ref[i], "should be equal");
+					i++;
+				}
+			}
+
+			registry.add<B>(e1);
+			registry.add<B>(e2);
+
+			{
+				SizeT i = 0;
+				const Mani::Array<double, 4> ref{ 1, 2, 3, 4 };
+				Ref<A> a1 = registry.get<A>(e1);
+				for (auto& value : a1->data)
+				{
+					MANI_TEST_ASSERT(a1->data[i] == ref[i], "should be equal");
+					i++;
+				}
+			}
+		}
+
+		MANI_TEST(DefaultComponentRefShouldBeInvalid, "Default component ref should be invalid")
+		{
+			struct A {};
+			MANI_TEST_ASSERT(!Ref<A>().isValid(), "default ref should be invalid");
+		}
+
+		MANI_TEST(ShoulNotAllowUsingDanglingReference, "Should not allow to use a dangling reference after adding a component to an entity")
+		{
+			struct A {};
+			struct B {};
+			struct C {};
+			struct D {};
+
+			ECS::Registry registry;
+
+			{
+				const ECS::EntityId e = registry.create();
+				Ref<A> a = registry.add<A>(e);
+				MANI_TEST_ASSERT(a.isValid(), "a should be valid");
+				Ref<B> b = registry.add<B>(e);
+				MANI_TEST_ASSERT(!a.isValid(), "a should be invalid after adding B");
+				registry.remove<B>(e);
+				MANI_TEST_ASSERT(!b.isValid(), "b should be invalid after removing B");
+				registry.destroy(e);
+			}
+
+			{
+				const ECS::EntityId e = registry.create();
+				registry.add<A>(e);
+				Ref<A> a = registry.get<A>(e);
+				registry.addMany<B, C, D>(e);
+				MANI_TEST_ASSERT(!a.isValid(), "a should be invalid after adding the components");
+				Ref<C> c = registry.get<C>(e);
+				registry.removeMany<C, A, D>(e);
+				MANI_TEST_ASSERT(!c.isValid(), "a should be invalid after adding the components");
+				MANI_TEST_ASSERT(registry.get<B>(e).isValid(), "b should still be valid");
+				registry.destroy(e);
+			}
+
+			{
+				const ECS::EntityId e = registry.create();
+				Ref<A> a = registry.add<A>(e);
+				registry.destroy(e);
+				MANI_TEST_ASSERT(!a.isValid(), "a should be invalid after deleting e");
+			}
+
+			{
+				const ECS::EntityId e1 = registry.create();
+				Ref<A> a1 = registry.add<A>(e1);
+				const ECS::EntityId e2 = registry.create();
+				registry.add<A>(e2);
+				registry.destroy(e2);
+
+				MANI_TEST_ASSERT(!a1.isValid(), "a should be invalid after deleting e2 (archetype remove swap)");
+			}
+
+			{
+				const ECS::EntityId e = registry.create();
+				registry.add<A>(e);
+
+				Ref<A> a1 = registry.get<A>(e);
+				registry.add<B>(e);
+
+				Ref<A> a2 = registry.get<A>(e);
+
+				MANI_TEST_ASSERT(!a1.isValid(), "old ref should be invalid");
+				MANI_TEST_ASSERT(a2.isValid(), "new ref should be valid");
+			}
+
+			{
+				const ECS::EntityId e = registry.create();
+				Ref<A> a1 = registry.add<A>(e);
+				Ref<A> a2 = registry.get<A>(e);
+
+				registry.add<B>(e);
+
+				MANI_TEST_ASSERT(!a1.isValid(), "a1 invalid");
+				MANI_TEST_ASSERT(!a2.isValid(), "a2 invalid");
+			}
+
+			{
+				const ECS::EntityId e1 = registry.create();
+				const ECS::EntityId e2 = registry.create();
+
+				Ref<A> a1 = registry.add<A>(e1);
+				registry.add<A>(e2); // unrelated entity
+
+				MANI_TEST_ASSERT(a1.isValid(), "should be invalid due to global version change");
+			}
+
+			{
+				ECS::Registry registry;
+
+				const ECS::EntityId e = registry.create();
+				Ref<A> a = registry.add<A>(e);
+
+				// Force pool growth
+				for (int i = 0; i < 10'000; ++i)
+				{
+					auto ei = registry.create();
+					registry.add<A>(ei);
+				}
+
+				MANI_TEST_ASSERT(!a.isValid(), "should be invalid after pool reallocation");
+			}
+
+			{
+				const ECS::EntityId e = registry.create();
+				registry.addMany<A, B, C>(e);
+
+				Ref<A> a = registry.get<A>(e);
+				Ref<B> b = registry.get<B>(e);
+
+				registry.remove<C>(e);
+
+				MANI_TEST_ASSERT(!a.isValid(), "a invalid due to archetype move");
+				MANI_TEST_ASSERT(!b.isValid(), "b invalid due to archetype move");
+			}
+
+			{
+				const ECS::EntityId e1 = registry.create();
+				const ECS::EntityId e2 = registry.create();
+
+				registry.add<A>(e1);
+				Ref<A> a2 = registry.add<A>(e2);
+
+				registry.destroy(e2); // no swap actually happens
+
+				MANI_TEST_ASSERT(!a2.isValid(), "should still invalidate even without swap");
+			}
+
+			{
+				const ECS::EntityId e = registry.create();
+				Ref<A> a = registry.add<A>(e);
+
+				{
+					registry.add<B>(e);
+				}
+
+				// Use later
+				MANI_TEST_ASSERT(!a.isValid(), "ref must not survive structural scope");
+			}
+
+			{
+				const ECS::EntityId e = registry.create();
+				registry.add<A>(e);
+
+				if (Ref<A> a = registry.find<A>(e))
+				{
+					MANI_TEST_ASSERT(a.isValid(), "should be able to use find as a bool operator");
+				}
+				else
+				{
+					MANI_TEST_ASSERT(false, "should be able to use find as a bool operator");
+				}
+
+				if (Ref<B> b = registry.find<B>(e))
+				{
+					MANI_TEST_ASSERT(false, "should be able to use find as a bool operator");
+				}
+				else
+				{
+					MANI_TEST_ASSERT(true, "should be able to use find as a bool operator");
+				}
+			}
+
+			{
+				const ECS::EntityId e = registry.create();
+				auto [a, b, c] = registry.addMany<A, B, C>(e);
+
+				registry.remove<C>(e);
+
+				MANI_TEST_ASSERT(!a.isValid(), "a invalid due to archetype move");
+				MANI_TEST_ASSERT(!b.isValid(), "b invalid due to archetype move");
 			}
 		}
 	}
-	MANI_SECTION_END(ComponentDestructorSection)
+	MANI_SECTION_END(Archetype)
 
-	MANI_TEST(EntityVersion, "An entityId should always be unique, even when reused")
+	MANI_SECTION_BEGIN(Pinned, "Pinned")
 	{
-		ECS::Registry registry;
+		MANI_TEST(PinnedComponentBasics, "Should be able to add pinned component and iterated on them")
 		{
-			ECS::EntityId entityId1 = registry.create();
-			registry.destroy(entityId1);
-			ECS::EntityId entityId2 = registry.create();
-			MANI_TEST_ASSERT(entityId1 != entityId2, "should be different even if it is reused");
-			MANI_TEST_ASSERT(!registry.isValid(entityId1), "entityId1 should not be valid anymore");
+			struct A {};
+			struct B { int value = 0; };
+			struct C { Mani::List<std::string> names; };
+
+			ECS::Registry registry;
+
+			const ECS::EntityId e = registry.create();
+
+			registry.addPinned<A>(e);
+			MANI_TEST_ASSERT(registry.hasPinned<A>(e), "Should have A pinned");
+			MANI_TEST_ASSERT(!registry.has<A>(e), "Should have A as a coponent");
+			MANI_TEST_ASSERT(registry.findPinned<A>(e) != nullptr, "Should find A");
+
+			{
+				B& b = registry.addPinned<B>(e, 69);
+				MANI_TEST_ASSERT(b.value == 69, "should construct B with the correct value");
+			}
+
+			for (const auto [entityId, a, b] : ECS::PinnedView<A, B>(registry))
+			{
+				MANI_TEST_ASSERT(e == entityId, "should view the entity and its pinned component");
+				MANI_TEST_ASSERT(b.value == 69, "should view B with the correct value");
+			}
+
+			registry.removePinned<A>(e);
+			MANI_TEST_ASSERT(!registry.hasPinned<A>(e), "Should not have A");
+			registry.add<A>(e);
+			MANI_TEST_ASSERT(registry.has<A>(e), "Should have A in its archetype");
+
+			for (const auto [entityId, a, b] : ECS::PinnedView<A, B>(registry))
+			{
+				MANI_TEST_ASSERT(false, "should not find anything since we unpinned A");
+			}
+
+			for (const auto [entityId, b] : ECS::PinnedView<B>(registry))
+			{
+				MANI_TEST_ASSERT(e == entityId, "should view the entity and its pinned component");
+				MANI_TEST_ASSERT(b.value == 69, "should view B with the correct value");
+				MANI_TEST_ASSERT(registry.has<A>(e), "should have A (this time as an archetype");
+			}
 		}
-	}
 
-	MANI_TEST(ViewCountCapture, "A view should only iterate on the range it captures")
-	{
-		struct MyComponent {};
-
-		ECS::Registry registry;
-		const int initialEntityCount = 5;
-		const int expectedViewCount = initialEntityCount + 1; // +1 for the singleton entity
-
-		for (int i = 0; i < initialEntityCount; i++)
+		MANI_TEST(PinnedViewEmptyDoesNotIterate, "Iterating an empty pinned view should not execute loop body")
 		{
-			ECS::EntityId entityId = registry.create();
-			registry.add<MyComponent>(entityId);
+			struct A {};
+			struct B {};
+
+			ECS::Registry registry;
+
+			const ECS::EntityId e = registry.create();
+
+			// Only add A, not B -> view<A, B> should be empty
+			registry.addPinned<A>(e);
+
+			bool didIterate = false;
+
+			for (const auto [entityId, a, b] : ECS::PinnedView<A, B>(registry))
+			{
+				didIterate = true;
+			}
+
+			MANI_TEST_ASSERT(!didIterate, "Loop body should not execute for empty view");
 		}
 
-		ECS::View<MyComponent> view(registry);
+		MANI_TEST(PinnedViewIteratesSmallestSet, "PinnedView should iterate over the smallest component set")
 		{
+			struct A {};
+			struct B {};
+
+			ECS::Registry registry;
+
+			// Create entities
+			const ECS::EntityId e1 = registry.create();
+			const ECS::EntityId e2 = registry.create();
+			const ECS::EntityId e3 = registry.create();
+
+			// A exists on 3 entities
+			registry.addPinned<A>(e1);
+			registry.addPinned<A>(e2);
+			registry.addPinned<A>(e3);
+
+			// B exists only on 1 entity
+			registry.addPinned<B>(e2);
+
 			int count = 0;
-			for (const auto entityId : view)
+
+			for (const auto [entityId, a, b] : ECS::PinnedView<A, B>(registry))
 			{
-				count++;
+				++count;
+				MANI_TEST_ASSERT(entityId == e2, "Only entity with both A and B should be iterated");
 			}
-			MANI_TEST_ASSERT(count == initialEntityCount, "should iterate over the initial entity count amount");
-			MANI_TEST_ASSERT(view.count() == expectedViewCount, "the view should cover the initial range");
+
+			MANI_TEST_ASSERT(count == 1, "Iteration count should match smallest matching set (B)");
 		}
 
-		for (int i = 0; i < initialEntityCount; i++)
+		MANI_TEST(ShouldNotAllowToPinAnExistingComponent, "Should not allow to pin an existing component")
 		{
-			ECS::EntityId entityId = registry.create();
-			registry.add<MyComponent>(entityId);
-		}
+			struct A {};
+			struct B {};
 
-		{
-			int count = 0;
-			for (const auto entityId : view)
-			{
-				count++;
-			}
-			MANI_TEST_ASSERT(count == initialEntityCount, "should iterate over the initial entity count amount");
-			MANI_TEST_ASSERT(view.count() == expectedViewCount, "the view should cover the initial range");
-		}
+			ECS::Registry registry;
 
-		{
-			ECS::View<MyComponent> destroyerView(registry);
-			const ECS::Index lastIndex = registry.count() - 1;
-			for (ECS::Index i = lastIndex; i >= lastIndex - 6; i--)
-			{
-				registry.destroy(*destroyerView.at(i));
-			}
-		}
+			ECS::EntityId e = registry.create();
+			registry.add<A>(e);
+			// registry.addPinned<A>(e); asserts
 
-		{
-			int count = 0;
-			for (const auto entityId : view)
-			{
-				count++;
-			}
-			MANI_TEST_ASSERT(count == 3, "should iterate over the remaining entity count amount");
-			MANI_TEST_ASSERT(view.count() == expectedViewCount, "the view should cover the initial range");
+			registry.addPinned<B>(e);
+			// registry.add<B>(e); asserts
 		}
 	}
+	MANI_SECTION_END(Pinned)
+
+	MANI_SECTION_BEGIN(LazyRefTests, "Lazy Ref Tests")
+	{
+		MANI_TEST(LazyRefBasics, "Lazy ref basics")
+		{
+			struct A { int value = 0; };
+			struct B { int value = 0; };
+
+			ECS::Registry registry;
+			const ECS::EntityId e = registry.create();
+			registry.add<A>(e);
+
+			LazyRef<A> aRef(e, registry);
+			aRef->value = 420;
+
+			registry.add<B>(e, 69);
+
+			MANI_ASSERT(aRef->value == 420, "should be able to access stable ref even after changing archetype");
+		}
+	}
+	MANI_SECTION_END(LazyRefTests)
 }
 MANI_SECTION_END(ECS)

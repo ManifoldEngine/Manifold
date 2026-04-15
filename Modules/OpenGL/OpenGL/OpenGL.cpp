@@ -2,23 +2,16 @@
 
 using namespace Mani;
 
-OpenGLRenderStorage& getRenderStorageChecked(ECS::Registry& registry)
-{
-	OpenGLRenderStorage* storage = registry.getSingle<OpenGLRenderStorage>();
-	MANI_ASSERT(storage != nullptr, "OpenGLSystem is not initialized");
-	return *storage;
-}
-
 void OpenGL::registerExtension(ECS::Registry& registry, IOpenGLRenderExtension* extension)
 {
 	MANI_ASSERT(extension != nullptr, "Cannot register a null extension");
-	auto& storage = getRenderStorageChecked(registry);
+	auto& storage = registry.getSinglePinned<OpenGLRenderStorage>();
 	storage.extensions.addUnique(extension);
 }
 
 void OpenGL::unregisterExtension(ECS::Registry& registry, IOpenGLRenderExtension* extension)
 {
-	if (OpenGLRenderStorage* storage = registry.getSingle<OpenGLRenderStorage>())
+	if (OpenGLRenderStorage* storage = registry.findSinglePinned<OpenGLRenderStorage>())
 	{
 		// no need to check on unregister as the system might have been uninitialized already.
 		List<IOpenGLRenderExtension*>& extensions = storage->extensions;
@@ -30,7 +23,7 @@ void OpenGL::registerRenderer(ECS::Registry& registry, IOpenGLRenderer* renderer
 {
 	MANI_ASSERT(renderer != nullptr, "Cannot register a null renderer");
 
-	auto& storage = getRenderStorageChecked(registry);
+	auto& storage = registry.getSinglePinned<OpenGLRenderStorage>();
 	List<IOpenGLRenderer*>& renderers = storage.renderers;
 	renderers.addUnique(renderer);
 
@@ -42,7 +35,7 @@ void OpenGL::registerRenderer(ECS::Registry& registry, IOpenGLRenderer* renderer
 
 void OpenGL::unregisterRenderer(ECS::Registry& registry, IOpenGLRenderer* renderer)
 {
-	if (OpenGLRenderStorage* storage = registry.getSingle<OpenGLRenderStorage>())
+	if (OpenGLRenderStorage* storage = registry.findSinglePinned<OpenGLRenderStorage>())
 	{
 		// no need to check on unregister as the system might have been uninitialized already.
 		List<IOpenGLRenderer*>& renderers = storage->renderers;

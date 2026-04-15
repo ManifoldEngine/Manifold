@@ -14,32 +14,25 @@ void FModResourceExtension::onResourceLoaded(ECS::Registry& registry, ECS::Entit
 
 void FModResourceExtension::onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
 {
-	const ECS::Entity* entity = registry.getEntity(entityId);
-	if (entity == nullptr)
+	if (registry.has<Resource<FModSound>>(entityId))
 	{
-		return;
-	}
-
-	const ECS::ComponentId soundComponentId = registry.getComponentId<Resource<FModSound>>();
-	if (entity->hasComponent(soundComponentId))
-	{
-		Resource<FModSound>& resource = registry.getRef<Resource<FModSound>>(entityId);
-		resource.value.sound->release();
-		resource.value.sound = nullptr;
+		Ref<Resource<FModSound>> resource = registry.get<Resource<FModSound>>(entityId);
+		resource->value.sound->release();
+		resource->value.sound = nullptr;
 	}
 }
 
 void FModResourceSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<ResourceSystem>();
-	Resources::registerLoader(registry, &soundLoader);
-	Resources::registerLoader(registry, &streamLoader);
+	Resources::registerLoaderFor<FModSound>(registry, &soundLoader);
+	Resources::registerLoaderFor<FModStream>(registry, &streamLoader);
 	Resources::registerExtension(registry, &extension);
 }
 
 void FModResourceSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	Resources::unregisterLoader(registry, &soundLoader);
-	Resources::unregisterLoader(registry, &streamLoader);
+	Resources::unregisterLoaderFor<FModSound>(registry);
+	Resources::unregisterLoaderFor<FModStream>(registry);
 	Resources::unregisterExtension(registry, &extension);
 }

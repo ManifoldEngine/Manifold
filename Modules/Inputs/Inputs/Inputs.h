@@ -9,7 +9,7 @@
 
 namespace Mani
 {
-    const std::string_view LogInputs = "Inputs";
+	constexpr LogChannel LogInputs("Inputs");
 	
 	namespace InputsStatics
 	{

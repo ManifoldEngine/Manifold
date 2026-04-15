@@ -2,9 +2,16 @@
 
 #include <Core/Core.h>
 #include <string_view>
+#include <ManiZ/Reflection.h>
 
 namespace Mani
 {
+	enum class ETick : bool
+	{
+		Disabled = false,
+		Enabled = true,
+	};
+
 	enum class ETickGroup : uint8_t
 	{
 		Begin		= 0,
@@ -50,6 +57,19 @@ namespace Mani
 
 		private:
 			bool m_isInitialized = false;
+		};
+
+		template<typename T, ETick Ticks = ETick::Disabled>
+		class SystemT : public System
+		{
+		public:
+			std::string_view getName() const override
+			{
+				static constexpr std::string_view name = ManiZ::RFL::getTypeName<T>();
+				return name;
+			}
+
+			virtual bool shouldTick(const ECS::Registry& registry) const override { return static_cast<bool>(Ticks); }
 		};
 	}
 }

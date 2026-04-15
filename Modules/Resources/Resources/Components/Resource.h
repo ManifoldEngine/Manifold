@@ -1,6 +1,8 @@
 #pragma once
 
+#include <Core/ManiTypes.h>
 #include <atomic>
+#include <filesystem>
 
 namespace Mani
 {
@@ -14,6 +16,24 @@ namespace Mani
 	struct Resource
 	{
 		T value;
-		std::atomic<bool> isReady = false;
+	};
+
+	struct ResourcePath
+	{
+		Path value;
+	};
+
+	struct ResourceReady {};
+
+	template<typename T>
+	struct ResourceLoader
+	{
+		class IResourceLoader* value = nullptr;
+	};
+
+	enum class EResourceLoadMethod : uint8_t
+	{
+		Async = 0,
+		Sync,
 	};
 }

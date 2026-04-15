@@ -7,13 +7,8 @@ using namespace Mani;
 
 ECS::EntityId CameraStatics::getMainCameraId(ECS::Registry& registry)
 {
-	ECS::View<MainCamera, Camera> view(registry);
-	auto it = view.begin();
-	if (it == view.end())
-	{
-		return ECS::INVALID_ID;
-	}
-	return *it;
+	ECS::ConstView<MainCamera, Camera> view(registry);
+	return view.begin().getEntityId();
 }
 
 ECS::EntityId CameraStatics::createMainCamera(ECS::Registry& registry)
@@ -92,7 +87,7 @@ Vec3f CameraStatics::screenToWorldSpace(const Camera& camera, Vec2f position)
 bool CameraStatics::isInView(const Camera& camera, const Position& position, const Rotation& rotation, const Scale& scale, const BoundingSphere& boundingSphere)
 {
 	MANI_TIME_SCOPE("FrustumStatics_isInView");
-	return FrustumStatics::isSphereInside(camera.frustrum, position.value, scale.value, boundingSphere.radius);
+	return FrustumStatics::isSphereInside(camera.frustrum, position, scale, boundingSphere.radius);
 }
 
 Frustum FrustumStatics::create(const Camera& camera, const Vec3f& position, const Quatf& rotation)

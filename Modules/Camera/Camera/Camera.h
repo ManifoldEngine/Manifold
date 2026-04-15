@@ -10,7 +10,7 @@
 #include <Core/Components/Rotation.h>
 #include <Core/Components/Scale.h>
 
-#include <RenderAPI/BoundingSphere.h>
+#include <RenderAPI/Components/BoundingSphere.h>
 
 #include <ManiMaths/Fwd.h>
 #include <Log.h>
@@ -18,8 +18,6 @@
 
 namespace Mani
 {
-	const std::string_view LogCamera = "LogCamera";
-
 	enum class ECameraMode : uint8_t
 	{
 		Perspective = 0,

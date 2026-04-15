@@ -9,9 +9,8 @@ using namespace Mani;
 void FModOneShotSystem::tick(ECS::Registry& registry)
 {
 	ECS::View<FModChannel, FModOneShot> view(registry);
-	Mani::parallelFor(view, [&](const auto entityId, size_t threadIndex) 
+	Mani::parallelFor(view, [&](ECS::EntityId entityId, FModChannel& channel, FModOneShot& oneShot)
 	{
-		FModChannel& channel = registry.getRef<FModChannel>(entityId);
 		if (channel.value == nullptr)
 		{
 			return;

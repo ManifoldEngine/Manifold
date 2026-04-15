@@ -8,6 +8,6 @@ namespace Mani
 {
 	struct RenderContext
 	{
-		Map<std::string, ShaderType> shaderParameters;
+		Map<std::string_view, ShaderType> shaderParameters;
 	};
 }

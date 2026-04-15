@@ -41,22 +41,22 @@ void handleInputs(ECS::Registry& registry, ManImGuiWindowContext& context, ManIm
 		return;
 	}
 
-	Cursor& cursor = *registry.getSingle<Cursor>();
+	Ref<Cursor> cursor = registry.getSingle<Cursor>();
 
 	switch (context.mode)
 	{
 		case EManImGuiMode::Show:
 		{
 			context.mode = EManImGuiMode::Hidden;
-			cursor.mode = manImguiUser.modeCache;
+			cursor->mode = manImguiUser.modeCache;
 			break;
 		}
 
 		case EManImGuiMode::Hidden:
 		{
 			context.mode = EManImGuiMode::Show;
-			manImguiUser.modeCache = cursor.mode;
-			cursor.mode = Cursor::EMode::Normal;
+			manImguiUser.modeCache = cursor->mode;
+			cursor->mode = Cursor::EMode::Normal;
 			break;
 		}
 		default: break;
@@ -66,18 +66,18 @@ void handleInputs(ECS::Registry& registry, ManImGuiWindowContext& context, ManIm
 void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<OpenGLSystem>();
-	OpenGLWindowContext* openglContext = registry.getSingle<OpenGLWindowContext>();
+	OpenGLWindowContext* openglContext = registry.findSinglePinned<OpenGLWindowContext>();
 	MANI_ASSERT(openglContext != nullptr, "We expect the window context to be accessible. If the window is owned by a parent registry, make sure to forward it to this registry.");
 	
 	// we create a shared context for Imgui so it can create resources on the main thread and share them with the render thread.
-	ManImGuiWindowContext& context = *registry.addSingle<ManImGuiWindowContext>();
+	Ref<ManImGuiWindowContext> context = registry.addSingle<ManImGuiWindowContext>();
 	glfwWindowHint(GLFW_VISIBLE, GL_FALSE);
 
 	GLFWwindow* previousContext = glfwGetCurrentContext();
-	context.window = glfwCreateWindow(openglContext->width, openglContext->height, "imgui", NULL, openglContext->window);
+	context->window = glfwCreateWindow(openglContext->width, openglContext->height, "imgui", NULL, openglContext->window);
 
 	// setup imgui
-	glfwMakeContextCurrent(context.window);
+	glfwMakeContextCurrent(context->window);
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -110,7 +110,7 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 		InputsStatics::addAction(registry, entityId, TOGGLE_MANIMGUI, EInputHints::Keyboard_F7);
 
 		// assign all devices
-		for (const auto deviceId : ECS::View<InputDevice>(registry))
+		for (const auto [deviceId, _] : ECS::View<InputDevice>(registry))
 		{
 			InputsStatics::assignDevice(registry, entityId, deviceId);
 		}
@@ -124,7 +124,7 @@ void ManImGuiSystem::onDeinitialize(ECS::Registry& registry, World& world)
 	ImGui::DestroyContext();
 	registry.removeSingle<ManImGuiWindowContext>();
 
-	for (const auto entityId : ECS::View<ManImGuiUser, InputUser>(registry))
+	for (const auto [entityId, imguiUser, inputUser] : ECS::View<ManImGuiUser, InputUser>(registry))
 	{
 		registry.deferDestroy(entityId);
 	}
@@ -132,22 +132,21 @@ void ManImGuiSystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void ManImGuiSystem::tick(ECS::Registry& registry)
 {
-	ManImGuiWindowContext& context = *registry.getSingle<ManImGuiWindowContext>();
-	for (const auto entityId : ECS::View<ManImGuiUser, InputUser>(registry))
+	Ref<ManImGuiWindowContext> context = registry.getSingle<ManImGuiWindowContext>();
+	for (auto [entityId, imguiUser, inputUser] : ECS::View<ManImGuiUser, InputUser>(registry))
 	{
-		ManImGuiUser& imguiUser = registry.getRef<ManImGuiUser>(entityId);
 		const InputAction& action = InputsStatics::getAction(registry, entityId, TOGGLE_MANIMGUI);
-		handleInputs(registry, context, imguiUser, action);
+		handleInputs(registry, *context, imguiUser, action);
 		break;
 	}
 
-	if (context.mode == EManImGuiMode::Hidden)
+	if (context->mode == EManImGuiMode::Hidden)
 	{
 		return;
 	}
 
 	GLFWwindow* previousContext = glfwGetCurrentContext();
-	glfwMakeContextCurrent(context.window);
+	glfwMakeContextCurrent(context->window);
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 

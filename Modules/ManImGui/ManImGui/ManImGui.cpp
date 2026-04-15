@@ -8,22 +8,22 @@ using namespace Mani;
 
 bool ManImGuiStatics::isShowing(const ECS::Registry& registry)
 {
-	if (const auto* context = registry.getSingle<ManImGuiWindowContext>())
+	if (auto context = registry.findSingle<ManImGuiWindowContext>())
 	{
 		return context->mode == EManImGuiMode::Show;
 	}
 	return false;
 }
 
-ManImGuiMenu& ManImGuiStatics::Manifold::getMenu(ECS::Registry& registry)
+Ref<ManImGuiMenu> ManImGuiStatics::Manifold::getMenu(ECS::Registry& registry)
 {
-	ECS::View<ManImGuiMenu, ManImGuiManifoldMenu> view(registry);
-	return registry.getRef<ManImGuiMenu>(view.first());
+	ECS::ConstView<ManImGuiMenu, ManImGuiManifoldMenu> view(registry);
+	return registry.get<ManImGuiMenu>(view.begin().getEntityId());
 }
 
-const ManImGuiMenu& ManImGuiStatics::Manifold::getMenu(const ECS::Registry& registry)
+Ref<const ManImGuiMenu> ManImGuiStatics::Manifold::getMenu(const ECS::Registry& registry)
 {
-	ECS::View<ManImGuiMenu, ManImGuiManifoldMenu> view(registry);
-	return registry.getRef<ManImGuiMenu>(view.first());
+	ECS::ConstView<ManImGuiMenu, ManImGuiManifoldMenu> view(registry);
+	return registry.get<ManImGuiMenu>(view.begin().getEntityId());
 }
 

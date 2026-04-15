@@ -52,7 +52,6 @@ void World::tick()
 		{
 			if (!container.isMarkedForDestruction && container.system->shouldTick(m_registry))
 			{
-				MANI_TIME_SCOPE(container.system->getName());
 				container.system->tick(m_registry);
 			}
 		}

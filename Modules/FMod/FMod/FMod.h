@@ -6,7 +6,7 @@
 
 namespace Mani
 {
-	constexpr std::string_view LogFMod = "FMod";
+	constexpr LogChannel LogFMod("FMod");
 
 	struct FMod
 	{
@@ -15,15 +15,15 @@ namespace Mani
 
 	namespace FModStatics
 	{
-		FMod& getFModChecked(ECS::Registry& registry);
+		Ref<FMod> getFModChecked(ECS::Registry& registry);
 		ECS::EntityId play(ECS::Registry& registry, ECS::EntityId resourceId);
 		ECS::EntityId loop(ECS::Registry& registry, ECS::EntityId resourceId);
 		
-		void pause(ECS::Registry& registry, ECS::EntityId entityId);
-		void resume(ECS::Registry& registry, ECS::EntityId entityId);
+		void pause(ECS::Registry& registry, ECS::EntityId channelId);
+		void resume(ECS::Registry& registry, ECS::EntityId channelId);
 
-		void setVolume(ECS::Registry& registry, ECS::EntityId entityId, float volume);
+		void setVolume(ECS::Registry& registry, ECS::EntityId channelId, float volume);
 
-		void stop(ECS::Registry& registry, ECS::EntityId entityId);
+		void stop(ECS::Registry& registry, ECS::EntityId channelId);
 	}
 }

@@ -29,28 +29,28 @@ void Mani::OpenGLVertexBuffer::destroy()
 	}
 }
 
-OpenGLVertexBuffer::OpenGLVertexBuffer(OpenGLVertexBuffer&& other) noexcept
-{
-	m_vertexBufferObjectId = other.m_vertexBufferObjectId;
-	layout = other.layout;
-	m_size = other.m_size;
-
-	other.m_vertexBufferObjectId = 0;
-	other.layout.~List();
-	other.m_size = 0;
-}
-
-OpenGLVertexBuffer& OpenGLVertexBuffer::operator=(OpenGLVertexBuffer&& other) noexcept
-{
-	m_vertexBufferObjectId = other.m_vertexBufferObjectId;
-	layout = other.layout;
-	m_size = other.m_size;
-
-	other.m_vertexBufferObjectId = 0;
-	other.layout.~List();
-	other.m_size = 0;
-	return *this;
-}
+//OpenGLVertexBuffer::OpenGLVertexBuffer(OpenGLVertexBuffer&& other) noexcept
+//{
+//	m_vertexBufferObjectId = other.m_vertexBufferObjectId;
+//	layout = other.layout;
+//	m_size = other.m_size;
+//
+//	other.m_vertexBufferObjectId = 0;
+//	other.layout.~List();
+//	other.m_size = 0;
+//}
+//
+//OpenGLVertexBuffer& OpenGLVertexBuffer::operator=(OpenGLVertexBuffer&& other) noexcept
+//{
+//	m_vertexBufferObjectId = other.m_vertexBufferObjectId;
+//	layout = other.layout;
+//	m_size = other.m_size;
+//
+//	other.m_vertexBufferObjectId = 0;
+//	other.layout.~List();
+//	other.m_size = 0;
+//	return *this;
+//}
 
 void OpenGLVertexBuffer::set(const float* data, size_t count)
 {
@@ -152,24 +152,24 @@ void OpenGLIndexBuffer::destroy()
 	}
 }
 
-OpenGLIndexBuffer::OpenGLIndexBuffer(OpenGLIndexBuffer&& other) noexcept
-{
-	m_size = other.m_size;
-	m_indexBufferObjectId = other.m_indexBufferObjectId;
-
-	other.m_size = 0;
-	other.m_indexBufferObjectId = 0;
-}
-
-OpenGLIndexBuffer& OpenGLIndexBuffer::operator=(OpenGLIndexBuffer&& other) noexcept
-{
-	m_size = other.m_size;
-	m_indexBufferObjectId = other.m_indexBufferObjectId;
-
-	other.m_size = 0;
-	other.m_indexBufferObjectId = 0;
-	return *this;
-}
+//OpenGLIndexBuffer::OpenGLIndexBuffer(OpenGLIndexBuffer&& other) noexcept
+//{
+//	m_size = other.m_size;
+//	m_indexBufferObjectId = other.m_indexBufferObjectId;
+//
+//	other.m_size = 0;
+//	other.m_indexBufferObjectId = 0;
+//}
+//
+//OpenGLIndexBuffer& OpenGLIndexBuffer::operator=(OpenGLIndexBuffer&& other) noexcept
+//{
+//	m_size = other.m_size;
+//	m_indexBufferObjectId = other.m_indexBufferObjectId;
+//
+//	other.m_size = 0;
+//	other.m_indexBufferObjectId = 0;
+//	return *this;
+//}
 
 void OpenGLIndexBuffer::set(const unsigned int* indices, size_t size)
 {

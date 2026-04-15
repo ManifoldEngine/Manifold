@@ -14,8 +14,8 @@ struct TimeSystem::Storage
 void TimeSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	registry.addSingle<Time>();
-	Storage& storage = *registry.addSingle<Storage>();
-	storage.previousTimePoint = ManiClock::now();
+	Ref<Storage> storage = registry.addSingle<Storage>();
+	storage->previousTimePoint = ManiClock::now();
 }
 
 void TimeSystem::onDeinitialize(ECS::Registry& registry, World& world)
@@ -26,18 +26,18 @@ void TimeSystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void TimeSystem::tick(ECS::Registry& registry)
 {
-	Time& time = *registry.getSingle<Time>();
-	Storage& storage = *registry.getSingle<Storage>();
+	Ref<Time> time = registry.getSingle<Time>();
+	Ref<Storage> storage = registry.getSingle<Storage>();
 	ManiClock::time_point now = ManiClock::now();
-	ManiClock::duration delta = now - storage.previousTimePoint;
+	ManiClock::duration delta = now - storage->previousTimePoint;
 
-	time.realDelta = std::chrono::seconds::duration<float>(delta).count();
-	time.delta = time.realDelta * time.scale;
+	time->realDelta = std::chrono::seconds::duration<float>(delta).count();
+	time->delta = time->realDelta * time->scale;
 
-	time.realElapsed += time.realDelta;
-	time.elapsed += time.delta;
+	time->realElapsed += time->realDelta;
+	time->elapsed += time->delta;
 
-	storage.previousTimePoint = now;
+	storage->previousTimePoint = now;
 }
 
 std::string TimeSystem::getTimeFormatted()

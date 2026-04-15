@@ -10,7 +10,7 @@
 
 #include <Camera/Camera.h>
 
-#include <RenderAPI/MeshRendering.h>
+#include <RenderAPI/Components/MeshRendering.h>
 #include <RenderAPI/Texture.h>
 
 #include <Resources/Resources.h>
@@ -41,9 +41,9 @@ public:
 
 	virtual void tick(Mani::ECS::Registry& registry) override
 	{
-		Time& time = *registry.getSingle<Time>();
-		time.delta = AnimationTestsParams::gStubbedTimeDelta;
-		time.elapsed += time.delta;
+		Ref<Time> time = registry.getSingle<Time>();
+		time->delta = AnimationTestsParams::gStubbedTimeDelta;
+		time->elapsed += time->delta;
 	}
 };
 
@@ -64,16 +64,12 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		
 		// animation loading
 		const ECS::EntityId animationId = Resources::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
-		const Resource<Animation>* animationRes = registry.get<Resource<Animation>>(animationId);
-		MANI_TEST_ASSERT(animationRes != nullptr && animationRes->isReady, "Animation should be loaded and ready");
-		const Animation& animation = animationRes->value;
+		MANI_TEST_ASSERT(Resources::isReady(registry, animationId), "Animation should be loaded and ready");
+		const LoadedAnimation& animation = registry.getPinned<LoadedAnimation>(animationId);
 		MANI_TEST_ASSERT(animation.frames.count() == 4, "4 frames should have been loaded");
 		for (const auto& frame : animation.frames)
 		{
-			if (!frame.texturePath.empty())
-			{
-				MANI_TEST_ASSERT(frame.textureId != ECS::INVALID_ID, "each frame should point to a loaded texture if any is set");
-			}
+			MANI_TEST_ASSERT(frame.textureId != ECS::INVALID_ID, "each frame should point to a loaded texture if any is set");
 		}
 
 		// animation play OneShot
@@ -84,15 +80,15 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 			auto [position, rotation, scale, animator, meshComponent, boundingSphere] = registry.addMany<Position, Rotation, Scale, Animator, MeshRendering, BoundingSphere>(entityId);
 			boundingSphere->radius = 1.f;
 			animator->playRate = 1.f / 4.f; // 4 fps
-			AnimationStatics::play(registry, entityId, animationId);
+			Animations::play(registry, entityId, animationId);
 		}
 
 		// animation tick
 		world.tick();
 
 		{
-			auto& meshComponent = *registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			auto meshComponent = registry.get<MeshRendering>(entityId);
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
 			MANI_TEST_ASSERT(textureId == animation.frames[0].textureId, "The first frame should be displayed");
 
 		}
@@ -103,9 +99,9 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		world.tick();
 
 		{
-			auto& meshComponent = *registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
-			MANI_TEST_ASSERT(textureId == animation.frames[1].textureId, "The first frame should be displayed");
+			auto meshComponent = registry.get<MeshRendering>(entityId);
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			MANI_TEST_ASSERT(textureId == animation.frames[1].textureId, "The second frame should be displayed");
 		}
 
 		// animation tick
@@ -114,9 +110,9 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		world.tick();
 
 		{
-			auto& meshComponent = *registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
-			MANI_TEST_ASSERT(textureId == animation.frames[2].textureId, "The first frame should be displayed");
+			auto meshComponent = registry.get<MeshRendering>(entityId);
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			MANI_TEST_ASSERT(textureId == animation.frames[2].textureId, "The third frame should be displayed");
 		}
 
 		// animation tick
@@ -125,9 +121,9 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		world.tick();
 
 		{
-			auto& meshComponent = *registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
-			MANI_TEST_ASSERT(textureId == animation.frames[3].textureId, "The first frame should be displayed");
+			auto meshComponent = registry.get<MeshRendering>(entityId);
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			MANI_TEST_ASSERT(textureId == animation.frames[3].textureId, "The fourth frame should be displayed");
 		}
 		
 		// animation tick
@@ -137,12 +133,12 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			// One shot play mode should reset the animator and prameters once the animation is done
-			auto& meshComponent = *registry.get<MeshRendering>(entityId);
-			MANI_TEST_ASSERT(!meshComponent.textureParameters.has(Mani::ShaderNames::MANI_TEXTURE_0), "Anim texture should have been cleared");
+			auto meshComponent = registry.get<MeshRendering>(entityId);
+			MANI_TEST_ASSERT(!meshComponent->textureParameters.has(Mani::ShaderNames::MANI_TEXTURE_0), "Anim texture should have been cleared");
 
-			auto& animator = *registry.get<Animator>(entityId);
-			MANI_TEST_ASSERT(animator.frameId == INVALID_FRAME_ID, "animator should not be playing anything");
-			MANI_TEST_ASSERT(animator.resourceId == ECS::INVALID_ID, "animator should not be playing anything");
+			auto animator = registry.get<Animator>(entityId);
+			MANI_TEST_ASSERT(animator->frameId == INVALID_FRAME_ID, "animator should not be playing anything");
+			MANI_TEST_ASSERT(animator->resourceId == ECS::INVALID_ID, "animator should not be playing anything");
 		}
 	}
 
@@ -161,16 +157,12 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		// animation loading
 		const ECS::EntityId animationId = Resources::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
-		const Resource<Animation>* animationRes = registry.get<Resource<Animation>>(animationId);
-		MANI_TEST_ASSERT(animationRes != nullptr && animationRes->isReady, "Animation should be loaded and ready");
-		const Animation& animation = animationRes->value;
+		MANI_TEST_ASSERT(Resources::isReady(registry, animationId), "Animation should be loaded and ready");
+		const LoadedAnimation& animation = registry.getPinned<LoadedAnimation>(animationId);
 		MANI_TEST_ASSERT(animation.frames.count() == 4, "4 frames should have been loaded");
 		for (const auto& frame : animation.frames)
 		{
-			if (!frame.texturePath.empty())
-			{
-				MANI_TEST_ASSERT(frame.textureId != ECS::INVALID_ID, "each frame should point to a loaded texture if any is set");
-			}
+			MANI_TEST_ASSERT(frame.textureId != ECS::INVALID_ID, "each frame should point to a loaded texture if any is set");
 		}
 
 		// animation play OneShot
@@ -181,15 +173,15 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 			auto [position, rotation, scale, animator, meshComponent, boundingSphere] = registry.addMany<Position, Rotation, Scale, Animator, MeshRendering, BoundingSphere>(entityId);
 			boundingSphere->radius = 1.f;
 			animator->playRate = 1.f / 4.f; // 4 fps
-			AnimationStatics::play(registry, entityId, animationId, Animator::EPlayMode::Loop);
+			Animations::play(registry, entityId, animationId, Animator::EPlayMode::Loop);
 		}
 
 		// animation tick
 		world.tick();
 
 		{
-			auto& meshComponent = *registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			auto meshComponent = registry.get<MeshRendering>(entityId);
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
 			MANI_TEST_ASSERT(textureId == animation.frames[0].textureId, "The first frame should be displayed");
 		}
 
@@ -201,9 +193,9 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		}
 
 		{
-			auto& meshComponent = *registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
-			MANI_TEST_ASSERT(textureId == animation.frames[3].textureId, "The first frame should be displayed");
+			auto meshComponent = registry.get<MeshRendering>(entityId);
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			MANI_TEST_ASSERT(textureId == animation.frames[3].textureId, "The fourth frame should be displayed");
 		}
 
 		// animation tick
@@ -213,8 +205,8 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			// should loop
-			auto& meshComponent = *registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent.textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			auto meshComponent = registry.get<MeshRendering>(entityId);
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
 			MANI_TEST_ASSERT(textureId == animation.frames[0].textureId, "The first frame should be displayed");
 		}
 	}

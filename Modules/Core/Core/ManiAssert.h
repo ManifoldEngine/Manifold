@@ -4,14 +4,23 @@
 #include <Core/Log.h>
 #include <stacktrace>
 
-#ifdef MANI_ASSERT_ENABLED
-	#define MANI_ASSERT(CHECK, MESSAGE, ...) \
-		if (!(CHECK)) \
+namespace Mani
+{
+	constexpr LogChannel LogFatal("Fatal");
+}
+
+#if MANI_ASSERT_ENABLED
+	#define MANI_ASSERT(CHECK, ...) \
+		do \
 		{ \
-			const std::string mani_core_formatted_message = std::format(MESSAGE, __VA_ARGS__); \
-			MANI_LOG_ERROR("Fatal", "{}\n{}", mani_core_formatted_message, std::to_string(std::stacktrace::current())); \
-			MANI_DEBUGBREAK(); \
-		}
+			if (!(CHECK)) \
+			{ \
+				MANI_LOG_ERROR(Mani::LogFatal, __VA_ARGS__); \
+				MANI_LOG_ERROR(Mani::LogFatal, "{}", std::to_string(std::stacktrace::current())); \
+				MANI_DEBUGBREAK(); \
+			} \
+		} while (false); \
+
 #else
 	#define MANI_ASSERT(...)
 #endif

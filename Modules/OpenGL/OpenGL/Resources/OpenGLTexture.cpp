@@ -124,7 +124,7 @@ void OpenGLTexture2D::bind(uint32_t slot)
 #endif
 }
 
-void Mani::OpenGLTexture2D::unbind()
+void OpenGLTexture2D::unbind()
 {
     if (m_boundSlot >= 0)
     {

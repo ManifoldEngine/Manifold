@@ -281,8 +281,8 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 
 			world.tick();
 
-			const TickOrder tickOrder1 = *registry.getSingle<TickOrder>();
-			MANI_TEST_ASSERT(tickOrder1.order == expected, "order should have been respected");
+			Ref<TickOrder> tickOrder1 = registry.getSingle<TickOrder>();
+			MANI_TEST_ASSERT(tickOrder1->order == expected, "order should have been respected");
 		}
 
 		{
@@ -300,8 +300,8 @@ MANI_SECTION_BEGIN(Core_World, "Core World")
 
 			world.tick();
 
-			const TickOrder tickOrder1 = *registry.getSingle<TickOrder>();
-			MANI_TEST_ASSERT(tickOrder1.order == expected, "order should have been respected");
+			Ref<TickOrder> tickOrder1 = registry.getSingle<TickOrder>();
+			MANI_TEST_ASSERT(tickOrder1->order == expected, "order should have been respected");
 		}
 	}
 

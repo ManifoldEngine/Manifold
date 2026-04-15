@@ -1,21 +1,20 @@
 #pragma once
 
 #include <Core/ManiAssert.h>
+#include <Core/ManiTypes.h>
 #include <vector>
 #include <algorithm>
-#include <limits>
 
 namespace Mani
 {
-	using SizeT = size_t;
-	inline constexpr SizeT INDEX_NONE = (std::numeric_limits<SizeT>::max)();
-
 	template<typename T>
 	class List
 	{
 	public:
 		using Iterator = typename std::vector<T>::iterator;
 		using IteratorConst = typename std::vector<T>::const_iterator;
+		using ReverseIterator = typename std::vector<T>::reverse_iterator;
+		using ReverseIteratorConst = typename std::vector<T>::const_reverse_iterator;
 
 		using Predicate = bool(const T&);
 
@@ -56,7 +55,8 @@ namespace Mani
 		[[nodiscard]] bool isEmpty() const { return m_data.empty(); }
 		void reserve(SizeT inCapacity) { m_data.reserve(inCapacity); }
 		void shrink() { m_data.shrink_to_fit(); }
-		void resize(SizeT newSize) { m_data.resize(newSize, T()); }
+		void resize(SizeT newSize) { m_data.resize(newSize); }
+		void resize(SizeT newSize, T&& fillValue) { m_data.resize(newSize, fillValue); }
 
 		// mutators
 		void clear() { m_data.clear(); }
@@ -115,6 +115,11 @@ namespace Mani
 			T value = std::move(*(m_data.begin()));
 			m_data.erase(m_data.begin());
 			return value;
+		}
+
+		void swap(SizeT i1, SizeT i2)
+		{
+			std::swap(m_data[i1], m_data[i2]);
 		}
 
 		// algo
@@ -207,9 +212,14 @@ namespace Mani
 			m_data.erase(it);
 		}
 
+		void removeLast()
+		{
+			m_data.pop_back();
+		}
+
 		T pop()
 		{
-			T value = last();
+			T value = std::move(last());
 			m_data.pop_back();
 			return value;
 		}
@@ -248,69 +258,81 @@ namespace Mani
 
 		// access
 		[[nodiscard]] bool isValid(SizeT index) const { return index < m_data.size(); }
-		[[nodiscard]] T& operator[](SizeT index) { return m_data[index]; }
-		[[nodiscard]] const T& operator[](SizeT index) const { return m_data[index]; }
+		[[nodiscard]] T& operator[](SizeT index) { MANI_ASSERT(isValid(index), "Out of bounds"); return m_data[index]; }
+		[[nodiscard]] const T& operator[](SizeT index) const { MANI_ASSERT(isValid(index), "Out of bounds"); return m_data[index]; }
 		[[nodiscard]] T& first() { return m_data.front(); }
 		[[nodiscard]] const T& first() const { return m_data.front(); }
 		[[nodiscard]] T& last() { return m_data.back(); }
 		[[nodiscard]] const T& last() const { return m_data.back(); }
 
-		[[nodiscard]] T& firstOrDefault(T&& value = T{})
+		[[nodiscard]] T* firstPtr()
 		{
 			if (isEmpty())
 			{
-				return value;
+				return nullptr;
 			}
-			return m_data.front();
+			return &m_data.front();
 		}
 
-		[[nodiscard]] const T& firstOrDefault(T&& value = T{}) const
+		[[nodiscard]] const T* firstPtr() const
 		{
 			if (isEmpty())
 			{
-				return value;
+				return nullptr;
 			}
-			return m_data.front();
+			return &m_data.front();
 		}
 
-		[[nodiscard]] T& lastOrDefault(T&& value = T{})
+		[[nodiscard]] T& lastPtr()
 		{
 			if (isEmpty())
 			{
-				return value;
+				return nullptr;
 			}
-			return m_data.back();
+			return &m_data.back();
 		}
 
-		[[nodiscard]] const T& lastOrDefault(T&& value = T{}) const
+		[[nodiscard]] const T* lastPtr() const
 		{
 			if (isEmpty())
 			{
-				return value;
+				return nullptr;
 			}
-			return m_data.back();
+			return &m_data.back();
 		}
 
-		[[nodiscard]] T& atOrDefault(SizeT index, T&& value = T{})
+		[[nodiscard]] T& at(SizeT index)
 		{
-			if (!isValid(index))
-			{
-				return value;
-			}
+			MANI_ASSERT(isValid(index), "Out of bounds");
 			return m_data[index];
 		}
 
-		[[nodiscard]] const T& atOrDefault(SizeT index, T&& value = T{}) const
+		[[nodiscard]] const T& at(SizeT index) const
 		{
-			if (!isValid(index))
-			{
-				return value;
-			}
+			MANI_ASSERT(isValid(index), "Out of bounds");
 			return m_data[index];
 		}
 
-		[[nodiscard]] std::vector<T>& data() { return m_data; }
-		[[nodiscard]] const std::vector<T>& data() const { return m_data; }
+		[[nodiscard]] T* atPtr(SizeT index)
+		{
+			if (!isValid(index))
+			{
+				return nullptr;
+			}
+			return &m_data[index];
+		}
+
+		[[nodiscard]] const T* atPtr(SizeT index) const
+		{
+			if (!isValid(index))
+			{
+				return nullptr;
+			}
+			return &m_data[index];
+		}
+
+		[[nodiscard]] T* data() { return m_data.data(); }
+		[[nodiscard]] const T* data() const { return m_data.data(); }
 
 		// iterators
 		Iterator begin() { return m_data.begin(); }
@@ -318,8 +340,12 @@ namespace Mani
 		Iterator end() { return m_data.end(); }
 		IteratorConst end() const { return m_data.end(); }
 
+		ReverseIterator rbegin() { return m_data.rbegin(); }
+		ReverseIteratorConst rbegin() const { return m_data.rbegin(); }
+		ReverseIterator rend() { return m_data.rend(); }
+		ReverseIteratorConst rend() const { return m_data.rend(); }
+		
 		// comparison
-
 		bool operator==(const Mani::List<T>& other) const
 		{
 			return m_data == other.m_data;

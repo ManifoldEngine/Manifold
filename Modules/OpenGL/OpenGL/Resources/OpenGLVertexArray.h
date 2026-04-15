@@ -12,13 +12,10 @@ namespace Mani
 	class OpenGLVertexArray
 	{
 	public:
-		OpenGLVertexArray() = default;
+		//OpenGLVertexArray() = default;
 
-		// buffers can't be copied implicitely.
-		OpenGLVertexArray(const OpenGLVertexArray&) = delete;
-		OpenGLVertexArray& operator=(const OpenGLVertexArray&) = delete;
-		OpenGLVertexArray(OpenGLVertexArray&& other) noexcept;
-		OpenGLVertexArray& operator=(OpenGLVertexArray&& other) noexcept;
+		//OpenGLVertexArray(OpenGLVertexArray&& other) noexcept;
+		//OpenGLVertexArray& operator=(OpenGLVertexArray&& other) noexcept;
 
 		void create();
 		void destroy();

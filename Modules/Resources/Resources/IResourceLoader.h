@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Core/CoreFwd.h>
+#include <Resources/Components/Resource.h>
 
 namespace Mani
 {
@@ -13,28 +14,28 @@ namespace Mani
 	class IResourceLoader
 	{
 	public:
-		// Returns the component ID of the resource type handled by this loader.
-		//
-		// The expected ID corresponds to the templated resource component type
-		// (e.g. Resource<Texture>) registered in the ECS registry.
-		//
-		// Example:
-		//     registry.getComponentId<Mani::Resource<Texture>>();
-		virtual ECS::ComponentId getComponentId(const ECS::Registry& registry) const = 0;
-
-		// Loads a resource instance into the ECS registry.
+		// Called when loading a resource, might be called on a task thread
 		//
 		// Called automatically by the ResourceSystem when a resource with a
 		// matching component ID needs to be loaded.
 		//
 		// Parameters:
-		//   - registry: The ECS registry that owns the resource entity.
-		//   - absolutePath: The absolute filesystem path to the resource file.
-		//   - resourceId: The entity ID representing the resource.
-		//		- accessed with registry.getRef<Resource<T>>(resourceId)
-		//   - tag: An optional tag used to group or categorize resources.
+		//   registry: The ECS registry that owns the resource entity.
+		//   absolutePath: The absolute filesystem path to the resource file.
+		//   resourceId: The entity ID representing the resource. Access with registry.get<Resource<T>>(resourceId)
+		//   tag: An optional tag used to group or categorize resources.
 		//
 		// Returns true if the resource was successfully loaded.
-		virtual bool load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const = 0;
+		virtual bool load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const = 0;
+
+		// Called after loading, is guaranteed to be called on the registry's thread 
+		// use this to do any main thread syncing like adding components or creating entities
+		// 
+		// Parameters:
+		//   registry: The ECS registry that owns the resource entity.
+		//   absolutePath: The absolute filesystem path to the resource file.
+		//   resourceId: The entity ID representing the resource. Access with registry.get<Resource<T>>(resourceId)
+		//   tag: An optional tag used to group or categorize resources.
+		virtual void postLoad(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const {};
 	};
 }

@@ -56,14 +56,9 @@ void InputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 void InputSystem::tick(ECS::Registry& registry)
 {
 	ECS::View<InputUser> view(registry);
-	parallelFor(view, [&](const auto entityId, size_t threadIndex)
+	parallelFor(view, [&](ECS::EntityId entityId, InputUser& inputUser)
 	{
-		const ECS::Entity* entity = registry.getEntity(entityId);
-		const ECS::Index entityIndex = entity->getIndex();
-		const ECS::ComponentId componentId = registry.getComponentId<InputUser>();
-	
 		// reset action axis state 
-		InputUser& inputUser = registry.getRef<InputUser>(entityId);
 		for (auto& action : inputUser.actions)
 		{
 			// axis are reset each tick.
@@ -77,8 +72,8 @@ void InputSystem::tick(ECS::Registry& registry)
 		for (const auto deviceId : inputUser.inputDevices)
 		{
 			// button buffers
-			const InputDevice& device = registry.getRef<InputDevice>(deviceId);
-			for (const ButtonControl& control : device.buttonBuffer)
+			Ref<InputDevice> device = registry.get<InputDevice>(deviceId);
+			for (const ButtonControl& control : device->buttonBuffer)
 			{
 				if (const List<AxisActionBinding>* bindings = inputUser.buttonToAxisBindings.find(control.id))
 				{
@@ -108,7 +103,7 @@ void InputSystem::tick(ECS::Registry& registry)
 			}
 
 			// axis
-			for (const AxisControl& control : device.axis)
+			for (const AxisControl& control : device->axis)
 			{
 				foreachBindings(inputUser.bindings, inputUser.actions, control.id, [&control](InputAction& action)
 				{
@@ -122,9 +117,8 @@ void InputSystem::tick(ECS::Registry& registry)
 	});
 
 	// clear button buffers
-	for (const ECS::EntityId entityId : ECS::View<InputDevice>(registry))
+	for (auto [entityId, device] : ECS::View<InputDevice>(registry))
 	{
-		InputDevice& inputDevice = registry.getRef<InputDevice>(entityId);
-		inputDevice.buttonBuffer.clear();
+		device.buttonBuffer.clear();
 	}
 }

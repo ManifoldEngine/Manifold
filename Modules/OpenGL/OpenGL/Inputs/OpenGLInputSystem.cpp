@@ -112,73 +112,73 @@ void assignControlIdsAndInputHints(ECS::Registry& registry, List<ControlId>& con
 void OpenGLInputSystem::onInitialize(ECS::Registry& registry, World& world)
 {
     world.initializeDependency<InputSystem>();
-    Storage& storage = *registry.addSingle<Storage>();
+    
+    ECS::EntityId keyboardId = ECS::INVALID_ID;
+    ECS::EntityId mouseId = ECS::INVALID_ID;
 
     {
         //  keyboard
-        storage.keyboardId = registry.create();
-        InputDevice& device = *registry.add<InputDevice>(storage.keyboardId);
-        device.deviceName = "OpenGLKeyboard";
+        keyboardId = registry.create();
+        auto [device, keyboard] = registry.addMany<InputDevice, OpenGLKeyboard>(keyboardId);
         
-        OpenGLKeyboard& keyboard = *registry.add<OpenGLKeyboard>(storage.keyboardId);
-        assignControlIdsAndInputHints<EOpenGLKeyCode, uint8_t>(registry, keyboard.keys, device);
+        device->deviceName = "OpenGLKeyboard";
+        assignControlIdsAndInputHints<EOpenGLKeyCode, uint8_t>(registry, keyboard->keys, *device);
     }
 
     {
         // mouse
-        storage.mouseId = registry.create();
-        InputDevice& device = *registry.add<InputDevice>(storage.mouseId);
-        device.deviceName = "OpenGLMouse";
-        AxisControl axis{
+        mouseId = registry.create();
+        auto [device, mouse] = registry.addMany<InputDevice, OpenGLMouse>(mouseId);
+        device->deviceName = "OpenGLMouse";
+        device->axis.add(AxisControl{
             .id = InputsStatics::generateNextControlId(registry),
             .hint = EInputHints::Mouse_Axis,
 #if MANI_DEBUG
             .debug_name = "Mouse",
 #endif
-        };
-        device.axis.add(axis);
+        });
 
-        OpenGLMouse& mouse = *registry.add<OpenGLMouse>(storage.mouseId);
-        assignControlIdsAndInputHints<EOpenGLMouseCode, uint8_t>(registry, mouse.buttons, device);
+        assignControlIdsAndInputHints<EOpenGLMouseCode, uint8_t>(registry, mouse->buttons, *device);
     }
 
-    storage.previousKeyValues.resize(static_cast<SizeT>(EOpenGLKeyCode::Count));
-    storage.previousMouseValues.resize(static_cast<SizeT>(EOpenGLMouseCode::Count));
+    Ref<Storage> storage = registry.addSingle<Storage>();
+    storage->keyboardId = keyboardId;
+    storage->mouseId = mouseId;
+    storage->previousKeyValues.resize(static_cast<SizeT>(EOpenGLKeyCode::Count));
+    storage->previousMouseValues.resize(static_cast<SizeT>(EOpenGLMouseCode::Count));
 }
 
 void OpenGLInputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-    OpenGLWindowContext* context = registry.getSingle<OpenGLWindowContext>();
-    MANI_ASSERT(context != nullptr, "We expect the window context to be accessible. If the window is owned by a parent registry, make sure to forward it to this registry.");
-    
-    const Storage& storage = *registry.getSingle<Storage>();
-    registry.destroy(storage.keyboardId);
-    registry.destroy(storage.mouseId);
+    Ref<Storage> storage = registry.getSingle<Storage>();
+
+    registry.destroy(storage->keyboardId);
+    registry.destroy(storage->mouseId);
     registry.removeSingle<Storage>();
 }
 
 void OpenGLInputSystem::tick(ECS::Registry& registry)
 {
-    const OpenGLWindowContext& context = *registry.getSingle<OpenGLWindowContext>();
+    OpenGLWindowContext& context = registry.getSinglePinned<OpenGLWindowContext>();
 
     // handle cursord mode.
-    Cursor& cursor = *registry.getSingle<Cursor>();
-    glfwSetInputMode(context.window, GLFW_CURSOR, toGLFWCursorMode(cursor.mode));
+    Ref<Cursor> cursor = registry.getSingle<Cursor>();
+    glfwSetInputMode(context.window, GLFW_CURSOR, toGLFWCursorMode(cursor->mode));
 
     glfwPollEvents();
 
     // read inputs
-    Storage& storage = *registry.getSingle<Storage>();
-    InputDevice& keyboardDevice = registry.getRef<InputDevice>(storage.keyboardId);
-    InputDevice& mouseDevice = registry.getRef<InputDevice>(storage.mouseId);
-    OpenGLKeyboard& keyboard = registry.getRef<OpenGLKeyboard>(storage.keyboardId);
-    OpenGLMouse& mouse = registry.getRef<OpenGLMouse>(storage.mouseId);
+    Ref<Storage> storage = registry.getSingle<Storage>();
+    Ref<InputDevice> keyboardDevice = registry.get<InputDevice>(storage->keyboardId);
+    Ref<InputDevice> mouseDevice = registry.get<InputDevice>(storage->mouseId);
+    Ref<OpenGLKeyboard> keyboard = registry.get<OpenGLKeyboard>(storage->keyboardId);
+    Ref<OpenGLMouse> mouse = registry.get<OpenGLMouse>(storage->mouseId);
 
-    AxisControl& mouseAxis = mouseDevice.axis.first();
+    AxisControl& mouseAxis = mouseDevice->axis.first();
     const Vec2f mousePosition = readGLFWMousePosition(context.window);
     mouseAxis.x = mousePosition.x;
     mouseAxis.y = mousePosition.y;
 
-    readInputs<EOpenGLKeyCode, uint8_t>(context.window, storage.previousKeyValues, keyboard.keys, keyboardDevice, &readGLFWKeyInput);
-    readInputs<EOpenGLMouseCode, uint8_t>(context.window, storage.previousMouseValues, mouse.buttons, mouseDevice, &readGLFWMouseInput);
+    readInputs<EOpenGLKeyCode, uint8_t>(context.window, storage->previousKeyValues, keyboard->keys, *keyboardDevice, &readGLFWKeyInput);
+    readInputs<EOpenGLMouseCode, uint8_t>(context.window, storage->previousMouseValues, mouse->buttons, *mouseDevice, &readGLFWMouseInput);
 }

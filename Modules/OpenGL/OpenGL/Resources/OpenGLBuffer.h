@@ -31,13 +31,11 @@ namespace Mani
 	class OpenGLVertexBuffer
 	{
 	public:
-		OpenGLVertexBuffer() = default;
+		//OpenGLVertexBuffer() = default;
 
-		// buffers can't be copied implicitely.
-		OpenGLVertexBuffer(const OpenGLVertexBuffer&) = delete;
-		OpenGLVertexBuffer& operator=(const OpenGLVertexBuffer&) = delete;
-		OpenGLVertexBuffer(OpenGLVertexBuffer&& other) noexcept;
-		OpenGLVertexBuffer& operator=(OpenGLVertexBuffer&& other) noexcept;
+		//// buffers can't be copied implicitely.
+		//OpenGLVertexBuffer(OpenGLVertexBuffer&& other) noexcept;
+		//OpenGLVertexBuffer& operator=(OpenGLVertexBuffer&& other) noexcept;
 
 		void create();
 		void create(const float* data, size_t size);
@@ -62,13 +60,11 @@ namespace Mani
 	class OpenGLIndexBuffer
 	{
 	public:
-		OpenGLIndexBuffer() = default;
+		//OpenGLIndexBuffer() = default;
 
-		// buffers can't be copied implicitely.
-		OpenGLIndexBuffer(const OpenGLVertexBuffer&) = delete;
-		OpenGLIndexBuffer operator=(const OpenGLVertexBuffer&) = delete;
-		OpenGLIndexBuffer(OpenGLIndexBuffer&& other) noexcept;
-		OpenGLIndexBuffer& operator=(OpenGLIndexBuffer&& other) noexcept;
+		//// buffers can't be copied implicitely.
+		//OpenGLIndexBuffer(OpenGLIndexBuffer&& other) noexcept;
+		//OpenGLIndexBuffer& operator=(OpenGLIndexBuffer&& other) noexcept;
 
 		void create();
 		void create(const unsigned int* indices, size_t size);

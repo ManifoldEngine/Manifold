@@ -2,6 +2,8 @@
 
 #include <Core/CoreFwd.h>
 #include <RenderAPI/Colors.h>
+#include <Camera/Camera.h>
+#include <Resources/Resources.h>
 
 namespace Mani
 {
@@ -13,21 +15,17 @@ namespace Mani
 			ECS::EntityId configId = ECS::INVALID_ID;
 		};
 
-		ECS::EntityId createSprite(ECS::Registry& registry, const std::string_view& spritePath, uint8_t tag, const Vec4f& color = Colors::WHITE);
-		ECS::EntityId createFillableBar(ECS::Registry& registry, const std::string_view& spritePath, uint8_t tag, const Vec4f& backgroundColor = Colors::BLACK);
+		Ref<const Camera> getUICamera(const ECS::Registry& registry);
+		ECS::EntityId createSprite(ECS::Registry& registry, const Vec2f& size, ECS::EntityId textureId, ECS::EntityId materialId, uint32_t tag = Mani::GLOBAL_RESOURCE_TAG);
+		ECS::EntityId createFillableBar(ECS::Registry& registry, const Vec2f& size, ECS::EntityId textureId, ECS::EntityId materialId, const Vec4f& backgroundColor = Colors::BLACK, uint32_t tag = Mani::GLOBAL_RESOURCE_TAG);
 
 		// normal device coordinate to pixel position
-		Vec3f ndcToUISpace(const ECS::Registry& registry, const Vec2f& ndc);
+		// use these to place ui elements in [-1, 1] coordinates
+		Vec3f ndcToUISpace(const Vec2f& ndc, const Camera& uiCamera);
 		Vec3f ndcToUISpace(const Vec2f& ndc, const Vec2f& dimensions);
-
-		namespace Constants
-		{
-			constexpr int RENDERER_ID = 1;
-		}
 
 		namespace ShaderNames
 		{
-			const std::string MANI_UI_PROJECTION = "mani_ui_projection";
 			const std::string MANI_UI_FILLRATIO = "mani_ui_fillRatio";
 		}
 

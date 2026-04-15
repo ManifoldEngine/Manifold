@@ -10,28 +10,27 @@
 
 using namespace Mani;
 
-ECS::ComponentId ResourceLoader_FModStream::getComponentId(const ECS::Registry& registry) const
+bool ResourceLoader_FModStream::load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
 {
-    return registry.getComponentId<Resource<FModStream>>();
-}
+    Ref<FMod> fmod = registry.getSingle<FMod>();
+    
+    Ref<Resource<FModStream>> resource = registry.get<Resource<FModStream>>(resourceId);
+    
 
-bool ResourceLoader_FModStream::load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
-{
-    FMod* fmod = registry.getSingle<FMod>();
-    MANI_ASSERT(fmod != nullptr, "FModSystem is expected to initialized at this point.");
-    FMOD::System* system = fmod->system;
-
-    Resource<FModStream>& resource = registry.getRef<Resource<FModStream>>(resourceId);
-    Resource<FModSound>& soundResource = *registry.add<Resource<FModSound>>(resourceId);
-
-    FMOD_RESULT result = system->createStream(absolutePath.string().c_str(), FMOD_DEFAULT, 0, &(soundResource.value.sound));
-
-    if (result != FMOD_OK)
+    FMOD_RESULT result = fmod->system->createStream(absolutePath.string().c_str(), FMOD_DEFAULT, 0, &(resource->value.sound));
+    const bool success = result != FMOD_OK;
+    if (!success)
     {
         MANI_LOG_ERROR(LogFMod, "Failed to load {} : {}", absolutePath.string(), FMOD_ErrorString(result));
-        return false;
     }
 
-    soundResource.isReady = true;
-    return true;
+    return success;
+}
+
+void ResourceLoader_FModStream::postLoad(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const
+{
+    // add the FModSound resource so it can be processed like a normal sound.
+    Ref<Resource<FModStream>> resource = registry.get<Resource<FModStream>>(resourceId);
+    Ref<Resource<FModSound>> soundResource = registry.add<Resource<FModSound>>(resourceId);
+    soundResource->value.sound = resource->value.sound;
 }

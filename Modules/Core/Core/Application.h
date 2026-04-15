@@ -6,6 +6,8 @@
 #include <Core/Async/ThreadPool.h>
 #include <Core/Async/Defer.h>
 
+#define MANI_ASSERT_APP_THREAD MANI_ASSERT(Mani::Application::get().getThreadId() == Mani::thisThreadId(), "Only allowed on the main thread");
+
 namespace Mani
 {
 	class Application
@@ -28,6 +30,7 @@ namespace Mani
 		ThreadPool& getThreadPool() { return m_threadPool; }
 		Deferred& getDeferred() { return m_deferred; }
 		const CoreConfig& getConfig() const { return m_config; }
+		ThreadId getThreadId() const { return m_threadId; }
 
 		bool isRunning() const { return m_isRunning; }
 
@@ -40,5 +43,7 @@ namespace Mani
 		ThreadPool m_threadPool;
 		Deferred m_deferred;
 		CoreConfig m_config;
+
+		ThreadId m_threadId;
 	};
 }

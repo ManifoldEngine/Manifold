@@ -8,22 +8,17 @@
 
 using namespace Mani;
 
-ECS::ComponentId Mani::ResourceLoader_Texture::getComponentId(const ECS::Registry& registry) const
+bool Mani::ResourceLoader_Texture::load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
 {
-    return registry.getComponentId<Resource<Texture>>();
-}
-
-bool Mani::ResourceLoader_Texture::load(ECS::Registry& registry, const std::filesystem::path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
-{
-    Resource<Texture>& resource = registry.getRef<Resource<Texture>>(resourceId);
+    Resource<Texture>& resource = registry.getPinned<Resource<Texture>>(resourceId);
 
     uint8_t stbiSetFlipVerticallyOnLoad = Mani::STBISETFLIPVERTICALLYONLOAD_DISABLED;
-    ECS::View<Resource<OpenGLConfig>> openGLConfigView(registry);
+    ECS::ConstPinnedView<Resource<OpenGLConfig>> openGLConfigView(registry);
     const auto it = openGLConfigView.begin();
     if (it != openGLConfigView.end())
     {
-        const Resource<OpenGLConfig>& configRes = *registry.get<Resource<OpenGLConfig>>(*it);
-        stbiSetFlipVerticallyOnLoad = configRes.value.stbiSetFlipVerticallyOnLoad;
+        auto& config = registry.getPinned<Resource<OpenGLConfig>>(it.getEntityId());
+        stbiSetFlipVerticallyOnLoad = config.value.stbiSetFlipVerticallyOnLoad;
     }
     STBI::load(absolutePath.string(), resource.value, stbiSetFlipVerticallyOnLoad);
     return STBI::isLoaded(resource.value);

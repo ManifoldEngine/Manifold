@@ -18,14 +18,15 @@ namespace Mani
 
         static void onTimerDestroyed(const Mani::_impl::ScopedTimer& namedScopeTimer);
 
-    protected:
-        virtual void onInitialize(Mani::ECS::Registry& registry, World& world) override;
-        virtual void onDeinitialize(Mani::ECS::Registry& registry, Mani::World& world) override;
+    // TODO: This is shit, it needs a complete rework.
+    //protected:
+    //    virtual void onInitialize(Mani::ECS::Registry& registry, World& world) override;
+    //    virtual void onDeinitialize(Mani::ECS::Registry& registry, Mani::World& world) override;
 
-    public:
-        virtual void tick(Mani::ECS::Registry& registry) override;
+    //public:
+    //    virtual void tick(Mani::ECS::Registry& registry) override;
 
-    private:
-        struct Storage;
+    //private:
+    //    struct Storage;
     };
 }

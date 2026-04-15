@@ -4,5 +4,5 @@
 
 namespace Mani
 {
-    const std::string_view LogFloatingCamera = "FloatingCamera";
+    constexpr LogChannel LogFloatingCamera("FloatingCamera");
 }

@@ -1,11 +1,13 @@
 #include "Logger.h"
 
+#include <Core/Application.h>
+#include <Core/ManiTypes.h>
 #include <Core/Containers/Map.h>
 #include <Core/TimeSystem.h>
 
+#include <print>
 #include <iostream>
 #include <fstream>
-#include <mutex>
 
 #if !MANI_CONSOLE_APP && MANI_WINDOWS
 #include <windows.h>
@@ -15,41 +17,48 @@ using namespace Mani;
 
 namespace LogColors
 {
-	const std::string RESET = "\033[0m";
-	const std::string BLACK = "\033[30m";			/* Black */
-	const std::string RED = "\033[31m";			/* Red */
-	const std::string GREEN = "\033[32m";			/* Green */
-	const std::string YELLOW = "\033[33m";			/* Yellow */
-	const std::string BLUE = "\033[34m";			/* Blue */
-	const std::string MAGENTA = "\033[35m";			/* Magenta */
-	const std::string CYAN = "\033[36m";			/* Cyan */
-	const std::string WHITE = "\033[37m";			/* White */
-	const std::string BOLDBLACK = "\033[1m\033[30m";	/* Bold Black */
-	const std::string BOLDRED = "\033[1m\033[31m";	/* Bold Red */
-	const std::string BOLDGREEN = "\033[1m\033[32m";	/* Bold Green */
-	const std::string BOLDYELLOW = "\033[1m\033[33m";	/* Bold Yellow */
-	const std::string BOLDBLUE = "\033[1m\033[34m";	/* Bold Blue */
-	const std::string BOLDMAGENTA = "\033[1m\033[35m";	/* Bold Magenta */
-	const std::string BOLDCYAN = "\033[1m\033[36m";	/* Bold Cyan */
-	const std::string BOLDWHITE = "\033[1m\033[37m";	/* Bold White */
+	constexpr std::string_view RESET = "\033[0m";
+	constexpr std::string_view GREY = "\033[90m";
+	constexpr std::string_view BLACK = "\033[30m";
+	constexpr std::string_view RED = "\033[31m";
+	constexpr std::string_view GREEN = "\033[32m";
+	constexpr std::string_view YELLOW = "\033[33m";
+	constexpr std::string_view BLUE = "\033[34m";
+	constexpr std::string_view MAGENTA = "\033[35m";
+	constexpr std::string_view CYAN = "\033[36m";
+	constexpr std::string_view WHITE = "\033[37m";
+
+	constexpr std::string_view BOLDGREY = "\033[1m\033[90m";
+	constexpr std::string_view BOLDBLACK = "\033[1m\033[30m";
+	constexpr std::string_view BOLDRED = "\033[1m\033[31m";
+	constexpr std::string_view BOLDGREEN = "\033[1m\033[32m";
+	constexpr std::string_view BOLDYELLOW = "\033[1m\033[33m";
+	constexpr std::string_view BOLDBLUE = "\033[1m\033[34m";
+	constexpr std::string_view BOLDMAGENTA = "\033[1m\033[35m";
+	constexpr std::string_view BOLDCYAN = "\033[1m\033[36m";
+	constexpr std::string_view BOLDWHITE = "\033[1m\033[37m";
 }
 
-const Map<ELogLevel, std::string_view> LEVEL_TO_COLOR_MAP =
+constexpr std::string_view toColor(ELogLevel level)
 {
-	{ ELogLevel::Verbose, LogColors::BLUE },
-	{ ELogLevel::Log, LogColors::WHITE },
-	{ ELogLevel::Warning, LogColors::YELLOW },
-	{ ELogLevel::Error, LogColors::RED },
-};
+	switch (level)
+	{
+		case ELogLevel::Verbose: return LogColors::GREY;
+		case ELogLevel::Log: return LogColors::WHITE;
+		case ELogLevel::Warning: return LogColors::YELLOW;
+		case ELogLevel::Error: return LogColors::RED;
+		default: return LogColors::MAGENTA;
+	}
+}
 
 void logToStream(const std::string_view& channel, ELogLevel level, const std::string_view& log, std::ostream& stream)
 {
 #if MANI_CONSOLE_APP
-	std::cout << LEVEL_TO_COLOR_MAP.get(level) << "[" << TimeSystem::getTimeFormatted() << "]" << "[" << channel << "]: " << log << LogColors::RESET << std::endl;
+	std::println("{}[{}][{}]: {}{}", toColor(level), TimeSystem::getTimeFormatted(), channel, log, LogColors::RESET);
 #else
 #if MANI_WINDOWS
 	std::stringstream ss;
-	ss << LEVEL_TO_COLOR_MAP.get(level);
+	ss << toColor(level);
 	ss << "[" << TimeSystem::getTimeFormatted() << "]" << "[" << channel << "]: " << log;
 	ss << LogColors::RESET << "\n";
 	std::string s = ss.str();
@@ -61,41 +70,30 @@ void logToStream(const std::string_view& channel, ELogLevel level, const std::st
 
 struct Logger::State
 {
-	std::mutex mutex;
-	std::mutex fileMutex;
-	Map<std::string_view, ELogLevel> channels;
 	std::ofstream fileStream;
-	bool isSuppressed = false;
+	std::atomic<bool> isSuppressed = false;
 };
 
-void Logger::log(const std::string_view& channel, ELogLevel level, const std::string_view& log)
+void Logger::log(const LogChannel& channel, ELogLevel level, const std::string_view& log)
 {
 	if (!m_state->isSuppressed)
 	{
-		std::lock_guard<std::mutex> lock(m_state->mutex);
-		ELogLevel channelLevel = m_state->channels.getOrAdd(channel, ELogLevel::Log);
-		if (level > ELogLevel::Disabled && level >= channelLevel)
+		if (level >= channel.level)
 		{
-			logToStream(channel, level, log, std::cout);
+			logToStream(channel.name, level, log, std::cout);
 		}
 	}
 
 	if (m_state->fileStream.is_open())
 	{
-		std::lock_guard<std::mutex> lock(m_state->fileMutex);
-		logToStream(channel, level, log, m_state->fileStream);
+		logToStream(channel.name, level, log, m_state->fileStream);
 	}
 }
 
-void Logger::setChannelLogLevel(const std::string_view& channel, ELogLevel logLevel)
+void Mani::Logger::setFile(const Path& path)
 {
-	std::lock_guard<std::mutex> lock(m_state->mutex);
-	m_state->channels[channel] = logLevel;
-}
+	MANI_ASSERT_APP_THREAD;
 
-void Mani::Logger::setFile(const std::filesystem::path& path)
-{
-	std::lock_guard<std::mutex> lock(m_state->fileMutex);
 	if (m_state->fileStream.is_open())
 	{
 		m_state->fileStream.close();
@@ -111,13 +109,11 @@ void Mani::Logger::setFile(const std::filesystem::path& path)
 
 void Logger::suppress()
 {
-	std::lock_guard<std::mutex> lock(m_state->mutex);
 	m_state->isSuppressed = true;
 }
 
 void Logger::unsuppress()
 {
-	std::lock_guard<std::mutex> lock(m_state->mutex);
 	m_state->isSuppressed = false;
 }
 

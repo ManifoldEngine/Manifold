@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Core/ManiTypes.h>
 #include <array>
 
 namespace Mani
@@ -51,10 +52,12 @@ namespace Mani
 			if (value)
 			{
 				word |= bit;
+				m_count++;
 			}
 			else
 			{
 				word &= ~bit;
+				m_count--;
 			}
 
 			return *this;
@@ -66,8 +69,16 @@ namespace Mani
 			{
 				m_bits[i] = 0;
 			}
+			m_count = 0;
 			return *this;
 		};
+
+		bool contains(const Bitset& rhs) const
+		{
+			return rhs.operator==(rhs & *this);
+		}
+
+		SizeT count() const { return m_count; }
 
 		bool operator==(const Bitset& rhs) const
 		{
@@ -112,6 +123,7 @@ namespace Mani
 		constexpr BitsetIndexType wordSize() const { return sizeof(BitsetIndexType) * 8; };
 		constexpr BitsetIndexType wordCount() const { return (TBits / wordSize()) + 1; };
 		std::array<BitsetIndexType, (TBits / (sizeof(BitsetIndexType) * 8)) + 1> m_bits;
+		SizeT m_count = 0;
 	};
 
 	template<BitsetIndexType TBits>
