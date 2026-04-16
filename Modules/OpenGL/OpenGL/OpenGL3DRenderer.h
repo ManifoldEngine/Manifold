@@ -23,6 +23,6 @@ namespace Mani
 		virtual void onInitialize(ECS::Registry& registry, World& world) override;
 		virtual void onDeinitialize(ECS::Registry& registry, World& world);
 
-		OpenGL3DRenderer renderer;
+		OpenGL3DRenderer m_renderer;
 	};
 }
