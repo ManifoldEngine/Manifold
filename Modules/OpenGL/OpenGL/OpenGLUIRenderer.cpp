@@ -1,6 +1,6 @@
 #include "OpenGLUIRenderer.h"
 
-#include <Core/Debug/Profiling.h>
+#include <Core/Profiling/Profiling.h>
 
 #include <OpenGL/Render/OpenGLRenderSystem.h>
 #include <OpenGL/Render/OpenGLCommand.h>
@@ -33,7 +33,7 @@ void OpenGLUIRenderer::onBegin(Mani::OpenGLRenderContext& context)
 
 void OpenGLUIRenderer::render(const OpenGLCommand& command, OpenGLRenderContext& context)
 {
-    MANI_TIME_SCOPE(RendererUI_render);
+    MANI_TIME_SCOPE("RendererUI_render");
 
     MANI_ASSERT(command.vao != nullptr, "Command with undefined resource");
     MANI_ASSERT(command.shader != nullptr, "Command with undefined resource");

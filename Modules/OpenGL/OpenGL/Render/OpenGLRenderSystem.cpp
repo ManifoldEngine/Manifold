@@ -1,7 +1,7 @@
 #include "OpenGLRenderSystem.h"
 
 #include <Core/TimeSystem.h>
-#include <Core/Debug/Profiling.h>
+#include <Core/Profiling/Profiling.h>
 #include <Core/Async/ThreadPool.h>
 
 #include <Camera/CameraSystem.h>

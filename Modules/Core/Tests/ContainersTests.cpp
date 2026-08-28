@@ -359,7 +359,7 @@ MANI_SECTION_BEGIN(List, "Containers")
             MANI_TEST_ASSERT(l[4] == 1, "Last element should be 1 after descending sort");
             
             const Mani::List<int> copy = l;
-            Mani::List<int> copySorted = copy.sort([](const int& a, const int& b) { return a < b; }); // ascending copy
+            Mani::List<int> copySorted = copy.sortCopy([](const int& a, const int& b) { return a < b; }); // ascending copy
             MANI_TEST_ASSERT(copySorted[0] == 1 && copySorted[4] == 8, "Copy sort should be ascending");
         }
 

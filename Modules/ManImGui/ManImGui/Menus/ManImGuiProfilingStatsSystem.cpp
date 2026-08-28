@@ -5,7 +5,7 @@
 #include <ManImGui/ManImGuiManifoldMenuSystem.h>
 
 #include <Core/TimeSystem.h>
-#include <Core/Debug/Profiling.h>
+#include <Core/Profiling/Profiling.h>
 #include "imgui.h"
 
 using namespace Mani;
@@ -17,7 +17,7 @@ void ManImGuiProfilingStatsSystem::onInitialize(ECS::Registry& registry, World& 
 	world.initializeDependency<TimeSystem>();
 	world.initializeDependency<ManImGuiSystem>();
 	world.initializeDependency<ManImGuiManifoldMenuSystem>();
-
+	
 	{
 		Ref<ManImGuiMenu> menu = ManImGuiStatics::Manifold::getMenu(registry);
 		menu->subMenu.addItem(PROFILER_NAME);
@@ -37,17 +37,6 @@ bool Mani::ManImGuiProfilingStatsSystem::shouldTick(const ECS::Registry& registr
 
 void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 {
-	
-	// this system might not be in the application's registry, but below it.
-	const ECS::Registry& appRegistry = Application::get().getWorld().getRegistry();
-	Ref<const ScopedTimerDatabase> database = appRegistry.findSingle<ScopedTimerDatabase>();
-	if (!database.isValid())
-	{
-		return;
-	}
-
-	const List<std::string> keys = database->scopedTimers.keys().sortCopy();
-
 	bool isOpened = true;
 	if (!ImGui::Begin("Profiling Stats", &isOpened, ImGuiWindowFlags_MenuBar))
 	{
@@ -66,33 +55,19 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 	Ref<Time> time = registry.getSingle<Time>();
 	const float fps = Math::isEqual(time->delta, 0.f) ? 0.f : 1.f / time->delta;
 	ImGui::Text(std::format("{:.3}fps, entity count {}", fps, registry.count()).c_str());
-	for (const auto& name : keys)
+	ImGui::Separator();
+	
+	List<Profiling::Record> records = Application::get().getProfiler().getLastFrameRecords();
+	records.sort([](const Profiling::Record& lhs, const Profiling::Record& rhs)
 	{
-		const auto& stats = database->scopedTimers.get(name);
+		return lhs.name.compare(rhs.name) < 0;
+	});
 
-		ImGui::Indent();
-		ImGui::Separator();
-		ImGui::Text(std::format("{}: {:.3}ms", name, stats.lastTick).c_str());
-
-		ImGui::SameLine();
-		if (ImGui::TreeNode(std::format("##tree{}", name).c_str()))
-		{
-			ImGui::Text(std::format("count: {}", stats.count).c_str());
-			ImGui::Text(std::format("min: {:.3}ms", stats.min).c_str());
-			ImGui::Text(std::format("max: {:.3}ms", stats.max).c_str());
-
-			double average = 0;
-			if (stats.count > 0)
-			{
-				average = stats.accumulator / stats.count;
-			}
-
-			ImGui::Text(std::format("average: {:.3}ms", average).c_str());
-			ImGui::Text(std::format("last value {:.3}ms", stats.lastValue).c_str());
-			ImGui::Text(std::format("per tick: {:.3}ms", stats.lastTick).c_str());
-			ImGui::TreePop();
-		}
-		ImGui::Unindent();
+	ImGui::Indent();
+	for (const auto& record : records)
+	{
+		ImGui::Text(std::format("{}: {:.3}ms", record.name, record.duration).c_str());
 	}
+	ImGui::Unindent();
 	ImGui::End();
 }

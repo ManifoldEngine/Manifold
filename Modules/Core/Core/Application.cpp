@@ -13,10 +13,6 @@
 #include <thread>
 #include <chrono>
 
-#if MANI_DEBUG
-#include <Debug/ProfilingSystem.h>
-#endif
-
 using namespace Mani;
 
 using ManiClock = std::chrono::steady_clock;
@@ -48,16 +44,12 @@ Application::Application()
 	s_application = this;
 
 	m_threadId = Mani::thisThreadId();
-	
+
 	m_config = loadConfig();
 
 	m_threadPool.start(m_config.threadPoolSize);
 
 	m_world.initialize();
-
-#if MANI_DEBUG
-	m_world.createSystem<ProfilingSystem>();
-#endif
 }
 
 Application::~Application()
@@ -66,9 +58,6 @@ Application::~Application()
 
 	m_world.deinitialize();
 
-#if MANI_DEBUG
-	m_world.destroySystem<ProfilingSystem>();
-#endif
 	s_application = nullptr;
 }
 
@@ -103,4 +92,8 @@ void Application::tick()
 {
 	m_world.tick();
 	m_deferred.resolve();
+
+#if MANI_PROFILING
+	m_profiler.collectRecords();
+#endif
 }

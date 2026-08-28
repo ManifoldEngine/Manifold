@@ -1,6 +1,6 @@
 #include "ManImGuiRenderSystem.h"
 
-#include <Core/Debug/Profiling.h>
+#include <Core/Profiling/Profiling.h>
 
 #include <OpenGL/OpenGLWindowContext.h>
 #include <OpenGL/Render/OpenGLRenderSystem.h>

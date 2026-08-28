@@ -246,7 +246,7 @@ namespace Mani
 		}
 
 		template<typename TPredicate = bool(const T&, const T&)>
-		[[nodiscard]] List<T> sort(TPredicate&& f) const
+		[[nodiscard]] List<T> sortCopy(TPredicate&& f) const
 		{
 			List<T> copy = *this;
 			std::sort(copy.begin(), copy.end(), [&f](const T& lhs, const T& rhs)
@@ -283,7 +283,7 @@ namespace Mani
 			return &m_data.front();
 		}
 
-		[[nodiscard]] T& lastPtr()
+		[[nodiscard]] T* lastPtr()
 		{
 			if (isEmpty())
 			{

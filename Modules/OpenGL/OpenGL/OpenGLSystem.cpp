@@ -6,7 +6,7 @@
 #include <Core/Application.h>
 #include <Core/Log.h>
 #include <Core/ManiAssert.h>
-#include <Core/Debug/Profiling.h>
+#include <Core/Profiling/Profiling.h>
 
 #include <Resources/Resources.h>
 #include <Resources/ResourceSystem.h>
