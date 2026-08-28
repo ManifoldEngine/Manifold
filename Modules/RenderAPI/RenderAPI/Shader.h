@@ -33,7 +33,6 @@ namespace Mani
 		constexpr std::string_view MANI_COLOR		= "mani_color";
 
 		constexpr std::string_view MANI_SPRITE_TEXTURE		= "mani_sprite_texture";
-		constexpr std::string_view MANI_SPRITE_TPU			= "mani_sprite_tpu";
 		constexpr std::string_view MANI_SPRITE_WORLD_SIZE	= "mani_sprite_world_size";
 		constexpr std::string_view MANI_SPRITE_TEXTURE_SIZE = "mani_sprite_texture_size";
 	}

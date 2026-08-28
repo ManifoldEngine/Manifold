@@ -15,15 +15,14 @@ namespace Mani
 		{
 		public:
 			BasePinnedView() = default;
-			BasePinnedView(TRegistry& registry) :
-				m_registry(&registry)
+			BasePinnedView(TRegistry& registry) : m_registry(&registry)
 			{
 				m_mask = registry.getMask<Ts...>();
 				(tryAdd<Ts>(m_pools, registry), ...);
 
 				m_pools.sort([](const Registry::IComponentPool* lhs, const Registry::IComponentPool* rhs)
 				{
-					return lhs->count() < rhs->count();
+					return lhs->bound() < rhs->bound();
 				});
 			};
 
@@ -40,7 +39,7 @@ namespace Mani
 					{
 						const Registry::IComponentPool* pool = view.m_pools.first();
 						m_indices = &pool->getDenseIndices();
-						m_count = pool->count();
+						m_bound = pool->bound();
 					}
 				}
 
@@ -68,15 +67,11 @@ namespace Mani
 
 				Iterator& operator++()
 				{
-					for (m_index += 1; m_index < m_count; m_index++)
+					for (m_index += 1; m_index < m_bound; m_index++)
 					{
-						const ECS::Index index = static_cast<ECS::Index>(m_indices->at(m_index));
-						if (const ECS::Entity* entity = m_registry->getEntityAt(index))
+						if (isValid())
 						{
-							if (entity->pinned.contains(m_mask))
-							{
-								return *this;
-							}
+							return *this;
 						}
 					}
 					return *this;
@@ -84,23 +79,39 @@ namespace Mani
 
 				ECS::EntityId getEntityId() const
 				{
-					MANI_ASSERT(isValidIndex(), "out of bouds");
+					if (!isValid())
+					{
+						return ECS::INVALID_ID;
+					}
 					return m_registry->getEntityAt(static_cast<ECS::Index>(m_indices->at(m_index)))->getId();
 				}
 
-				bool isValidIndex() const
+				bool isValid() const
 				{
-					return m_index < m_count 
-						&& m_registry
-						   ->getEntityAt(static_cast<ECS::Index>(m_indices->at(m_index)))
-						   ->pinned.contains(m_mask);
+					if (m_index >= m_bound)
+					{
+						return false;
+					}
+
+					const SizeT denseIndex = m_indices->at(m_index);
+					if (denseIndex == INDEX_NONE) 
+					{
+						return false;
+					}
+
+					if (const ECS::Entity* entity = m_registry->getEntityAt(static_cast<ECS::Index>(denseIndex)))
+					{
+						return entity->pinned.contains(m_mask);
+					}
+
+					return false;
 				}
 
 			private:
 				TRegistry* m_registry = nullptr;
 				const Mani::Array<SizeT, ECS::PINNED_COMPONENTS_CAPACITY>* m_indices = nullptr;
 				ECS::ComponentMask m_mask;
-				SizeT m_count = 0;
+				SizeT m_bound = 0;
 				SizeT m_index = INDEX_NONE;
 
 				static inline constexpr std::string_view MATCHING_VIEWS_MESSAGE = "Comparing iterators from different views";
@@ -109,22 +120,24 @@ namespace Mani
 			Iterator begin() const
 			{
 				Iterator it(*this, 0);
-				const SizeT n = count();
-				for (SizeT i = 0; i < n; i++)
+				if (count() > 0 && !it.isValid())
 				{
-					if (it.isValidIndex())
-					{
-						break;
-					}
-					++it;
+					++it;	
 				}
-				
 				return it;
 			}
 
 			Iterator end() const
 			{
-				return Iterator(*this, count());
+				if (auto* poolPtr = m_pools.firstPtr())
+				{
+					const Registry::IComponentPool* pool = *poolPtr;
+					if (pool->count() > 0)
+					{
+						return Iterator(*this, pool->bound());
+					}
+				}
+				return Iterator(*this, 0);
 			}
 
 			TRegistry& getRegistry() const

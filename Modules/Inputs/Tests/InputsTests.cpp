@@ -29,15 +29,15 @@ public:
             .hint = EInputHints::Gamepad_Left_Stick,
 		});
 
-		aButtonId = InputsStatics::generateNextControlId(registry);
-		bButtonId = InputsStatics::generateNextControlId(registry);
+		aButtonId = Inputs::generateNextControlId(registry);
+		bButtonId = Inputs::generateNextControlId(registry);
 
-		dpadLeftId = InputsStatics::generateNextControlId(registry);
-		dpadUpId = InputsStatics::generateNextControlId(registry);
-		dpadDownId = InputsStatics::generateNextControlId(registry);
-		dpadRightId = InputsStatics::generateNextControlId(registry);
+		dpadLeftId = Inputs::generateNextControlId(registry);
+		dpadUpId = Inputs::generateNextControlId(registry);
+		dpadDownId = Inputs::generateNextControlId(registry);
+		dpadRightId = Inputs::generateNextControlId(registry);
 		
-		leftJoystickId = InputsStatics::generateNextControlId(registry);
+		leftJoystickId = Inputs::generateNextControlId(registry);
 
         device->buttonHints = {
             { EInputHints::Gamepad_Bottom_FaceButton, aButtonId },
@@ -121,13 +121,13 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 
 		const ECS::EntityId userId = registry.create();
 		registry.add<InputUser>(userId);
-		InputsStatics::assignDevice(registry, userId, controller.getDeviceId());
-		InputsStatics::addAction(registry, userId, "punch", controller.aButtonId);
+		Inputs::assignDevice(registry, userId, controller.getDeviceId());
+		Inputs::addAction(registry, userId, "punch", controller.aButtonId);
 
 		world.tick();
 
 		{
-			const InputAction& action = InputsStatics::getAction(registry, userId, "punch");
+			const InputAction& action = Inputs::getAction(registry, userId, "punch");
 			MANI_TEST_ASSERT(!action.released() && !action.pressed() && !action.held() && !action.changed(), "action should not have been pressed");
 		}
 
@@ -135,14 +135,14 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		world.tick();
 
 		{
-			const InputAction& action = InputsStatics::getAction(registry, userId, "punch");
+			const InputAction& action = Inputs::getAction(registry, userId, "punch");
 			MANI_TEST_ASSERT(action.pressed(), "action should have been pressed");
 		}
 
 		world.tick();
 
 		{
-			const InputAction& action = InputsStatics::getAction(registry, userId, "punch");
+			const InputAction& action = Inputs::getAction(registry, userId, "punch");
 			MANI_TEST_ASSERT(action.held(), "action should be held");
 		}
 
@@ -150,14 +150,14 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		world.tick();
 
 		{
-			const InputAction& action = InputsStatics::getAction(registry, userId, "punch");
+			const InputAction& action = Inputs::getAction(registry, userId, "punch");
 			MANI_TEST_ASSERT(action.released(), "action should have been released");
 		}
 
 		world.tick();
 
 		{
-			const InputAction& action = InputsStatics::getAction(registry, userId, "punch");
+			const InputAction& action = Inputs::getAction(registry, userId, "punch");
 			MANI_TEST_ASSERT(!action.released() && !action.pressed() && !action.held() && !action.changed(), "action should not have been released");
 		}
 	}
@@ -172,12 +172,12 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         const ECS::EntityId userId = registry.create();
         registry.add<InputUser>(userId);
 
-        InputsStatics::addAction(registry, userId, "jump");
+        Inputs::addAction(registry, userId, "jump");
         Ref<InputUser> user = registry.get<InputUser>(userId);
         
         MANI_TEST_ASSERT(user->actions.findIf([](const InputAction& action) { return action.name == "jump"; }), "action added");
 
-        InputsStatics::removeAction(registry, userId, "jump");
+        Inputs::removeAction(registry, userId, "jump");
         Ref<InputUser> user2 = registry.get<InputUser>(userId);
         MANI_TEST_ASSERT(!user2->actions.findIf([](const InputAction& action) { return action.name == "jump"; }), "action removed");
     }
@@ -194,21 +194,21 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 
         const ECS::EntityId userId = registry.create();
         registry.add<InputUser>(userId);
-        InputsStatics::assignDevice(registry, userId, controller.getDeviceId());
-        InputsStatics::addAction(registry, userId, "dash");
+        Inputs::assignDevice(registry, userId, controller.getDeviceId());
+        Inputs::addAction(registry, userId, "dash");
 
-        InputsStatics::bindAction(registry, userId, "dash", controller.bButtonId);
+        Inputs::bindAction(registry, userId, "dash", controller.bButtonId);
 
         controller.press(controller.bButtonId);
         world.tick();
-        MANI_TEST_ASSERT(InputsStatics::getAction(registry, userId, "dash").pressed(), "responds when bound");
+        MANI_TEST_ASSERT(Inputs::getAction(registry, userId, "dash").pressed(), "responds when bound");
 
-        InputsStatics::unbindAction(registry, userId, "dash", controller.bButtonId);
+        Inputs::unbindAction(registry, userId, "dash", controller.bButtonId);
         controller.release(controller.bButtonId);
         world.tick();
         controller.press(controller.bButtonId);
         world.tick();
-        MANI_TEST_ASSERT(!InputsStatics::getAction(registry, userId, "dash").pressed(), "doesn't respond after unbind");
+        MANI_TEST_ASSERT(!Inputs::getAction(registry, userId, "dash").pressed(), "doesn't respond after unbind");
     }
 
     MANI_TEST(BindActionAxis, "Should bind dpad to axis values")
@@ -223,20 +223,20 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 
         const ECS::EntityId userId = registry.create();
         registry.add<InputUser>(userId);
-        InputsStatics::assignDevice(registry, userId, controller.getDeviceId());
-        InputsStatics::addAction(registry, userId, "move");
+        Inputs::assignDevice(registry, userId, controller.getDeviceId());
+        Inputs::addAction(registry, userId, "move");
 
-        InputsStatics::bindActionAxis(registry, userId, "move", EInputAxis::Up, controller.dpadUpId);
-        InputsStatics::bindActionAxis(registry, userId, "move", EInputAxis::Down, controller.dpadDownId);
+        Inputs::bindActionAxis(registry, userId, "move", EInputAxis::Up, controller.dpadUpId);
+        Inputs::bindActionAxis(registry, userId, "move", EInputAxis::Down, controller.dpadDownId);
 
         controller.press(controller.dpadUpId);
         world.tick();
-        MANI_TEST_ASSERT(InputsStatics::getAction(registry, userId, "move").y > 0.0f, "up positive");
+        MANI_TEST_ASSERT(Inputs::getAction(registry, userId, "move").y > 0.0f, "up positive");
 
         controller.release(controller.dpadUpId);
         controller.press(controller.dpadDownId);
         world.tick();
-        MANI_TEST_ASSERT(InputsStatics::getAction(registry, userId, "move").y < 0.0f, "down negative");
+        MANI_TEST_ASSERT(Inputs::getAction(registry, userId, "move").y < 0.0f, "down negative");
     }
 
     MANI_TEST(AssignDeviceByName, "Should assign and unassign a device by name")
@@ -251,11 +251,11 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         const ECS::EntityId userId = registry.create();
         registry.add<InputUser>(userId);
 
-        InputsStatics::assignDevice(registry, userId, "Virtual Controller");
+        Inputs::assignDevice(registry, userId, "Virtual Controller");
         Ref<InputUser> user = registry.get<InputUser>(userId);
         MANI_TEST_ASSERT(!user->inputDevices.isEmpty(), "assigned by name");
 
-        InputsStatics::unassignDevice(registry, userId, "Virtual Controller");
+        Inputs::unassignDevice(registry, userId, "Virtual Controller");
         Ref<InputUser> user2 = registry.get<InputUser>(userId);
         MANI_TEST_ASSERT(user2->inputDevices.isEmpty(), "unassigned by name");
     }
@@ -270,7 +270,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         ECS::Registry& registry = world.getMutableRegistry();
         VirtualController controller(registry);
 
-        ECS::EntityId found = InputsStatics::findDeviceByName(registry, "Virtual Controller");
+        ECS::EntityId found = Inputs::findDeviceByName(registry, "Virtual Controller");
         MANI_TEST_ASSERT(found == controller.getDeviceId(), "found correct device");
     }
 
@@ -282,9 +282,9 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         world.createSystem<InputSystem>();
 
         ECS::Registry& registry = world.getMutableRegistry();
-        ControlId a = InputsStatics::generateNextControlId(registry);
-        ControlId b = InputsStatics::generateNextControlId(registry);
-        ControlId c = InputsStatics::generateNextControlId(registry);
+        ControlId a = Inputs::generateNextControlId(registry);
+        ControlId b = Inputs::generateNextControlId(registry);
+        ControlId c = Inputs::generateNextControlId(registry);
 
         MANI_TEST_ASSERT(a != b && b != c && a != c, "unique ids");
 	}
@@ -303,17 +303,17 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         registry.add<InputUser>(userId);
 
         // Assign device
-        InputsStatics::assignDevice(registry, userId, controller.getDeviceId());
+        Inputs::assignDevice(registry, userId, controller.getDeviceId());
 
         // Add two actions bound to two different buttons
-        InputsStatics::addAction(registry, userId, "attack", controller.aButtonId);
-        InputsStatics::addAction(registry, userId, "jump", controller.bButtonId);
+        Inputs::addAction(registry, userId, "attack", controller.aButtonId);
+        Inputs::addAction(registry, userId, "jump", controller.bButtonId);
 
         // Initial tick — both idle
         world.tick();
         {
-            const InputAction& attack = InputsStatics::getAction(registry, userId, "attack");
-            const InputAction& jump = InputsStatics::getAction(registry, userId, "jump");
+            const InputAction& attack = Inputs::getAction(registry, userId, "attack");
+            const InputAction& jump = Inputs::getAction(registry, userId, "jump");
 
             MANI_TEST_ASSERT(!attack.pressed() && !jump.pressed(), "both actions initially idle");
         }
@@ -324,8 +324,8 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         world.tick();
 
         {
-            const InputAction& attack = InputsStatics::getAction(registry, userId, "attack");
-            const InputAction& jump = InputsStatics::getAction(registry, userId, "jump");
+            const InputAction& attack = Inputs::getAction(registry, userId, "attack");
+            const InputAction& jump = Inputs::getAction(registry, userId, "jump");
 
             MANI_TEST_ASSERT(attack.pressed(), "attack action pressed");
             MANI_TEST_ASSERT(jump.pressed(), "jump action pressed");
@@ -334,8 +334,8 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         // Next frame: both should be held
         world.tick();
         {
-            const InputAction& attack = InputsStatics::getAction(registry, userId, "attack");
-            const InputAction& jump = InputsStatics::getAction(registry, userId, "jump");
+            const InputAction& attack = Inputs::getAction(registry, userId, "attack");
+            const InputAction& jump = Inputs::getAction(registry, userId, "jump");
 
             MANI_TEST_ASSERT(attack.held(), "attack held");
             MANI_TEST_ASSERT(jump.held(), "jump held");
@@ -346,8 +346,8 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         controller.release(controller.bButtonId);
         world.tick();
         {
-            const InputAction& attack = InputsStatics::getAction(registry, userId, "attack");
-            const InputAction& jump = InputsStatics::getAction(registry, userId, "jump");
+            const InputAction& attack = Inputs::getAction(registry, userId, "attack");
+            const InputAction& jump = Inputs::getAction(registry, userId, "jump");
 
             MANI_TEST_ASSERT(attack.released(), "attack released");
             MANI_TEST_ASSERT(jump.released(), "jump released");
@@ -356,8 +356,8 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         // One more tick to ensure reset to idle
         world.tick();
         {
-            const InputAction& attack = InputsStatics::getAction(registry, userId, "attack");
-            const InputAction& jump = InputsStatics::getAction(registry, userId, "jump");
+            const InputAction& attack = Inputs::getAction(registry, userId, "attack");
+            const InputAction& jump = Inputs::getAction(registry, userId, "jump");
 
             MANI_TEST_ASSERT(!attack.pressed() && !attack.held() && !attack.released(), "attack idle again");
             MANI_TEST_ASSERT(!jump.pressed() && !jump.held() && !jump.released(), "jump idle again");
@@ -375,12 +375,12 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         VirtualController controller(registry);
         const ECS::EntityId userId = registry.create();
         registry.add<InputUser>(userId);
-        InputsStatics::assignDevice(registry, userId, controller.getDeviceId());
+        Inputs::assignDevice(registry, userId, controller.getDeviceId());
 
         // Resolve known hints
-        ControlId aHint = InputsStatics::resolveHint(registry, userId, EInputHints::Gamepad_Bottom_FaceButton);
-        ControlId bHint = InputsStatics::resolveHint(registry, userId, EInputHints::Gamepad_Right_FaceButton);
-        ControlId dpadUpHint = InputsStatics::resolveHint(registry, userId, EInputHints::Gamepad_DPad_Up);
+        ControlId aHint = Inputs::resolveHint(registry, userId, EInputHints::Gamepad_Bottom_FaceButton);
+        ControlId bHint = Inputs::resolveHint(registry, userId, EInputHints::Gamepad_Right_FaceButton);
+        ControlId dpadUpHint = Inputs::resolveHint(registry, userId, EInputHints::Gamepad_DPad_Up);
 
         MANI_TEST_ASSERT(aHint == controller.aButtonId, "resolved A button correctly");
         MANI_TEST_ASSERT(bHint == controller.bButtonId, "resolved B button correctly");
@@ -398,24 +398,24 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         VirtualController controller(registry);
         const ECS::EntityId userId = registry.create();
         registry.add<InputUser>(userId);
-        InputsStatics::assignDevice(registry, userId, controller.getDeviceId());
+        Inputs::assignDevice(registry, userId, controller.getDeviceId());
 
         // Add and bind action via hint
-        InputsStatics::addAction(registry, userId, "shoot", EInputHints::Gamepad_Bottom_FaceButton);
+        Inputs::addAction(registry, userId, "shoot", EInputHints::Gamepad_Bottom_FaceButton);
 
         // Should not yet be pressed
         world.tick();
-        MANI_TEST_ASSERT(!InputsStatics::getAction(registry, userId, "shoot").pressed(), "not pressed initially");
+        MANI_TEST_ASSERT(!Inputs::getAction(registry, userId, "shoot").pressed(), "not pressed initially");
 
         // Press A button → should resolve via hint
         controller.press(controller.aButtonId);
         world.tick();
-        MANI_TEST_ASSERT(InputsStatics::getAction(registry, userId, "shoot").pressed(), "pressed via hint binding");
+        MANI_TEST_ASSERT(Inputs::getAction(registry, userId, "shoot").pressed(), "pressed via hint binding");
 
         // Release → should show as released
         controller.release(controller.aButtonId);
         world.tick();
-        MANI_TEST_ASSERT(InputsStatics::getAction(registry, userId, "shoot").released(), "released via hint binding");
+        MANI_TEST_ASSERT(Inputs::getAction(registry, userId, "shoot").released(), "released via hint binding");
     }
 
     MANI_TEST(UnbindActionWithHint, "Should stop responding after unbinding by hint")
@@ -429,22 +429,22 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         VirtualController controller(registry);
         const ECS::EntityId userId = registry.create();
         registry.add<InputUser>(userId);
-        InputsStatics::assignDevice(registry, userId, controller.getDeviceId());
+        Inputs::assignDevice(registry, userId, controller.getDeviceId());
 
-        InputsStatics::addAction(registry, userId, "block", EInputHints::Gamepad_Right_FaceButton);
+        Inputs::addAction(registry, userId, "block", EInputHints::Gamepad_Right_FaceButton);
 
         controller.press(controller.bButtonId);
         world.tick();
-        MANI_TEST_ASSERT(InputsStatics::getAction(registry, userId, "block").pressed(), "pressed before unbind");
+        MANI_TEST_ASSERT(Inputs::getAction(registry, userId, "block").pressed(), "pressed before unbind");
 
-        InputsStatics::unbindAction(registry, userId, "block", EInputHints::Gamepad_Right_FaceButton);
+        Inputs::unbindAction(registry, userId, "block", EInputHints::Gamepad_Right_FaceButton);
         controller.release(controller.bButtonId);
         world.tick();
 
         // Press again — should not trigger anymore
         controller.press(controller.bButtonId);
         world.tick();
-        MANI_TEST_ASSERT(!InputsStatics::getAction(registry, userId, "block").pressed(), "no response after unbind");
+        MANI_TEST_ASSERT(!Inputs::getAction(registry, userId, "block").pressed(), "no response after unbind");
     }
 
     MANI_TEST(BindActionAxisWithHint, "Should bind an axis direction using input hints")
@@ -458,20 +458,20 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         VirtualController controller(registry);
         const ECS::EntityId userId = registry.create();
         registry.add<InputUser>(userId);
-        InputsStatics::assignDevice(registry, userId, controller.getDeviceId());
+        Inputs::assignDevice(registry, userId, controller.getDeviceId());
 
-        InputsStatics::addAction(registry, userId, "move");
-        InputsStatics::bindActionAxis(registry, userId, "move", EInputAxis::Up, EInputHints::Gamepad_DPad_Up);
-        InputsStatics::bindActionAxis(registry, userId, "move", EInputAxis::Down, EInputHints::Gamepad_DPad_Down);
+        Inputs::addAction(registry, userId, "move");
+        Inputs::bindActionAxis(registry, userId, "move", EInputAxis::Up, EInputHints::Gamepad_DPad_Up);
+        Inputs::bindActionAxis(registry, userId, "move", EInputAxis::Down, EInputHints::Gamepad_DPad_Down);
 
         controller.press(controller.dpadUpId);
         world.tick();
-        MANI_TEST_ASSERT(InputsStatics::getAction(registry, userId, "move").y > 0.0f, "move up positive via hint");
+        MANI_TEST_ASSERT(Inputs::getAction(registry, userId, "move").y > 0.0f, "move up positive via hint");
 
         controller.release(controller.dpadUpId);
         controller.press(controller.dpadDownId);
         world.tick();
-        MANI_TEST_ASSERT(InputsStatics::getAction(registry, userId, "move").y < 0.0f, "move down negative via hint");
+        MANI_TEST_ASSERT(Inputs::getAction(registry, userId, "move").y < 0.0f, "move down negative via hint");
     }
 
     MANI_TEST(AddActionWithHint, "Should add and bind in one call using hint")
@@ -485,18 +485,18 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         VirtualController controller(registry);
         const ECS::EntityId userId = registry.create();
         registry.add<InputUser>(userId);
-        InputsStatics::assignDevice(registry, userId, controller.getDeviceId());
+        Inputs::assignDevice(registry, userId, controller.getDeviceId());
 
-        InputsStatics::addAction(registry, userId, "jump", EInputHints::Gamepad_Bottom_FaceButton);
+        Inputs::addAction(registry, userId, "jump", EInputHints::Gamepad_Bottom_FaceButton);
 
         controller.press(controller.aButtonId);
         world.tick();
 
-        MANI_TEST_ASSERT(InputsStatics::getAction(registry, userId, "jump").pressed(), "auto-bound action responds correctly");
+        MANI_TEST_ASSERT(Inputs::getAction(registry, userId, "jump").pressed(), "auto-bound action responds correctly");
 
         controller.release(controller.aButtonId);
         world.tick();
-        MANI_TEST_ASSERT(InputsStatics::getAction(registry, userId, "jump").released(), "released correctly");
+        MANI_TEST_ASSERT(Inputs::getAction(registry, userId, "jump").released(), "released correctly");
     }
 
     MANI_TEST(AddActionWithHintBeforeDeviceAssignment, "Should add an action with hint before assigning device, then respond correctly after assignment")
@@ -513,25 +513,25 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         registry.add<InputUser>(userId);
 
         // Step 1: Add action with hint BEFORE assigning device
-        InputsStatics::addAction(registry, userId, "shoot", EInputHints::Gamepad_Bottom_FaceButton);
+        Inputs::addAction(registry, userId, "shoot", EInputHints::Gamepad_Bottom_FaceButton);
 
         // Step 2: Verify that action exists but is not pressed
-        MANI_TEST_ASSERT(!InputsStatics::getAction(registry, userId, "shoot").pressed(), "action exists but not pressed before device assignment");
+        MANI_TEST_ASSERT(!Inputs::getAction(registry, userId, "shoot").pressed(), "action exists but not pressed before device assignment");
 
         // Step 3: Assign the virtual controller device
-        InputsStatics::assignDevice(registry, userId, controller.getDeviceId());
+        Inputs::assignDevice(registry, userId, controller.getDeviceId());
 
         // Step 4: Press the button corresponding to the hint
         controller.press(controller.aButtonId);
         world.tick();
 
         // Step 5: Verify the action responds
-        MANI_TEST_ASSERT(InputsStatics::getAction(registry, userId, "shoot").pressed(), "action responds after device assignment");
+        MANI_TEST_ASSERT(Inputs::getAction(registry, userId, "shoot").pressed(), "action responds after device assignment");
 
         // Step 6: Release button and verify released state
         controller.release(controller.aButtonId);
         world.tick();
-        MANI_TEST_ASSERT(InputsStatics::getAction(registry, userId, "shoot").released(), "action released correctly after device assignment");
+        MANI_TEST_ASSERT(Inputs::getAction(registry, userId, "shoot").released(), "action released correctly after device assignment");
     }
 }
 MANI_SECTION_END(Inputs)

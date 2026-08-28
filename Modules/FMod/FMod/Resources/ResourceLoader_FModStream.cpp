@@ -14,10 +14,10 @@ bool ResourceLoader_FModStream::load(ECS::Registry& registry, const Path& absolu
 {
     Ref<FMod> fmod = registry.getSingle<FMod>();
     
-    Ref<Resource<FModStream>> resource = registry.get<Resource<FModStream>>(resourceId);
+    Resource<FModStream>& resource = registry.getPinned<Resource<FModStream>>(resourceId);
     
 
-    FMOD_RESULT result = fmod->system->createStream(absolutePath.string().c_str(), FMOD_DEFAULT, 0, &(resource->value.sound));
+    FMOD_RESULT result = fmod->system->createStream(absolutePath.string().c_str(), FMOD_DEFAULT, 0, &(resource.value.sound));
     const bool success = result != FMOD_OK;
     if (!success)
     {
@@ -30,7 +30,7 @@ bool ResourceLoader_FModStream::load(ECS::Registry& registry, const Path& absolu
 void ResourceLoader_FModStream::postLoad(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const
 {
     // add the FModSound resource so it can be processed like a normal sound.
-    Ref<Resource<FModStream>> resource = registry.get<Resource<FModStream>>(resourceId);
-    Ref<Resource<FModSound>> soundResource = registry.add<Resource<FModSound>>(resourceId);
-    soundResource->value.sound = resource->value.sound;
+    Resource<FModStream>& resource = registry.getPinned<Resource<FModStream>>(resourceId);
+    Resource<FModSound>& soundResource = registry.addPinned<Resource<FModSound>>(resourceId);
+    soundResource.value.sound = resource.value.sound;
 }

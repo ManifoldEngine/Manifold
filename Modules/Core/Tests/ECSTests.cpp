@@ -807,6 +807,39 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			registry.addPinned<B>(e);
 			// registry.add<B>(e); asserts
 		}
+
+		MANI_TEST(ShouldHandleIteratingOverDeletedComponents, "Should be able to iterate over deleted components")
+		{
+			struct A { int value = 0; };
+
+			ECS::Registry registry;
+
+			for (SizeT i = 0; i < 10; i++)
+			{
+				ECS::EntityId e = registry.create();
+				registry.addPinned<A>(e, 420);
+			}
+			// created entities: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+
+			// destroy the first non-singleton entity
+			registry.destroy(ECS::calculateId(ECS::Version{ 0 }, ECS::Index{ 1 }));
+
+			for (ECS::Index idx = 3; idx < 8; idx++)
+			{
+				registry.destroy(ECS::calculateId(ECS::Version{ 0 }, idx));
+			}
+
+			// remaining entities: x, 2, x, x, x, x, x, 8, 9, 10
+
+			SizeT count = 0;
+			for (const auto [e, a] : ECS::ConstPinnedView<A>(registry))
+			{
+				count++;
+				MANI_TEST_ASSERT(a.value == 420, "value should be correct");
+			}
+
+			MANI_TEST_ASSERT(count == 4, "4 entities with pinned components should remain");
+		}
 	}
 	MANI_SECTION_END(Pinned)
 

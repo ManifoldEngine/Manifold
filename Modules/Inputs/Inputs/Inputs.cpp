@@ -28,13 +28,13 @@ void resolvePendingBindingRequests(ECS::Registry& registry, ECS::EntityId entity
 	for (int index = static_cast<int>(requests.count() - 1); index >= 0; --index)
 	{
 		const PendingBindingRequest& request = requests[index];
-		const ControlId controlId = InputsStatics::resolveHint(registry, entityId, request.hint);
+		const ControlId controlId = Inputs::resolveHint(registry, entityId, request.hint);
 		if (controlId == INVALID_CONTROL_ID)
 		{
 			continue;
 		}
 		
-		InputsStatics::bindAction(registry, entityId, request.action, controlId);
+		Inputs::bindAction(registry, entityId, request.action, controlId);
 		requests.removeAt(index);
 	}
 }
@@ -46,18 +46,18 @@ void resolvePendingButtonToAxisBindings(ECS::Registry& registry, ECS::EntityId e
 	for (int index = static_cast<int>(requests.count() - 1); index >= 0; --index)
 	{
 		const PendingAxisBindingRequest& request = requests[index];
-		const ControlId controlId = InputsStatics::resolveHint(registry, entityId, request.hint);
+		const ControlId controlId = Inputs::resolveHint(registry, entityId, request.hint);
 		if (controlId == INVALID_CONTROL_ID)
 		{
 			continue;
 		}
 
-		InputsStatics::bindActionAxis(registry, entityId, request.action, request.axis, controlId);
+		Inputs::bindActionAxis(registry, entityId, request.action, request.axis, controlId);
 		requests.removeAt(index);
 	}
 }
 
-ControlId InputsStatics::resolveHint(const ECS::Registry& registry, ECS::EntityId entityId, EInputHints hint)
+ControlId Inputs::resolveHint(const ECS::Registry& registry, ECS::EntityId entityId, EInputHints hint)
 {
 	ControlId result = INVALID_CONTROL_ID;
 	Ref<const InputUser> inputUser = registry.get<InputUser>(entityId);
@@ -83,7 +83,7 @@ ControlId InputsStatics::resolveHint(const ECS::Registry& registry, ECS::EntityI
 	return result;
 }
 
-void InputsStatics::addAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& actionName)
+void Inputs::addAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& actionName)
 {
 	Ref<InputUser> inputUser = registry.get<InputUser>(entityId);
 	MANI_ASSERT(resolveActionName(*inputUser, actionName) == INVALID_INPUT_ACTION_ID, "There's already an action with this name");
@@ -95,7 +95,7 @@ void InputsStatics::addAction(ECS::Registry& registry, ECS::EntityId entityId, c
 	inputUser->actions.add(action);
 }
 
-void InputsStatics::removeAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action)
+void Inputs::removeAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action)
 {
 	Ref<InputUser> inputUser = registry.get<InputUser>(entityId);
 	const ActionId actionId = resolveActionName(*inputUser, action);
@@ -103,19 +103,19 @@ void InputsStatics::removeAction(ECS::Registry& registry, ECS::EntityId entityId
 	inputUser->actions.removeAt(actionId);
 }
 
-void InputsStatics::bindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, ControlId controlId)
+void Inputs::bindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, ControlId controlId)
 {
 	Ref<InputUser> inputUser = registry.get<InputUser>(entityId);
 	inputUser->bindings[controlId].addUnique(resolveActionNameChecked(*inputUser, action));
 }
 
-void InputsStatics::unbindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, ControlId controlId)
+void Inputs::unbindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, ControlId controlId)
 {
 	Ref<InputUser> inputUser = registry.get<InputUser>(entityId);
 	inputUser->bindings[controlId].remove(resolveActionNameChecked(*inputUser, action));
 }
 
-void InputsStatics::bindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputHints hint)
+void Inputs::bindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputHints hint)
 {
 	const ControlId controlId = resolveHint(registry, entityId, hint);
 	if (controlId == INVALID_CONTROL_ID)
@@ -128,7 +128,7 @@ void InputsStatics::bindAction(ECS::Registry& registry, ECS::EntityId entityId, 
 	bindAction(registry, entityId, action, controlId);
 }
 
-void InputsStatics::unbindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputHints hint)
+void Inputs::unbindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputHints hint)
 {
 	const ControlId controlId = resolveHint(registry, entityId, hint);
 	if (controlId == INVALID_CONTROL_ID)
@@ -141,7 +141,7 @@ void InputsStatics::unbindAction(ECS::Registry& registry, ECS::EntityId entityId
 	unbindAction(registry, entityId, action, controlId);
 }
 
-void InputsStatics::bindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, ControlId controlId)
+void Inputs::bindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, ControlId controlId)
 {
 	Ref<InputUser> inputUser = registry.get<InputUser>(entityId);
 	const ActionId actionId = resolveActionNameChecked(*inputUser, action);
@@ -153,14 +153,14 @@ void InputsStatics::bindActionAxis(ECS::Registry& registry, ECS::EntityId entity
 	bindings.add({ axis, actionId });
 }
 
-void InputsStatics::unbindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, ControlId controlId)
+void Inputs::unbindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, ControlId controlId)
 {
 	Ref<InputUser> inputUser = registry.get<InputUser>(entityId);
 	const ActionId actionId = resolveActionNameChecked(*inputUser, action);
 	inputUser->buttonToAxisBindings[controlId].removeIf([&](const AxisActionBinding& binding) { return binding.axis == axis && binding.actionId == actionId; });
 }
 
-void InputsStatics::bindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, EInputHints hint)
+void Inputs::bindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, EInputHints hint)
 {
 	const ControlId controlId = resolveHint(registry, entityId, hint);
 	if (controlId == INVALID_CONTROL_ID)
@@ -173,7 +173,7 @@ void InputsStatics::bindActionAxis(ECS::Registry& registry, ECS::EntityId entity
 	bindActionAxis(registry, entityId, action, axis, controlId);
 }
 
-void InputsStatics::unbindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, EInputHints hint)
+void Inputs::unbindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, EInputHints hint)
 {
 	const ControlId controlId = resolveHint(registry, entityId, hint);
 	if (controlId == INVALID_CONTROL_ID)
@@ -186,25 +186,25 @@ void InputsStatics::unbindActionAxis(ECS::Registry& registry, ECS::EntityId enti
 	unbindActionAxis(registry, entityId, action, axis, controlId);
 }
 
-InputAction& InputsStatics::getAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action)
+InputAction& Inputs::getAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action)
 {
 	Ref<InputUser> inputUser = registry.get<InputUser>(entityId);
 	return inputUser->actions[resolveActionNameChecked(*inputUser, action)];
 }
 
-const InputAction& InputsStatics::getAction(const ECS::Registry& registry, ECS::EntityId entityId, const std::string& action)
+const InputAction& Inputs::getAction(const ECS::Registry& registry, ECS::EntityId entityId, const std::string& action)
 {
 	Ref<const InputUser> inputUser = registry.get<InputUser>(entityId);
 	return inputUser->actions[resolveActionNameChecked(*inputUser, action)];
 }
 
-void InputsStatics::addAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, ControlId controlId)
+void Inputs::addAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, ControlId controlId)
 {
 	addAction(registry, entityId, action);
 	bindAction(registry, entityId, action, controlId);
 }
 
-void InputsStatics::addAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputHints hint)
+void Inputs::addAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputHints hint)
 {
 	const ControlId controlId = resolveHint(registry, entityId, hint);
 	if (controlId == INVALID_CONTROL_ID)
@@ -218,7 +218,7 @@ void InputsStatics::addAction(ECS::Registry& registry, ECS::EntityId entityId, c
 	}
 }
 
-void InputsStatics::assignDevice(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId deviceId)
+void Inputs::assignDevice(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId deviceId)
 {
 	Ref<InputUser> inputUser = registry.get<InputUser>(entityId);
 	inputUser->inputDevices.add(deviceId);
@@ -226,45 +226,45 @@ void InputsStatics::assignDevice(ECS::Registry& registry, ECS::EntityId entityId
 	resolvePendingButtonToAxisBindings(registry, entityId);
 }
 
-void InputsStatics::assignDevice(ECS::Registry& registry, ECS::EntityId entityId, const std::string& deviceName)
+void Inputs::assignDevice(ECS::Registry& registry, ECS::EntityId entityId, const std::string& deviceName)
 {
 	const ECS::EntityId deviceId = findDeviceByName(registry, deviceName);
 	MANI_ASSERT(registry.isValid(deviceId), "Could not find a valid device with name {}", deviceName);
 	assignDevice(registry, entityId, deviceId);
 }
 
-void InputsStatics::assignAllDevices(ECS::Registry& registry, ECS::EntityId entityId)
+void Inputs::assignAllDevices(ECS::Registry& registry, ECS::EntityId entityId)
 {
 	ECS::ConstView<InputDevice> devices(registry);
 	for (const auto [deviceId, _] : devices)
 	{
-		InputsStatics::assignDevice(registry, entityId, deviceId);
+		Inputs::assignDevice(registry, entityId, deviceId);
 	}
 }
 
-void InputsStatics::unassignDevice(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId deviceId)
+void Inputs::unassignDevice(ECS::Registry& registry, ECS::EntityId entityId, ECS::EntityId deviceId)
 {
 	Ref<InputUser> inputUser = registry.get<InputUser>(entityId);
 	inputUser->inputDevices.remove(deviceId);
 }
 
-void InputsStatics::unassignDevice(ECS::Registry& registry, ECS::EntityId entityId, const std::string& deviceName)
+void Inputs::unassignDevice(ECS::Registry& registry, ECS::EntityId entityId, const std::string& deviceName)
 {
 	const ECS::EntityId deviceId = findDeviceByName(registry, deviceName);
 	MANI_ASSERT(registry.isValid(deviceId), "Could not find a valid device with name {}", deviceName);
 	unassignDevice(registry, entityId, deviceId);
 }
 
-void InputsStatics::unassignAllDevices(ECS::Registry& registry, ECS::EntityId entityId)
+void Inputs::unassignAllDevices(ECS::Registry& registry, ECS::EntityId entityId)
 {
 	ECS::ConstView<InputDevice> devices(registry);
 	for (const auto [deviceId, _] : devices)
 	{
-		InputsStatics::unassignDevice(registry, entityId, deviceId);
+		Inputs::unassignDevice(registry, entityId, deviceId);
 	}
 }
 
-ECS::EntityId InputsStatics::findDeviceByName(const ECS::Registry& registry, const std::string& name)
+ECS::EntityId Inputs::findDeviceByName(const ECS::Registry& registry, const std::string& name)
 {
 	for (auto [entityId, device] : ECS::ConstView<InputDevice>(registry))
 	{
@@ -276,7 +276,7 @@ ECS::EntityId InputsStatics::findDeviceByName(const ECS::Registry& registry, con
 	return ECS::INVALID_ID;
 }
 
-ControlId InputsStatics::generateNextControlId(ECS::Registry& registry)
+ControlId Inputs::generateNextControlId(ECS::Registry& registry)
 {
 	Ref<UniqueControlIdGenerator> generator = registry.findSingle<UniqueControlIdGenerator>();
 	MANI_ASSERT(generator.isValid(), "Trying to generact a controlid without the InputSystem being initialized");

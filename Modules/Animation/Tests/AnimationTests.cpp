@@ -60,7 +60,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		world.createSystem<TimeStubSystem>();
 
 		ECS::Registry& registry = world.getMutableRegistry();
-		CameraStatics::createMainCamera(registry);
+		Cameras::createMainCamera(registry);
 		
 		// animation loading
 		const ECS::EntityId animationId = Resources::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
@@ -153,7 +153,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		world.createSystem<TimeStubSystem>();
 
 		ECS::Registry& registry = world.getMutableRegistry();
-		CameraStatics::createMainCamera(registry);
+		Cameras::createMainCamera(registry);
 
 		// animation loading
 		const ECS::EntityId animationId = Resources::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");

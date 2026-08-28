@@ -309,5 +309,91 @@ MANI_SECTION_BEGIN(Async, "Async")
 		latch.wait();
 		MANI_TEST_ASSERT(result == TASK_AMOUNT * WORK_AMOUNT, "All world should have bee completed");
 	}
+
+	MANI_TEST(TasksShouldNotCopy, "Taks should not copy their contexts")
+	{
+		struct Tester
+		{
+			Tester(int _work, int _target) : work(_work), target(_target) {}
+			Tester(const Tester& other)
+			{
+				MANI_TEST_ASSERT(false, "copy constructor called.");
+				work = other.work;
+				target = other.target;
+			}
+
+			Tester(Tester&& other) noexcept
+			{
+				work = other.work;
+				target = other.target;
+				other.work = 0;
+				other.target = 0;
+			}
+
+			void exec()
+			{
+				for (; work < target; work++) {}
+			}
+
+			int work = 0;
+			int target = 0;
+		};
+
+		Application app;
+		
+		Tester t{ 0, 1000 };
+		std::latch latch{ 1 };
+		Mani::enqueueTask([&t, &latch]
+		{
+			t.exec();
+			latch.count_down();
+		});
+
+		latch.wait();
+
+		MANI_TEST_ASSERT(t.work == t.target, "work should have been done");
+	}
+
+	MANI_TEST(DeferedCallShouldNotCopy, "Defered call should not copy their contexts")
+	{
+		struct Tester2
+		{
+			Tester2(int _work, int _target) : work(_work), target(_target) {}
+			Tester2(const Tester2& other)
+			{
+				MANI_TEST_ASSERT(false, "copy constructor called.");
+				work = other.work;
+				target = other.target;
+			}
+
+			Tester2(Tester2&& other) noexcept
+			{
+				work = other.work;
+				target = other.target;
+				other.work = 0;
+				other.target = 0;
+			}
+
+			void exec()
+			{
+				for (; work < target; work++) {}
+			}
+
+			int work = 0;
+			int target = 0;
+		};
+
+		Application app;
+		
+		Tester2 t{ 0, 1000 };
+		Mani::defer([&t]
+		{
+			t.exec();
+		});
+
+		app.tick();
+
+		MANI_TEST_ASSERT(t.work == t.target, "work should have been done");
+	}
 }
 MANI_SECTION_END(Thread)

@@ -156,7 +156,7 @@ namespace Mani
 		First = Left,
 	};
 
-	namespace OpenGLInputsStatics
+	namespace OpenGLInputs
 	{
 		int toOpenGLCode(EOpenGLKeyCode code);
 		int toOpenGLCode(EOpenGLMouseCode code);

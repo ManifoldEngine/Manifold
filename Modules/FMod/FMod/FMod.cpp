@@ -27,7 +27,7 @@ Ref<FMod> FModStatics::getFModChecked(ECS::Registry& registry)
 
 ECS::EntityId FModStatics::play(ECS::Registry& registry, ECS::EntityId resourceId)
 {
-	MANI_ASSERT(registry.has<Resource<FModSound>>(resourceId), "trying to play something that is not a FModSound");
+	MANI_ASSERT(registry.hasPinned<Resource<FModSound>>(resourceId), "trying to play something that is not a FModSound");
 	Ref<FModPlayQueue> queue = registry.getSingle<FModPlayQueue>();
 	ECS::EntityId channelId = createChannel(registry);
 
@@ -42,7 +42,7 @@ ECS::EntityId FModStatics::play(ECS::Registry& registry, ECS::EntityId resourceI
 
 ECS::EntityId FModStatics::loop(ECS::Registry& registry, ECS::EntityId resourceId)
 {
-	MANI_ASSERT(registry.has<Resource<FModSound>>(resourceId), "trying to play something that is not a FModSound");
+	MANI_ASSERT(registry.hasPinned<Resource<FModSound>>(resourceId), "trying to play something that is not a FModSound");
 	Ref<FModPlayQueue> queue = registry.getSingle<FModPlayQueue>();
 	ECS::EntityId channelId = createChannel(registry);
 

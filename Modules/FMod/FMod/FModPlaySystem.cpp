@@ -44,10 +44,10 @@ void FModPlaySystem::tick(ECS::Registry& registry)
             continue;
         }
 
-        Ref<Resource<FModSound>> resource = registry.get<Resource<FModSound>>(channel->resourceId);
+        Resource<FModSound>& resource = registry.getPinned<Resource<FModSound>>(channel->resourceId);
         constexpr FMOD::ChannelGroup* group = nullptr;
         constexpr bool isPaused = false;
-        fmod->system->playSound(resource->value.sound, group, isPaused, &channel->value);
+        fmod->system->playSound(resource.value.sound, group, isPaused, &channel->value);
         if (!registry.has<FModOneShot>(channelId))
         {
             channel->value->setMode(FMOD_LOOP_NORMAL);

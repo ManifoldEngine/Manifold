@@ -22,9 +22,9 @@ namespace Mani
 	namespace ECS
 	{
 		inline constexpr SizeT MAX_ENTITY_COUNT = std::numeric_limits<SizeT>::max();
-		inline constexpr SizeT INITIAL_COMPONENT_CAPACITY = 1000;
+		inline constexpr SizeT INITIAL_COMPONENT_CAPACITY = 128;
 		inline constexpr SizeT INITIAL_ARCHETYPE_CAPACITY = 256;
-		inline constexpr SizeT PINNED_COMPONENTS_CAPACITY = 512;
+		inline constexpr SizeT PINNED_COMPONENTS_CAPACITY = 64;
 
 		/**
 		 * Registry of entities and components. 
@@ -638,6 +638,17 @@ namespace Mani
 						TYPE_DESTRUCTORS.get(componentId)(archetype->getRaw(entityId, componentId));
 					}
 					archetype->removeSwap(entityId);
+				}
+
+				if (entity.pinned.any())
+				{
+					for (ComponentId componentId = 0; componentId < ECS::MAX_COMPONENTS; componentId++)
+					{
+						if (entity.pinned.test(componentId))
+						{
+							m_pinned[componentId]->unset(index);
+						}
+					}
 				}
 
 				// prepare it for recycling

@@ -65,25 +65,20 @@ namespace Mani
 		bool isRunning() const { return !m_threads.isEmpty(); }
 
 		template<typename TFunctor, typename... TArgs>
-		auto enqueue(TFunctor&& f, TArgs&&... args)
+		void enqueue(TFunctor&& f, TArgs&&... args)
 		{
-			using TReturn = std::invoke_result_t<TFunctor, TArgs...>;
-
-			std::packaged_task<TReturn()> task(
+			std::packaged_task<void()> task(
 				[f = std::forward<TFunctor>(f), ...args = std::forward<TArgs>(args)]() mutable
 				{
-					return std::invoke(std::move(f), std::move(args)...);
+					std::invoke(std::move(f), std::move(args)...);
 				}
 			);
-
-			std::future<TReturn> future = task.get_future();
 			{
 				std::scoped_lock<std::mutex> lock(m_mutex);
 				MANI_ASSERT(!m_stopRequested, "enqueue on stopped Worker");
 				m_queue.enqueue([t = std::move(task)]() mutable { t(); });
 			}
 			m_condition_variable.notify_one();
-			return future;
 		}
 	private:
 		void worker()

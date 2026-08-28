@@ -5,13 +5,13 @@
 
 using namespace Mani;
 
-ECS::EntityId CameraStatics::getMainCameraId(ECS::Registry& registry)
+ECS::EntityId Cameras::getMainCameraId(ECS::Registry& registry)
 {
 	ECS::ConstView<MainCamera, Camera> view(registry);
 	return view.begin().getEntityId();
 }
 
-ECS::EntityId CameraStatics::createMainCamera(ECS::Registry& registry)
+ECS::EntityId Cameras::createMainCamera(ECS::Registry& registry)
 {
 	// create Camera
 	ECS::EntityId cameraId = registry.create();
@@ -24,13 +24,13 @@ ECS::EntityId CameraStatics::createMainCamera(ECS::Registry& registry)
 	return cameraId;
 }
 
-float CameraStatics::getAspectRatio(const Camera& camera)
+float Cameras::getAspectRatio(const Camera& camera)
 {
 	MANI_ASSERT(!Math::isEqual(camera.height, 0.f), "height cannot be zero");
     return camera.width / camera.height;
 }
 
-Vec2f CameraStatics::worldToScreenSpace(const Camera& camera, const Vec3f& position)
+Vec2f Cameras::worldToScreenSpace(const Camera& camera, const Vec3f& position)
 {
 	Vec4f projectedPosition = camera.view * camera.projection * position.homogenous();
 
@@ -43,7 +43,7 @@ Vec2f CameraStatics::worldToScreenSpace(const Camera& camera, const Vec3f& posit
 	return Vec2f(projectedPosition.x / projectedPosition.w, projectedPosition.y / projectedPosition.w);
 }
 
-Vec3f CameraStatics::cameraPixelsToWorldSpace(const Camera& camera, const Vec2f& position, bool shouldClampPosition)
+Vec3f Cameras::cameraPixelsToWorldSpace(const Camera& camera, const Vec2f& position, bool shouldClampPosition)
 {
 	MANI_ASSERT(!Math::isEqual(camera.width, 0) && !Math::isEqual(camera.height, 0), "Do not divide by zero");
 	const float halfWidth = camera.width / 2.f;
@@ -63,10 +63,10 @@ Vec3f CameraStatics::cameraPixelsToWorldSpace(const Camera& camera, const Vec2f&
 	const float x = (clampedX - halfWidth) / halfWidth;
 	const float y = (clampedY - halfHeight) / halfHeight;
 
-	return CameraStatics::screenToWorldSpace(camera, Vec2f{ x, y });
+	return Cameras::screenToWorldSpace(camera, Vec2f{ x, y });
 }
 
-Vec3f CameraStatics::screenToWorldSpace(const Camera& camera, Vec2f position)
+Vec3f Cameras::screenToWorldSpace(const Camera& camera, Vec2f position)
 {
 	// we reverse y because the screen coordinates go from top to bottom
 	position.y *= -1.f;
@@ -84,7 +84,7 @@ Vec3f CameraStatics::screenToWorldSpace(const Camera& camera, Vec2f position)
 	};
 }
 
-bool CameraStatics::isInView(const Camera& camera, const Position& position, const Rotation& rotation, const Scale& scale, const BoundingSphere& boundingSphere)
+bool Cameras::isInView(const Camera& camera, const Position& position, const Rotation& rotation, const Scale& scale, const BoundingSphere& boundingSphere)
 {
 	MANI_TIME_SCOPE("FrustumStatics_isInView");
 	return FrustumStatics::isSphereInside(camera.frustrum, position, scale, boundingSphere.radius);
@@ -104,7 +104,7 @@ Frustum FrustumStatics::create(const Camera& camera, const Vec3f& position, cons
 	{
 		case ECameraMode::Perspective:
 		{
-			const float aspectRatio = CameraStatics::getAspectRatio(camera);
+			const float aspectRatio = Cameras::getAspectRatio(camera);
 			const float halfVerticalSize = camera.far * Math::tan(camera.fov);
 			const float halfHorizontalSize = halfVerticalSize * aspectRatio;
 			const Vec3f farForward = camera.far * forward;

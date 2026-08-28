@@ -167,10 +167,10 @@ namespace Mani
 	}
 
 	template<typename TFunctor, typename... TArgs>
-	auto enqueueTask(TFunctor&& f, TArgs&&... args)
+	void enqueueTask(TFunctor&& f, TArgs&&... args)
 	{
 		ThreadPool& threadPool = Application::get().getThreadPool();
-		return threadPool.enqueue(std::forward<TFunctor>(f), std::forward<TArgs>(args)...);
+		threadPool.enqueue(std::forward<TFunctor>(f), std::forward<TArgs>(args)...);
 	}
 
 	template<typename TFunctor, typename... TArgs>

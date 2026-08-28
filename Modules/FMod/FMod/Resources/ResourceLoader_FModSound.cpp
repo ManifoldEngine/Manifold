@@ -13,8 +13,8 @@ bool Mani::ResourceLoader_FModSound::load(ECS::Registry& registry, const Path& a
 {
     Ref<FMod> fmod = registry.getSingle<FMod>();
 
-    Ref<Resource<FModSound>> resource = registry.get<Resource<FModSound>>(resourceId);
-    FMOD_RESULT result = fmod->system->createSound(absolutePath.string().c_str(), FMOD_DEFAULT, 0, &(resource->value.sound));
+    Resource<FModSound>& resource = registry.getPinned<Resource<FModSound>>(resourceId);
+    FMOD_RESULT result = fmod->system->createSound(absolutePath.string().c_str(), FMOD_DEFAULT, 0, &(resource.value.sound));
 
     if (result != FMOD_OK)
     {

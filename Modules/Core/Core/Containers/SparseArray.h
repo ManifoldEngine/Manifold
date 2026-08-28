@@ -15,6 +15,7 @@ namespace Mani
 	class ISparseArray
 	{
 	public:
+		virtual SizeT bound() const = 0;
 		virtual SizeT count() const = 0;
 		virtual bool isEmpty() const = 0;
 		virtual bool unset(SizeT index) = 0;
@@ -34,8 +35,9 @@ namespace Mani
 
 		SparseArray() = default;
 
-		[[nodiscard]] SizeT count() const { return m_used; }
-		[[nodiscard]] bool isEmpty() const { return m_used == 0; }
+		[[nodiscard]] SizeT bound() const { return m_bound; }
+		[[nodiscard]] SizeT count() const { return m_bound - m_free.count(); }
+		[[nodiscard]] bool isEmpty() const { return m_bound == m_free.count(); }
 		
 		// sets at index, forwards value to the dense slot
 		void set(TIndex index, T&& value)
@@ -43,8 +45,7 @@ namespace Mani
 			SizeT denseIndex = toDenseIndex(index);
 			if (denseIndex == INDEX_NONE)
 			{
-				denseIndex = !m_free.isEmpty() ? m_free.pop() : m_used;
-				m_used++;
+				denseIndex = !m_free.isEmpty() ? m_free.pop() : m_bound++;
 				m_sparse.insert(index, denseIndex);
 				m_denseIndices[denseIndex] = index;
 			}
@@ -104,7 +105,6 @@ namespace Mani
 			m_denseIndices[denseIndex] = INDEX_NONE;
 			m_sparse.removeAt(index);
 			m_free.add(denseIndex);
-			m_used--;
 			return true;
 		}
 
@@ -148,7 +148,7 @@ namespace Mani
 		Mani::PagedList<TIndex, PAGE_SIZE> m_sparse;
 		Mani::Array<T, SIZE> m_dense;
 		Mani::Array<TIndex, SIZE> m_denseIndices;
-		SizeT m_used = 0;
+		SizeT m_bound = 0;
 		Mani::List<TIndex> m_free;
 	};
 }
