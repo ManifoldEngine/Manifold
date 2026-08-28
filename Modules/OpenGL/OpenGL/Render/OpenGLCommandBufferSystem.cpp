@@ -1,6 +1,6 @@
 #include "OpenGLCommandBufferSystem.h"
 
-#include <Core/Debug/Profiling.h>
+#include <Core/Profiling/Profiling.h>
 #include <Core/Async/Parallel.h>
 
 #include <Camera/Camera.h>

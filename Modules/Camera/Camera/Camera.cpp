@@ -1,7 +1,8 @@
 #include "Camera.h"
 
+#include <Core/ECS/View.h>
 #include <Core/Transform.h>
-#include <Core/Debug/Profiling.h>
+#include <Core/Profiling/Profiling.h>
 
 using namespace Mani;
 

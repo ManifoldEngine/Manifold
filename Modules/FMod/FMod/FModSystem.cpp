@@ -1,6 +1,6 @@
 #include "FModSystem.h"
 
-#include <Core/Debug/Profiling.h>
+#include <Core/Profiling/Profiling.h>
 
 #include <FMod/FMod.h>
 #include <FMod/Resources/FModResourceSystem.h>

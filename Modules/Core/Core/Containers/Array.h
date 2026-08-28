@@ -138,9 +138,9 @@ namespace Mani
 		}
 
 		template<typename TPredicate = bool(const T&, const T&)>
-		[[nodiscard]] List<T> sort(TPredicate&& f) const
+		[[nodiscard]] Array<T, Size> sortCopy(TPredicate&& f) const
 		{
-			List<T> copy = *this;
+			Array<T, Size> copy = *this;
 			std::sort(copy.begin(), copy.end(), [&f](const T& lhs, const T& rhs)
 			{
 				return f(lhs, rhs);

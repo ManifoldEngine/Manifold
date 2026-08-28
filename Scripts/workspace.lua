@@ -29,12 +29,12 @@ m.setup = function(workspaceName, projectName)
         defines { "MANI_PROJECT_NAME=\"" .. projectName .. "\"" }
 
         filter "configurations:Debug"
-            defines { "MANI_DEBUG", "MANI_CONSOLE_APP" }
+            defines { "MANI_DEBUG", "MANI_CONSOLE_APP", "MANI_PROFILING" }
             defines { "MANI_PROJECTROOT_PATH=\"".. _MAIN_SCRIPT_DIR .. "\"" }
             symbols "On"
         
         filter "configurations:Release"
-            defines { "MANI_RELEASE" }
+            defines { "MANI_RELEASE", "MANI_PROFILING" }
             defines { "MANI_PROJECTROOT_PATH=\"".. _MAIN_SCRIPT_DIR .. "\"" }
             optimize "On"
 
