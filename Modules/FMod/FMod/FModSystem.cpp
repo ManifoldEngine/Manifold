@@ -5,7 +5,6 @@
 #include <FMod/FMod.h>
 #include <FMod/Resources/FModResourceSystem.h>
 #include <FMod/FModPlaySystem.h>
-#include <FMod/FModOneShotSystem.h>
 
 #include <fmod.hpp>
 #include <fmod_errors.h>
@@ -31,8 +30,7 @@ void FModSystem::onInitialize(ECS::Registry& registry, World& world)
 	}
 
 	world.createSystem<FModResourceSystem>()
-		 .createSystem<FModPlaySystem>()
-		 .createSystem<FModOneShotSystem>();
+		 .createSystem<FModPlaySystem>();
 }
 
 void FModSystem::onDeinitialize(ECS::Registry& registry, World& world)
@@ -46,8 +44,7 @@ void FModSystem::onDeinitialize(ECS::Registry& registry, World& world)
 	}
 
 	world.destroySystem<FModResourceSystem>()
-		 .destroySystem<FModPlaySystem>()
-		 .destroySystem<FModOneShotSystem>();
+		 .destroySystem<FModPlaySystem>();
 
 	registry.removeSingle<FMod>();
 }

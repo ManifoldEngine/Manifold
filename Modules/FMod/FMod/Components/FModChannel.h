@@ -10,6 +10,7 @@ namespace Mani
 		FMOD::Channel* value = nullptr;
 	
 		bool isPaused = false;
+		bool isLooping = false;
 		float volume = 1.f;
 	};
 }
