@@ -1,6 +1,6 @@
 #include "OpenGLInputSystem.h"
 
-#include <Core/Debug/Profiling.h>
+#include <Core/Profiling/Profiling.h>
 
 #include <Inputs/Inputs.h>
 #include <Inputs/InputSystem.h>

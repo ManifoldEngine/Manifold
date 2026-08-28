@@ -40,7 +40,7 @@ namespace Mani
 		}
 
 		Map(const Map<K, V>& other) : m_data(other.m_data) {}
-		Map(Map<K, V>&& other) : m_data(std::move(other.m_data)){}
+		Map(Map<K, V>&& other) noexcept : m_data(std::move(other.m_data)) {}
 
 		Map<K, V>& operator=(const Map<K, V>& other)
 		{

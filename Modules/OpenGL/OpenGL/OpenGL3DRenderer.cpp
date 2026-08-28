@@ -1,7 +1,7 @@
 #include "OpenGL3DRenderer.h"
 
 #include <Core/ManiAssert.h>
-#include <Core/Debug/Profiling.h>
+#include <Core/Profiling/Profiling.h>
 
 #include <OpenGL/Resources/OpenGLVertexArray.h>
 #include <OpenGL/Resources/OpenGLShader.h>

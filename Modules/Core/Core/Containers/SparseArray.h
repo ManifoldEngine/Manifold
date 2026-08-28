@@ -100,7 +100,8 @@ namespace Mani
 				return false;
 			}
 
-			m_dense[denseIndex].~T();
+			T& value = m_dense[denseIndex];
+			value.~T();
 			m_denseIndices[denseIndex] = INDEX_NONE;
 			m_sparse.removeAt(index);
 			m_free.add(denseIndex);

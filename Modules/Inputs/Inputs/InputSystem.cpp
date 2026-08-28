@@ -1,7 +1,7 @@
 #include "InputSystem.h"
 
 #include <Core/Async/Parallel.h>
-#include <Core/Debug/Profiling.h>
+#include <Core/Profiling/Profiling.h>
 
 #include <Inputs/Inputs.h>
 #include <Inputs/Cursor.h>
