@@ -60,7 +60,7 @@ namespace Mani
 					MANI_ASSERT(entity != nullptr, "Null entity in view");
 					const ECS::EntityId entityId = entity->getId();
 					return std::tuple<ECS::EntityId, Ts&...>(
-						m_indices->at(m_index),
+						entityId,
 						m_registry->getPinned<Ts>(entityId)...
 					);
 				}

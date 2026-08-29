@@ -88,6 +88,20 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 			.rendererId = meshRendering.rendererId,
 		};
 
+		if (Ref<SpriteRendering> spriteRendering = registry.find<SpriteRendering>(entityId))
+		{
+			command.customParamaters.add({ ShaderNames::MANI_SPRITE_WORLD_SIZE, spriteRendering->size });
+
+			if (Resources::isReady(registry, spriteRendering->textureId))
+			{
+				auto& openglTex = registry.getPinned<Resource<OpenGLTexture2D>>(spriteRendering->textureId);
+				command.textures.add({ ShaderNames::MANI_SPRITE_TEXTURE, &openglTex.value });
+
+				const auto& tex = registry.getPinned<Resource<Texture>>(spriteRendering->textureId);
+				command.customParamaters.add({ ShaderNames::MANI_SPRITE_TEXTURE_SIZE, tex.value.size });
+			}
+		}
+
 		for (const auto& texture : materialRes->value.textures)
 		{
 			if (Resource<OpenGLTexture2D>* res = registry.findPinned<Resource<OpenGLTexture2D>>(texture.id))
@@ -134,20 +148,6 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 		for (const auto& [key, value] : meshRendering.shaderParameters)
 		{
 			command.customParamaters.add({ key, value });
-		}
-
-		if (Ref<SpriteRendering> spriteRendering = registry.find<SpriteRendering>(entityId))
-		{
-			command.customParamaters.add({ ShaderNames::MANI_SPRITE_WORLD_SIZE, spriteRendering->size });
-
-			if (Resources::isReady(registry, spriteRendering->textureId))
-			{
-				auto& openglTex = registry.getPinned<Resource<OpenGLTexture2D>>(spriteRendering->textureId);
-				command.textures.add({ ShaderNames::MANI_SPRITE_TEXTURE, &openglTex.value});
-
-				const auto& tex = registry.getPinned<Resource<Texture>>(spriteRendering->textureId);
-				command.customParamaters.add({ ShaderNames::MANI_SPRITE_TEXTURE_SIZE, tex.value.size });
-			}
 		}
 
 		threadBuffers[threadIdx].add(std::move(command));

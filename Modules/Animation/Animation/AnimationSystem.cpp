@@ -26,7 +26,7 @@ void updateEntity(ECS::Registry& registry, ECS::EntityId entityId, const LoadedA
 
 	if (Ref<MeshRendering> meshComponent = registry.find<MeshRendering>(entityId))
 	{
-		meshComponent->textureParameters[ShaderNames::MANI_TEXTURE_0] = frame.textureId;
+		meshComponent->textureParameters[ShaderNames::MANI_SPRITE_TEXTURE] = frame.textureId;
 	}
 }
 
@@ -34,7 +34,7 @@ void resetEntity(ECS::Registry& registry, ECS::EntityId entityId)
 {
 	if (Ref<MeshRendering> meshComponent = registry.find<MeshRendering>(entityId))
 	{
-		meshComponent->textureParameters.remove(ShaderNames::MANI_TEXTURE_0);
+		meshComponent->textureParameters.remove(ShaderNames::MANI_SPRITE_TEXTURE);
 	}
 }
 
