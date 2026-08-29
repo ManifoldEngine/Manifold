@@ -7,7 +7,6 @@
 #include <FMod/Resources/FModStream.h>
 #include <FMod/Components/FModPlayQueue.h>
 #include <FMod/Components/FModChannel.h>
-#include <FMod/Components/FModOneShot.h>
 
 using namespace Mani;
 
@@ -29,7 +28,7 @@ void FModPlaySystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void FModPlaySystem::tick(ECS::Registry& registry)
 {
-    Ref<FMod> fmod = FModStatics::getFModChecked(registry);
+    Ref<FMod> fmod = FModControls::getFModChecked(registry);
 
     Ref<FModPlayQueue> queue = registry.getSingle<FModPlayQueue>();
     List<ECS::EntityId> channelsPendingLoading;
@@ -44,11 +43,11 @@ void FModPlaySystem::tick(ECS::Registry& registry)
             continue;
         }
 
-        Ref<Resource<FModSound>> resource = registry.get<Resource<FModSound>>(channel->resourceId);
+        Resource<FModSound>& resource = registry.getPinned<Resource<FModSound>>(channel->resourceId);
         constexpr FMOD::ChannelGroup* group = nullptr;
         constexpr bool isPaused = false;
-        fmod->system->playSound(resource->value.sound, group, isPaused, &channel->value);
-        if (!registry.has<FModOneShot>(channelId))
+        fmod->system->playSound(resource.value.sound, group, isPaused, &channel->value);
+        if (channel->isLooping)
         {
             channel->value->setMode(FMOD_LOOP_NORMAL);
         }

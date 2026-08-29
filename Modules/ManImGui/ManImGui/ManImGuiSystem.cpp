@@ -107,12 +107,12 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 
 		// add action
 		registry.add<InputUser>(entityId);
-		InputsStatics::addAction(registry, entityId, TOGGLE_MANIMGUI, EInputHints::Keyboard_F7);
+		Inputs::addAction(registry, entityId, TOGGLE_MANIMGUI, EInputHints::Keyboard_F7);
 
 		// assign all devices
 		for (const auto [deviceId, _] : ECS::View<InputDevice>(registry))
 		{
-			InputsStatics::assignDevice(registry, entityId, deviceId);
+			Inputs::assignDevice(registry, entityId, deviceId);
 		}
 	}
 }
@@ -135,7 +135,7 @@ void ManImGuiSystem::tick(ECS::Registry& registry)
 	Ref<ManImGuiWindowContext> context = registry.getSingle<ManImGuiWindowContext>();
 	for (auto [entityId, imguiUser, inputUser] : ECS::View<ManImGuiUser, InputUser>(registry))
 	{
-		const InputAction& action = InputsStatics::getAction(registry, entityId, TOGGLE_MANIMGUI);
+		const InputAction& action = Inputs::getAction(registry, entityId, TOGGLE_MANIMGUI);
 		handleInputs(registry, *context, imguiUser, action);
 		break;
 	}

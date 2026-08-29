@@ -31,7 +31,7 @@ namespace Mani
 			T& add(ECS::EntityId entityId, TArgs&&... args)
 			{
 				MANI_ASSERT(!m_registry->has<T>(entityId), "Entity {} already has a component of type {}", entityId, ManiZ::RFL::getTypeName<T>());
-				SparseSet<T>& pool = getOrAddComponentPool<T>();
+				SparseSet<T, ECS::Index>& pool = getOrAddComponentPool<T>();
 				const ECS::Index index = ECS::toIndex(entityId);
 				pool.insert(index, T(std::forward<TArgs>(args)...));
 				m_commands.add([entityId](CommandBuffer& buffer, Registry& registry) mutable
@@ -46,7 +46,7 @@ namespace Mani
 			template<typename T>
 			T& get(ECS::EntityId entityId)
 			{
-				SparseSet<T>* pool = getComponentPoolPtr<T>();
+				SparseSet<T, ECS::Index>* pool = getComponentPoolPtr<T>();
 				MANI_ASSERT(pool != nullptr, "No component of type {} has been added to this command buffer yet.", ManiZ::RFL::getTypeName<T>());
 				const ECS::Index index = ECS::toIndex(entityId);
 				pool->get(index);
@@ -56,9 +56,9 @@ namespace Mani
 			void remove(ECS::EntityId entityId)
 			{
 				const ECS::Index index = ECS::toIndex(entityId);
-				if (SparseSet<T>* pool = getComponentPoolPtr<T>())
+				if (SparseSet<T, ECS::Index>* pool = getComponentPoolPtr<T>())
 				{
-					pool->remove(index);
+					pool->removeSwap(index);
 				}
 				else
 				{
@@ -83,7 +83,7 @@ namespace Mani
 
 		private:
 			template<typename T>
-			[[nodiscard]] SparseSet<T>& getOrAddComponentPool()
+			[[nodiscard]] SparseSet<T, ECS::Index>& getOrAddComponentPool()
 			{
 				const ECS::ComponentId componentId = m_registry->getComponentId<T>();
 				if (componentId >= m_componentPools.count())
@@ -92,24 +92,24 @@ namespace Mani
 				}
 				if (m_componentPools[componentId] == nullptr)
 				{
-					m_componentPools[componentId] = std::make_shared<SparseSet<T>>();
+					m_componentPools[componentId] = std::make_shared<SparseSet<T, ECS::Index>>();
 				}
 
-				return *(static_cast<SparseSet<T>*>(m_componentPools[componentId].get()));
+				return *(static_cast<SparseSet<T, ECS::Index>*>(m_componentPools[componentId].get()));
 			}
 
 			template<typename T>
-			[[nodiscard]] SparseSet<T>* getComponentPoolPtr()
+			[[nodiscard]] SparseSet<T, ECS::Index>* getComponentPoolPtr()
 			{
 				const ECS::ComponentId componentId = m_registry->getComponentId<T>();
 				if (!m_componentPools.isValid(componentId))
 				{
 					return nullptr;
 				}
-				return static_cast<SparseSet<T>*>(m_componentPools[componentId].get());
+				return static_cast<SparseSet<T, ECS::Index>*>(m_componentPools[componentId].get());
 			}
 
-			Mani::List<std::shared_ptr<ISparseSet>> m_componentPools;
+			Mani::List<std::shared_ptr<ISparseSet<ECS::Index>>> m_componentPools;
 			Mani::List<Command> m_commands;
 			Registry* m_registry = nullptr;
 		};

@@ -42,7 +42,7 @@ void OpenGLCommandBufferSystem::onDeinitialize(ECS::Registry& registry, World& w
 void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 {
 	// camera
-	ECS::EntityId cameraId = CameraStatics::getMainCameraId(registry);
+	ECS::EntityId cameraId = Cameras::getMainCameraId(registry);
 	MANI_ASSERT(cameraId != ECS::INVALID_ID, "Trying to render without a camera");
 	auto cameraPosition = registry.get<Position>(cameraId);
 	auto camera = registry.get<Camera>(cameraId);
@@ -54,7 +54,7 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 	{
 		if (Ref<BoundingSphere> bounds = registry.find<BoundingSphere>(entityId))
 		{
-			if (!CameraStatics::isInView(*camera, position, rotation, scale, *bounds))
+			if (!Cameras::isInView(*camera, position, rotation, scale, *bounds))
 			{
 				return;
 			}
@@ -87,6 +87,20 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 			.shader = &shaderRes->value,
 			.rendererId = meshRendering.rendererId,
 		};
+
+		if (Ref<SpriteRendering> spriteRendering = registry.find<SpriteRendering>(entityId))
+		{
+			command.customParamaters.add({ ShaderNames::MANI_SPRITE_WORLD_SIZE, spriteRendering->size });
+
+			if (Resources::isReady(registry, spriteRendering->textureId))
+			{
+				auto& openglTex = registry.getPinned<Resource<OpenGLTexture2D>>(spriteRendering->textureId);
+				command.textures.add({ ShaderNames::MANI_SPRITE_TEXTURE, &openglTex.value });
+
+				const auto& tex = registry.getPinned<Resource<Texture>>(spriteRendering->textureId);
+				command.customParamaters.add({ ShaderNames::MANI_SPRITE_TEXTURE_SIZE, tex.value.size });
+			}
+		}
 
 		for (const auto& texture : materialRes->value.textures)
 		{
@@ -134,20 +148,6 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 		for (const auto& [key, value] : meshRendering.shaderParameters)
 		{
 			command.customParamaters.add({ key, value });
-		}
-
-		if (Ref<SpriteRendering> spriteRendering = registry.find<SpriteRendering>(entityId))
-		{
-			command.customParamaters.add({ ShaderNames::MANI_SPRITE_WORLD_SIZE, spriteRendering->size });
-
-			if (Resources::isReady(registry, spriteRendering->textureId))
-			{
-				auto& openglTex = registry.getPinned<Resource<OpenGLTexture2D>>(spriteRendering->textureId);
-				command.textures.add({ ShaderNames::MANI_SPRITE_TEXTURE, &openglTex.value});
-
-				const auto& tex = registry.getPinned<Resource<Texture>>(spriteRendering->textureId);
-				command.customParamaters.add({ ShaderNames::MANI_SPRITE_TEXTURE_SIZE, tex.value.size });
-			}
 		}
 
 		threadBuffers[threadIdx].add(std::move(command));

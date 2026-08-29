@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Core/Containers/List.h>
+#include <Core/Containers/Optional.h>
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -15,27 +16,35 @@ namespace Mani
 		template<typename TFunctor, typename ...TArgs>
 		void defer(TFunctor&& f, TArgs&&... args)
 		{
-			auto taskPtr = std::make_shared<std::function<void()>>(
-				std::bind(std::forward<TFunctor>(f), std::forward<TArgs>(args)...)
+			std::packaged_task<void()> task(
+				[f = std::forward<TFunctor>(f), ...args = std::forward<TArgs>(args)]() mutable
+				{
+					std::invoke(std::move(f), std::move(args)...);
+				}
 			);
 
 			{
-				std::lock_guard<std::mutex> lock(m_mutex);
-				m_queue.enqueue([taskPtr]() { (*taskPtr)(); });
+				std::scoped_lock<std::mutex> lock(m_mutex);
+				m_queue.enqueue([t = std::move(task)]() mutable { t();  });
 			}
 		}
 
 		// resolves all the defered calls.
 		void resolve()
 		{
+			SizeT count = 0;
+			{
+				std::scoped_lock<std::mutex> lock(m_mutex);
+				count = m_queue.count();
+			}
+
 			// make sure we resolve only what was deferred this frame.
-			const SizeT count = m_queue.count();
 			for (SizeT i = 0; i < count; i++)
 			{
-				auto f = std::move(m_queue.first());
+				std::move_only_function<void()> f;
 				{
-					std::lock_guard<std::mutex> lock(m_mutex);
-					m_queue.dequeue();
+					std::scoped_lock<std::mutex> lock(m_mutex);
+					f = std::move(m_queue.dequeue());
 				}
 				f();
 			}
@@ -43,6 +52,6 @@ namespace Mani
 
 	private:
 		std::mutex m_mutex;
-		Mani::List<std::function<void()>> m_queue;
+		Mani::List<std::move_only_function<void()>> m_queue;
 	};
 }

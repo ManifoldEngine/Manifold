@@ -66,7 +66,7 @@ namespace Mani
 		float virtualHeight = 640.f;
 	};
 
-	namespace CameraStatics
+	namespace Cameras
 	{
 		ECS::EntityId getMainCameraId(ECS::Registry& registry);
 		ECS::EntityId createMainCamera(ECS::Registry& registry);

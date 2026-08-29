@@ -43,14 +43,14 @@ int toGLFWCursorMode(Cursor::EMode mode)
 bool readGLFWKeyInput(GLFWwindow* window, EOpenGLKeyCode code)
 {
     MANI_ASSERT(window != nullptr, "Given null window");
-    const int openGLCode = OpenGLInputsStatics::toOpenGLCode(code);
+    const int openGLCode = OpenGLInputs::toOpenGLCode(code);
     return static_cast<bool>(glfwGetKey(window, openGLCode));
 }
 
 bool readGLFWMouseInput(GLFWwindow* window, EOpenGLMouseCode code)
 {
     MANI_ASSERT(window != nullptr, "Given null window");
-    const int openGLCode = OpenGLInputsStatics::toOpenGLCode(code);
+    const int openGLCode = OpenGLInputs::toOpenGLCode(code);
     return static_cast<bool>(glfwGetMouseButton(window, openGLCode));
 }
 
@@ -80,9 +80,9 @@ void readInputs(GLFWwindow* window, List<uint8_t>& previousValues, const List<Co
             ButtonControl button{
                 .id = controlIds[index],
                 .isPressed = isPressed,
-                .hint = OpenGLInputsStatics::toHint(code),
+                .hint = OpenGLInputs::toHint(code),
 #if MANI_DEBUG
-                .debug_name = OpenGLInputsStatics::toString(code),
+                .debug_name = OpenGLInputs::toString(code),
 #endif
             };
             device.buttonBuffer.add(button);
@@ -98,13 +98,13 @@ void assignControlIdsAndInputHints(ECS::Registry& registry, List<ControlId>& con
     for (EInputCode code = EInputCode::First; code < EInputCode::Count; code = static_cast<EInputCode>(static_cast<TEnumSubType>(code) + 1))
     {
         const SizeT index = static_cast<SizeT>(code);
-        const ControlId controlId = InputsStatics::generateNextControlId(registry);
+        const ControlId controlId = Inputs::generateNextControlId(registry);
         controlIds[index] = controlId;
 
-        const EInputHints hint = OpenGLInputsStatics::toHint(code);
+        const EInputHints hint = OpenGLInputs::toHint(code);
         device.buttonHints[hint] = controlId;
 #if MANI_DEBUG
-        device.debug_hintTobuttonNames[hint] = OpenGLInputsStatics::toString(code);
+        device.debug_hintTobuttonNames[hint] = OpenGLInputs::toString(code);
 #endif
     }
 }
@@ -131,7 +131,7 @@ void OpenGLInputSystem::onInitialize(ECS::Registry& registry, World& world)
         auto [device, mouse] = registry.addMany<InputDevice, OpenGLMouse>(mouseId);
         device->deviceName = "OpenGLMouse";
         device->axis.add(AxisControl{
-            .id = InputsStatics::generateNextControlId(registry),
+            .id = Inputs::generateNextControlId(registry),
             .hint = EInputHints::Mouse_Axis,
 #if MANI_DEBUG
             .debug_name = "Mouse",

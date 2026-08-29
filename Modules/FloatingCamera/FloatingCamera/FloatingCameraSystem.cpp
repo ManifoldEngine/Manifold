@@ -16,17 +16,17 @@ void FloatingCameraSystem::onInitialize(ECS::Registry& registry, World& world)
 	registry.add<FloatingCamera>(entityId);
 	
 	registry.add<InputUser>(entityId);
-	InputsStatics::addAction(registry, entityId, MOVE_ACTION);
-	InputsStatics::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Up,		EInputHints::Keyboard_W);
-	InputsStatics::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Right,	EInputHints::Keyboard_A);
-	InputsStatics::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Down,	EInputHints::Keyboard_S);
-	InputsStatics::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Left,	EInputHints::Keyboard_D);
-	InputsStatics::addAction(registry, entityId, AIM_ACTION, EInputHints::Mouse_Axis);
+	Inputs::addAction(registry, entityId, MOVE_ACTION);
+	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Up,		EInputHints::Keyboard_W);
+	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Right,	EInputHints::Keyboard_A);
+	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Down,	EInputHints::Keyboard_S);
+	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Left,	EInputHints::Keyboard_D);
+	Inputs::addAction(registry, entityId, AIM_ACTION, EInputHints::Mouse_Axis);
 
 	// assign all devices to this input user by default.
 	for (const auto [deviceId, _] : ECS::ConstView<InputDevice>(registry))
 	{
-		InputsStatics::assignDevice(registry, entityId, deviceId);
+		Inputs::assignDevice(registry, entityId, deviceId);
 	}
 }
 
@@ -36,10 +36,10 @@ void FloatingCameraSystem::tick(ECS::Registry& registry)
 	ECS::View<FloatingCamera, InputUser> view(registry);
 	for (auto [entityId, floatingCamera, inputUser] : view)
 	{
-		const InputAction& moveAction = InputsStatics::getAction(registry, entityId, MOVE_ACTION);
-		const InputAction& aimAction = InputsStatics::getAction(registry, entityId, AIM_ACTION);
+		const InputAction& moveAction = Inputs::getAction(registry, entityId, MOVE_ACTION);
+		const InputAction& aimAction = Inputs::getAction(registry, entityId, AIM_ACTION);
 
-		ECS::EntityId cameraId = CameraStatics::getMainCameraId(registry);
+		ECS::EntityId cameraId = Cameras::getMainCameraId(registry);
 		if (cameraId != ECS::INVALID_ID)
 		{
 			MANI_LOG_ERROR(LogFloatingCamera, "Could not find a camera in the world");

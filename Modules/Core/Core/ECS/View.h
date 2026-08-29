@@ -74,12 +74,13 @@ namespace Mani
 					const Mani::List<TArchetype*>& archetypes = m_view->m_archetypes;
 					MANI_ASSERT(archetypes.isValid(m_archetypeIndex) && m_localIndex < archetypes[m_archetypeIndex]->count(), "Out of bounds.");
 					TArchetype& archetype = *(archetypes[m_archetypeIndex]);
-					const Mani::List<ECS::EntityId>& entityIds = archetype.getEntityIds();
-					MANI_ASSERT(entityIds.isValid(m_localIndex), "Out of bounds.");
+					const Mani::List<ECS::Index>& entityIdx = archetype.getEntityIndices();
+					MANI_ASSERT(entityIdx.isValid(m_localIndex), "Out of bounds.");
 					const TRegistry& registry = m_view->getRegistry();
+					const ECS::EntityId entityId = registry.getEntityAt(entityIdx[m_localIndex])->getId();
 
 					return std::tuple<ECS::EntityId, Ts&...>(
-						entityIds[m_localIndex],
+						entityId,
 						archetype.getComponents<Bare<Ts>>(registry.getComponentId<Ts>())[m_localIndex]...
 					);
 				}
@@ -91,11 +92,12 @@ namespace Mani
 					const Mani::List<TArchetype*>& archetypes = m_view->m_archetypes;
 					MANI_ASSERT(archetypes.isValid(m_archetypeIndex) && m_localIndex < archetypes[m_archetypeIndex]->count(), "Out of bounds.");
 					TArchetype& archetype = *(archetypes[m_archetypeIndex]);
-					const Mani::List<ECS::EntityId>& entityIds = archetype.getEntityIds();
-					MANI_ASSERT(entityIds.isValid(m_localIndex), "Out of bounds.");
+					const Mani::List<ECS::Index>& entityIdx = archetype.getEntityIndices();
+					MANI_ASSERT(entityIdx.isValid(m_localIndex), "Out of bounds.");
 					const TRegistry& registry = m_view->getRegistry();
-
-					f(args..., entityIds[m_localIndex], archetype.getComponents<Bare<Ts>>(registry.getComponentId<Ts>())[m_localIndex]...);
+					const ECS::EntityId entityId = registry.getEntityAt(entityIdx[m_localIndex])->getId();
+					
+					f(args..., entityId, archetype.getComponents<Bare<Ts>>(registry.getComponentId<Ts>())[m_localIndex]...);
 				}
 
 				ECS::EntityId getEntityId() const
@@ -108,13 +110,14 @@ namespace Mani
 					}
 
 					TArchetype& archetype = *(archetypes[m_archetypeIndex]);
-					const Mani::List<ECS::EntityId>& entityIds = archetype.getEntityIds();
-					if (!entityIds.isValid(m_localIndex))
+					const Mani::List<ECS::Index>& entityIdx = archetype.getEntityIndices();
+					if (!entityIdx.isValid(m_localIndex))
 					{
 						return ECS::INVALID_ID;
 					}
-
-					return entityIds[m_localIndex];
+					
+					const TRegistry& registry = m_view->getRegistry();
+					return registry.getEntityAt(entityIdx[m_localIndex])->getId();
 				}
 
 				[[nodiscard]] bool operator==	(const Iterator& other) const { MANI_ASSERT(m_view == other.m_view, MATCHING_VIEWS_MESSAGE); return m_totalIndex ==	other.m_totalIndex; }

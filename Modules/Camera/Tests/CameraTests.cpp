@@ -37,7 +37,7 @@ MANI_SECTION_BEGIN(CameraTests, "Camera")
 				constexpr Scale entityScale = Scale{ VEC3F::ONE };
 				
 				const bool expected = true;
-				const bool result = CameraStatics::isInView(camera, entityPosition, entityRotation, entityScale, boundingSphere);
+				const bool result = Cameras::isInView(camera, entityPosition, entityRotation, entityScale, boundingSphere);
 				MANI_TEST_ASSERT(result == expected, "Should be in view");
 			}
 
@@ -47,7 +47,7 @@ MANI_SECTION_BEGIN(CameraTests, "Camera")
 				constexpr Scale entityScale = Scale{ VEC3F::ONE };
 
 				const bool expected = false;
-				const bool result = CameraStatics::isInView(camera, entityPosition, entityRotation, entityScale, boundingSphere);
+				const bool result = Cameras::isInView(camera, entityPosition, entityRotation, entityScale, boundingSphere);
 				MANI_TEST_ASSERT(result == expected, "Should not be in view");
 			}
 
@@ -58,7 +58,7 @@ MANI_SECTION_BEGIN(CameraTests, "Camera")
 				constexpr Scale entityScale = Scale{ VEC3F::ONE };
 
 				const bool expected = true;
-				const bool result = CameraStatics::isInView(camera, entityPosition, entityRotation, entityScale, boundingSphere);
+				const bool result = Cameras::isInView(camera, entityPosition, entityRotation, entityScale, boundingSphere);
 				MANI_TEST_ASSERT(result == expected, "Should be in view");
 			}
 
@@ -69,7 +69,7 @@ MANI_SECTION_BEGIN(CameraTests, "Camera")
 				constexpr Scale entityScale = Scale{ VEC3F::ONE };
 
 				const bool expected = false;
-				const bool result = CameraStatics::isInView(camera, entityPosition, entityRotation, entityScale, boundingSphere);
+				const bool result = Cameras::isInView(camera, entityPosition, entityRotation, entityScale, boundingSphere);
 				MANI_TEST_ASSERT(result == expected, "Should not be in view");
 			}
 		}

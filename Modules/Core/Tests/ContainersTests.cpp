@@ -706,7 +706,7 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
 
         MANI_TEST(SparseSetMultipleInsert, "Should handle multiple non-contiguous inserts")
         {
-            Mani::SparseSet<int> sparseSet;
+            Mani::SparseSet<Mani::SizeT> sparseSet;
 
             sparseSet.insert(10, 100);
             sparseSet.insert(42, 420);
@@ -721,7 +721,7 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
 
         MANI_TEST(SparseSetDuplicateInsert, "Setting same index twice should not increase count")
         {
-            Mani::SparseSet<int> sparseSet;
+            Mani::SparseSet<Mani::SizeT> sparseSet;
 
             sparseSet.insert(5, 1);
             sparseSet.insert(5, 2);
@@ -732,14 +732,14 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
 
         MANI_TEST(SparseSetRemoveInvalid, "Removing non-existing element should fail")
         {
-            Mani::SparseSet<int> sparseSet;
+            Mani::SparseSet<Mani::SizeT> sparseSet;
 
             MANI_TEST_ASSERT(sparseSet.removeSwap(99) == Mani::INDEX_NONE, "Removing non-existent index should return false");
         }
 
         MANI_TEST(SparseSetSwapRemove, "Removing element should maintain valid mapping after swap")
         {
-            Mani::SparseSet<int> sparseSet;
+            Mani::SparseSet<Mani::SizeT> sparseSet;
 
             sparseSet.insert(1, 10);
             sparseSet.insert(2, 20);
@@ -758,7 +758,7 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
 
         MANI_TEST(SparseSetRemoveLast, "Removing last dense element should work")
         {
-            Mani::SparseSet<int> sparseSet;
+            Mani::SparseSet<Mani::SizeT> sparseSet;
 
             sparseSet.insert(10, 100);
             sparseSet.insert(20, 200);
@@ -771,7 +771,7 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
 
         MANI_TEST(SparseSetReinsert, "Should allow reinsertion after removal")
         {
-            Mani::SparseSet<int> sparseSet;
+            Mani::SparseSet<Mani::SizeT> sparseSet;
 
             sparseSet.insert(8, 80);
             sparseSet.removeSwap(8);
@@ -786,14 +786,14 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
 
         MANI_TEST(SparseSetDenseIntegrity, "Dense array should contain exactly active elements")
         {
-            Mani::SparseSet<int> sparseSet;
+            Mani::SparseSet<Mani::SizeT> sparseSet;
 
             sparseSet.insert(3, 30);
             sparseSet.insert(6, 60);
             sparseSet.insert(9, 90);
 
             Mani::SizeT sum = 0;
-            for (int value : sparseSet.getDense())
+            for (Mani::SizeT value : sparseSet.getDense())
             {
                 sum += value;
             }
@@ -803,7 +803,7 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
 
         MANI_TEST(SparseSetRemoveFirstWithSwap, "Removing first element should correctly remap swapped element")
         {
-            Mani::SparseSet<int> sparseSet;
+            Mani::SparseSet<Mani::SizeT> sparseSet;
 
             sparseSet.insert(100, 1);
             sparseSet.insert(200, 2);
@@ -818,7 +818,7 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
 
         MANI_TEST(SparseSetPageBoundary, "Should correctly handle indices across page boundaries")
         {
-            Mani::SparseSet<int> sparseSet;
+            Mani::SparseSet<Mani::SizeT> sparseSet;
 
             constexpr Mani::SizeT pageSize = 2048;
 
@@ -874,7 +874,7 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
 
             // Final dense integrity check
             Mani::SizeT seen = 0;
-            for (int value : sparseSet.getDense())
+            for (Mani::SizeT value : sparseSet.getDense())
             {
                 (void)value;
                 ++seen;
@@ -892,7 +892,7 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
             struct A {};
             constexpr Mani::SizeT capacity = 10;
             constexpr bool allowRealloc = false;
-            Mani::SparseArray<A, capacity> arr;
+            Mani::SparseArray<A, Mani::SizeT, capacity> arr;
             for (Mani::SizeT i = 0; i < capacity; i++)
             {
                 arr.set(i, A());
@@ -910,7 +910,7 @@ MANI_SECTION_BEGIN(CopyMoveOperators, "Copy and Move Operators")
 
             constexpr Mani::SizeT capacity = 10;
             constexpr bool allowRealloc = false;
-            Mani::SparseArray<A, capacity> arr;
+            Mani::SparseArray<A, Mani::SizeT, capacity> arr;
 
             // Fill partially
             for (Mani::SizeT i = 0; i < capacity / 2; i++)

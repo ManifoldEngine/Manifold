@@ -11,7 +11,7 @@ namespace Mani
 {
 	constexpr LogChannel LogInputs("Inputs");
 	
-	namespace InputsStatics
+	namespace Inputs
 	{
 		// tries to resolve the hint into a ControlId by looking through the assigned devices of this user
 		ControlId resolveHint(const ECS::Registry& registry, ECS::EntityId entityId, EInputHints hint);

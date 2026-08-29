@@ -31,7 +31,7 @@ void UISystem::onInitialize(ECS::Registry& registry, World& world)
 	registry.addMany<Position, Rotation, UICamera>(cameraId);
 	Ref<Camera> uiCamera = registry.add<Camera>(cameraId);
 
-	const ECS::EntityId mainCameraId = CameraStatics::getMainCameraId(registry);
+	const ECS::EntityId mainCameraId = Cameras::getMainCameraId(registry);
 	Ref<Camera> mainCamera = registry.get<Camera>(mainCameraId);
 	uiCamera->width = mainCamera->width;
 	uiCamera->height = mainCamera->height;

@@ -26,7 +26,7 @@ void updateEntity(ECS::Registry& registry, ECS::EntityId entityId, const LoadedA
 
 	if (Ref<MeshRendering> meshComponent = registry.find<MeshRendering>(entityId))
 	{
-		meshComponent->textureParameters[ShaderNames::MANI_TEXTURE_0] = frame.textureId;
+		meshComponent->textureParameters[ShaderNames::MANI_SPRITE_TEXTURE] = frame.textureId;
 	}
 }
 
@@ -34,7 +34,7 @@ void resetEntity(ECS::Registry& registry, ECS::EntityId entityId)
 {
 	if (Ref<MeshRendering> meshComponent = registry.find<MeshRendering>(entityId))
 	{
-		meshComponent->textureParameters.remove(ShaderNames::MANI_TEXTURE_0);
+		meshComponent->textureParameters.remove(ShaderNames::MANI_SPRITE_TEXTURE);
 	}
 }
 
@@ -54,7 +54,7 @@ void AnimationSystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void AnimationSystem::tick(ECS::Registry& registry)
 {
-	ECS::EntityId cameraId = CameraStatics::getMainCameraId(registry);
+	ECS::EntityId cameraId = Cameras::getMainCameraId(registry);
 	MANI_ASSERT(cameraId != ECS::INVALID_ID, "trying to animate without a camera");
 	Ref<Camera> camera = registry.get<Camera>(cameraId);
 
@@ -67,7 +67,7 @@ void AnimationSystem::tick(ECS::Registry& registry)
 			return;
 		}
 
-		if (animator.shouldCull && !CameraStatics::isInView(*camera, position, rotation, scale, bounds))
+		if (animator.shouldCull && !Cameras::isInView(*camera, position, rotation, scale, bounds))
 		{
 			return;
 		}
