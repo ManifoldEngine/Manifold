@@ -50,7 +50,9 @@ void World::tick()
 		List<SystemContainer> systems = m_systems;
 		for (auto& container : systems)
 		{
-			if (!container.isMarkedForDestruction && container.system->shouldTick(m_registry))
+			if (!container.isMarkedForDestruction && 
+				container.system->shouldTick(m_registry) &&
+				container.system->isInitialized()) // it is possible that a system was marked for destruction in current tick after the snapshot
 			{
 				container.system->tick(m_registry);
 			}

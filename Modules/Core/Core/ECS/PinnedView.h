@@ -109,7 +109,7 @@ namespace Mani
 
 			private:
 				TRegistry* m_registry = nullptr;
-				const Mani::Array<SizeT, ECS::PINNED_COMPONENTS_CAPACITY>* m_indices = nullptr;
+				const Mani::Array<ECS::Index, ECS::PINNED_COMPONENTS_CAPACITY>* m_indices = nullptr;
 				ECS::ComponentMask m_mask;
 				SizeT m_bound = 0;
 				SizeT m_index = INDEX_NONE;

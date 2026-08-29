@@ -4,6 +4,7 @@
 #include <Core/Containers/PagedList.h>
 #include <Core/ManiTraits.h>
 #include <ManiMaths/Traits.h>
+#include <limits>
 
 #if MANI_DEBUG
 #include <ManiZ/Reflection.h>
@@ -11,13 +12,14 @@
 
 namespace Mani
 {
+	template<typename TIndex>
 	class ISparseSet
 	{
 	public:
-		virtual SizeT count() const = 0;
+		virtual TIndex count() const = 0;
 		virtual bool isEmpty() const = 0;
-		virtual SizeT removeSwap(SizeT index) = 0;
-		virtual const Mani::List<SizeT>& getDenseIndices() const = 0;
+		virtual TIndex removeSwap(TIndex index) = 0;
+		virtual const Mani::List<TIndex>& getDenseIndices() const = 0;
 
 #if MANI_DEBUG
 		virtual std::string_view debug_getName() const = 0;
@@ -25,11 +27,12 @@ namespace Mani
 	};
 
 	template<typename T, typename TIndex = SizeT>
-	requires(IsUnsignedInteger<TIndex> && Is8BytesType<TIndex>)
-	class SparseSet : public ISparseSet
+	requires(IsUnsignedInteger<TIndex>)
+	class SparseSet : public ISparseSet<TIndex>
 	{
 	public:
-		inline static constexpr SizeT PAGE_SIZE = 2048;
+		inline static constexpr SizeT PAGE_SIZE = 65536; // 2^16
+		inline static constexpr TIndex INDEX_NONE = std::numeric_limits<TIndex>::max();
 
 		SparseSet() = default;
 
@@ -39,16 +42,16 @@ namespace Mani
 			m_denseIndices.reserve(capacity);
 		}
 
-		[[nodiscard]] SizeT count() const { return m_dense.count(); }
+		[[nodiscard]] TIndex count() const { return static_cast<TIndex>(m_dense.count()); }
 		[[nodiscard]] bool isEmpty() const { return m_dense.isEmpty(); }
 
 		// inserts value at index
 		void insert(TIndex index, T&& value)
 		{
-			SizeT denseIndex = toDenseIndex(index);
+			TIndex denseIndex = toDenseIndex(index);
 			if (denseIndex == INDEX_NONE)
 			{
-				denseIndex = m_dense.count();
+				denseIndex = static_cast<TIndex>(m_dense.count());
 				m_sparse.insert(index, denseIndex);
 				m_dense.insert(denseIndex, std::forward<T>(value));
 				m_denseIndices.add(index);
@@ -68,7 +71,7 @@ namespace Mani
 		// return a pointer at index
 		[[nodiscard]] T* getPtr(TIndex index)
 		{
-			const SizeT denseIndex = toDenseIndex(index);
+			const TIndex denseIndex = toDenseIndex(index);
 			if (denseIndex == INDEX_NONE)
 			{
 				return nullptr;
@@ -85,7 +88,7 @@ namespace Mani
 		// return a pointer at index
 		[[nodiscard]] const T* getPtr(TIndex index) const
 		{
-			const SizeT denseIndex = toDenseIndex(index);
+			const TIndex denseIndex = toDenseIndex(index);
 			if (denseIndex == INDEX_NONE)
 			{
 				return nullptr;
@@ -95,20 +98,20 @@ namespace Mani
 
 		// remove swaps at the index from the dense array
 		// returns the new index that takes its place or INDEX_NONE if it was the last
-		SizeT removeSwap(TIndex index)
+		TIndex removeSwap(TIndex index)
 		{
 			if (m_dense.isEmpty())
 			{
 				return INDEX_NONE;
 			}
 
-			const SizeT denseIndex = toDenseIndex(index);
+			const TIndex denseIndex = toDenseIndex(index);
 			if (denseIndex == INDEX_NONE)
 			{
 				return INDEX_NONE;
 			}
 
-			SizeT swappedIndex = m_denseIndices.last();
+			TIndex swappedIndex = m_denseIndices.last();
 			if (swappedIndex == index)
 			{
 				// we're removing the last index, so we set the swapped index to none
@@ -146,7 +149,7 @@ namespace Mani
 		}
 
 		// transforms an index to its dense counterpart
-		SizeT toDenseIndex(TIndex index) const
+		TIndex toDenseIndex(TIndex index) const
 		{
 			return m_sparse.safeGet(index).getOr(INDEX_NONE);
 		}
@@ -169,7 +172,7 @@ namespace Mani
 		// storing the name of T so it's visible in the debugger. 
 		std::string_view debug_name = ManiZ::RFL::getTypeName<T>();
 #endif
-		Mani::PagedList<SizeT, PAGE_SIZE> m_sparse;
+		Mani::PagedList<TIndex, PAGE_SIZE> m_sparse;
 		Mani::List<T> m_dense;
 		Mani::List<TIndex> m_denseIndices;
 	};

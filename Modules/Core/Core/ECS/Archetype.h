@@ -58,40 +58,43 @@ namespace Mani
 
 		class Archetype
 		{
-		public:			
+		public:
+			using SizeT_32 = unsigned int;
+			static constexpr ECS::Index SPARSE_SET_INDEX_NONE = SparseSet<Archetype::SizeT_32, ECS::Index>::INDEX_NONE;
+
 			Archetype(SizeT capacity);
 
-			void add(ECS::EntityId entityId);
+			void add(ECS::Index entityId);
 
-			void* getRaw(ECS::EntityId entityId, ECS::ComponentId componentId);
-			const void* getRaw(ECS::EntityId entityId, ECS::ComponentId componentId) const;
+			void* getRaw(ECS::Index entityId, ECS::ComponentId componentId);
+			const void* getRaw(ECS::Index entityId, ECS::ComponentId componentId) const;
 
 			template<typename T>
-			T* get(ECS::EntityId entityId, ECS::ComponentId componentId)
+			T* get(ECS::Index entityId, ECS::ComponentId componentId)
 			{
 				return static_cast<T*>(getRaw(entityId, componentId));
 			}
 
 			template<typename T>
-			const T* get(ECS::EntityId entityId, ECS::ComponentId componentId) const
+			const T* get(ECS::Index entityId, ECS::ComponentId componentId) const
 			{
 				return static_cast<const T*>(getRaw(entityId, componentId));
 			}
 			
-			void removeSwap(ECS::EntityId entityId);
+			void removeSwap(ECS::Index entityId);
 
 			const Mani::List<ECS::ComponentId>& getComponentIds() const { return m_componentIds; }
-			const Mani::List<ECS::EntityId>& getEntityIds() const { return m_entities.getDenseIndices(); }
+			const Mani::List<ECS::Index>& getEntityIndices() const { return m_entities.getDenseIndices(); }
 			
 			std::unique_ptr<Archetype> makeNew(SizeT capacity);
 
 			template<typename T>
 			void addComponentPool(ECS::ComponentId componentId)
 			{
-				MANI_ASSERT(m_componentIndices[componentId] == INDEX_NONE, "Attempting to overwrite an existing component pool.");
+				MANI_ASSERT(m_componentIndices[componentId] == SPARSE_SET_INDEX_NONE, "Attempting to overwrite an existing component pool.");
 				m_components.add(std::make_unique<ComponentPool<T>>(m_capacity));
 				m_componentIds.add(componentId);
-				m_componentIndices[componentId] = m_componentIds.count() - 1;
+				m_componentIndices[componentId] = static_cast<ECS::Index>(m_componentIds.count()) - 1;
 			}
 
 			template<typename ...Ts, typename ...Cids>
@@ -104,11 +107,11 @@ namespace Mani
 			template<typename T>
 			void removeComponentPool(ECS::ComponentId componentId)
 			{
-				MANI_ASSERT(m_componentIndices[componentId] != INDEX_NONE, "Attempting to remove an non existing component pool.");
-				const SizeT index = m_componentIndices[componentId];  
+				MANI_ASSERT(m_componentIndices[componentId] != SPARSE_SET_INDEX_NONE, "Attempting to remove an non existing component pool.");
+				const SizeT_32 index = m_componentIndices[componentId];  
 				m_components.removeSwapAt(index);
 				m_componentIds.removeSwapAt(index);
-				m_componentIndices[componentId] = INDEX_NONE;
+				m_componentIndices[componentId] = SPARSE_SET_INDEX_NONE;
 				if (index < m_componentIds.count())
 				{
 					const ECS::ComponentId swapped = m_componentIds[index];
@@ -126,20 +129,20 @@ namespace Mani
 			template<typename T>
 			T* getComponents(ECS::ComponentId componentId) 
 			{
-				MANI_ASSERT(m_componentIndices[componentId] != INDEX_NONE, "No valid component pool here");
+				MANI_ASSERT(m_componentIndices[componentId] != SPARSE_SET_INDEX_NONE, "No valid component pool here");
 				return static_cast<T*>(m_components[m_componentIndices[componentId]]->at(0)); 
 			}
 
 			template<typename T>
 			const T* getComponents(ECS::ComponentId componentId) const 
 			{
-				MANI_ASSERT(m_componentIndices[componentId] != INDEX_NONE, "No valid component pool here");
+				MANI_ASSERT(m_componentIndices[componentId] != SPARSE_SET_INDEX_NONE, "No valid component pool here");
 				return static_cast<T*>(m_components[m_componentIndices[componentId]]->at(0));
 			}
 			
-			static void move(ECS::EntityId entityId, Archetype& from, Archetype& to);
+			static void move(ECS::Index entityId, Archetype& from, Archetype& to);
 
-			SizeT count() const { return m_entities.count(); }
+			ECS::Index count() const { return m_entities.count(); }
 			SizeT getVersion() const { return m_version; }
 
 		private:
@@ -148,10 +151,10 @@ namespace Mani
 			// components
 			Mani::List<ComponentId> m_componentIds;
 			Mani::List<std::unique_ptr<IComponentPool>> m_components;
-			Mani::Array<SizeT, ECS::MAX_COMPONENTS> m_componentIndices;
+			Mani::Array<SizeT_32, ECS::MAX_COMPONENTS> m_componentIndices;
 
 			// entities
-			Mani::SparseSet<SizeT, ECS::EntityId> m_entities;
+			Mani::SparseSet<SizeT_32, ECS::Index> m_entities;
 
 			SizeT m_capacity;
 			SizeT m_version = 0;

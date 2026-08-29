@@ -6,10 +6,10 @@ namespace Mani
 	{
 		Archetype::Archetype(SizeT capacity) : m_capacity(capacity)
 		{
-			m_componentIndices.fill(INDEX_NONE);
+			m_componentIndices.fill(SPARSE_SET_INDEX_NONE);
 		}
 		
-		void Archetype::add(ECS::EntityId entityId)
+		void Archetype::add(ECS::Index entityId)
 		{
 			m_entities.insert(entityId, m_entities.count());
 
@@ -28,38 +28,38 @@ namespace Mani
 			}
 		}
 
-		void* Archetype::getRaw(ECS::EntityId entityId, ECS::ComponentId componentId)
+		void* Archetype::getRaw(ECS::Index entityId, ECS::ComponentId componentId)
 		{
-			MANI_ASSERT(m_componentIndices[componentId] != INDEX_NONE, "No valid component pool here");
+			MANI_ASSERT(m_componentIndices[componentId] != SPARSE_SET_INDEX_NONE, "No valid component pool here");
 			const SizeT index = m_componentIndices[componentId];
 			const SizeT entity = m_entities.get(entityId);
 			return m_components[index]->at(entity);
 		}
 
-		const void* Archetype::getRaw(ECS::EntityId entityId, ECS::ComponentId componentId) const
+		const void* Archetype::getRaw(ECS::Index entityId, ECS::ComponentId componentId) const
 		{
-			MANI_ASSERT(m_componentIndices[componentId] != INDEX_NONE, "No valid component pool here");
+			MANI_ASSERT(m_componentIndices[componentId] != SPARSE_SET_INDEX_NONE, "No valid component pool here");
 			const SizeT index = m_componentIndices[componentId];
 			const SizeT entity = m_entities.get(entityId);
 			return m_components[index]->at(entity);
 		}
 
-		void Archetype::removeSwap(ECS::EntityId entityId)
+		void Archetype::removeSwap(ECS::Index entityId)
 		{
 			// get the entity's index and dense index
-			const SizeT index = m_entities.get(entityId);
+			const ECS::Index index = m_entities.get(entityId);
 			// remove entity and get the new resident
-			const ECS::EntityId newEntityId = m_entities.removeSwap(entityId);
+			const ECS::Index newEntityId = m_entities.removeSwap(entityId);
 			
 			incVersion();
 			
-			if (m_entities.isEmpty() || newEntityId == INDEX_NONE)
+			if (m_entities.isEmpty() || newEntityId == SPARSE_SET_INDEX_NONE)
 			{
 				// if we received index none, then entityId doesn't need to be swapped
 				return;
 			}
 
-			const SizeT newIndex = m_entities.get(newEntityId);
+			const ECS::Index newIndex = m_entities.get(newEntityId);
 			
 			for (auto& components : m_components)
 			{
@@ -70,7 +70,7 @@ namespace Mani
 		std::unique_ptr<Archetype> Archetype::makeNew(SizeT capacity)
 		{
 			std::unique_ptr<Archetype> arch = std::make_unique<Archetype>(capacity);
-			for (SizeT index = 0; index < m_componentIds.count(); index++)
+			for (SizeT_32 index = 0; index < m_componentIds.count(); index++)
 			{
 				const ECS::ComponentId componentId = m_componentIds[index];
 				arch->m_componentIds.add(componentId);
@@ -80,17 +80,17 @@ namespace Mani
 			return arch;
 		}
 
-		void Archetype::move(ECS::EntityId entityId, Archetype& lhs, Archetype& rhs)
+		void Archetype::move(ECS::Index entityId, Archetype& lhs, Archetype& rhs)
 		{
 			const Mani::List<ECS::ComponentId>& componentIds = lhs.m_componentIds.count() <= rhs.m_componentIds.count() ? lhs.m_componentIds : rhs.m_componentIds;
 
-			const SizeT fromIndex = lhs.m_entities.get(entityId);
-			const SizeT toIndex = rhs.m_entities.get(entityId);
+			const ECS::Index fromIndex = lhs.m_entities.get(entityId);
+			const ECS::Index toIndex = rhs.m_entities.get(entityId);
 
 			for (const auto componentId : componentIds)
 			{
-				const SizeT lhsIndex = lhs.m_componentIndices[componentId];
-				const SizeT rhsIndex = rhs.m_componentIndices[componentId];
+				const ECS::Index lhsIndex = lhs.m_componentIndices[componentId];
+				const ECS::Index rhsIndex = rhs.m_componentIndices[componentId];
 
 				MANI_ASSERT(lhsIndex != INDEX_NONE && rhsIndex != INDEX_NONE, "Incompatible move detected");
 				lhs.m_components[lhsIndex]->moveTo(*rhs.m_components[rhsIndex].get(), fromIndex, toIndex);

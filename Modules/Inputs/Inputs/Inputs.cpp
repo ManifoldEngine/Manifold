@@ -88,7 +88,8 @@ void Inputs::addAction(ECS::Registry& registry, ECS::EntityId entityId, const st
 	Ref<InputUser> inputUser = registry.get<InputUser>(entityId);
 	MANI_ASSERT(resolveActionName(*inputUser, actionName) == INVALID_INPUT_ACTION_ID, "There's already an action with this name");
 	
-	const InputAction action = {
+	const InputAction action = 
+	{
 		.id = inputUser->actions.count(),
 		.name = actionName,
 	};

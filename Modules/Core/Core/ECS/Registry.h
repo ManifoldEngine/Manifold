@@ -22,8 +22,8 @@ namespace Mani
 	namespace ECS
 	{
 		inline constexpr SizeT MAX_ENTITY_COUNT = std::numeric_limits<SizeT>::max();
-		inline constexpr SizeT INITIAL_COMPONENT_CAPACITY = 128;
-		inline constexpr SizeT INITIAL_ARCHETYPE_CAPACITY = 256;
+		inline constexpr SizeT INITIAL_COMPONENT_CAPACITY = 4;
+		inline constexpr SizeT INITIAL_ARCHETYPE_CAPACITY = 64;
 		inline constexpr SizeT PINNED_COMPONENTS_CAPACITY = 64;
 
 		/**
@@ -49,8 +49,8 @@ namespace Mani
 			using Ref = ECS::ComponentRef<T>;
 
 			template<typename T>
-			using ComponentPool = Mani::SparseArray<T, PINNED_COMPONENTS_CAPACITY, ECS::EntityId>;
-			using IComponentPool = Mani::ISparseArray<PINNED_COMPONENTS_CAPACITY>;
+			using ComponentPool = Mani::SparseArray<T, ECS::Index, PINNED_COMPONENTS_CAPACITY>;
+			using IComponentPool = Mani::ISparseArray<ECS::Index, PINNED_COMPONENTS_CAPACITY>;
 
 		public:
 
@@ -189,7 +189,8 @@ namespace Mani
 				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
 
 				const ECS::ComponentId componentId = getAndRegisterComponentId<T>();
-				ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
+				const ECS::Index index = ECS::toIndex(entityId);
+				ECS::Entity& entity = m_entities[index];
 
 				MANI_ASSERT(!entity.components.test(componentId), "Trying to overwrite an existing component");
 				MANI_ASSERT(!entity.pinned.test(componentId), "Entity already has a pinned component of type {}", ManiZ::RFL::getTypeName<T>());
@@ -200,14 +201,14 @@ namespace Mani
 
 				auto [oldArchetype, newArchetype] = getArchetypes<T>(oldMask, newMask);
 
-				newArchetype->add(entityId);
+				newArchetype->add(index);
 				if (oldArchetype != nullptr)
 				{
-					Archetype::move(entityId, *oldArchetype, *newArchetype);
-					oldArchetype->removeSwap(entityId);
+					Archetype::move(index, *oldArchetype, *newArchetype);
+					oldArchetype->removeSwap(index);
 				}
 
-				T* component = newArchetype->get<T>(entityId, componentId);
+				T* component = newArchetype->get<T>(index, componentId);
 				component = new (component) T(std::forward<TArgs>(args)...);
 				return Ref(component, *newArchetype);
 			}
@@ -223,7 +224,8 @@ namespace Mani
 				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
 
 				const Mani::Array<ECS::ComponentId, sizeof... (Ts)> componentIds = { this->template getAndRegisterComponentId<Ts>()... };
-				ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
+				ECS::Index index = ECS::toIndex(entityId);
+				ECS::Entity& entity = m_entities[index];
 
 #if MANI_ASSERT_ENABLED
 				for (const ECS::ComponentId componentId : componentIds)
@@ -241,16 +243,16 @@ namespace Mani
 
 				auto [oldArchetype, newArchetype] = getArchetypes<Ts...>(oldMask, newMask);
 
-				newArchetype->add(entityId);
+				newArchetype->add(index);
 				if (oldArchetype != nullptr)
 				{
-					Archetype::move(entityId, *oldArchetype, *newArchetype);
-					oldArchetype->removeSwap(entityId);
+					Archetype::move(index, *oldArchetype, *newArchetype);
+					oldArchetype->removeSwap(index);
 				}
 
-				auto init = [this, newArchetype, entityId]<typename T>() -> Ref<T>
+				auto init = [this, newArchetype, index]<typename T>() -> Ref<T>
 				{
-					T* component = newArchetype->get<T>(entityId, getComponentId<T>());
+					T* component = newArchetype->get<T>(index, getComponentId<T>());
 					component = new (component) T();
 					return Ref(component, *newArchetype);
 				};
@@ -304,7 +306,8 @@ namespace Mani
 				ASSERT_SAME_THREAD();
 				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
 
-				ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
+				ECS::Index index = ECS::toIndex(entityId);
+				ECS::Entity& entity = m_entities[index];
 				
 				const ECS::ComponentId componentId = getComponentId<T>();
 				MANI_ASSERT(entity.components.test(componentId), "Entity doesn't have the component {}", ManiZ::RFL::getTypeName<T>());
@@ -317,16 +320,16 @@ namespace Mani
 
 				if (newMask.any())
 				{
-					newArchetype->add(entityId);
+					newArchetype->add(index);
 				}
 
-				TYPE_DESTRUCTORS.get(componentId)(oldArchetype->getRaw(entityId, componentId));
+				TYPE_DESTRUCTORS.get(componentId)(oldArchetype->getRaw(index, componentId));
 				if (newMask.any())
 				{
-					Archetype::move(entityId, *oldArchetype, *newArchetype);
+					Archetype::move(index, *oldArchetype, *newArchetype);
 				}
 
-				oldArchetype->removeSwap(entityId);
+				oldArchetype->removeSwap(index);
 			}
 
 			// removes all T components to an entity
@@ -338,7 +341,8 @@ namespace Mani
 				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
 
 				const Mani::Array<ECS::ComponentId, sizeof... (Ts)> componentIds = { this->template getAndRegisterComponentId<Ts>()... };
-				ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
+				ECS::Index index = ECS::toIndex(entityId);
+				ECS::Entity& entity = m_entities[index];
 
 #if MANI_ASSERT_ENABLED
 				for (const ECS::ComponentId componentId : componentIds)
@@ -359,20 +363,20 @@ namespace Mani
 				
 				if (newMask.any())
 				{
-					newArchetype->add(entityId);
+					newArchetype->add(index);
 				}
 
 				for (const ECS::ComponentId componentId : componentIds)
 				{
-					TYPE_DESTRUCTORS.get(componentId)(oldArchetype->getRaw(entityId, componentId));
+					TYPE_DESTRUCTORS.get(componentId)(oldArchetype->getRaw(index, componentId));
 				}
 
 				if (newMask.any())
 				{
-					Archetype::move(entityId, *oldArchetype, *newArchetype);
+					Archetype::move(index, *oldArchetype, *newArchetype);
 				}
 
-				oldArchetype->removeSwap(entityId);
+				oldArchetype->removeSwap(index);
 			}
 
 			// removes a singleton T component
@@ -412,10 +416,11 @@ namespace Mani
 			[[nodiscard]] Ref<T> get(ECS::EntityId entityId)
 			{
 				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
-				const ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
+				const ECS::Index index = ECS::toIndex(entityId);
+				const ECS::Entity& entity = m_entities[index];
 				MANI_ASSERT(entity.components.test(getComponentId<T>()), COMPONENT_NOT_FOUND_MESSAGE, ManiZ::RFL::getTypeName<T>());
 				auto& archetype = m_archetypes.get(entity.components);
-				return Ref(archetype->get<T>(entityId, getComponentId<T>()), *archetype);
+				return Ref(archetype->get<T>(index, getComponentId<T>()), *archetype);
 			}
 
 			// returns an entity's T component as a const reference
@@ -423,10 +428,11 @@ namespace Mani
 			[[nodiscard]] Ref<const T> get(ECS::EntityId entityId) const
 			{
 				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
-				const ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
+				const ECS::Index index = ECS::toIndex(entityId);
+				const ECS::Entity& entity = m_entities[index];
 				MANI_ASSERT(entity.components.test(getComponentId<T>()), COMPONENT_NOT_FOUND_MESSAGE, ManiZ::RFL::getTypeName<T>());
 				const auto& archetype = m_archetypes.get(entity.components);
-				return Ref<const T>(archetype->get<T>(entityId, getComponentId<T>()), *archetype);
+				return Ref<const T>(archetype->get<T>(index, getComponentId<T>()), *archetype);
 			}
 
 			// returns an entity's T component as a pointer
@@ -438,7 +444,8 @@ namespace Mani
 					return Ref<T>::INVALID();
 				}
 
-				const ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
+				const ECS::Index index = ECS::toIndex(entityId);
+				const ECS::Entity& entity = m_entities[index];
 				const ECS::ComponentId componentId = getComponentId<T>();
 				if (!entity.components.test(componentId))
 				{
@@ -446,7 +453,7 @@ namespace Mani
 				}
 
 				auto& archetype = m_archetypes.get(entity.components);
-				return Ref(archetype->get<T>(entityId, componentId), *archetype);
+				return Ref(archetype->get<T>(index, componentId), *archetype);
 			}
 
 			// returns an entity's T component as a const pointer
@@ -458,7 +465,8 @@ namespace Mani
 					return Ref<const T>::INVALID();
 				}
 
-				const ECS::Entity& entity = m_entities[ECS::toIndex(entityId)];
+				const ECS::Index index = ECS::toIndex(entityId);
+				const ECS::Entity& entity = m_entities[index];
 				const ECS::ComponentId componentId = getComponentId<T>();
 				if (!entity.components.test(componentId))
 				{
@@ -466,7 +474,7 @@ namespace Mani
 				}
 
 				const auto& archetype = m_archetypes.get(entity.components);
-				return Ref<const T>(archetype->get<T>(entityId, componentId), *archetype);
+				return Ref<const T>(archetype->get<T>(index, componentId), *archetype);
 			}
 
 			// returns the singleton's T component as a reference
@@ -635,9 +643,9 @@ namespace Mani
 					auto& archetype = *archetypePtr;
 					for (const auto& componentId : archetype->getComponentIds())
 					{
-						TYPE_DESTRUCTORS.get(componentId)(archetype->getRaw(entityId, componentId));
+						TYPE_DESTRUCTORS.get(componentId)(archetype->getRaw(index, componentId));
 					}
-					archetype->removeSwap(entityId);
+					archetype->removeSwap(index);
 				}
 
 				if (entity.pinned.any())
