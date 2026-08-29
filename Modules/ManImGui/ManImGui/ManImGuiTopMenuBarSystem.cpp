@@ -35,7 +35,7 @@ bool displayMenu(ManImGuiSubMenu& menu, const std::string_view& title)
 
 bool ManImGuiTopMenuBarSystem::shouldTick(const ECS::Registry& registry) const
 {
-	return ManImGuiStatics::isShowing(registry);
+	return ManImGui::isShowing(registry);
 }
 
 void ManImGuiTopMenuBarSystem::tick(ECS::Registry& registry)

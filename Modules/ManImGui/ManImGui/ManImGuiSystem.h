@@ -12,7 +12,7 @@ namespace Mani
         virtual std::string_view getName() const override { return "ManImGuiSystem"; }
         virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }
         // systems displaying imgui should be executing after this system
-        virtual ETickGroup getTickGroup() const override { return ETickGroup::PreUpdate; }
+        virtual ETickGroup getTickGroup() const override { return ETickGroup::Begin; }
 
         virtual void tick(ECS::Registry& registry) override;
 

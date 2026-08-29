@@ -6,7 +6,7 @@
 
 using namespace Mani;
 
-bool ManImGuiStatics::isShowing(const ECS::Registry& registry)
+bool ManImGui::isShowing(const ECS::Registry& registry)
 {
 	if (auto context = registry.findSingle<ManImGuiWindowContext>())
 	{
@@ -15,13 +15,13 @@ bool ManImGuiStatics::isShowing(const ECS::Registry& registry)
 	return false;
 }
 
-Ref<ManImGuiMenu> ManImGuiStatics::Manifold::getMenu(ECS::Registry& registry)
+Ref<ManImGuiMenu> ManImGui::Manifold::getMenu(ECS::Registry& registry)
 {
 	ECS::ConstView<ManImGuiMenu, ManImGuiManifoldMenu> view(registry);
 	return registry.get<ManImGuiMenu>(view.begin().getEntityId());
 }
 
-Ref<const ManImGuiMenu> ManImGuiStatics::Manifold::getMenu(const ECS::Registry& registry)
+Ref<const ManImGuiMenu> ManImGui::Manifold::getMenu(const ECS::Registry& registry)
 {
 	ECS::ConstView<ManImGuiMenu, ManImGuiManifoldMenu> view(registry);
 	return registry.get<ManImGuiMenu>(view.begin().getEntityId());

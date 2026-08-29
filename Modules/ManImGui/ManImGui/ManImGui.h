@@ -6,7 +6,9 @@
 
 namespace Mani
 {
-	namespace ManImGuiStatics
+	constexpr LogChannel ManImGuiLog("ManImGuiLog");
+
+	namespace ManImGui
 	{
 		namespace Manifold
 		{

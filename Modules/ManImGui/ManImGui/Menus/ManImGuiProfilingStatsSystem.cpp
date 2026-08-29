@@ -1,5 +1,7 @@
 #include "ManImGuiProfilingStatsSystem.h"
 
+#include <Core/Containers/Map.h>
+
 #include <ManImGui/ManImGui.h>
 #include <ManImGui/ManImGuiSystem.h>
 #include <ManImGui/ManImGuiManifoldMenuSystem.h>
@@ -19,19 +21,19 @@ void ManImGuiProfilingStatsSystem::onInitialize(ECS::Registry& registry, World& 
 	world.initializeDependency<ManImGuiManifoldMenuSystem>();
 	
 	{
-		Ref<ManImGuiMenu> menu = ManImGuiStatics::Manifold::getMenu(registry);
+		Ref<ManImGuiMenu> menu = ManImGui::Manifold::getMenu(registry);
 		menu->subMenu.addItem(PROFILER_NAME);
 	}
 }
 
 bool Mani::ManImGuiProfilingStatsSystem::shouldTick(const ECS::Registry& registry) const
 {
-	if (!ManImGuiStatics::isShowing(registry))
+	if (!ManImGui::isShowing(registry))
 	{
 		return false;
 	}
 
-	Ref<const ManImGuiMenu> menu = ManImGuiStatics::Manifold::getMenu(registry);
+	Ref<const ManImGuiMenu> menu = ManImGui::Manifold::getMenu(registry);
 	return menu->subMenu.getSelected(PROFILER_NAME);
 }
 
@@ -46,7 +48,7 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 
 	if (!isOpened)
 	{
-		Ref<ManImGuiMenu> menu = ManImGuiStatics::Manifold::getMenu(registry);
+		Ref<ManImGuiMenu> menu = ManImGui::Manifold::getMenu(registry);
 		menu->subMenu.setSelected(PROFILER_NAME, false);
 		ImGui::End();
 		return;
@@ -57,14 +59,20 @@ void ManImGuiProfilingStatsSystem::tick(Mani::ECS::Registry& registry)
 	ImGui::Text(std::format("{:.3}fps, entity count {}", fps, registry.count()).c_str());
 	ImGui::Separator();
 	
-	List<Profiling::Record> records = Application::get().getProfiler().getLastFrameRecords();
-	records.sort([](const Profiling::Record& lhs, const Profiling::Record& rhs)
+	const List<Profiling::Record>& records = Application::get().getProfiler().getLastFrameRecords();
+	MANI_LOG_VERBOSE(ManImGuiLog, "{}: Showing {} records", PROFILER_NAME, records.count());
+	
+	Map<Profiling::RecordId, Profiling::Record> aggregatedRecords;
+	aggregatedRecords.reserve(records.count());
+	for (const auto& record : records)
 	{
-		return lhs.name.compare(rhs.name) < 0;
-	});
+		Profiling::Record& aggregatedRecord = aggregatedRecords[record.id];
+		aggregatedRecord.name = record.name;
+		aggregatedRecord.duration += record.duration;
+	}
 
 	ImGui::Indent();
-	for (const auto& record : records)
+	for (const auto& [id, record] : aggregatedRecords)
 	{
 		ImGui::Text(std::format("{}: {:.3}ms", record.name, record.duration).c_str());
 	}

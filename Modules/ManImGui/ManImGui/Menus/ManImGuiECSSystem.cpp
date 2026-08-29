@@ -64,19 +64,19 @@
 //	world.initializeDependency<ManImGuiManifoldMenuSystem>();
 //
 //	{
-//		ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
+//		ManImGuiMenu& menu = ManImGui::Manifold::getMenu(registry);
 //        menu.subMenu.addItem(ECS_NAME);
 //	}
 //}
 //
 //bool Mani::ManImGuiECSSystem::shouldTick(const ECS::Registry& registry) const
 //{
-//    if (!ManImGuiStatics::isShowing(registry))
+//    if (!ManImGui::isShowing(registry))
 //    {
 //        return false;
 //    }
 //
-//    const ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
+//    const ManImGuiMenu& menu = ManImGui::Manifold::getMenu(registry);
 //    return menu.subMenu.getSelected(ECS_NAME);
 //}
 //
@@ -91,7 +91,7 @@
 //
 //	if (!isOpened)
 //	{
-//        ManImGuiMenu& menu = ManImGuiStatics::Manifold::getMenu(registry);
+//        ManImGuiMenu& menu = ManImGui::Manifold::getMenu(registry);
 //        menu.subMenu.setSelected(ECS_NAME, false);
 //		ImGui::End();
 //		return;
