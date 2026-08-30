@@ -46,6 +46,7 @@ namespace Mani
 			Index getIndex() const;
 
 			bool isAlive = false;
+			bool markedForDestruction = false;
 			ComponentMask components;
 			ComponentMask pinned;
 			Version version = 0;

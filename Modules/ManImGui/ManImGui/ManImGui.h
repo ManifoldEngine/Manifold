@@ -19,7 +19,7 @@ namespace Mani
 
 		bool isShowing(const ECS::Registry& registry);
 		
-		std::binary_semaphore& isDrawDataAvailable()
+		inline std::binary_semaphore& isDrawDataAvailable()
 		{
 			static std::binary_semaphore isDrawDataAvailable{ 0 };
 			return isDrawDataAvailable;
