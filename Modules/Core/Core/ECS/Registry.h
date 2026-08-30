@@ -59,9 +59,6 @@ namespace Mani
 				m_archetypes.reserve(INITIAL_ARCHETYPE_CAPACITY);
 				m_threadId = Mani::thisThreadId();
 				m_singletonId = create();
-
-				m_recyclableIndices.reserve(10'000);
-				m_markedForDestroy.reserve(10'000);
 			}
 
 			~Registry()
