@@ -24,6 +24,13 @@ constexpr std::string_view PNG_EXT = ".png";
 
 constexpr uint32_t DEFAULT_TPU = 512;
 
+constexpr std::string_view ASSET_PATH_HINTS_FILENAME = "AssetPathHints.json";
+
+struct Config
+{
+	Mani::List<std::string> hints;
+};
+
 void processShader(const fs::path& path)
 {
 	Shader shader;
@@ -103,12 +110,31 @@ void referenceAllShaders()
 	}
 }
 
+Mani::Optional<Config> findConfig()
+{
+	Mani::Optional<Config> result;
+	const fs::path path = FileSystem::getRootPath().append(ASSET_PATH_HINTS_FILENAME);
+	std::string content = "";
+	if (FileSystem::readFile(path, content))
+	{
+		result = ManiZ::from::json<Config>(content);
+	}
+	return result;
+}
+
 int main(int argc, char** argv)
 {
 	// process assets
 	FileSystem::foreach(FileSystem::getEnginePath(), &processAsset);
 	FileSystem::foreach(FileSystem::getProjectPath(), &processAsset);
 
+	// find extra files that might be elsewhere
+	const Config config = findConfig().getOr(Config{});
+	for (const std::string& path : config.hints)
+	{
+		FileSystem::foreach(FileSystem::getRootPath().append(path), &processAsset);
+	}
+	
 	// reference all shaders in a single file for startup compilation
 	referenceAllShaders();
 
