@@ -48,11 +48,12 @@ namespace Mani
 	public:
 		Profiler();
 
-		ThreadProfiler* reserveProfiler();
+		ThreadProfiler& getThreadProfiler();
 		void collectRecords();
 		const Mani::List<Profiling::Record>& getLastFrameRecords() const { return m_lastFrameRecords; }
 	
 	private:
+		ThreadProfiler* reserveProfiler();
 		Mani::Array<ThreadProfiler, MAX_PROFILERS> m_profilers;
 		std::atomic<SizeT> m_count = 0;
 		Mani::List<Profiling::Record> m_lastFrameRecords;

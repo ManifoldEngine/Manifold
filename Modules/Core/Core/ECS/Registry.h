@@ -59,6 +59,9 @@ namespace Mani
 				m_archetypes.reserve(INITIAL_ARCHETYPE_CAPACITY);
 				m_threadId = Mani::thisThreadId();
 				m_singletonId = create();
+
+				m_recyclableIndices.reserve(10'000);
+				m_markedForDestroy.reserve(10'000);
 			}
 
 			~Registry()
@@ -130,7 +133,7 @@ namespace Mani
 
 			// returns true if an entity with entityId exists and is alive
 			//	checkForDeferredDestruction: checks if deferDestroy has been called on this entity
-			[[nodiscard]] bool isValid(ECS::EntityId entityId, bool checkForDeferredDestruction = false) const
+			[[nodiscard]] bool isValid(ECS::EntityId entityId, bool shouldCheckForDeferredDestruction = false) const
 			{
 				if (entityId == ECS::INVALID_ID)
 				{
@@ -143,7 +146,7 @@ namespace Mani
 					return false;
 				}
 
-				if (checkForDeferredDestruction && isMarkedForDestruction(entityId)) 
+				if (shouldCheckForDeferredDestruction && isMarkedForDestruction(entityId))
 				{
 					return false;
 				}

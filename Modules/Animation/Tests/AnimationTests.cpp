@@ -88,7 +88,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[0].textureId, "The first frame should be displayed");
 
 		}
@@ -100,7 +100,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[1].textureId, "The second frame should be displayed");
 		}
 
@@ -111,7 +111,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[2].textureId, "The third frame should be displayed");
 		}
 
@@ -122,7 +122,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[3].textureId, "The fourth frame should be displayed");
 		}
 		
@@ -134,7 +134,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		{
 			// One shot play mode should reset the animator and prameters once the animation is done
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			MANI_TEST_ASSERT(!meshComponent->textureParameters.has(Mani::ShaderNames::MANI_TEXTURE_0), "Anim texture should have been cleared");
+			MANI_TEST_ASSERT(!meshComponent->textureParameters.has(Mani::ShaderNames::MANI_SPRITE_TEXTURE), "Anim texture should have been cleared");
 
 			auto animator = registry.get<Animator>(entityId);
 			MANI_TEST_ASSERT(animator->frameId == INVALID_FRAME_ID, "animator should not be playing anything");
@@ -181,7 +181,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[0].textureId, "The first frame should be displayed");
 		}
 
@@ -194,7 +194,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[3].textureId, "The fourth frame should be displayed");
 		}
 
@@ -206,7 +206,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		{
 			// should loop
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_TEXTURE_0];
+			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[0].textureId, "The first frame should be displayed");
 		}
 	}
