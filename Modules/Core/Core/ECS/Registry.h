@@ -123,7 +123,7 @@ namespace Mani
 			// destroys at the end of the tick.
 			void deferDestroy(ECS::EntityId entityId)
 			{
-				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
+				MANI_ASSERT(entityId != m_singletonId, "Trying to destroy the singleton entity");
 				std::scoped_lock<std::mutex> lock(m_markedForDestroyMutex);
 				m_markedForDestroy.addUnique(entityId);				
 			}
