@@ -6,6 +6,7 @@
 #include <Inputs/InputSystem.h>
 #include <Inputs/Cursor.h>
 
+#include <ManImGui/ManImGui.h>
 #include <ManImGui/Components/ManImGuiWindowContext.h>
 #include <ManImGui/ManImGuiRenderSystem.h>
 #include <ManImGui/ManImGuiTopMenuBarSystem.h>
@@ -115,6 +116,8 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 			Inputs::assignDevice(registry, entityId, deviceId);
 		}
 	}
+
+	Mani::ManImGui::isDrawDataAvailable().release();
 }
 
 void ManImGuiSystem::onDeinitialize(ECS::Registry& registry, World& world)
@@ -145,6 +148,7 @@ void ManImGuiSystem::tick(ECS::Registry& registry)
 		return;
 	}
 
+	Mani::ManImGui::isDrawDataAvailable().acquire();
 	GLFWwindow* previousContext = glfwGetCurrentContext();
 	glfwMakeContextCurrent(context->window);
 	ImGui_ImplOpenGL3_NewFrame();

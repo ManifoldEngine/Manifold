@@ -13,6 +13,7 @@
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 
+#include <ManImGui/ManImGui.h>
 #include <ManImGui/ManImGuiSystem.h>
 #include <ManImGui/Components/ManImGuiWindowContext.h>
 
@@ -31,7 +32,6 @@ void ManImGuiRenderSystem::onInitialize(ECS::Registry& registry, World& world)
 	registry.addSinglePinned<ManImGuiRenderSystem::Storage>();
 
 	OpenGL::registerExtension(registry, &extension);
-	extension.isDrawDataBeingRead.release();
 }
 
 void ManImGuiRenderSystem::onDeinitialize(ECS::Registry& registry, World& world)
@@ -40,7 +40,7 @@ void ManImGuiRenderSystem::onDeinitialize(ECS::Registry& registry, World& world)
 	registry.removeSinglePinned<ManImGuiRenderSystem::Storage>();
 }
 
-void Mani::ManImGuiRenderSystem::tick(ECS::Registry& registry)
+void ManImGuiRenderSystem::tick(ECS::Registry& registry)
 {
 	ManImGuiRenderSystem::Storage& storage = registry.getSinglePinned<ManImGuiRenderSystem::Storage>();
 	Ref<ManImGuiWindowContext> context = registry.getSingle<ManImGuiWindowContext>();
@@ -50,7 +50,6 @@ void Mani::ManImGuiRenderSystem::tick(ECS::Registry& registry)
 		case EManImGuiMode::Hidden: break;	
 		case EManImGuiMode::Show:
 		{
-			extension.isDrawDataBeingRead.acquire();
 			MANI_ASSERT(storage.drawData == nullptr, "Draw data should have been consumed by that point.");
 			ImGui::Render();
 			storage.drawData = ImGui::GetDrawData();
@@ -67,6 +66,6 @@ void ManImGuiRenderSystemExtension::onPostRender(ECS::Registry& registry) const
 	{
 		ImGui_ImplOpenGL3_RenderDrawData(storage.drawData);
 		storage.drawData = nullptr;
-		isDrawDataBeingRead.release();
+		Mani::ManImGui::isDrawDataAvailable().release();
 	}
 }

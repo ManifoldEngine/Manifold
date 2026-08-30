@@ -3,6 +3,7 @@
 #include <Core/CoreFwd.h>
 #include <string_view>
 #include <ManImGui/Components/ManImGuiMenu.h>
+#include <semaphore>
 
 namespace Mani
 {
@@ -17,5 +18,11 @@ namespace Mani
 		}
 
 		bool isShowing(const ECS::Registry& registry);
+		
+		std::binary_semaphore& isDrawDataAvailable()
+		{
+			static std::binary_semaphore isDrawDataAvailable{ 0 };
+			return isDrawDataAvailable;
+		}
 	}
 }
