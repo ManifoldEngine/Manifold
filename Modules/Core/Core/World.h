@@ -67,14 +67,13 @@ namespace Mani
 		// destroys a system of type TSystem.
 		// after this is called, no TSystem remains in the container.
 		// returns true if a system was destroyed
-		template<DerivedFrom<ECS::System> TSystem>
+		template<typename T>
 		World& destroySystem();
 
-		template<DerivedFrom<ECS::System>... TSystems>
-		requires (DerivedFrom<TSystems, ECS::System> && ...)
+		template<typename ...Ts>
 		World& destroySystems();
 
-		template<typename... Ts>
+		template<typename ...Ts>
 		World& destroySystems(TypeList<Ts...>&&);
 
 		// returns the amount of systems
@@ -182,10 +181,10 @@ namespace Mani
 		return hasSystems<Ts...>();
 	}
 
-	template<DerivedFrom<ECS::System> TSystem>
+	template<typename T>
 	inline World& World::destroySystem()
 	{
-		const SystemId id = World::getSystemId<TSystem>();
+		const SystemId id = World::getSystemId<T>();
 		for (auto& container : m_systems)
 		{
 			if (container.id == id)
@@ -201,11 +200,10 @@ namespace Mani
 		return *this;
 	}
 
-	template<DerivedFrom<ECS::System>... TSystems>
-	requires (DerivedFrom<TSystems, ECS::System> && ...)
+	template<typename ...Ts>
 	inline World& World::destroySystems()
 	{
-		(destroySystem<TSystems>(), ...);
+		(destroySystem<Ts>(), ...);
 		return *this;
 	}
 
