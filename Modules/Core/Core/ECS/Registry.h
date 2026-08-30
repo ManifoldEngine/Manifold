@@ -130,7 +130,7 @@ namespace Mani
 
 			// returns true if an entity with entityId exists and is alive
 			//	checkForDeferredDestruction: checks if deferDestroy has been called on this entity
-			[[nodiscard]] bool isValid(ECS::EntityId entityId, bool checkForDeferredDestruction = false) const
+			[[nodiscard]] bool isValid(ECS::EntityId entityId, bool shouldCheckForDeferredDestruction = false) const
 			{
 				if (entityId == ECS::INVALID_ID)
 				{
@@ -143,7 +143,7 @@ namespace Mani
 					return false;
 				}
 
-				if (checkForDeferredDestruction && isMarkedForDestruction(entityId)) 
+				if (shouldCheckForDeferredDestruction && isMarkedForDestruction(entityId))
 				{
 					return false;
 				}

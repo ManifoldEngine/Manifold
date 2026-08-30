@@ -11,16 +11,6 @@ namespace Mani
 {
 	namespace Profiling
 	{
-		inline ThreadProfiler* getThreadProfiler()
-		{
-			thread_local ThreadProfiler* profiler = nullptr;
-			if (profiler == nullptr && Application::exists())
-			{
-				profiler = Application::get().getProfiler().reserveProfiler();
-			}
-			return profiler;
-		}
-
 		struct ScopedTimer
 		{
 			ScopedTimer(const std::string_view& _name, const char* file, unsigned int line) : name(_name), id(RecordId{ file, line })
@@ -32,9 +22,10 @@ namespace Mani
 			~ScopedTimer()
 			{
 				end = std::chrono::steady_clock::now();
-				if (ThreadProfiler* profiler = getThreadProfiler())
+				if (Application::exists())
 				{
-					profiler->record({
+					ThreadProfiler& profiler = Application::get().getProfiler().getThreadProfiler();
+					profiler.record({
 						.id = id,
 						.name = name,
 						.duration = elapsed(),
