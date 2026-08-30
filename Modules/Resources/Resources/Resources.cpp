@@ -23,7 +23,8 @@ void Resources::unregisterExtension(ECS::Registry& registry, IResourceSystemExte
 
 void Resources::unload(ECS::Registry& registry, ECS::EntityId inEntityId)
 {
-	if (!registry.isValid(inEntityId))
+	constexpr bool checkForDeferredDestruction = true;
+	if (!registry.isValid(inEntityId, checkForDeferredDestruction))
 	{
 		return;
 	}

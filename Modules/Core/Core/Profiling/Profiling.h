@@ -23,7 +23,7 @@ namespace Mani
 
 		struct ScopedTimer
 		{
-			ScopedTimer(const std::string_view& nameIn) : name(nameIn)
+			ScopedTimer(const std::string_view& _name, const char* file, unsigned int line) : name(_name), id(RecordId{ file, line })
 			{
 				start = std::chrono::steady_clock::now();
 				end = start;
@@ -35,6 +35,7 @@ namespace Mani
 				if (ThreadProfiler* profiler = getThreadProfiler())
 				{
 					profiler->record({
+						.id = id,
 						.name = name,
 						.duration = elapsed(),
 					});
@@ -47,6 +48,7 @@ namespace Mani
 				return secondsToMs * std::chrono::duration<double>(end - start).count();
 			};
 
+			RecordId id = INVALID_RECORD_ID;
 			std::string_view name;
 			std::chrono::steady_clock::time_point start;
 			std::chrono::steady_clock::time_point end;
@@ -56,7 +58,7 @@ namespace Mani
 
 #ifdef MANI_PROFILING
 #define MANI_TIME_SCOPE(NAME) \
-	Mani::Profiling::ScopedTimer scopeTimer_##__LINE__(NAME)
+	Mani::Profiling::ScopedTimer scopeTimer_##__LINE__(NAME, __FILE__, __LINE__)
 #else
 #define MANI_TIME_SCOPE(NAME)
 #endif

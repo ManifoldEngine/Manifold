@@ -123,12 +123,14 @@ namespace Mani
 			// destroys at the end of the tick.
 			void deferDestroy(ECS::EntityId entityId)
 			{
+				MANI_ASSERT(entityId != m_singletonId, "Trying to destroy the singleton entity");
 				std::scoped_lock<std::mutex> lock(m_markedForDestroyMutex);
-				m_markedForDestroy.addUnique(entityId);
+				m_markedForDestroy.addUnique(entityId);				
 			}
 
 			// returns true if an entity with entityId exists and is alive
-			[[nodiscard]] bool isValid(ECS::EntityId entityId) const
+			//	checkForDeferredDestruction: checks if deferDestroy has been called on this entity
+			[[nodiscard]] bool isValid(ECS::EntityId entityId, bool checkForDeferredDestruction = false) const
 			{
 				if (entityId == ECS::INVALID_ID)
 				{
@@ -141,8 +143,19 @@ namespace Mani
 					return false;
 				}
 
+				if (checkForDeferredDestruction && isMarkedForDestruction(entityId)) 
+				{
+					return false;
+				}
+
 				const ECS::Entity& entity = m_entities[index];
 				return entity.version == ECS::toVersion(entityId) && entity.isAlive;
+			}
+
+			[[nodiscard]] bool isMarkedForDestruction(ECS::EntityId entityId) const
+			{
+				std::scoped_lock<std::mutex> lock(m_markedForDestroyMutex);
+				return m_markedForDestroy.contains(entityId);
 			}
 
 			// returs an entity object

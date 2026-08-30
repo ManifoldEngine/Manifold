@@ -2,7 +2,6 @@
 
 #include <Core/CoreFwd.h>
 #include <OpenGL/Render/IOpenGLRenderExtension.h>
-#include <semaphore>
 
 namespace Mani
 {
@@ -11,8 +10,6 @@ namespace Mani
     public:
         // Inherited via IOpenGLRenderExtension
         void onPostRender(ECS::Registry& registry) const override;
-
-        mutable std::binary_semaphore isDrawDataBeingRead{ 0 };
     };
 
     class ManImGuiRenderSystem : public ECS::System
