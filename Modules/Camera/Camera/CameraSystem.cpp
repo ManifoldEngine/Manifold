@@ -15,16 +15,6 @@ struct CameraSystem::Storage
     ECS::EntityId cameraId = ECS::INVALID_ID;
 };
 
-std::string_view CameraSystem::getName() const
-{
-    return "CameraSystem";
-}
-
-bool CameraSystem::shouldTick(const ECS::Registry& registry) const
-{
-    return true;
-}
-
 void CameraSystem::tick(ECS::Registry& registry)
 {
     for (auto [entityId, position, rotation, camera] : ECS::View<Position, Rotation, Camera>(registry))

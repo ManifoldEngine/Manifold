@@ -4,26 +4,12 @@
 
 namespace Mani
 {
-	struct FloatingCamera
-	{
-		float cameraSpeed = 10.f;
-		float previousCameraX = 0.f;
-		float previousCameraY = 0.f;
-		float sensitivity = 0.1f;
-	};
-
-	class FloatingCameraSystem : public ECS::System
+	class FloatingCameraSystem : public ECS::SystemT<FloatingCameraSystem, ETick::Enabled>
 	{
 	public:
-		virtual std::string_view getName() const override { return "FloatingCameraSystem"; }
-		virtual bool shouldTick(const ECS::Registry& registry) const override { return true; }
-
-		void onInitialize(ECS::Registry& registry, World& world) override;
-
+		virtual ETickGroup getTickGroup() const override { return ETickGroup::PostUpdate; }
+		virtual void onInitialize(ECS::Registry& registry, World& world) override;
+		virtual void onDeinitialize(ECS::Registry& registry, World& world) override;
 		virtual void tick(ECS::Registry& registry) override;
-
-	private:
-		const std::string MOVE_ACTION = "FloatingCameraMove";
-		const std::string AIM_ACTION = "FloatingCameraAim";
 	};
 }

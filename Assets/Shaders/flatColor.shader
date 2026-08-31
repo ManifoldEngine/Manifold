@@ -31,11 +31,11 @@ in vec2 textureCoordinate;
 
 uniform vec4 mani_color;
 
-out vec4 FragColor;
+out vec4 fragColor;
 
 void main()
 {
-    FragColor = mani_color;
+    fragColor = mani_color;
 }
 ",
 }

@@ -98,7 +98,7 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 	// menus
 	world.createSystem<ManImGuiProfilingStatsSystem>();
 	world.createSystem<ManImGuiInputDebugSystem>();
-	world.createSystem<ManImGuiECSSystem>();
+	//world.createSystem<ManImGuiECSSystem>();
 
 	{
 		world.initializeDependency<InputSystem>();

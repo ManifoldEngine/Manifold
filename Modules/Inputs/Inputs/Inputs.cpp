@@ -98,6 +98,8 @@ void Inputs::addAction(ECS::Registry& registry, ECS::EntityId entityId, const st
 
 void Inputs::removeAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action)
 {
+	Inputs::unbindAction(registry, entityId, action);
+
 	Ref<InputUser> inputUser = registry.get<InputUser>(entityId);
 	const ActionId actionId = resolveActionName(*inputUser, action);
 	MANI_ASSERT(actionId != INVALID_INPUT_ACTION_ID, "Trying to remove non existant action");
@@ -185,6 +187,19 @@ void Inputs::unbindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, c
 	}
 
 	unbindActionAxis(registry, entityId, action, axis, controlId);
+}
+
+void Inputs::unbindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action)
+{
+	Ref<InputUser> user = registry.get<InputUser>(entityId);
+	const ActionId actionId = resolveActionName(*user, action);
+	for (const auto& [controlId, actionIds] : user->bindings)
+	{
+		if (actionIds.contains(actionId))
+		{
+			Inputs::unbindAction(registry, entityId, action, controlId);
+		}
+	}
 }
 
 InputAction& Inputs::getAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action)

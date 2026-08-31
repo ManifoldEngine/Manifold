@@ -1,4 +1,4 @@
-#include "ManImGuiECSSystem.h"
+//#include "ManImGuiECSSystem.h"
 //
 //#include <ManImGui/ManImGui.h>
 //#include <ManImGui/ManImGuiSystem.h>

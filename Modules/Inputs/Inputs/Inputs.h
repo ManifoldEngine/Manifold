@@ -39,6 +39,9 @@ namespace Mani
 		void bindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, EInputHints hint);
 		// unbinds a button from an action's axis value
 		void unbindActionAxis(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action, EInputAxis axis, EInputHints hint);
+
+		// unbinds all controls from an action
+		void unbindAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action);
 		
 		// returns the action object for an entity with an InputUser component
 		InputAction& getAction(ECS::Registry& registry, ECS::EntityId entityId, const std::string& action);

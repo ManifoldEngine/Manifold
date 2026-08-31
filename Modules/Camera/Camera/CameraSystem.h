@@ -6,13 +6,10 @@
 
 namespace Mani
 {
-	class CameraSystem : public ECS::System
+	class CameraSystem : public ECS::SystemT<CameraSystem, ETick::Enabled>
 	{
 	public:
-		virtual std::string_view getName() const override;
-		virtual bool shouldTick(const ECS::Registry& registry) const override;
-		virtual ETickGroup getTickGroup() const override { return ETickGroup::PreUpdate; }
-
+		virtual ETickGroup getTickGroup() const override { return ETickGroup::PreRender; }
 		virtual void tick(ECS::Registry& registry) override;
 	private:
 		struct Storage;

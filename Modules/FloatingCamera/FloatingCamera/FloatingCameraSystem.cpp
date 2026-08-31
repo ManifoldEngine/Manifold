@@ -8,6 +8,9 @@
 
 using namespace Mani;
 
+const std::string MOVE_ACTION = "FloatingCameraMove";
+const std::string AIM_ACTION = "FloatingCameraAim";
+
 void FloatingCameraSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<TimeSystem>();
@@ -17,16 +20,26 @@ void FloatingCameraSystem::onInitialize(ECS::Registry& registry, World& world)
 	
 	registry.add<InputUser>(entityId);
 	Inputs::addAction(registry, entityId, MOVE_ACTION);
-	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Up,		EInputHints::Keyboard_W);
-	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Right,	EInputHints::Keyboard_A);
-	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Down,	EInputHints::Keyboard_S);
-	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Left,	EInputHints::Keyboard_D);
+	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Forward,		EInputHints::Keyboard_W);
+	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Left,			EInputHints::Keyboard_A);
+	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Back,			EInputHints::Keyboard_S);
+	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Right,			EInputHints::Keyboard_D);
+	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Up,				EInputHints::Keyboard_E);
+	Inputs::bindActionAxis(registry, entityId, MOVE_ACTION, EInputAxis::Down,			EInputHints::Keyboard_Q);
 	Inputs::addAction(registry, entityId, AIM_ACTION, EInputHints::Mouse_Axis);
 
 	// assign all devices to this input user by default.
 	for (const auto [deviceId, _] : ECS::ConstView<InputDevice>(registry))
 	{
 		Inputs::assignDevice(registry, entityId, deviceId);
+	}
+}
+
+void FloatingCameraSystem::onDeinitialize(ECS::Registry& registry, World& world)
+{
+	for (const auto [entityId, _] : ECS::View<FloatingCamera>(registry))
+	{
+		registry.deferDestroy(entityId);
 	}
 }
 
@@ -40,7 +53,7 @@ void FloatingCameraSystem::tick(ECS::Registry& registry)
 		const InputAction& aimAction = Inputs::getAction(registry, entityId, AIM_ACTION);
 
 		ECS::EntityId cameraId = Cameras::getMainCameraId(registry);
-		if (cameraId != ECS::INVALID_ID)
+		if (cameraId == ECS::INVALID_ID)
 		{
 			MANI_LOG_ERROR(LogFloatingCamera, "Could not find a camera in the world");
 			continue;
