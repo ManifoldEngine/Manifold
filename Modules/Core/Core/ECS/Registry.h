@@ -3,6 +3,7 @@
 #include <Core/ECS/Entity.h>
 #include <Core/ECS/Archetype.h>
 #include <Core/ECS/Ref.h>
+#include <Core/ECS/TypeInfo.h>
 
 #include <Core/Containers/List.h>
 #include <Core/Containers/SparseArray.h>
@@ -183,7 +184,13 @@ namespace Mani
 			[[nodiscard]] ECS::ComponentId getComponentId() const
 			{
 				using Component = Bare<T>;
+				m_metadata.registerType<Component>(TYPE_ID<Component>);
 				return TYPE_ID<Component>;
+			}
+
+			[[nodiscard]] const TypeInfoContainer& getMetadata() const
+			{
+				return m_metadata;
 			}
 
 			[[nodiscard]] SizeT getComponentCount() const
@@ -814,6 +821,8 @@ namespace Mani
 			inline static ComponentId TYPE_ID_SEQUENCE = 0;
 			template<typename T>
 			inline static ComponentId TYPE_ID = TYPE_ID_SEQUENCE++;
+
+			mutable TypeInfoContainer m_metadata;
 
 			// Thread management
 			Mani::ThreadId m_threadId;
