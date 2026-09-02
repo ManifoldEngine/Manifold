@@ -59,7 +59,7 @@ namespace Mani
 			{
 				m_archetypes.reserve(INITIAL_ARCHETYPE_CAPACITY);
 				m_threadId = Mani::thisThreadId();
-				m_singletonId = create();
+				m_singletonId = create("singleton");
 			}
 
 			~Registry()
@@ -75,7 +75,7 @@ namespace Mani
 			Registry(Registry&) = delete;
 
 			// creates an entity id
-			[[nodiscard]] EntityId create()
+			[[nodiscard]] EntityId create(std::string_view debugname = "")
 			{
 				ASSERT_SAME_THREAD();
 
@@ -111,6 +111,9 @@ namespace Mani
 
 				MANI_ASSERT(entity != nullptr, "Null entity found in the entity list");
 				entity->isAlive = true;
+#if MANI_DEBUG
+				entity->debug_name = debugname;
+#endif
 				return entity->getId();
 			}
 
@@ -644,6 +647,16 @@ namespace Mani
 				m_markedForDestroy.clear();
 			}
 
+			void ASSERT_SAME_THREAD() const
+			{
+				MANI_ASSERT(m_threadId == Mani::thisThreadId(), "Only allowed on the registry's thread. In most cases it is also the main thread");
+			}
+
+			void ASSERT_UNLOCKED() const
+			{
+				MANI_ASSERT(m_locks == 0, "Operation forbidden while iterating a view, please use a Command Buffer");
+			}
+
 		private:
 			bool destroy_internal(EntityId entityId)
 			{
@@ -802,6 +815,16 @@ namespace Mani
 				return static_cast<ComponentPool<T>*>(m_pinned[componentId].get());
 			}
 
+			[[nodiscard]] IComponentPool* getPinnedComponentPoolPtr(ECS::ComponentId componentId)
+			{
+				return m_pinned[componentId].get();
+			}
+
+			[[nodiscard]] const IComponentPool* getPinnedComponentPoolPtr(ECS::ComponentId componentId) const
+			{
+				return m_pinned[componentId].get();
+			}
+
 			// Entities
 			EntityId m_singletonId = INVALID_ID;
 			Mani::List<ECS::Entity> m_entities;
@@ -832,16 +855,6 @@ namespace Mani
 
 			inline static constexpr std::string_view INVALID_ENTITY_MESSAGE = "Entity {} is invalid";
 			inline static constexpr std::string_view COMPONENT_NOT_FOUND_MESSAGE = "Entity does not have component {}";
-
-			void ASSERT_SAME_THREAD() const
-			{
-				MANI_ASSERT(m_threadId == Mani::thisThreadId(), "Only allowed on the registry's thread. In most cases it is also the main thread");
-			}
-
-			void ASSERT_UNLOCKED() const
-			{
-				MANI_ASSERT(m_locks == 0, "Operation forbidden while iterating a view, please use a Command Buffer");
-			}
 		};
 	}
 

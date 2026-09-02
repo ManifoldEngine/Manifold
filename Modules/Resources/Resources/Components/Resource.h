@@ -22,7 +22,6 @@ namespace Mani
 	{
 		Path path;
 		EntityId unloaderId = INVALID_ID;
-		SizeT refCount = 0;
 	};
 
 	struct ResourceReady {};

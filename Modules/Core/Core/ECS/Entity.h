@@ -4,6 +4,10 @@
 #include <cstdint>
 #include <limits>
 
+#ifdef MANI_DEBUG
+#include <string>
+#endif
+
 namespace Mani 
 {
 	template<typename T>
@@ -50,6 +54,9 @@ namespace Mani
 			ComponentMask pinned;
 			Version version = 0;
 
+#ifdef MANI_DEBUG
+			std::string_view debug_name = "";
+#endif
 		private:
 			Index m_index = 0;
 		};

@@ -4,7 +4,7 @@ using namespace Mani;
 
 bool Mani::Resources::isReady(const ECS::Registry& registry, EntityId entityId)
 {
-	return registry.has<ResourceReady>(entityId);
+	return registry.hasPinned<ResourceReady>(entityId);
 }
 
 void Resources::registerExtension(ECS::Registry& registry, IResourceSystemExtension* extension)
@@ -29,28 +29,17 @@ void Resources::unload(ECS::Registry& registry, EntityId inEntityId)
 		return;
 	}
 
-	Ref<ResourceMetadata> metadata = registry.get<ResourceMetadata>(inEntityId);
-	metadata->refCount--;
-	MANI_LOG(LogResources, "Unloading resource at {}, ref count {}", metadata->path.string(), metadata->refCount);
-	if (metadata->refCount > 0)
+	ResourceMetadata& metadata = registry.getPinned<ResourceMetadata>(inEntityId);
+	MANI_LOG(LogResources, "Unloading resource at {}", metadata.path.string());
+	if (metadata.unloaderId != INVALID_ID)
 	{
-		return;
-	}
-
-	if (metadata->unloaderId != INVALID_ID)
-	{
-		if (metadata->unloaderId == 3)
-		{
-			__debugbreak();
-		}
-		const ResourceUnloader& unloader = registry.getPinned<ResourceUnloader>(metadata->unloaderId);
-		MANI_ASSERT(unloader.value != nullptr, "registered a null unloader for asset at {}", metadata->path.string());
+		const ResourceUnloader& unloader = registry.getPinned<ResourceUnloader>(metadata.unloaderId);
+		MANI_ASSERT(unloader.value != nullptr, "registered a null unloader for asset at {}", metadata.path.string());
 		unloader.value->unload(registry, inEntityId);
 	}
 
-	Ref<ResourceTag> resourceTag = registry.get<ResourceTag>(inEntityId);
-
-	forEachExtension(registry, [&registry, inEntityId, tag = resourceTag->tag](const IResourceSystemExtension& ext)
+	const ResourceTag& resourceTag = registry.getPinned<ResourceTag>(inEntityId);
+	forEachExtension(registry, [&registry, inEntityId, tag = resourceTag.tag](const IResourceSystemExtension& ext)
 	{
 		ext.onResourceUnloaded(registry, inEntityId, tag);
 	});
@@ -60,7 +49,7 @@ void Resources::unload(ECS::Registry& registry, EntityId inEntityId)
 
 void Resources::unloadAll(ECS::Registry& registry)
 {
-	for (const auto [entityId, _] : ECS::ConstView<ResourceTag>(registry))
+	for (const auto [entityId, _] : ECS::ConstPinnedView<ResourceTag>(registry))
 	{
 		unload(registry, entityId);
 	}
@@ -68,7 +57,7 @@ void Resources::unloadAll(ECS::Registry& registry)
 
 void Resources::unloadTag(ECS::Registry& registry, uint32_t tag)
 {
-	for (auto [entityId, resourceTag] : ECS::View<ResourceTag>(registry))
+	for (auto [entityId, resourceTag] : ECS::PinnedView<ResourceTag>(registry))
 	{
 		if (resourceTag.tag == tag)
 		{

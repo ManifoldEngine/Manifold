@@ -18,12 +18,35 @@ namespace Mani
 			BasePinnedView(TRegistry& registry) : m_registry(&registry)
 			{
 				m_mask = registry.getMask<Ts...>();
-				(tryAdd<Ts>(m_pools, registry), ...);
-
-				m_pools.sort([](const Registry::IComponentPool* lhs, const Registry::IComponentPool* rhs)
+				if (m_mask.any())
 				{
-					return lhs->bound() < rhs->bound();
-				});
+					(tryAdd<Ts>(m_pools, registry), ...);
+				}
+				else
+				{
+					for (ECS::ComponentId componentId = 0; componentId < ECS::MAX_COMPONENTS; componentId++)
+					{
+						if (const Registry::IComponentPool* pool = registry.getPinnedComponentPoolPtr(componentId))
+						{
+							m_pools.add(pool);
+						}
+					}
+				}
+
+				if (m_mask.any())
+				{
+					m_pools.sort([](const Registry::IComponentPool* lhs, const Registry::IComponentPool* rhs)
+					{
+						return lhs->bound() < rhs->bound();
+					});
+				}
+				else
+				{
+					m_pools.sort([](const Registry::IComponentPool* lhs, const Registry::IComponentPool* rhs)
+					{
+						return lhs->bound() > rhs->bound();
+					});
+				}
 			};
 
 			struct Iterator

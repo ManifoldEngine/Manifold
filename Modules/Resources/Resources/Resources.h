@@ -118,12 +118,10 @@ namespace Mani
 	{
 		const auto path = FileSystem::getAbsolutePath(relativePath);
 
-		for (auto [entityId, resource] : ECS::PinnedView<Resource<T>>(registry))
+		for (auto [entityId, resource, metadata] : ECS::PinnedView<Resource<T>, ResourceMetadata>(registry))
 		{
-			Ref<ResourceMetadata> metadata = registry.get<ResourceMetadata>(entityId);
-			if (metadata->path == path)
+			if (metadata.path == path)
 			{
-				metadata->refCount++;
 				return entityId;
 			}
 		}
@@ -156,7 +154,7 @@ namespace Mani
 			}
 		};
 
-		MANI_LOG(LogResources, "Loading resource at {}...", path.string());
+		MANI_LOG(LogResources, "Loading resource at {}.", path.string());
 
 		switch (method)
 		{
@@ -183,9 +181,8 @@ namespace Mani
 			ResourceLoader<T>& loader = registry.getPinned<ResourceLoader<T>>(loaderId);
 			
 			MANI_ASSERT(loader.value != nullptr, "Registered a null loader");
-			Ref<ResourceMetadata> metadata = registry.get<ResourceMetadata>(entityId);
-			MANI_LOG(Log, "registering loader {} for entity {}", loaderId, entityId);
-			metadata->unloaderId = loaderId;
+			ResourceMetadata& metadata = registry.getPinned<ResourceMetadata>(entityId);
+			metadata.unloaderId = loaderId;
 
 			wasLoaded = loader.value->load(registry, path, entityId, tag);
 		}
@@ -210,7 +207,7 @@ namespace Mani
 			ext.onResourceLoaded(registry, entityId, tag);
 		});
 
-		registry.add<ResourceReady>(entityId);
+		registry.addPinned<ResourceReady>(entityId);
 	}
 
 	template<typename T>
@@ -218,7 +215,7 @@ namespace Mani
 	{
 		auto [entityId, resource] = createResource<T>(registry, tag);
 		resource.value = std::move(value);
-		registry.add<ResourceReady>(entityId);
+		registry.addPinned<ResourceReady>(entityId);
 		Resources::forEachExtension(registry, [&registry, &entityId, tag](const IResourceSystemExtension& ext)
 		{
 			ext.onResourceLoaded(registry, entityId, tag);
@@ -230,8 +227,8 @@ namespace Mani
 	std::tuple<EntityId, Resource<T>&> Resources::createResource(ECS::Registry& registry, Optional<uint32_t> tag, Optional<const Path> path)
 	{
 		EntityId entityId = registry.create();
-		registry.add<ResourceMetadata>(entityId, ResourceMetadata{ .path = path.getOr(""), .refCount = 1, });
-		registry.add<ResourceTag>(entityId, tag.getOr(GLOBAL_RESOURCE_TAG));
+		registry.addPinned<ResourceMetadata>(entityId, ResourceMetadata{ .path = path.getOr("") });
+		registry.addPinned<ResourceTag>(entityId, tag.getOr(GLOBAL_RESOURCE_TAG));
 		auto& resource = registry.addPinned<Resource<T>>(entityId);
 		return { entityId, resource };
 	}
