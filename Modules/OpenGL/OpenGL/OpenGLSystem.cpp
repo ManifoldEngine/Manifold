@@ -24,6 +24,8 @@
 #include <OpenGL/Render/OpenGLCommandBufferSystem.h>
 #include <OpenGL/Render/OpenGLRenderSystem.h>
 
+#include <STB/STB.h>
+
 #include <ManiMaths/Fwd.h>
 
 #include <iostream>
@@ -94,9 +96,8 @@ void OpenGLSystem::onInitialize(ECS::Registry& registry, World& world)
         return;
     }
     world.initializeDependency<ResourceSystem>();
-    
-    const std::string openglConfigRelPath = std::format("Config/{}", Mani::OPENGLCONFIG_FILENAME);
-    const ECS::EntityId openglConfigId = Resources::loadSync<OpenGLConfig>(registry, openglConfigRelPath);
+    Mani::STB::loadConfig(registry);
+    const ECS::EntityId openglConfigId = Resources::loadSync<OpenGLConfig>(registry, Mani::FileSystem::getConfigFilePath());
     
     // set glfw context
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

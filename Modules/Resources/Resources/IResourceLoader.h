@@ -37,5 +37,17 @@ namespace Mani
 		//   resourceId: The entity ID representing the resource. Access with registry.get<Resource<T>>(resourceId)
 		//   tag: An optional tag used to group or categorize resources.
 		virtual void postLoad(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const {};
+
+		// Called when unloading a resource, might be called on a task thread
+		//
+		// Called automatically by the ResourceSystem when a resource with a
+		// matching component ID needs to be unloaded.
+		//
+		// Parameters:
+		//   registry: The ECS registry that owns the resource entity.
+		//   resourceId: The entity ID representing the resource. Access with registry.get<Resource<T>>(resourceId)
+		//
+		// Returns true if the resource was successfully loaded.
+		virtual bool unload(ECS::Registry& registry, ECS::EntityId resourceId) const = 0;
 	};
 }

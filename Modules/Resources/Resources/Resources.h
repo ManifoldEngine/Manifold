@@ -56,7 +56,7 @@ namespace Mani
 		static ECS::EntityId loadSync(ECS::Registry& registry, const Path& relativePath, uint32_t tag = GLOBAL_RESOURCE_TAG);
 
 		template<typename T>
-		static ECS::EntityId load(ECS::Registry& registry, const Path& relativePath, EResourceLoadMethod method, uint32_t tag);
+		static ECS::EntityId load(ECS::Registry& registry, const Path& relativePath, EResourceLoadMethod method, uint32_t tag = GLOBAL_RESOURCE_TAG);
 
 		// Unloads a specific resource associated with the given entity ID.
 		static void unload(ECS::Registry& registry, ECS::EntityId inEntityId);
@@ -118,11 +118,12 @@ namespace Mani
 	{
 		const auto path = FileSystem::getAbsolutePath(relativePath);
 
-		for (const auto [entityId, resource] : ECS::ConstPinnedView<Resource<T>>(registry))
+		for (auto [entityId, resource] : ECS::PinnedView<Resource<T>>(registry))
 		{
-			auto resPath = registry.get<ResourcePath>(entityId);
-			if (resPath->value == path)
+			Ref<ResourceMetadata> metadata = registry.get<ResourceMetadata>(entityId);
+			if (metadata->path == path)
 			{
+				metadata->refCount++;
 				return entityId;
 			}
 		}
@@ -174,10 +175,19 @@ namespace Mani
 	inline bool Resources::callLoader(ECS::Registry& registry, ECS::EntityId entityId, const Path& path, uint32_t tag)
 	{
 		bool wasLoaded = false;
-		if (auto* loader = registry.findSinglePinned<ResourceLoader<T>>())
+		ECS::PinnedView<ResourceLoader<T>> view(registry);
+		const auto it = view.begin();
+		if (it.isValid())
 		{
-			MANI_ASSERT(loader->value != nullptr, "Registered a null loader");
-			wasLoaded = loader->value->load(registry, path, entityId, tag);
+			const ECS::EntityId loaderId = it.getEntityId();
+			ResourceLoader<T>& loader = registry.getPinned<ResourceLoader<T>>(loaderId);
+			
+			MANI_ASSERT(loader.value != nullptr, "Registered a null loader");
+			Ref<ResourceMetadata> metadata = registry.get<ResourceMetadata>(entityId);
+			MANI_LOG(Log, "registering loader {} for entity {}", loaderId, entityId);
+			metadata->unloaderId = loaderId;
+
+			wasLoaded = loader.value->load(registry, path, entityId, tag);
 		}
 		else
 		{
@@ -220,18 +230,11 @@ namespace Mani
 	std::tuple<ECS::EntityId, Resource<T>&> Resources::createResource(ECS::Registry& registry, Optional<uint32_t> tag, Optional<const Path> path)
 	{
 		ECS::EntityId entityId = registry.create();
-		if (path.isSet())
-		{
-			registry.add<ResourcePath>(entityId, path.get());
-		}
-		if (tag.isSet())
-		{
-			registry.add<ResourceTag>(entityId, tag.get());
-		}
+		registry.add<ResourceMetadata>(entityId, ResourceMetadata{ .path = path.getOr(""), .refCount = 1, });
+		registry.add<ResourceTag>(entityId, tag.getOr(GLOBAL_RESOURCE_TAG));
 		auto& resource = registry.addPinned<Resource<T>>(entityId);
 		return { entityId, resource };
 	}
-
 
 	void Resources::forEachExtension(const ECS::Registry& registry, auto&& f)
 	{
@@ -247,14 +250,20 @@ namespace Mani
 	void Resources::registerLoaderFor(ECS::Registry& registry, IResourceLoader* loader)
 	{
 		MANI_ASSERT(loader != nullptr, "trying to register a null loader");
-		auto& resLoader = registry.addSinglePinned<ResourceLoader<T>>();
-		resLoader.value = loader;
+		const ECS::EntityId entityId = registry.create();
+		registry.addPinned<ResourceLoader<T>>(entityId, loader);
+		registry.addPinned<ResourceUnloader>(entityId, loader);
 	}
 
 	template<typename T>
 	void Resources::unregisterLoaderFor(ECS::Registry& registry)
 	{
-		registry.removeSinglePinned<ResourceLoader<T>>();
+		for (const auto [entityId, _] : ECS::PinnedView<ResourceLoader<T>>(registry))
+		{
+			registry.removePinned<ResourceLoader<T>>(entityId);
+			registry.removePinned<ResourceUnloader>(entityId);
+			registry.deferDestroy(entityId);
+		}
 	}
 
 	template<typename T>

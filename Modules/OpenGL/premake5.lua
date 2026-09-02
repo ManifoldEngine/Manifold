@@ -10,7 +10,7 @@ group "Engine"
             locations.moduledir .. "/%{prj.name}/**.cpp" 
         }
 
-        links { "Core", "Camera", "Inputs" }
+        links { "Core", "Camera", "Inputs", "STB" }
 
         includedirs { locations.moduledir .. "/**" }
 
@@ -28,9 +28,6 @@ group "Engine"
 
         -- openGL
         links { "OpenGL32" }
-    
-        -- stb (image)
-        includedirs { locations.moduledir .. "/%{prj.name}/ThirdParties/stb" }
 
         -- webgl
         filter("platforms:WebGL")

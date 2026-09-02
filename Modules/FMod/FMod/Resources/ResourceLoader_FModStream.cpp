@@ -34,3 +34,11 @@ void ResourceLoader_FModStream::postLoad(ECS::Registry& registry, const Path& ab
     Resource<FModSound>& soundResource = registry.addPinned<Resource<FModSound>>(resourceId);
     soundResource.value.sound = resource.value.sound;
 }
+
+bool ResourceLoader_FModStream::unload(ECS::Registry& registry, ECS::EntityId resourceId) const
+{
+    Resource<FModSound>& sound = registry.getPinned<Resource<FModSound>>(resourceId);
+    MANI_ASSERT(sound.value.sound != nullptr, "trying to unload a sound that is null");
+    sound.value.sound->release();
+    return true;
+}

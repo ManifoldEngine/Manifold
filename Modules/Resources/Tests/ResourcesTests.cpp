@@ -245,6 +245,10 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 			{
 				return true;
 			}
+			bool unload(ECS::Registry& registry, ECS::EntityId resourceId) const
+			{
+				return true;
+			}
 		};
 
 		MANI_TEST(ShouldLoadWithDependency, "Resource A should load and trigger its extension")
@@ -290,12 +294,19 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 
 		struct TestResourceBLoader final : public IResourceLoader
 		{
-			bool load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const 
+			bool load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const override
 			{ 
 				auto& res = registry.getPinned<Resource<TestResourceB>>(resourceId);
 				res.value.value = 420;
 				return true;
-			};
+			}
+			
+			bool unload(ECS::Registry& registry, ECS::EntityId resourceId) const override
+			{
+				auto& res = registry.getPinned<Resource<TestResourceB>>(resourceId);
+				res.value.value = 0;
+				return true;
+			}
 		};
 	
 		struct TestResourceC
@@ -316,6 +327,7 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 				res.value.resourceAId = Resources::load<TestResourceA>(registry, res.value.resourceAPath, method, tag);
 				res.value.resourceBId = Resources::load<TestResourceB>(registry, res.value.resourceBPath, method, tag);
 			};
+			bool unload(ECS::Registry& registry, ECS::EntityId resourceId) const { return true; }
 		};
 
 		MANI_TEST(PostLoadFlow, "Resource C should load A and B in its post load phase")

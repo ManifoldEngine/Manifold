@@ -2,8 +2,6 @@
 
 namespace Mani
 {
-	constexpr std::string_view CONFIG_FILENAME = "CoreConfig.json";
-
 	struct CoreConfig
 	{
 		size_t threadPoolSize = 0;

@@ -23,3 +23,11 @@ bool Mani::ResourceLoader_FModSound::load(ECS::Registry& registry, const Path& a
     }
     return true;
 }
+
+bool Mani::ResourceLoader_FModSound::unload(ECS::Registry& registry, ECS::EntityId resourceId) const
+{
+    Resource<FModSound>& sound = registry.getPinned<Resource<FModSound>>(resourceId);
+    MANI_ASSERT(sound.value.sound != nullptr, "trying to unload a sound that is null");
+    sound.value.sound->release();
+    return true;
+}

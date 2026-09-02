@@ -24,6 +24,25 @@ bool FileSystem::readFile(const Path& filePath, std::string& outResult)
 	return false;
 }
 
+bool FileSystem::readBytes(const Path& filePath, Mani::List<unsigned char>& outResult)
+{
+	std::ifstream in(filePath, std::ios::in | std::ios::binary);
+	if (in.is_open())
+	{
+		in.seekg(0, std::ios::end);
+		size_t size = in.tellg();
+		if (size > 0)
+		{
+			outResult.clear();
+			outResult.resize(size);
+			in.seekg(0, std::ios::beg);
+			in.read(reinterpret_cast<char*>(&outResult[0]), size);
+		}
+		return true;
+	}
+	return false;
+}
+
 bool FileSystem::writeFile(const Path& filePath, const std::string& content)
 {
 	std::ofstream out(filePath);
@@ -51,9 +70,9 @@ Path FileSystem::getEnginePath()
 	return getRootPath().append("Engine");
 }
 
-Path Mani::FileSystem::getConfigPath()
+Path Mani::FileSystem::getConfigFilePath()
 {
-	return getRootPath().append("Config");
+	return getRootPath().append(Mani::FileSystem::CONFIG_FILENAME);
 }
 
 Path Mani::FileSystem::getProjectPath()

@@ -29,14 +29,26 @@ void Resources::unload(ECS::Registry& registry, ECS::EntityId inEntityId)
 		return;
 	}
 
-	Ref<ResourceTag> resourceTag = registry.get<ResourceTag>(inEntityId);
-
-#if MANI_DEBUG
-	if (Ref<ResourcePath> path = registry.find<ResourcePath>(inEntityId))
+	Ref<ResourceMetadata> metadata = registry.get<ResourceMetadata>(inEntityId);
+	metadata->refCount--;
+	MANI_LOG(LogResources, "Unloading resource at {}, ref count {}", metadata->path.string(), metadata->refCount);
+	if (metadata->refCount > 0)
 	{
-		MANI_LOG(LogResources, "Unloading resource at {}", path->value.string());
+		return;
 	}
-#endif
+
+	if (metadata->unloaderId != ECS::INVALID_ID)
+	{
+		if (metadata->unloaderId == 3)
+		{
+			__debugbreak();
+		}
+		const ResourceUnloader& unloader = registry.getPinned<ResourceUnloader>(metadata->unloaderId);
+		MANI_ASSERT(unloader.value != nullptr, "registered a null unloader for asset at {}", metadata->path.string());
+		unloader.value->unload(registry, inEntityId);
+	}
+
+	Ref<ResourceTag> resourceTag = registry.get<ResourceTag>(inEntityId);
 
 	forEachExtension(registry, [&registry, inEntityId, tag = resourceTag->tag](const IResourceSystemExtension& ext)
 	{

@@ -21,8 +21,8 @@ using ns = std::chrono::nanoseconds;
 CoreConfig loadConfig()
 {
 	CoreConfig config;
-	const Path path = FileSystem::getConfigPath().append(Mani::CONFIG_FILENAME);
 	std::string content;
+	const Path path = Mani::FileSystem::getConfigFilePath();
 	if (FileSystem::readFile(path, content))
 	{
 		config = ManiZ::from::json<CoreConfig>(content);

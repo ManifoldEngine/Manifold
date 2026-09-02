@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Core/Core.h>
+#include <Core/Containers/List.h>
 #include <Core/ManiTypes.h>
 #include <string>
 
@@ -8,8 +9,12 @@ namespace Mani
 {
 	namespace FileSystem
 	{
+		constexpr std::string_view CONFIG_FILENAME = "Config.json";
+
 		// dumps a file to a string
 		bool readFile(const Path& filePath, std::string& outResult);
+		// dumps a file to list of bytes
+		bool readBytes(const Path& filePath, Mani::List<unsigned char>& outResult);
 
 		// dumps a string to a file
 		bool writeFile(const Path& filePath, const std::string& content);
@@ -18,8 +23,8 @@ namespace Mani
 		Path getRootPath();
 		// returns a path to {root}/Engine
 		Path getEnginePath();
-		// returns a path to {root}/Config
-		Path getConfigPath();
+		// returns a path to config file
+		Path getConfigFilePath();
 		// returns a path to {}/{projectName}
 		// it is expexted that the project name is defined in the build files
 		Path getProjectPath();

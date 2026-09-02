@@ -14,7 +14,7 @@
 
 #include <OpenGL/Render/OpenGLRenderSystem.h>
 
-#include <OpenGL/STBI.h>
+#include <STB/Textures/STBImage.h>
 
 #include <RenderAPI/Mesh.h>
 #include <RenderAPI/Material.h>
@@ -137,7 +137,7 @@ void onTextureLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t t
 			MANI_LOG_ERROR(LogOpenGL, "Failed to load texture with id {}", entityId);
 		}
 
-		STBI::freeTexture(texture);
+		STB::freeTexture(texture);
 		glfwMakeContextCurrent(nullptr);
 	});
 }
@@ -153,37 +153,12 @@ void onMeshUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t ta
 	}
 }
 
-void onMaterialUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
-{
-	if (Resource<OpenGLMaterial>* res = registry.findPinned<Resource<OpenGLMaterial>>(entityId))
-	{
-		MANI_ASSERT(Resources::isReady(registry, entityId), UNLOAD_BEFORE_READY_ERROR_MESSAGE);
-
-		for (const auto& [key, texture] : res->value.textures)
-		{
-			Resources::unload(registry, texture);
-		}
-	}
-}
-
 void onShaderUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
 {
 	if (Resource<OpenGLShader>* res = registry.findPinned<Resource<OpenGLShader>>(entityId))
 	{
 		MANI_ASSERT(Resources::isReady(registry, entityId), UNLOAD_BEFORE_READY_ERROR_MESSAGE);
 		res->value.destroy();
-	}
-}
-
-void onTextureUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
-{
-	if (Resource<Texture>* res = registry.findPinned<Resource<Texture>>(entityId))
-	{
-		MANI_ASSERT(Resources::isReady(registry, entityId), UNLOAD_BEFORE_READY_ERROR_MESSAGE);
-		if (STBI::isLoaded(res->value))
-		{
-			STBI::freeTexture(res->value);
-		}
 	}
 }
 
@@ -230,19 +205,9 @@ void OpenGLResourceSystemExtension::onResourceUnloaded(ECS::Registry& registry, 
 		onMeshUnloaded(registry, entityId, tag);
 	}
 
-	if (registry.hasPinned<Resource<Material>>(entityId))
-	{
-		onMaterialUnloaded(registry, entityId, tag);
-	}
-
 	if (registry.hasPinned<Resource<OpenGLTexture2D>>(entityId))
 	{
 		onTexture2DUnloaded(registry, entityId, tag);
-	}
-
-	if (registry.hasPinned<Resource<Texture>>(entityId))
-	{
-		onTextureUnloaded(registry, entityId, tag);
 	}
 }
 

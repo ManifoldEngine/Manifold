@@ -14,6 +14,7 @@
 
 #include <RenderAPI/Components/MeshRendering.h>
 #include <RenderAPI/Components/SpriteRendering.h>
+#include <RenderAPI/Components/TextRendering.h>
 #include <RenderAPI/Components/BoundingSphere.h>
 
 using namespace Mani;
@@ -100,6 +101,11 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 				const auto& tex = registry.getPinned<Resource<Texture>>(spriteRendering->textureId);
 				command.customParamaters.add({ ShaderNames::MANI_SPRITE_TEXTURE_SIZE, tex.value.size });
 			}
+		}
+
+		if (Ref<TextRendering> textRendering = registry.find<TextRendering>(entityId))
+		{
+			// todo 
 		}
 
 		for (const auto& texture : materialRes->value.textures)

@@ -3,7 +3,7 @@
 #include <Core/CoreFwd.h>
 #include <Resources/IResourceSystemExtension.h>
 #include <Resources/ResourceSystem.h>
-#include <OpenGL/ResourceLoader_Texture.h>
+#include <STB/Textures/ResourceLoader_Texture.h>
 
 namespace Mani
 {

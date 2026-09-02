@@ -1,7 +1,7 @@
 #pragma once
 
+#include <Core/ECS/Entity.h>
 #include <Core/ManiTypes.h>
-#include <atomic>
 #include <filesystem>
 
 namespace Mani
@@ -18,15 +18,22 @@ namespace Mani
 		T value;
 	};
 
-	struct ResourcePath
+	struct ResourceMetadata
 	{
-		Path value;
+		Path path;
+		ECS::EntityId unloaderId = ECS::INVALID_ID;
+		SizeT refCount = 0;
 	};
 
 	struct ResourceReady {};
 
 	template<typename T>
 	struct ResourceLoader
+	{
+		class IResourceLoader* value = nullptr;
+	};
+
+	struct ResourceUnloader
 	{
 		class IResourceLoader* value = nullptr;
 	};

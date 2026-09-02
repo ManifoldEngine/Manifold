@@ -5,9 +5,10 @@
 
 namespace Mani
 {
-    class ResourceLoader_Texture : public IResourceLoader
+    class ResourceLoader_Font : public IResourceLoader
     {
         // Inherited via IResourceLoader
         bool load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const override;
+        bool unload(ECS::Registry& registry, ECS::EntityId resourceId) const;
     };
 }
