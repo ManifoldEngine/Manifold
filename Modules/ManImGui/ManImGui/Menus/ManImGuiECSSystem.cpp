@@ -40,7 +40,7 @@ bool isLooseMatch(const List<std::string>& tokens, const List<ECS::TypeInfo>& ty
     return false;
 }
 
-void DrawEntity(const Mani::ECS::Registry& registry, Mani::EntityId entityId, ECS::ComponentMask mask, const List<std::string>& searchTokens)
+void drawEntity(const Mani::ECS::Registry& registry, Mani::EntityId entityId, ECS::ComponentMask mask, const List<std::string>& searchTokens)
 {
     constexpr ImGuiTableFlags TABLE_FLAGS = ImGuiTableFlags_::ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV;
     constexpr int TABLE_COLUMS = 2;
@@ -166,7 +166,7 @@ void ManImGuiECSSystem::tick(ECS::Registry& registry)
         for (const auto [entityId] : view)
         {
             const ECS::Entity* entity = registry.getEntity(entityId);
-            DrawEntity(registry, entityId, entity->components, searchTokens);
+            drawEntity(registry, entityId, entity->components, searchTokens);
         }
         ImGui::EndTable();
     }
@@ -182,7 +182,7 @@ void ManImGuiECSSystem::tick(ECS::Registry& registry)
         for (const auto [entityId] : view)
         {
             const ECS::Entity* entity = registry.getEntity(entityId);
-            DrawEntity(registry, entityId, entity->pinned, searchTokens);
+            drawEntity(registry, entityId, entity->pinned, searchTokens);
         }
         ImGui::EndTable();
     }
