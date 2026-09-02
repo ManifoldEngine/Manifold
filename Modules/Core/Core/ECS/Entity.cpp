@@ -4,16 +4,16 @@
 
 namespace Mani
 {
-	bool ECS::isValid(ECS::EntityId entityId)
+	bool ECS::isValid(EntityId entityId)
 	{
-		return entityId != ECS::INVALID_ID;
+		return entityId != INVALID_ID;
 	}
 
 	ECS::Entity::Entity(ECS::Index index) : m_index(index)
 	{
 	}
 
-	ECS::EntityId ECS::Entity::getId() const
+	EntityId ECS::Entity::getId() const
 	{
 		return ECS::calculateId(version, m_index);;
 	}
@@ -23,9 +23,9 @@ namespace Mani
 		return m_index;
 	}
 
-	ECS::EntityId ECS::calculateId(Version version, Index index)
+	EntityId ECS::calculateId(Version version, Index index)
 	{
-		return (static_cast<ECS::EntityId>(version) << VERSION_BITS) | static_cast<ECS::EntityId>(index);
+		return (static_cast<EntityId>(version) << VERSION_BITS) | static_cast<EntityId>(index);
 	}
 
 	ECS::Index ECS::toIndex(EntityId entityId)

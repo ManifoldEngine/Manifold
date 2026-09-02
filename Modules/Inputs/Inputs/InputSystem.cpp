@@ -56,7 +56,7 @@ void InputSystem::onDeinitialize(ECS::Registry& registry, World& world)
 void InputSystem::tick(ECS::Registry& registry)
 {
 	ECS::View<InputUser> view(registry);
-	parallelFor(view, [&](ECS::EntityId entityId, InputUser& inputUser)
+	parallelFor(view, [&](EntityId entityId, InputUser& inputUser)
 	{
 		// reset action axis state 
 		for (auto& action : inputUser.actions)

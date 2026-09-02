@@ -6,16 +6,16 @@
 
 using namespace Mani;
 
-ECS::EntityId Cameras::getMainCameraId(ECS::Registry& registry)
+EntityId Cameras::getMainCameraId(ECS::Registry& registry)
 {
 	ECS::ConstView<MainCamera, Camera> view(registry);
 	return view.begin().getEntityId();
 }
 
-ECS::EntityId Cameras::createMainCamera(ECS::Registry& registry)
+EntityId Cameras::createMainCamera(ECS::Registry& registry)
 {
 	// create Camera
-	ECS::EntityId cameraId = registry.create();
+	EntityId cameraId = registry.create();
 
 	registry.add<Mani::Camera>(cameraId);
 	registry.add<Mani::Position>(cameraId, Mani::VEC3F::BACK * 5.f); // film the origin by default

@@ -15,7 +15,7 @@ void FloatingCameraSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<TimeSystem>();
 
-	ECS::EntityId entityId = registry.create();
+	EntityId entityId = registry.create();
 	registry.add<FloatingCamera>(entityId);
 	
 	registry.add<InputUser>(entityId);
@@ -52,8 +52,8 @@ void FloatingCameraSystem::tick(ECS::Registry& registry)
 		const InputAction& moveAction = Inputs::getAction(registry, entityId, MOVE_ACTION);
 		const InputAction& aimAction = Inputs::getAction(registry, entityId, AIM_ACTION);
 
-		ECS::EntityId cameraId = Cameras::getMainCameraId(registry);
-		if (cameraId == ECS::INVALID_ID)
+		EntityId cameraId = Cameras::getMainCameraId(registry);
+		if (cameraId == INVALID_ID)
 		{
 			MANI_LOG_ERROR(LogFloatingCamera, "Could not find a camera in the world");
 			continue;

@@ -21,11 +21,11 @@ namespace Mani
 	namespace FModControls
 	{
 		Ref<FMod> getFModChecked(ECS::Registry& registry);
-		void play(ECS::Registry& registry, ECS::EntityId channelId);
+		void play(ECS::Registry& registry, EntityId channelId);
 		
-		void pause(ECS::Registry& registry, ECS::EntityId channelId);
-		void resume(ECS::Registry& registry, ECS::EntityId channelId);
+		void pause(ECS::Registry& registry, EntityId channelId);
+		void resume(ECS::Registry& registry, EntityId channelId);
 
-		void setVolume(ECS::Registry& registry, ECS::EntityId channelId, float volume);
+		void setVolume(ECS::Registry& registry, EntityId channelId, float volume);
 	}
 }

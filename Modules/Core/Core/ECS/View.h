@@ -68,7 +68,7 @@ namespace Mani
 					m_totalIndex += m_localIndex;
 				}
 
-				[[nodiscard]] std::tuple<ECS::EntityId, Ts&...> operator*() const
+				[[nodiscard]] std::tuple<EntityId, Ts&...> operator*() const
 				{
 					MANI_ASSERT(m_view != nullptr, "Null view in iterator.");
 					const Mani::List<TArchetype*>& archetypes = m_view->m_archetypes;
@@ -77,9 +77,9 @@ namespace Mani
 					const Mani::List<ECS::Index>& entityIdx = archetype.getEntityIndices();
 					MANI_ASSERT(entityIdx.isValid(m_localIndex), "Out of bounds.");
 					const TRegistry& registry = m_view->getRegistry();
-					const ECS::EntityId entityId = registry.getEntityAt(entityIdx[m_localIndex])->getId();
+					const EntityId entityId = registry.getEntityAt(entityIdx[m_localIndex])->getId();
 
-					return std::tuple<ECS::EntityId, Ts&...>(
+					return std::tuple<EntityId, Ts&...>(
 						entityId,
 						archetype.getComponents<Bare<Ts>>(registry.getComponentId<Ts>())[m_localIndex]...
 					);
@@ -95,25 +95,25 @@ namespace Mani
 					const Mani::List<ECS::Index>& entityIdx = archetype.getEntityIndices();
 					MANI_ASSERT(entityIdx.isValid(m_localIndex), "Out of bounds.");
 					const TRegistry& registry = m_view->getRegistry();
-					const ECS::EntityId entityId = registry.getEntityAt(entityIdx[m_localIndex])->getId();
+					const EntityId entityId = registry.getEntityAt(entityIdx[m_localIndex])->getId();
 					
 					f(args..., entityId, archetype.getComponents<Bare<Ts>>(registry.getComponentId<Ts>())[m_localIndex]...);
 				}
 
-				ECS::EntityId getEntityId() const
+				EntityId getEntityId() const
 				{
 					MANI_ASSERT(m_view != nullptr, "Null view in iterator.");
 					const Mani::List<TArchetype*>& archetypes = m_view->m_archetypes;
 					if (!archetypes.isValid(m_archetypeIndex) || m_localIndex >= archetypes[m_archetypeIndex]->count())
 					{
-						return ECS::INVALID_ID;
+						return INVALID_ID;
 					}
 
 					TArchetype& archetype = *(archetypes[m_archetypeIndex]);
 					const Mani::List<ECS::Index>& entityIdx = archetype.getEntityIndices();
 					if (!entityIdx.isValid(m_localIndex))
 					{
-						return ECS::INVALID_ID;
+						return INVALID_ID;
 					}
 					
 					const TRegistry& registry = m_view->getRegistry();

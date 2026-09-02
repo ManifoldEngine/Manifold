@@ -9,16 +9,17 @@ namespace Mani
 	template<typename T>
 	class List;
 
+#if MANI_WEBGL
+	using EntityId = unsigned int;
+	const EntityId INVALID_ID = UINT32_MAX;
+#else
+	using EntityId = unsigned long long;
+	constexpr EntityId INVALID_ID = (std::numeric_limits<EntityId>::max)();
+#endif
+
 	namespace ECS
 	{
 		constexpr int MAX_COMPONENTS = 128;
-
-#if MANI_WEBGL
-		using EntityId = unsigned int;
-		const EntityId INVALID_ID = UINT32_MAX;
-#else
-		using EntityId = unsigned long long;
-		constexpr EntityId INVALID_ID = (std::numeric_limits<EntityId>::max)();
 
 		using Index = unsigned int;
 		constexpr Index MAX_INDEX = (std::numeric_limits<Index>::max)();
@@ -27,7 +28,6 @@ namespace Mani
 		using Version = unsigned int;
 		constexpr Version MAX_VERSION = (std::numeric_limits<Version>::max)();
 		constexpr int VERSION_BITS = sizeof(Version) * 8;
-#endif
 
 		using ComponentMask = Bitset<MAX_COMPONENTS>;
 		using ComponentId = BitsetIndexType;

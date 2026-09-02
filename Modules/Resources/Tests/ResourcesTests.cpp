@@ -222,7 +222,7 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 
 		struct DependencyExtension final : IResourceSystemExtension
 		{
-			void onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t) const override
+			void onResourceLoaded(ECS::Registry& registry, EntityId entityId, uint32_t) const override
 			{
 				if (!registry.hasPinned<Resource<TestResourceA>>(entityId))
 				{
@@ -236,16 +236,16 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 				ext.value = 7;
 			}
 
-			void onResourceUnloaded(ECS::Registry&, ECS::EntityId, uint32_t) const override {}
+			void onResourceUnloaded(ECS::Registry&, EntityId, uint32_t) const override {}
 		};
 
 		struct TestResourceALoader final : public IResourceLoader
 		{
-			bool load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const override
+			bool load(ECS::Registry& registry, const Path& absolutePath, EntityId resourceId, uint32_t tag) const override
 			{
 				return true;
 			}
-			bool unload(ECS::Registry& registry, ECS::EntityId resourceId) const
+			bool unload(ECS::Registry& registry, EntityId resourceId) const
 			{
 				return true;
 			}
@@ -294,14 +294,14 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 
 		struct TestResourceBLoader final : public IResourceLoader
 		{
-			bool load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const override
+			bool load(ECS::Registry& registry, const Path& absolutePath, EntityId resourceId, uint32_t tag) const override
 			{ 
 				auto& res = registry.getPinned<Resource<TestResourceB>>(resourceId);
 				res.value.value = 420;
 				return true;
 			}
 			
-			bool unload(ECS::Registry& registry, ECS::EntityId resourceId) const override
+			bool unload(ECS::Registry& registry, EntityId resourceId) const override
 			{
 				auto& res = registry.getPinned<Resource<TestResourceB>>(resourceId);
 				res.value.value = 0;
@@ -314,20 +314,20 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 			std::string resourceAPath = "dummyA.json";
 			std::string resourceBPath = "dummyB.json";
 
-			ECS::EntityId resourceAId = ECS::INVALID_ID;
-			ECS::EntityId resourceBId = ECS::INVALID_ID;
+			EntityId resourceAId = INVALID_ID;
+			EntityId resourceBId = INVALID_ID;
 		};
 
 		struct TestResourceCLoader final : public IResourceLoader
 		{
-			bool load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const { return true; };
-			void postLoad(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const
+			bool load(ECS::Registry& registry, const Path& absolutePath, EntityId resourceId, uint32_t tag) const { return true; };
+			void postLoad(ECS::Registry& registry, const Path& absolutePath, EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const
 			{
 				auto& res = registry.getPinned<Resource<TestResourceC>>(resourceId);
 				res.value.resourceAId = Resources::load<TestResourceA>(registry, res.value.resourceAPath, method, tag);
 				res.value.resourceBId = Resources::load<TestResourceB>(registry, res.value.resourceBPath, method, tag);
 			};
-			bool unload(ECS::Registry& registry, ECS::EntityId resourceId) const { return true; }
+			bool unload(ECS::Registry& registry, EntityId resourceId) const { return true; }
 		};
 
 		MANI_TEST(PostLoadFlow, "Resource C should load A and B in its post load phase")
@@ -378,8 +378,8 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 			MANI_TEST_ASSERT(isCReady, "Resource B should be ready");
 
 			auto& resC = registry.getPinned<Resource<TestResourceC>>(entityIdC);
-			MANI_TEST_ASSERT(resC.value.resourceAId != ECS::INVALID_ID, "Dependency C value mismatch");
-			MANI_TEST_ASSERT(resC.value.resourceBId != ECS::INVALID_ID, "Dependency C value mismatch");
+			MANI_TEST_ASSERT(resC.value.resourceAId != INVALID_ID, "Dependency C value mismatch");
+			MANI_TEST_ASSERT(resC.value.resourceBId != INVALID_ID, "Dependency C value mismatch");
 
 			MANI_TEST_ASSERT(registry.isValid(resC.value.resourceAId) && registry.hasPinned<Resource<TestResourceA>>(resC.value.resourceAId), "A should be properly loaded");
 			auto& resB = registry.getPinned<Resource<TestResourceB>>(resC.value.resourceBId);

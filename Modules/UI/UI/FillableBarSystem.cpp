@@ -12,7 +12,7 @@ using namespace Mani;
 void FillableBarSystem::tick(Mani::ECS::Registry& registry)
 {
 	ECS::View<UI::FillableBar, MeshRendering> view(registry);
-	parallelFor(view, [&](ECS::EntityId entityId, UI::FillableBar& bar, MeshRendering& meshRendering) 
+	parallelFor(view, [&](EntityId entityId, UI::FillableBar& bar, MeshRendering& meshRendering) 
 	{
 		meshRendering.shaderParameters[UI::ShaderNames::MANI_UI_FILLRATIO] = bar.amount;
 	});

@@ -10,7 +10,7 @@
 
 using namespace Mani;
 
-bool ResourceLoader_FModStream::load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
+bool ResourceLoader_FModStream::load(ECS::Registry& registry, const Path& absolutePath, EntityId resourceId, uint32_t tag) const
 {
     Ref<FMod> fmod = registry.getSingle<FMod>();
     
@@ -27,7 +27,7 @@ bool ResourceLoader_FModStream::load(ECS::Registry& registry, const Path& absolu
     return success;
 }
 
-void ResourceLoader_FModStream::postLoad(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const
+void ResourceLoader_FModStream::postLoad(ECS::Registry& registry, const Path& absolutePath, EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const
 {
     // add the FModSound resource so it can be processed like a normal sound.
     Resource<FModStream>& resource = registry.getPinned<Resource<FModStream>>(resourceId);
@@ -35,7 +35,7 @@ void ResourceLoader_FModStream::postLoad(ECS::Registry& registry, const Path& ab
     soundResource.value.sound = resource.value.sound;
 }
 
-bool ResourceLoader_FModStream::unload(ECS::Registry& registry, ECS::EntityId resourceId) const
+bool ResourceLoader_FModStream::unload(ECS::Registry& registry, EntityId resourceId) const
 {
     Resource<FModSound>& sound = registry.getPinned<Resource<FModSound>>(resourceId);
     MANI_ASSERT(sound.value.sound != nullptr, "trying to unload a sound that is null");

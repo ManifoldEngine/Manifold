@@ -27,7 +27,7 @@ namespace Mani
 	{
 		struct Frame
 		{
-			ECS::EntityId textureId = ECS::INVALID_ID;
+			EntityId textureId = INVALID_ID;
 		};
 
 		List<Frame> frames;
@@ -41,7 +41,7 @@ namespace Mani
 			Loop,
 		};
 
-		Mani::ECS::EntityId resourceId = Mani::ECS::INVALID_ID;
+		Mani::EntityId resourceId = Mani::INVALID_ID;
 		FrameId frameId = INVALID_FRAME_ID;
 		float elapsed = 0.f;			// in seconds
 		float playRate = 1.f / 24.f;	// in seconds
@@ -52,6 +52,6 @@ namespace Mani
 
 	namespace Animations
 	{
-		void play(ECS::Registry& registry, Mani::ECS::EntityId entityId, Mani::ECS::EntityId resourceId, Animator::EPlayMode playMode = Animator::EPlayMode::OneShot);
+		void play(ECS::Registry& registry, Mani::EntityId entityId, Mani::EntityId resourceId, Animator::EPlayMode playMode = Animator::EPlayMode::OneShot);
 	}
 }

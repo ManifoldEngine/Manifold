@@ -7,6 +7,6 @@ namespace Mani
 {
 	struct FModPlayQueue
 	{
-		List<ECS::EntityId> value;
+		List<EntityId> value;
 	};
 }

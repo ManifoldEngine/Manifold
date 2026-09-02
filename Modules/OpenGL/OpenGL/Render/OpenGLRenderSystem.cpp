@@ -30,8 +30,8 @@ OpenGLRenderContext createContext(ECS::Registry& registry)
 
 	{
 		// camera
-		ECS::EntityId cameraId = Cameras::getMainCameraId(registry);
-		MANI_ASSERT(cameraId != ECS::INVALID_ID, "trying to render without a camera");
+		EntityId cameraId = Cameras::getMainCameraId(registry);
+		MANI_ASSERT(cameraId != INVALID_ID, "trying to render without a camera");
 		auto position = registry.get<Position>(cameraId);
 		auto camera = registry.get<Camera>(cameraId);
 

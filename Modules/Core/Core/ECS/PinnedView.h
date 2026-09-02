@@ -51,15 +51,15 @@ namespace Mani
 				[[nodiscard]] bool operator<=	(const Iterator& other) const { MANI_ASSERT(m_registry == other.m_registry && m_mask == other.m_mask, MATCHING_VIEWS_MESSAGE); return m_index <= other.m_index; }
 
 
-				[[nodiscard]] std::tuple<ECS::EntityId, Ts&...> operator*() const
+				[[nodiscard]] std::tuple<EntityId, Ts&...> operator*() const
 				{
 					MANI_ASSERT(m_registry != nullptr, "Null registry in view");
 					MANI_ASSERT(m_indices->isValid(m_index), "Out of bounds");
 					const ECS::Index entityIdx = static_cast<ECS::Index>(m_indices->at(m_index));
 					const ECS::Entity* entity = m_registry->getEntityAt(entityIdx);
 					MANI_ASSERT(entity != nullptr, "Null entity in view");
-					const ECS::EntityId entityId = entity->getId();
-					return std::tuple<ECS::EntityId, Ts&...>(
+					const EntityId entityId = entity->getId();
+					return std::tuple<EntityId, Ts&...>(
 						entityId,
 						m_registry->getPinned<Ts>(entityId)...
 					);
@@ -77,11 +77,11 @@ namespace Mani
 					return *this;
 				}
 
-				ECS::EntityId getEntityId() const
+				EntityId getEntityId() const
 				{
 					if (!isValid())
 					{
-						return ECS::INVALID_ID;
+						return INVALID_ID;
 					}
 					return m_registry->getEntityAt(static_cast<ECS::Index>(m_indices->at(m_index)))->getId();
 				}

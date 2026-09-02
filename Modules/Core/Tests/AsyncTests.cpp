@@ -25,13 +25,13 @@ MANI_SECTION_BEGIN(Async, "Async")
 		ECS::Registry registry;
 		for (int i = 0; i < ENTITYCOUNT; ++i)
 		{ 
-			const ECS::EntityId entityId = registry.create();
+			const EntityId entityId = registry.create();
 			registry.add<MyComponent>(entityId);
 		}
 
 		ECS::View<MyComponent> view(registry);
 		const SizeT minChunkSize = ENTITYCOUNT / Application::THREAD_COUNT;
-		Mani::parallelFor(view, [](ECS::EntityId entityId, MyComponent& myComp)
+		Mani::parallelFor(view, [](EntityId entityId, MyComponent& myComp)
 		{
 			myComp.value += 10;
 		}, minChunkSize);
@@ -58,14 +58,14 @@ MANI_SECTION_BEGIN(Async, "Async")
 		ECS::Registry registry;
 		for (int i = 0; i < ENTITYCOUNT; ++i)
 		{
-			const ECS::EntityId entityId = registry.create();
+			const EntityId entityId = registry.create();
 			registry.add<MyComponent>(entityId, 69);
 		}
 
 		std::atomic<int> counter{ 0 };
 		ECS::ConstView<MyComponent> view(registry);
 		const SizeT minChunkSize = ENTITYCOUNT / Application::THREAD_COUNT;
-		Mani::parallelFor(view, [&counter](ECS::EntityId entityId, const MyComponent& myComp)
+		Mani::parallelFor(view, [&counter](EntityId entityId, const MyComponent& myComp)
 		{
 			// incredibly slow btw
 			counter++;
@@ -93,14 +93,14 @@ MANI_SECTION_BEGIN(Async, "Async")
 		ECS::Registry registry;
 		for (int i = 0; i < ENTITYCOUNT; ++i)
 		{
-			const ECS::EntityId entityId = registry.create();
+			const EntityId entityId = registry.create();
 			registry.add<MyComponent>(entityId, 69);
 		}
 
 		{
 			ECS::View<MyComponent> view(registry);
 			const SizeT minChunkSize = ENTITYCOUNT / Application::THREAD_COUNT;
-			Mani::parallelForWithCmd(view, [](ECS::CommandBuffer& cmd, ECS::EntityId entityId, const MyComponent& myComp)
+			Mani::parallelForWithCmd(view, [](ECS::CommandBuffer& cmd, EntityId entityId, const MyComponent& myComp)
 			{
 				cmd.add<MyOtherComponent>(entityId, 420);
 			}, minChunkSize);
@@ -132,14 +132,14 @@ MANI_SECTION_BEGIN(Async, "Async")
 		ECS::Registry registry;
 		for (int i = 0; i < ENTITYCOUNT; ++i)
 		{
-			const ECS::EntityId entityId = registry.create();
+			const EntityId entityId = registry.create();
 			registry.add<MyComponent>(entityId, 69);
 		}
 
 		{
 			ECS::View<MyComponent> view(registry);
 			constexpr SizeT minChunkSize = 1;
-			Mani::parallelFor(view, [](ECS::EntityId entityId, MyComponent& myComp)
+			Mani::parallelFor(view, [](EntityId entityId, MyComponent& myComp)
 			{
 				myComp.value += 420;
 			}, minChunkSize);
@@ -170,14 +170,14 @@ MANI_SECTION_BEGIN(Async, "Async")
 		ECS::Registry registry;
 		for (int i = 0; i < ENTITYCOUNT; ++i)
 		{
-			const ECS::EntityId entityId = registry.create();
+			const EntityId entityId = registry.create();
 			registry.add<MyComponent>(entityId, 69);
 		}
 
 		{
 			ECS::View<MyComponent> view(registry);
 			constexpr SizeT minChunkSize = 1;
-			Mani::parallelFor(view, [](ECS::EntityId entityId, MyComponent& myComp)
+			Mani::parallelFor(view, [](EntityId entityId, MyComponent& myComp)
 			{
 				myComp.value += 420;
 			}, minChunkSize);
@@ -208,14 +208,14 @@ MANI_SECTION_BEGIN(Async, "Async")
 		ECS::Registry registry;
 		for (int i = 0; i < ENTITYCOUNT; ++i)
 		{
-			const ECS::EntityId entityId = registry.create();
+			const EntityId entityId = registry.create();
 			registry.add<MyComponent>(entityId, 69);
 		}
 
 		{
 			ECS::View<MyComponent> view(registry);
 			constexpr SizeT minChunkSize = 1;
-			Mani::parallelFor(view, [](SizeT threadIdx, ECS::EntityId entityId, MyComponent& myComp)
+			Mani::parallelFor(view, [](SizeT threadIdx, EntityId entityId, MyComponent& myComp)
 			{
 				myComp.value = threadIdx;
 			}, 1);

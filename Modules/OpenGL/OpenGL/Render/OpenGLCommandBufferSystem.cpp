@@ -43,15 +43,15 @@ void OpenGLCommandBufferSystem::onDeinitialize(ECS::Registry& registry, World& w
 void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 {
 	// camera
-	ECS::EntityId cameraId = Cameras::getMainCameraId(registry);
-	MANI_ASSERT(cameraId != ECS::INVALID_ID, "Trying to render without a camera");
+	EntityId cameraId = Cameras::getMainCameraId(registry);
+	MANI_ASSERT(cameraId != INVALID_ID, "Trying to render without a camera");
 	auto cameraPosition = registry.get<Position>(cameraId);
 	auto camera = registry.get<Camera>(cameraId);
 
 	// gather all draw commands.
 	std::array<List<OpenGLCommand>, Application::THREAD_COUNT> threadBuffers;
 	ECS::ConstView<Position, Rotation, Scale, MeshRendering> view(registry);
-	Mani::parallelFor(view, [&threadBuffers, &registry, &cameraPosition, &camera](SizeT threadIdx, ECS::EntityId entityId, const Position& position, const Rotation& rotation, const Scale& scale, const MeshRendering& meshRendering)
+	Mani::parallelFor(view, [&threadBuffers, &registry, &cameraPosition, &camera](SizeT threadIdx, EntityId entityId, const Position& position, const Rotation& rotation, const Scale& scale, const MeshRendering& meshRendering)
 	{
 		if (Ref<BoundingSphere> bounds = registry.find<BoundingSphere>(entityId))
 		{

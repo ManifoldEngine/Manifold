@@ -11,13 +11,13 @@ namespace Mani
 	{
 		struct Context
 		{
-			ECS::EntityId cameraId = ECS::INVALID_ID;
-			ECS::EntityId configId = ECS::INVALID_ID;
+			EntityId cameraId = INVALID_ID;
+			EntityId configId = INVALID_ID;
 		};
 
 		Ref<const Camera> getUICamera(const ECS::Registry& registry);
-		ECS::EntityId createSprite(ECS::Registry& registry, const Vec2f& size, ECS::EntityId textureId, ECS::EntityId materialId, uint32_t tag = Mani::GLOBAL_RESOURCE_TAG);
-		ECS::EntityId createFillableBar(ECS::Registry& registry, const Vec2f& size, ECS::EntityId textureId, ECS::EntityId materialId, const Vec4f& backgroundColor = Colors::BLACK, uint32_t tag = Mani::GLOBAL_RESOURCE_TAG);
+		EntityId createSprite(ECS::Registry& registry, const Vec2f& size, EntityId textureId, EntityId materialId, uint32_t tag = Mani::GLOBAL_RESOURCE_TAG);
+		EntityId createFillableBar(ECS::Registry& registry, const Vec2f& size, EntityId textureId, EntityId materialId, const Vec4f& backgroundColor = Colors::BLACK, uint32_t tag = Mani::GLOBAL_RESOURCE_TAG);
 
 		// normal device coordinate to pixel position
 		// use these to place ui elements in [-1, 1] coordinates

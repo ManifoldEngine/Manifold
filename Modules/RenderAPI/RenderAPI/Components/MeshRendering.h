@@ -8,11 +8,11 @@ namespace Mani
 {
 	struct MeshRendering
 	{
-		ECS::EntityId meshResourceId;
-		ECS::EntityId materialResourceId;
+		EntityId meshResourceId;
+		EntityId materialResourceId;
 		int rendererId = 0;
 
 		Mani::Map<std::string_view, ShaderType> shaderParameters;
-		Mani::Map<std::string_view, ECS::EntityId> textureParameters;
+		Mani::Map<std::string_view, EntityId> textureParameters;
 	};
 }

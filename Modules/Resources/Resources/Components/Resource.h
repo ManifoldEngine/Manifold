@@ -21,7 +21,7 @@ namespace Mani
 	struct ResourceMetadata
 	{
 		Path path;
-		ECS::EntityId unloaderId = ECS::INVALID_ID;
+		EntityId unloaderId = INVALID_ID;
 		SizeT refCount = 0;
 	};
 

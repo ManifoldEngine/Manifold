@@ -74,14 +74,14 @@ namespace Mani
 			Registry(Registry&) = delete;
 
 			// creates an entity id
-			[[nodiscard]] ECS::EntityId create()
+			[[nodiscard]] EntityId create()
 			{
 				ASSERT_SAME_THREAD();
 
 				if (m_entities.count() >= MAX_ENTITY_COUNT && m_recyclableIndices.isEmpty())
 				{
 					MANI_ASSERT(false, "Reached maximum entitty capacity");
-					return ECS::INVALID_ID;
+					return INVALID_ID;
 				}
 
 				ECS::Entity* entity = nullptr;
@@ -114,14 +114,14 @@ namespace Mani
 			}
 
 			// destroys an entity and its components
-			bool destroy(ECS::EntityId entityId)
+			bool destroy(EntityId entityId)
 			{
 				MANI_ASSERT(entityId != m_singletonId, "Trying to destroy the singleton entity");
 				return destroy_internal(entityId);
 			}
 
 			// destroys at the end of the tick.
-			void deferDestroy(ECS::EntityId entityId)
+			void deferDestroy(EntityId entityId)
 			{
 				MANI_ASSERT(entityId != m_singletonId, "Trying to destroy the singleton entity");
 				std::scoped_lock<std::mutex> lock(m_markedForDestroyMutex);
@@ -130,9 +130,9 @@ namespace Mani
 
 			// returns true if an entity with entityId exists and is alive
 			//	checkForDeferredDestruction: checks if deferDestroy has been called on this entity
-			[[nodiscard]] bool isValid(ECS::EntityId entityId, bool shouldCheckForDeferredDestruction = false) const
+			[[nodiscard]] bool isValid(EntityId entityId, bool shouldCheckForDeferredDestruction = false) const
 			{
-				if (entityId == ECS::INVALID_ID)
+				if (entityId == INVALID_ID)
 				{
 					return false;
 				}
@@ -152,14 +152,14 @@ namespace Mani
 				return entity.version == ECS::toVersion(entityId) && entity.isAlive;
 			}
 
-			[[nodiscard]] bool isMarkedForDestruction(ECS::EntityId entityId) const
+			[[nodiscard]] bool isMarkedForDestruction(EntityId entityId) const
 			{
 				std::scoped_lock<std::mutex> lock(m_markedForDestroyMutex);
 				return m_markedForDestroy.contains(entityId);
 			}
 
 			// returs an entity object
-			[[nodiscard]] const ECS::Entity* getEntity(ECS::EntityId entityId) const
+			[[nodiscard]] const ECS::Entity* getEntity(EntityId entityId) const
 			{
 				if (!isValid(entityId))
 				{
@@ -195,7 +195,7 @@ namespace Mani
 			// returns the added component
 			template<typename T, typename ...TArgs>
 			requires(std::is_move_constructible_v<T>)
-			Ref<T> add(ECS::EntityId entityId, TArgs&&... args)
+			Ref<T> add(EntityId entityId, TArgs&&... args)
 			{
 				ASSERT_UNLOCKED();
 				ASSERT_SAME_THREAD();
@@ -230,7 +230,7 @@ namespace Mani
 			// returns the added components
 			template<typename ...Ts>
 			requires(std::is_move_constructible_v<Ts> && ...)
-			std::tuple<Ref<Ts>...> addMany(ECS::EntityId entityId)
+			std::tuple<Ref<Ts>...> addMany(EntityId entityId)
 			{
 				ASSERT_UNLOCKED();
 				ASSERT_SAME_THREAD();
@@ -286,7 +286,7 @@ namespace Mani
 			// and their references are stable
 			// returns the added component
 			template<typename T, typename ...TArgs>
-			T& addPinned(ECS::EntityId entityId, TArgs&&... args)
+			T& addPinned(EntityId entityId, TArgs&&... args)
 			{
 				ASSERT_SAME_THREAD();
 				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
@@ -313,7 +313,7 @@ namespace Mani
 
 			// removes a T components to an entity
 			template<typename T>
-			void remove(ECS::EntityId entityId)
+			void remove(EntityId entityId)
 			{
 				ASSERT_UNLOCKED();
 				ASSERT_SAME_THREAD();
@@ -347,7 +347,7 @@ namespace Mani
 
 			// removes all T components to an entity
 			template<typename ...Ts>
-			void removeMany(ECS::EntityId entityId)
+			void removeMany(EntityId entityId)
 			{
 				ASSERT_UNLOCKED();
 				ASSERT_SAME_THREAD();
@@ -400,7 +400,7 @@ namespace Mani
 			}
 
 			template<typename T>
-			void removePinned(ECS::EntityId entityId)
+			void removePinned(EntityId entityId)
 			{
 				ASSERT_SAME_THREAD();
 				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
@@ -426,7 +426,7 @@ namespace Mani
 
 			// returns an entity's T component as a reference
 			template<typename T>
-			[[nodiscard]] Ref<T> get(ECS::EntityId entityId)
+			[[nodiscard]] Ref<T> get(EntityId entityId)
 			{
 				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
 				const ECS::Index index = ECS::toIndex(entityId);
@@ -438,7 +438,7 @@ namespace Mani
 
 			// returns an entity's T component as a const reference
 			template<typename T>
-			[[nodiscard]] Ref<const T> get(ECS::EntityId entityId) const
+			[[nodiscard]] Ref<const T> get(EntityId entityId) const
 			{
 				MANI_ASSERT(isValid(entityId), INVALID_ENTITY_MESSAGE, entityId);
 				const ECS::Index index = ECS::toIndex(entityId);
@@ -450,7 +450,7 @@ namespace Mani
 
 			// returns an entity's T component as a pointer
 			template<typename T>
-			[[nodiscard]] Ref<T> find(ECS::EntityId entityId)
+			[[nodiscard]] Ref<T> find(EntityId entityId)
 			{
 				if (!isValid(entityId))
 				{
@@ -471,7 +471,7 @@ namespace Mani
 
 			// returns an entity's T component as a const pointer
 			template<typename T>
-			[[nodiscard]] Ref<const T> find(ECS::EntityId entityId) const
+			[[nodiscard]] Ref<const T> find(EntityId entityId) const
 			{
 				if (!isValid(entityId))
 				{
@@ -519,7 +519,7 @@ namespace Mani
 			}
 
 			template<typename T>
-			[[nodiscard]] T& getPinned(ECS::EntityId entityId)
+			[[nodiscard]] T& getPinned(EntityId entityId)
 			{
 				ComponentPool<T>* pool = getPinnedComponentPoolPtr<T>();
 				MANI_ASSERT(pool != nullptr, "Trying to get an unregister component pool for {}", ManiZ::RFL::getTypeName<T>());
@@ -527,7 +527,7 @@ namespace Mani
 			}
 
 			template<typename T>
-			[[nodiscard]] const T& getPinned(ECS::EntityId entityId) const
+			[[nodiscard]] const T& getPinned(EntityId entityId) const
 			{
 				const ComponentPool<T>* pool = getPinnedComponentPoolPtr<T>();
 				MANI_ASSERT(pool != nullptr, "Trying to get an unregister component pool for {}", ManiZ::RFL::getTypeName<T>());
@@ -535,7 +535,7 @@ namespace Mani
 			}
 
 			template<typename T>
-			[[nodiscard]] T* findPinned(ECS::EntityId entityId)
+			[[nodiscard]] T* findPinned(EntityId entityId)
 			{
 				if (ComponentPool<T>* pool = getPinnedComponentPoolPtr<T>())
 				{
@@ -545,7 +545,7 @@ namespace Mani
 			}
 
 			template<typename T>
-			[[nodiscard]] const T* findPinned(ECS::EntityId entityId) const
+			[[nodiscard]] const T* findPinned(EntityId entityId) const
 			{
 				if (const ComponentPool<T>* pool = getPinnedComponentPoolPtr<T>())
 				{
@@ -580,7 +580,7 @@ namespace Mani
 
 			// returns true if entity matches the Ts component
 			template<typename ...Ts>
-			[[nodiscard]] bool has(ECS::EntityId entityId) const
+			[[nodiscard]] bool has(EntityId entityId) const
 			{
 				if (!isValid(entityId))
 				{
@@ -600,7 +600,7 @@ namespace Mani
 
 			// returns true if entity matches the Ts pinned component
 			template<typename ...Ts>
-			[[nodiscard]] bool hasPinned(ECS::EntityId entityId) const
+			[[nodiscard]] bool hasPinned(EntityId entityId) const
 			{
 				if (!isValid(entityId))
 				{
@@ -638,7 +638,7 @@ namespace Mani
 			}
 
 		private:
-			bool destroy_internal(ECS::EntityId entityId)
+			bool destroy_internal(EntityId entityId)
 			{
 				ASSERT_SAME_THREAD();
 				ASSERT_UNLOCKED();
@@ -796,11 +796,11 @@ namespace Mani
 			}
 
 			// Entities
-			ECS::EntityId m_singletonId = ECS::INVALID_ID;
+			EntityId m_singletonId = INVALID_ID;
 			Mani::List<ECS::Entity> m_entities;
 			Mani::List<ECS::Index> m_recyclableIndices;
 
-			Mani::List<ECS::EntityId> m_markedForDestroy;
+			Mani::List<EntityId> m_markedForDestroy;
 			mutable std::mutex m_markedForDestroyMutex;
 
 			// Components

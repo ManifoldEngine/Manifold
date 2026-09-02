@@ -102,7 +102,7 @@ void ManImGuiSystem::onInitialize(ECS::Registry& registry, World& world)
 
 	{
 		world.initializeDependency<InputSystem>();
-		const ECS::EntityId entityId = registry.create();
+		const EntityId entityId = registry.create();
 
 		registry.add<ManImGuiUser>(entityId);
 

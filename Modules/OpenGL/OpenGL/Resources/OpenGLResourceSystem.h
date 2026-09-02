@@ -10,8 +10,8 @@ namespace Mani
     class OpenGLResourceSystemExtension : public IResourceSystemExtension
     {
         // this is all guarranteed to be called from the main thread.
-        virtual void onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const override;
-        virtual void onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const override;
+        virtual void onResourceLoaded(ECS::Registry& registry, EntityId entityId, uint32_t tag) const override;
+        virtual void onResourceUnloaded(ECS::Registry& registry, EntityId entityId, uint32_t tag) const override;
     };
 
     class OpenGLResourceSystem : public ECS::System

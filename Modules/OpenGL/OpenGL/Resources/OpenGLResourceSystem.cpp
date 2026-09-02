@@ -24,7 +24,7 @@
 using namespace Mani;
 
 
-void onMeshLoaded(ECS::Registry& registry, ECS::EntityId meshId, uint32_t tag)
+void onMeshLoaded(ECS::Registry& registry, EntityId meshId, uint32_t tag)
 {
 	registry.addPinned<Resource<OpenGLVertexArray>>(meshId);
 
@@ -58,7 +58,7 @@ void onMeshLoaded(ECS::Registry& registry, ECS::EntityId meshId, uint32_t tag)
 	});
 }
 
-void onMaterialLoaded(ECS::Registry& registry, ECS::EntityId materialId, uint32_t tag)
+void onMaterialLoaded(ECS::Registry& registry, EntityId materialId, uint32_t tag)
 {
 	Resource<Material>& materialRes = registry.getPinned<Resource<Material>>(materialId);
 	Resource<OpenGLMaterial>& openglMaterialRes = registry.addPinned<Resource<OpenGLMaterial>>(materialId);
@@ -98,7 +98,7 @@ void onMaterialLoaded(ECS::Registry& registry, ECS::EntityId materialId, uint32_
 	}
 }
 
-void onShaderLoaded(ECS::Registry& registry, ECS::EntityId shaderId, uint32_t tag)
+void onShaderLoaded(ECS::Registry& registry, EntityId shaderId, uint32_t tag)
 {
 	Resource<OpenGLShader>& openGLShaderRes = registry.addPinned<Resource<OpenGLShader>>(shaderId);
 	const Shader& shader = registry.getPinned<Resource<Shader>>(shaderId).value;
@@ -117,7 +117,7 @@ void onShaderLoaded(ECS::Registry& registry, ECS::EntityId shaderId, uint32_t ta
 	});
 }
 
-void onTextureLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+void onTextureLoaded(ECS::Registry& registry, EntityId entityId, uint32_t tag)
 {
 	registry.addPinned<Resource<OpenGLTexture2D>>(entityId);
 
@@ -144,7 +144,7 @@ void onTextureLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t t
 
 constexpr std::string_view UNLOAD_BEFORE_READY_ERROR_MESSAGE = "unloading a resource before it is ready, this is unsupported";
 
-void onMeshUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+void onMeshUnloaded(ECS::Registry& registry, EntityId entityId, uint32_t tag)
 {
 	if (Resource<OpenGLVertexArray>* res = registry.findPinned<Resource<OpenGLVertexArray>>(entityId))
 	{
@@ -153,7 +153,7 @@ void onMeshUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t ta
 	}
 }
 
-void onShaderUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+void onShaderUnloaded(ECS::Registry& registry, EntityId entityId, uint32_t tag)
 {
 	if (Resource<OpenGLShader>* res = registry.findPinned<Resource<OpenGLShader>>(entityId))
 	{
@@ -162,7 +162,7 @@ void onShaderUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t 
 	}
 }
 
-void onTexture2DUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag)
+void onTexture2DUnloaded(ECS::Registry& registry, EntityId entityId, uint32_t tag)
 {
 	if (Resource<OpenGLTexture2D>* res = registry.findPinned<Resource<OpenGLTexture2D>>(entityId))
 	{
@@ -171,7 +171,7 @@ void onTexture2DUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32
 	}
 }
 
-void OpenGLResourceSystemExtension::onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
+void OpenGLResourceSystemExtension::onResourceLoaded(ECS::Registry& registry, EntityId entityId, uint32_t tag) const
 {
 	if (registry.hasPinned<Resource<Mesh>>(entityId))
 	{
@@ -198,7 +198,7 @@ void OpenGLResourceSystemExtension::onResourceLoaded(ECS::Registry& registry, EC
 	}
 }
 
-void OpenGLResourceSystemExtension::onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
+void OpenGLResourceSystemExtension::onResourceUnloaded(ECS::Registry& registry, EntityId entityId, uint32_t tag) const
 {
 	if (registry.hasPinned<Resource<Mesh>>(entityId))
 	{

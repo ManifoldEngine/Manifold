@@ -14,7 +14,7 @@ namespace Mani
 
 	namespace Sprites
 	{
-		ECS::EntityId getQuad(ECS::Registry& registry, const Vec2f& size, uint32_t tag = Mani::GLOBAL_RESOURCE_TAG);
-		void addRendering(ECS::Registry& registry, ECS::EntityId entityId, const Vec2f& size, ECS::EntityId textureId, ECS::EntityId materialId, uint32_t tag = Mani::GLOBAL_RESOURCE_TAG, bool withBoundingSphere = true);
+		EntityId getQuad(ECS::Registry& registry, const Vec2f& size, uint32_t tag = Mani::GLOBAL_RESOURCE_TAG);
+		void addRendering(ECS::Registry& registry, EntityId entityId, const Vec2f& size, EntityId textureId, EntityId materialId, uint32_t tag = Mani::GLOBAL_RESOURCE_TAG, bool withBoundingSphere = true);
 	}
 }

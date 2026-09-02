@@ -18,8 +18,8 @@ using namespace Mani;
 
 struct OpenGLInputSystem::Storage
 {
-    ECS::EntityId keyboardId = ECS::INVALID_ID;
-    ECS::EntityId mouseId = ECS::INVALID_ID;
+    EntityId keyboardId = INVALID_ID;
+    EntityId mouseId = INVALID_ID;
 
     // we don't use bools here because of the specific specialization of 
     // std::vector<bool> which doesn't allow to store a reference of the value since 
@@ -113,8 +113,8 @@ void OpenGLInputSystem::onInitialize(ECS::Registry& registry, World& world)
 {
     world.initializeDependency<InputSystem>();
     
-    ECS::EntityId keyboardId = ECS::INVALID_ID;
-    ECS::EntityId mouseId = ECS::INVALID_ID;
+    EntityId keyboardId = INVALID_ID;
+    EntityId mouseId = INVALID_ID;
 
     {
         //  keyboard

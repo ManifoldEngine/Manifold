@@ -6,7 +6,7 @@ namespace Mani
 {
 	struct FModChannel
 	{
-		ECS::EntityId resourceId = ECS::INVALID_ID;
+		EntityId resourceId = INVALID_ID;
 		FMOD::Channel* value = nullptr;
 	
 		bool isPaused = false;

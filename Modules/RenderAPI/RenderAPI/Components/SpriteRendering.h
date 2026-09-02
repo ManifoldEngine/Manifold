@@ -7,7 +7,7 @@ namespace Mani
 {
 	struct SpriteRendering
 	{
-		ECS::EntityId textureId = ECS::INVALID_ID;
+		EntityId textureId = INVALID_ID;
 		Vec2f size = VEC2F::ZERO;
 	};
 }

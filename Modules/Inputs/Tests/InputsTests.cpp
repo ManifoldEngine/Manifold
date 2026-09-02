@@ -78,7 +78,7 @@ public:
 		device->buttonBuffer.add(ButtonControl{ .id = buttonId, .isPressed = false });
 	}
 
-	ECS::EntityId getDeviceId() const { return m_deviceId; }
+	EntityId getDeviceId() const { return m_deviceId; }
 
 	ControlId aButtonId = INVALID_CONTROL_ID;
 	ControlId bButtonId = INVALID_CONTROL_ID;
@@ -104,7 +104,7 @@ private:
 	Mani::Vec2f m_leftJoystick = Mani::VEC2F::ZERO;
 
 	ECS::Registry* m_registry = nullptr;
-	ECS::EntityId m_deviceId = ECS::INVALID_ID;
+	EntityId m_deviceId = INVALID_ID;
 };
 
 MANI_SECTION_BEGIN(Inputs, "Inputs")
@@ -119,7 +119,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 		ECS::Registry& registry = world.getMutableRegistry();
 		VirtualController controller(registry);
 
-		const ECS::EntityId userId = registry.create();
+		const EntityId userId = registry.create();
 		registry.add<InputUser>(userId);
 		Inputs::assignDevice(registry, userId, controller.getDeviceId());
 		Inputs::addAction(registry, userId, "punch", controller.aButtonId);
@@ -169,7 +169,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         world.initialize();
 
         ECS::Registry& registry = world.getMutableRegistry();
-        const ECS::EntityId userId = registry.create();
+        const EntityId userId = registry.create();
         registry.add<InputUser>(userId);
 
         Inputs::addAction(registry, userId, "jump");
@@ -192,7 +192,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         ECS::Registry& registry = world.getMutableRegistry();
         VirtualController controller(registry);
 
-        const ECS::EntityId userId = registry.create();
+        const EntityId userId = registry.create();
         registry.add<InputUser>(userId);
         Inputs::assignDevice(registry, userId, controller.getDeviceId());
         Inputs::addAction(registry, userId, "dash");
@@ -221,7 +221,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         ECS::Registry& registry = world.getMutableRegistry();
         VirtualController controller(registry);
 
-        const ECS::EntityId userId = registry.create();
+        const EntityId userId = registry.create();
         registry.add<InputUser>(userId);
         Inputs::assignDevice(registry, userId, controller.getDeviceId());
         Inputs::addAction(registry, userId, "move");
@@ -248,7 +248,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 
         ECS::Registry& registry = world.getMutableRegistry();
         VirtualController controller(registry);
-        const ECS::EntityId userId = registry.create();
+        const EntityId userId = registry.create();
         registry.add<InputUser>(userId);
 
         Inputs::assignDevice(registry, userId, "Virtual Controller");
@@ -270,7 +270,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         ECS::Registry& registry = world.getMutableRegistry();
         VirtualController controller(registry);
 
-        ECS::EntityId found = Inputs::findDeviceByName(registry, "Virtual Controller");
+        EntityId found = Inputs::findDeviceByName(registry, "Virtual Controller");
         MANI_TEST_ASSERT(found == controller.getDeviceId(), "found correct device");
     }
 
@@ -299,7 +299,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         ECS::Registry& registry = world.getMutableRegistry();
         VirtualController controller(registry);
 
-        const ECS::EntityId userId = registry.create();
+        const EntityId userId = registry.create();
         registry.add<InputUser>(userId);
 
         // Assign device
@@ -373,7 +373,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 
         ECS::Registry& registry = world.getMutableRegistry();
         VirtualController controller(registry);
-        const ECS::EntityId userId = registry.create();
+        const EntityId userId = registry.create();
         registry.add<InputUser>(userId);
         Inputs::assignDevice(registry, userId, controller.getDeviceId());
 
@@ -396,7 +396,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 
         ECS::Registry& registry = world.getMutableRegistry();
         VirtualController controller(registry);
-        const ECS::EntityId userId = registry.create();
+        const EntityId userId = registry.create();
         registry.add<InputUser>(userId);
         Inputs::assignDevice(registry, userId, controller.getDeviceId());
 
@@ -427,7 +427,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 
         ECS::Registry& registry = world.getMutableRegistry();
         VirtualController controller(registry);
-        const ECS::EntityId userId = registry.create();
+        const EntityId userId = registry.create();
         registry.add<InputUser>(userId);
         Inputs::assignDevice(registry, userId, controller.getDeviceId());
 
@@ -456,7 +456,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 
         ECS::Registry& registry = world.getMutableRegistry();
         VirtualController controller(registry);
-        const ECS::EntityId userId = registry.create();
+        const EntityId userId = registry.create();
         registry.add<InputUser>(userId);
         Inputs::assignDevice(registry, userId, controller.getDeviceId());
 
@@ -483,7 +483,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
 
         ECS::Registry& registry = world.getMutableRegistry();
         VirtualController controller(registry);
-        const ECS::EntityId userId = registry.create();
+        const EntityId userId = registry.create();
         registry.add<InputUser>(userId);
         Inputs::assignDevice(registry, userId, controller.getDeviceId());
 
@@ -509,7 +509,7 @@ MANI_SECTION_BEGIN(Inputs, "Inputs")
         ECS::Registry& registry = world.getMutableRegistry();
         VirtualController controller(registry);
 
-        const ECS::EntityId userId = registry.create();
+        const EntityId userId = registry.create();
         registry.add<InputUser>(userId);
 
         // Step 1: Add action with hint BEFORE assigning device

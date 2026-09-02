@@ -19,7 +19,7 @@
 
 using namespace Mani;
 
-void updateEntity(ECS::Registry& registry, ECS::EntityId entityId, const LoadedAnimation& animation, FrameId frameId)
+void updateEntity(ECS::Registry& registry, EntityId entityId, const LoadedAnimation& animation, FrameId frameId)
 {
 	MANI_ASSERT(frameId <= animation.frames.count(), "frame id out of bounds");
 	const LoadedAnimation::Frame& frame = animation.frames[frameId];
@@ -30,7 +30,7 @@ void updateEntity(ECS::Registry& registry, ECS::EntityId entityId, const LoadedA
 	}
 }
 
-void resetEntity(ECS::Registry& registry, ECS::EntityId entityId)
+void resetEntity(ECS::Registry& registry, EntityId entityId)
 {
 	if (Ref<MeshRendering> meshComponent = registry.find<MeshRendering>(entityId))
 	{
@@ -54,15 +54,15 @@ void AnimationSystem::onDeinitialize(ECS::Registry& registry, World& world)
 
 void AnimationSystem::tick(ECS::Registry& registry)
 {
-	ECS::EntityId cameraId = Cameras::getMainCameraId(registry);
-	MANI_ASSERT(cameraId != ECS::INVALID_ID, "trying to animate without a camera");
+	EntityId cameraId = Cameras::getMainCameraId(registry);
+	MANI_ASSERT(cameraId != INVALID_ID, "trying to animate without a camera");
 	Ref<Camera> camera = registry.get<Camera>(cameraId);
 
 	Ref<Time> time = registry.getSingle<Time>();
 	ECS::View<Animator, Position, Rotation, Scale, BoundingSphere> view(registry);
-	parallelFor(view, [&registry, &time, &camera](ECS::EntityId entityId, Animator& animator, Position& position, Rotation& rotation, Scale& scale, BoundingSphere& bounds)
+	parallelFor(view, [&registry, &time, &camera](EntityId entityId, Animator& animator, Position& position, Rotation& rotation, Scale& scale, BoundingSphere& bounds)
 	{
-		if (Math::isEqual(animator.playRate, 0.f) || animator.resourceId == ECS::INVALID_ID)
+		if (Math::isEqual(animator.playRate, 0.f) || animator.resourceId == INVALID_ID)
 		{
 			return;
 		}
@@ -111,7 +111,7 @@ void AnimationSystem::tick(ECS::Registry& registry)
 				default:
 				{
 					animator.frameId = INVALID_FRAME_ID;
-					animator.resourceId = ECS::INVALID_ID;
+					animator.resourceId = INVALID_ID;
 					break;
 				}
 			}
@@ -130,7 +130,7 @@ void AnimationSystem::tick(ECS::Registry& registry)
 	});
 }
 
-void AnimationResourceSystemExtension::onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
+void AnimationResourceSystemExtension::onResourceLoaded(ECS::Registry& registry, EntityId entityId, uint32_t tag) const
 {
 	if (!registry.hasPinned<Resource<Animation>>(entityId))
 	{
@@ -145,7 +145,7 @@ void AnimationResourceSystemExtension::onResourceLoaded(ECS::Registry& registry,
 	}
 }
 
-void AnimationResourceSystemExtension::onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
+void AnimationResourceSystemExtension::onResourceUnloaded(ECS::Registry& registry, EntityId entityId, uint32_t tag) const
 {
 	if (!registry.hasPinned<Resource<Animation>>(entityId))
 	{

@@ -9,7 +9,7 @@
 
 using namespace Mani;
 
-bool Mani::ResourceLoader_FModSound::load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const
+bool Mani::ResourceLoader_FModSound::load(ECS::Registry& registry, const Path& absolutePath, EntityId resourceId, uint32_t tag) const
 {
     Ref<FMod> fmod = registry.getSingle<FMod>();
 
@@ -24,7 +24,7 @@ bool Mani::ResourceLoader_FModSound::load(ECS::Registry& registry, const Path& a
     return true;
 }
 
-bool Mani::ResourceLoader_FModSound::unload(ECS::Registry& registry, ECS::EntityId resourceId) const
+bool Mani::ResourceLoader_FModSound::unload(ECS::Registry& registry, EntityId resourceId) const
 {
     Resource<FModSound>& sound = registry.getPinned<Resource<FModSound>>(resourceId);
     MANI_ASSERT(sound.value.sound != nullptr, "trying to unload a sound that is null");

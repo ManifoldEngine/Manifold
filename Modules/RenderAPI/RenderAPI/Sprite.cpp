@@ -10,9 +10,9 @@
 
 using namespace Mani;
 
-ECS::EntityId Sprites::getQuad(ECS::Registry& registry, const Vec2f& size, uint32_t tag)
+EntityId Sprites::getQuad(ECS::Registry& registry, const Vec2f& size, uint32_t tag)
 {
-	ECS::EntityId quadId = ECS::INVALID_ID;
+	EntityId quadId = INVALID_ID;
 
 	for (const auto [e, spriteQuad] : ECS::ConstPinnedView<SpriteQuad>(registry))
 	{
@@ -23,7 +23,7 @@ ECS::EntityId Sprites::getQuad(ECS::Registry& registry, const Vec2f& size, uint3
 		}
 	}
 
-	if (quadId == ECS::INVALID_ID)
+	if (quadId == INVALID_ID)
 	{
 		quadId = Resources::inject<Mesh>(registry, Primitives::makeQuad(size), tag);
 		registry.addPinned<SpriteQuad>(quadId, size);
@@ -32,9 +32,9 @@ ECS::EntityId Sprites::getQuad(ECS::Registry& registry, const Vec2f& size, uint3
 	return quadId;
 }
 
-void Sprites::addRendering(ECS::Registry& registry, ECS::EntityId entityId, const Vec2f& size, ECS::EntityId textureId, ECS::EntityId materialId, uint32_t tag, bool withBoundingSphere)
+void Sprites::addRendering(ECS::Registry& registry, EntityId entityId, const Vec2f& size, EntityId textureId, EntityId materialId, uint32_t tag, bool withBoundingSphere)
 {
-	const ECS::EntityId quadId = getQuad(registry, size, tag);
+	const EntityId quadId = getQuad(registry, size, tag);
 
 	Ref<MeshRendering> meshRendering = registry.add<MeshRendering>(entityId);
 	meshRendering->meshResourceId = quadId;

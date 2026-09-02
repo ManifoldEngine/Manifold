@@ -50,16 +50,16 @@ namespace Mani
 		// Pins a Resource<T> components to the resource entity
 		// Returns the entity id to the resource.
 		template<typename T>
-		static ECS::EntityId load(ECS::Registry& registry, const Path& relativePath, uint32_t tag = GLOBAL_RESOURCE_TAG);
+		static EntityId load(ECS::Registry& registry, const Path& relativePath, uint32_t tag = GLOBAL_RESOURCE_TAG);
 		
 		template<typename T>
-		static ECS::EntityId loadSync(ECS::Registry& registry, const Path& relativePath, uint32_t tag = GLOBAL_RESOURCE_TAG);
+		static EntityId loadSync(ECS::Registry& registry, const Path& relativePath, uint32_t tag = GLOBAL_RESOURCE_TAG);
 
 		template<typename T>
-		static ECS::EntityId load(ECS::Registry& registry, const Path& relativePath, EResourceLoadMethod method, uint32_t tag = GLOBAL_RESOURCE_TAG);
+		static EntityId load(ECS::Registry& registry, const Path& relativePath, EResourceLoadMethod method, uint32_t tag = GLOBAL_RESOURCE_TAG);
 
 		// Unloads a specific resource associated with the given entity ID.
-		static void unload(ECS::Registry& registry, ECS::EntityId inEntityId);
+		static void unload(ECS::Registry& registry, EntityId inEntityId);
 
 		// Unloads all loaded resources.
 		static void unloadAll(ECS::Registry& registry);
@@ -70,9 +70,9 @@ namespace Mani
 		// Injects an already constructed resource value into the registry.
 		// Returns the entity id representing the injected resource.
 		template<typename T>
-		static ECS::EntityId inject(ECS::Registry& registry, T&& value, uint32_t = GLOBAL_RESOURCE_TAG);
+		static EntityId inject(ECS::Registry& registry, T&& value, uint32_t = GLOBAL_RESOURCE_TAG);
 
-		static bool isReady(const ECS::Registry& registry, ECS::EntityId entityId);
+		static bool isReady(const ECS::Registry& registry, EntityId entityId);
 
 		// Registers a system extension to be notified of resource-related events.
 		static void registerExtension(ECS::Registry& registry, IResourceSystemExtension* extension);
@@ -90,31 +90,31 @@ namespace Mani
 
 	private:
 		template<typename T>
-		static bool callLoader(ECS::Registry& registry, ECS::EntityId entityId, const Path& path, uint32_t tag);
+		static bool callLoader(ECS::Registry& registry, EntityId entityId, const Path& path, uint32_t tag);
 
 		template<typename T>
-		static void postLoad(ECS::Registry& registry, ECS::EntityId entityId, const Path& path, EResourceLoadMethod method, uint32_t tag);
+		static void postLoad(ECS::Registry& registry, EntityId entityId, const Path& path, EResourceLoadMethod method, uint32_t tag);
 
 		template<typename T>
-		static std::tuple<ECS::EntityId, Resource<T>&> createResource(ECS::Registry& registry, Optional<uint32_t> tag = {}, Optional<const Path> path = {});
+		static std::tuple<EntityId, Resource<T>&> createResource(ECS::Registry& registry, Optional<uint32_t> tag = {}, Optional<const Path> path = {});
 
 		static void forEachExtension(const ECS::Registry& registry, auto&& f);
 	};
 
 	template<typename T>
-	static ECS::EntityId Resources::load(ECS::Registry& registry, const Path& relativePath, uint32_t tag)
+	static EntityId Resources::load(ECS::Registry& registry, const Path& relativePath, uint32_t tag)
 	{
 		return Resources::load<T>(registry, relativePath, EResourceLoadMethod::Async, tag);
 	}
 
 	template<typename T>
-	static ECS::EntityId Resources::loadSync(ECS::Registry& registry, const Path& relativePath, uint32_t tag)
+	static EntityId Resources::loadSync(ECS::Registry& registry, const Path& relativePath, uint32_t tag)
 	{
 		return Resources::load<T>(registry, relativePath, EResourceLoadMethod::Sync, tag);
 	}
 
 	template<typename T>
-	ECS::EntityId Resources::load(ECS::Registry& registry, const Path& relativePath, EResourceLoadMethod method, uint32_t tag)
+	EntityId Resources::load(ECS::Registry& registry, const Path& relativePath, EResourceLoadMethod method, uint32_t tag)
 	{
 		const auto path = FileSystem::getAbsolutePath(relativePath);
 
@@ -172,14 +172,14 @@ namespace Mani
 	}
 
 	template<typename T>
-	inline bool Resources::callLoader(ECS::Registry& registry, ECS::EntityId entityId, const Path& path, uint32_t tag)
+	inline bool Resources::callLoader(ECS::Registry& registry, EntityId entityId, const Path& path, uint32_t tag)
 	{
 		bool wasLoaded = false;
 		ECS::PinnedView<ResourceLoader<T>> view(registry);
 		const auto it = view.begin();
 		if (it.isValid())
 		{
-			const ECS::EntityId loaderId = it.getEntityId();
+			const EntityId loaderId = it.getEntityId();
 			ResourceLoader<T>& loader = registry.getPinned<ResourceLoader<T>>(loaderId);
 			
 			MANI_ASSERT(loader.value != nullptr, "Registered a null loader");
@@ -197,7 +197,7 @@ namespace Mani
 	}
 
 	template<typename T>
-	inline void Resources::postLoad(ECS::Registry& registry, ECS::EntityId entityId, const Path& path, EResourceLoadMethod method, uint32_t tag)
+	inline void Resources::postLoad(ECS::Registry& registry, EntityId entityId, const Path& path, EResourceLoadMethod method, uint32_t tag)
 	{
 		if (auto loader = registry.findSinglePinned<ResourceLoader<T>>())
 		{
@@ -214,7 +214,7 @@ namespace Mani
 	}
 
 	template<typename T>
-	ECS::EntityId Resources::inject(ECS::Registry& registry, T&& value, uint32_t tag)
+	EntityId Resources::inject(ECS::Registry& registry, T&& value, uint32_t tag)
 	{
 		auto [entityId, resource] = createResource<T>(registry, tag);
 		resource.value = std::move(value);
@@ -227,9 +227,9 @@ namespace Mani
 	}
 
 	template<typename T>
-	std::tuple<ECS::EntityId, Resource<T>&> Resources::createResource(ECS::Registry& registry, Optional<uint32_t> tag, Optional<const Path> path)
+	std::tuple<EntityId, Resource<T>&> Resources::createResource(ECS::Registry& registry, Optional<uint32_t> tag, Optional<const Path> path)
 	{
-		ECS::EntityId entityId = registry.create();
+		EntityId entityId = registry.create();
 		registry.add<ResourceMetadata>(entityId, ResourceMetadata{ .path = path.getOr(""), .refCount = 1, });
 		registry.add<ResourceTag>(entityId, tag.getOr(GLOBAL_RESOURCE_TAG));
 		auto& resource = registry.addPinned<Resource<T>>(entityId);
@@ -250,7 +250,7 @@ namespace Mani
 	void Resources::registerLoaderFor(ECS::Registry& registry, IResourceLoader* loader)
 	{
 		MANI_ASSERT(loader != nullptr, "trying to register a null loader");
-		const ECS::EntityId entityId = registry.create();
+		const EntityId entityId = registry.create();
 		registry.addPinned<ResourceLoader<T>>(entityId, loader);
 		registry.addPinned<ResourceUnloader>(entityId, loader);
 	}

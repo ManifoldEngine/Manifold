@@ -12,7 +12,7 @@ using namespace Mani;
 
 struct CameraSystem::Storage
 {
-    ECS::EntityId cameraId = ECS::INVALID_ID;
+    EntityId cameraId = INVALID_ID;
 };
 
 void CameraSystem::tick(ECS::Registry& registry)

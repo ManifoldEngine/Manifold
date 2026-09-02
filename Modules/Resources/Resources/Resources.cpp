@@ -2,7 +2,7 @@
 
 using namespace Mani;
 
-bool Mani::Resources::isReady(const ECS::Registry& registry, ECS::EntityId entityId)
+bool Mani::Resources::isReady(const ECS::Registry& registry, EntityId entityId)
 {
 	return registry.has<ResourceReady>(entityId);
 }
@@ -21,7 +21,7 @@ void Resources::unregisterExtension(ECS::Registry& registry, IResourceSystemExte
 	storage->extensions.remove(extension);
 }
 
-void Resources::unload(ECS::Registry& registry, ECS::EntityId inEntityId)
+void Resources::unload(ECS::Registry& registry, EntityId inEntityId)
 {
 	constexpr bool checkForDeferredDestruction = true;
 	if (!registry.isValid(inEntityId, checkForDeferredDestruction))
@@ -37,7 +37,7 @@ void Resources::unload(ECS::Registry& registry, ECS::EntityId inEntityId)
 		return;
 	}
 
-	if (metadata->unloaderId != ECS::INVALID_ID)
+	if (metadata->unloaderId != INVALID_ID)
 	{
 		if (metadata->unloaderId == 3)
 		{

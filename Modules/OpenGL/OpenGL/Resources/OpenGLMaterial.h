@@ -13,7 +13,7 @@ namespace Mani
 		struct Texture
 		{
 			std::string_view key = "";
-			ECS::EntityId id = ECS::INVALID_ID;
+			EntityId id = INVALID_ID;
 		};
 
 		struct ShaderParam
@@ -26,7 +26,7 @@ namespace Mani
 
 		Vec4f color = VEC4F::ONE;
 
-		ECS::EntityId shaderId;
+		EntityId shaderId;
 		List<Texture> textures;
 		List<ShaderParam> shaderParameters;
 	};

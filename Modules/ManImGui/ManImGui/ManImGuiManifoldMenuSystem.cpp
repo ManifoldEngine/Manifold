@@ -9,13 +9,13 @@ using namespace Mani;
 
 struct ManImGuiManifoldMenuSystem::Storage
 {
-	ECS::EntityId menuEntityId = ECS::INVALID_ID;
+	EntityId menuEntityId = INVALID_ID;
 };
 
 void ManImGuiManifoldMenuSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	auto storage = registry.addSingle<Storage>();
-	const ECS::EntityId entityId = registry.create();
+	const EntityId entityId = registry.create();
 	storage->menuEntityId = entityId;
 
 	registry.add<ManImGuiManifoldMenu>(entityId);

@@ -31,10 +31,10 @@ void FModPlaySystem::tick(ECS::Registry& registry)
     Ref<FMod> fmod = FModControls::getFModChecked(registry);
 
     Ref<FModPlayQueue> queue = registry.getSingle<FModPlayQueue>();
-    List<ECS::EntityId> channelsPendingLoading;
+    List<EntityId> channelsPendingLoading;
     while (!queue->value.isEmpty())
     {
-        ECS::EntityId channelId = queue->value.dequeue();
+        EntityId channelId = queue->value.dequeue();
         Ref<FModChannel> channel = registry.get<FModChannel>(channelId);
 
         if (!Resources::isReady(registry, channel->resourceId))
@@ -57,7 +57,7 @@ void FModPlaySystem::tick(ECS::Registry& registry)
     }
 
     // channels that are pending loading are put back into the queue
-    for (const ECS::EntityId entityId : channelsPendingLoading)
+    for (const EntityId entityId : channelsPendingLoading)
     {
         queue->value.enqueue(entityId);
     }

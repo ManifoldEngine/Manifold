@@ -63,17 +63,17 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		Cameras::createMainCamera(registry);
 		
 		// animation loading
-		const ECS::EntityId animationId = Resources::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
+		const EntityId animationId = Resources::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
 		MANI_TEST_ASSERT(Resources::isReady(registry, animationId), "Animation should be loaded and ready");
 		const LoadedAnimation& animation = registry.getPinned<LoadedAnimation>(animationId);
 		MANI_TEST_ASSERT(animation.frames.count() == 4, "4 frames should have been loaded");
 		for (const auto& frame : animation.frames)
 		{
-			MANI_TEST_ASSERT(frame.textureId != ECS::INVALID_ID, "each frame should point to a loaded texture if any is set");
+			MANI_TEST_ASSERT(frame.textureId != INVALID_ID, "each frame should point to a loaded texture if any is set");
 		}
 
 		// animation play OneShot
-		ECS::EntityId entityId = registry.create();
+		EntityId entityId = registry.create();
 
 		{
 			// setup
@@ -88,7 +88,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
+			const EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[0].textureId, "The first frame should be displayed");
 
 		}
@@ -100,7 +100,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
+			const EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[1].textureId, "The second frame should be displayed");
 		}
 
@@ -111,7 +111,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
+			const EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[2].textureId, "The third frame should be displayed");
 		}
 
@@ -122,7 +122,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
+			const EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[3].textureId, "The fourth frame should be displayed");
 		}
 		
@@ -138,7 +138,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 			auto animator = registry.get<Animator>(entityId);
 			MANI_TEST_ASSERT(animator->frameId == INVALID_FRAME_ID, "animator should not be playing anything");
-			MANI_TEST_ASSERT(animator->resourceId == ECS::INVALID_ID, "animator should not be playing anything");
+			MANI_TEST_ASSERT(animator->resourceId == INVALID_ID, "animator should not be playing anything");
 		}
 	}
 
@@ -156,17 +156,17 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		Cameras::createMainCamera(registry);
 
 		// animation loading
-		const ECS::EntityId animationId = Resources::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
+		const EntityId animationId = Resources::loadSync<Animation>(registry, "Engine/Modules/Animation/Tests/Assets/TestAnimation.json");
 		MANI_TEST_ASSERT(Resources::isReady(registry, animationId), "Animation should be loaded and ready");
 		const LoadedAnimation& animation = registry.getPinned<LoadedAnimation>(animationId);
 		MANI_TEST_ASSERT(animation.frames.count() == 4, "4 frames should have been loaded");
 		for (const auto& frame : animation.frames)
 		{
-			MANI_TEST_ASSERT(frame.textureId != ECS::INVALID_ID, "each frame should point to a loaded texture if any is set");
+			MANI_TEST_ASSERT(frame.textureId != INVALID_ID, "each frame should point to a loaded texture if any is set");
 		}
 
 		// animation play OneShot
-		ECS::EntityId entityId = registry.create();
+		EntityId entityId = registry.create();
 
 		{
 			// setup
@@ -181,7 +181,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
+			const EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[0].textureId, "The first frame should be displayed");
 		}
 
@@ -194,7 +194,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 
 		{
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
+			const EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[3].textureId, "The fourth frame should be displayed");
 		}
 
@@ -206,7 +206,7 @@ MANI_SECTION_BEGIN(AnimationTests, "Animation")
 		{
 			// should loop
 			auto meshComponent = registry.get<MeshRendering>(entityId);
-			const ECS::EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
+			const EntityId& textureId = meshComponent->textureParameters[Mani::ShaderNames::MANI_SPRITE_TEXTURE];
 			MANI_TEST_ASSERT(textureId == animation.frames[0].textureId, "The first frame should be displayed");
 		}
 	}

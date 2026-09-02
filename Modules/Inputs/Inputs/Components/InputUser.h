@@ -55,6 +55,6 @@ namespace Mani
 		// pending binding by hint
 		List<PendingAxisBindingRequest> pendingButtonToAxisBindings;
 
-		List<ECS::EntityId> inputDevices;
+		List<EntityId> inputDevices;
 	};
 }

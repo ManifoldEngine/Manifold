@@ -8,11 +8,11 @@
 
 using namespace Mani;
 
-void FModResourceExtension::onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
+void FModResourceExtension::onResourceLoaded(ECS::Registry& registry, EntityId entityId, uint32_t tag) const
 {
 }
 
-void FModResourceExtension::onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const
+void FModResourceExtension::onResourceUnloaded(ECS::Registry& registry, EntityId entityId, uint32_t tag) const
 {
 	if (registry.has<Resource<FModSound>>(entityId))
 	{

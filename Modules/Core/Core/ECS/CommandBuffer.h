@@ -28,7 +28,7 @@ namespace Mani
 			}
 
 			template<typename T, typename ...TArgs>
-			T& add(ECS::EntityId entityId, TArgs&&... args)
+			T& add(EntityId entityId, TArgs&&... args)
 			{
 				MANI_ASSERT(!m_registry->has<T>(entityId), "Entity {} already has a component of type {}", entityId, ManiZ::RFL::getTypeName<T>());
 				SparseSet<T, ECS::Index>& pool = getOrAddComponentPool<T>();
@@ -44,7 +44,7 @@ namespace Mani
 			}
 
 			template<typename T>
-			T& get(ECS::EntityId entityId)
+			T& get(EntityId entityId)
 			{
 				SparseSet<T, ECS::Index>* pool = getComponentPoolPtr<T>();
 				MANI_ASSERT(pool != nullptr, "No component of type {} has been added to this command buffer yet.", ManiZ::RFL::getTypeName<T>());
@@ -53,7 +53,7 @@ namespace Mani
 			}
 
 			template<typename T>
-			void remove(ECS::EntityId entityId)
+			void remove(EntityId entityId)
 			{
 				const ECS::Index index = ECS::toIndex(entityId);
 				if (SparseSet<T, ECS::Index>* pool = getComponentPoolPtr<T>())

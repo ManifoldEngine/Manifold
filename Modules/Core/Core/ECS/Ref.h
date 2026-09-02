@@ -70,7 +70,7 @@ namespace Mani
 		template<typename T, typename TRegistry>
 		struct LazyComponentRef
 		{
-			LazyComponentRef(ECS::EntityId entityId, TRegistry& registry) :
+			LazyComponentRef(EntityId entityId, TRegistry& registry) :
 				m_entityId(entityId),
 				m_registry(&registry)
 			{
@@ -98,7 +98,7 @@ namespace Mani
 			}
 
 		private:
-			ECS::EntityId m_entityId = ECS::INVALID_ID;
+			EntityId m_entityId = INVALID_ID;
 			TRegistry* m_registry = nullptr;
 		};
 	}

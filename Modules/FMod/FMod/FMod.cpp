@@ -17,13 +17,13 @@ Ref<FMod> FModControls::getFModChecked(ECS::Registry& registry)
 	return fmod;
 }
 
-void FModControls::play(ECS::Registry& registry, ECS::EntityId channelId)
+void FModControls::play(ECS::Registry& registry, EntityId channelId)
 {
 	Ref<FModPlayQueue> queue = registry.getSingle<FModPlayQueue>();
 	queue->value.enqueue(channelId);
 }
 
-void FModControls::pause(ECS::Registry& registry, ECS::EntityId channelId)
+void FModControls::pause(ECS::Registry& registry, EntityId channelId)
 {
 	Ref<FModChannel> channel = registry.get<FModChannel>(channelId);
 	channel->isPaused = true;
@@ -33,7 +33,7 @@ void FModControls::pause(ECS::Registry& registry, ECS::EntityId channelId)
 	}
 }
 
-void FModControls::resume(ECS::Registry& registry, ECS::EntityId channelId)
+void FModControls::resume(ECS::Registry& registry, EntityId channelId)
 {
 	Ref<FModChannel> channel = registry.get<FModChannel>(channelId);
 	channel->isPaused = false;
@@ -43,7 +43,7 @@ void FModControls::resume(ECS::Registry& registry, ECS::EntityId channelId)
 	}
 }
 
-void FModControls::setVolume(ECS::Registry& registry, ECS::EntityId channelId, float volume)
+void FModControls::setVolume(ECS::Registry& registry, EntityId channelId, float volume)
 {
 	Ref<FModChannel> channel = registry.get<FModChannel>(channelId);
 	channel->volume = volume;

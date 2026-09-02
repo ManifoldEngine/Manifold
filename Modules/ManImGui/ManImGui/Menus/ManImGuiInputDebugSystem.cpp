@@ -129,7 +129,7 @@ void drawInputActionRow(const InputAction& action, const std::string_view& contr
 	ImGui::TextColored(pickColor(action.isPressed), "pressed");
 }
 
-void drawInputUser(const ECS::Registry& registry, const InputUser& inputUser, const ECS::EntityId id)
+void drawInputUser(const ECS::Registry& registry, const InputUser& inputUser, const EntityId id)
 {
 	const std::string title = std::format("InputUser[{}]", id);
 	ImGui::Text(title.c_str());

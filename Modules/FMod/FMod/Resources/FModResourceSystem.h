@@ -10,8 +10,8 @@ namespace Mani
     class FModResourceExtension : public IResourceSystemExtension
     {
     public:
-        virtual void onResourceLoaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const override;
-        virtual void onResourceUnloaded(ECS::Registry& registry, ECS::EntityId entityId, uint32_t tag) const override;
+        virtual void onResourceLoaded(ECS::Registry& registry, EntityId entityId, uint32_t tag) const override;
+        virtual void onResourceUnloaded(ECS::Registry& registry, EntityId entityId, uint32_t tag) const override;
     };
 
     class FModResourceSystem : public ECS::System

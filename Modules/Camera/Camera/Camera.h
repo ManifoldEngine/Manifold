@@ -68,8 +68,8 @@ namespace Mani
 
 	namespace Cameras
 	{
-		ECS::EntityId getMainCameraId(ECS::Registry& registry);
-		ECS::EntityId createMainCamera(ECS::Registry& registry);
+		EntityId getMainCameraId(ECS::Registry& registry);
+		EntityId createMainCamera(ECS::Registry& registry);
 
 		float getAspectRatio(const Camera& camera);
 		Vec2f worldToScreenSpace(const Camera& camera, const Vec3f& position);

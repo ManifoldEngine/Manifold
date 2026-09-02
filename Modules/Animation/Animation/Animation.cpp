@@ -2,7 +2,7 @@
 
 using namespace Mani;
 
-void Mani::Animations::play(ECS::Registry& registry, Mani::ECS::EntityId entityId, Mani::ECS::EntityId resourceId, Animator::EPlayMode playMode)
+void Mani::Animations::play(ECS::Registry& registry, Mani::EntityId entityId, Mani::EntityId resourceId, Animator::EPlayMode playMode)
 {
 	Ref<Animator> animator = registry.find<Animator>(entityId);
 	MANI_ASSERT(animator.isValid(), "Trying to play an animation on an entity that doesn't have an animation component.");

@@ -36,7 +36,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			ECS::Registry registry;
 
-			ECS::EntityId e = registry.create();
+			EntityId e = registry.create();
 			MANI_TEST_ASSERT(registry.isValid(e), "Entity should be valid");
 
 			Ref<Data> c = registry.add<Data>(e);
@@ -55,7 +55,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			struct Data {};
 
 			ECS::Registry registry;
-			ECS::EntityId e = registry.create();
+			EntityId e = registry.create();
 
 			registry.add<Data>(e);
 			MANI_TEST_ASSERT(registry.has<Data>(e), "Should have component");
@@ -71,12 +71,12 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			ECS::Registry registry;
 
-			ECS::EntityId e1 = registry.create();
+			EntityId e1 = registry.create();
 			registry.add<A>(e1);
 
 			registry.destroy(e1);
 
-			ECS::EntityId e2 = registry.create();
+			EntityId e2 = registry.create();
 
 			MANI_TEST_ASSERT(e1 != e2, "Version should differ");
 			MANI_TEST_ASSERT(!registry.has<A>(e2), "Recycled entity should not inherit components");
@@ -94,7 +94,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			for (int i = 0; i < 10; ++i)
 			{
-				ECS::EntityId e = registry.create();
+				EntityId e = registry.create();
 				registry.add<A>(e);
 				if (i % 2 == 0)
 				{
@@ -126,12 +126,12 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			ECS::Registry registry;
 
-			ECS::EntityId e = registry.create();
+			EntityId e = registry.create();
 			registry.add<A>(e);
 
 			for (auto [entityId, a] : ECS::View<A>(registry))
 			{
-				ECS::EntityId newE = registry.create();
+				EntityId newE = registry.create();
 			}
 
 			MANI_TEST_ASSERT(registry.count() == 3, "Should have created additional entities safely");
@@ -144,7 +144,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			ECS::Registry registry;
 
-			ECS::EntityId e = registry.create();
+			EntityId e = registry.create();
 			registry.add<A>(e);
 
 			ECS::CommandBuffer cmd(registry);
@@ -169,7 +169,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			ECS::Registry registry;
 
-			ECS::EntityId e = registry.create();
+			EntityId e = registry.create();
 			registry.add<A>(e);
 
 			{
@@ -194,7 +194,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			ECS::Registry registry;
 
-			ECS::EntityId e = registry.create();
+			EntityId e = registry.create();
 			registry.add<A>(e);
 
 			{
@@ -213,7 +213,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			ECS::Registry registry;
 
-			ECS::EntityId e = registry.create();
+			EntityId e = registry.create();
 
 			auto [a, b, c] = registry.addMany<A, B, C>(e);
 
@@ -234,7 +234,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			};
 
 			ECS::Registry registry;
-			ECS::EntityId e = registry.create();
+			EntityId e = registry.create();
 
 			Ref<Comp> comp = registry.add<Comp>(e, 1, 2, 3);
 
@@ -253,7 +253,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			};
 
 			ECS::Registry registry;
-			ECS::EntityId e = registry.create();
+			EntityId e = registry.create();
 
 			registry.add<D>(e);
 			registry.remove<D>(e);
@@ -279,7 +279,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			for (int i = 0; i < entityCount; ++i)
 			{
-				ECS::EntityId e = registry.create();
+				EntityId e = registry.create();
 
 				// Deterministic distribution across archetypes
 				if (i % 2 == 0)
@@ -362,7 +362,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			};
 
 			ECS::Registry registry;
-			ECS::EntityId id = registry.create();
+			EntityId id = registry.create();
 
 			{
 				Ref<D> d = registry.add<D>(id);
@@ -435,7 +435,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			{
 				ECS::Registry registry;
-				const ECS::EntityId entityId = registry.create();
+				const EntityId entityId = registry.create();
 				registry.add<A>(entityId);
 
 				{
@@ -454,15 +454,15 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 				{
 					ECS::View<> view(registry);
-					MANI_TEST_ASSERT(view.begin().getEntityId() == ECS::INVALID_ID, "No entity should exist in the view");
+					MANI_TEST_ASSERT(view.begin().getEntityId() == INVALID_ID, "No entity should exist in the view");
 				}
 
 				struct B {};
-				const ECS::EntityId entityId = registry.create();
+				const EntityId entityId = registry.create();
 				registry.add<B>(entityId);
 				{
 					ECS::View<A> view(registry);
-					MANI_TEST_ASSERT(view.begin().getEntityId() == ECS::INVALID_ID, "entity should not be included in the view");
+					MANI_TEST_ASSERT(view.begin().getEntityId() == INVALID_ID, "entity should not be included in the view");
 				}
 			}
 		}
@@ -531,7 +531,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			ECS::Registry registry;
 
 			{
-				const ECS::EntityId e = registry.create();
+				const EntityId e = registry.create();
 				Ref<A> a = registry.add<A>(e);
 				MANI_TEST_ASSERT(a.isValid(), "a should be valid");
 				Ref<B> b = registry.add<B>(e);
@@ -542,7 +542,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 
 			{
-				const ECS::EntityId e = registry.create();
+				const EntityId e = registry.create();
 				registry.add<A>(e);
 				Ref<A> a = registry.get<A>(e);
 				registry.addMany<B, C, D>(e);
@@ -555,16 +555,16 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 
 			{
-				const ECS::EntityId e = registry.create();
+				const EntityId e = registry.create();
 				Ref<A> a = registry.add<A>(e);
 				registry.destroy(e);
 				MANI_TEST_ASSERT(!a.isValid(), "a should be invalid after deleting e");
 			}
 
 			{
-				const ECS::EntityId e1 = registry.create();
+				const EntityId e1 = registry.create();
 				Ref<A> a1 = registry.add<A>(e1);
-				const ECS::EntityId e2 = registry.create();
+				const EntityId e2 = registry.create();
 				registry.add<A>(e2);
 				registry.destroy(e2);
 
@@ -572,7 +572,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 
 			{
-				const ECS::EntityId e = registry.create();
+				const EntityId e = registry.create();
 				registry.add<A>(e);
 
 				Ref<A> a1 = registry.get<A>(e);
@@ -585,7 +585,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 
 			{
-				const ECS::EntityId e = registry.create();
+				const EntityId e = registry.create();
 				Ref<A> a1 = registry.add<A>(e);
 				Ref<A> a2 = registry.get<A>(e);
 
@@ -596,8 +596,8 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 
 			{
-				const ECS::EntityId e1 = registry.create();
-				const ECS::EntityId e2 = registry.create();
+				const EntityId e1 = registry.create();
+				const EntityId e2 = registry.create();
 
 				Ref<A> a1 = registry.add<A>(e1);
 				registry.add<A>(e2); // unrelated entity
@@ -608,7 +608,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			{
 				ECS::Registry registry;
 
-				const ECS::EntityId e = registry.create();
+				const EntityId e = registry.create();
 				Ref<A> a = registry.add<A>(e);
 
 				// Force pool growth
@@ -622,7 +622,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 
 			{
-				const ECS::EntityId e = registry.create();
+				const EntityId e = registry.create();
 				registry.addMany<A, B, C>(e);
 
 				Ref<A> a = registry.get<A>(e);
@@ -635,8 +635,8 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 
 			{
-				const ECS::EntityId e1 = registry.create();
-				const ECS::EntityId e2 = registry.create();
+				const EntityId e1 = registry.create();
+				const EntityId e2 = registry.create();
 
 				registry.add<A>(e1);
 				Ref<A> a2 = registry.add<A>(e2);
@@ -647,7 +647,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 
 			{
-				const ECS::EntityId e = registry.create();
+				const EntityId e = registry.create();
 				Ref<A> a = registry.add<A>(e);
 
 				{
@@ -659,7 +659,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 
 			{
-				const ECS::EntityId e = registry.create();
+				const EntityId e = registry.create();
 				registry.add<A>(e);
 
 				if (Ref<A> a = registry.find<A>(e))
@@ -682,7 +682,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			}
 
 			{
-				const ECS::EntityId e = registry.create();
+				const EntityId e = registry.create();
 				auto [a, b, c] = registry.addMany<A, B, C>(e);
 
 				registry.remove<C>(e);
@@ -704,7 +704,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			ECS::Registry registry;
 
-			const ECS::EntityId e = registry.create();
+			const EntityId e = registry.create();
 
 			registry.addPinned<A>(e);
 			MANI_TEST_ASSERT(registry.hasPinned<A>(e), "Should have A pinned");
@@ -747,7 +747,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			ECS::Registry registry;
 
-			const ECS::EntityId e = registry.create();
+			const EntityId e = registry.create();
 
 			// Only add A, not B -> view<A, B> should be empty
 			registry.addPinned<A>(e);
@@ -770,9 +770,9 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			ECS::Registry registry;
 
 			// Create entities
-			const ECS::EntityId e1 = registry.create();
-			const ECS::EntityId e2 = registry.create();
-			const ECS::EntityId e3 = registry.create();
+			const EntityId e1 = registry.create();
+			const EntityId e2 = registry.create();
+			const EntityId e3 = registry.create();
 
 			// A exists on 3 entities
 			registry.addPinned<A>(e1);
@@ -800,7 +800,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			ECS::Registry registry;
 
-			ECS::EntityId e = registry.create();
+			EntityId e = registry.create();
 			registry.add<A>(e);
 			// registry.addPinned<A>(e); asserts
 
@@ -816,7 +816,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 
 			for (SizeT i = 0; i < 10; i++)
 			{
-				ECS::EntityId e = registry.create();
+				EntityId e = registry.create();
 				registry.addPinned<A>(e, 420);
 			}
 			// created entities: 1, 2, 3, 4, 5, 6, 7, 8, 9, 10
@@ -851,7 +851,7 @@ MANI_SECTION_BEGIN(ECS, "ECS")
 			struct B { int value = 0; };
 
 			ECS::Registry registry;
-			const ECS::EntityId e = registry.create();
+			const EntityId e = registry.create();
 			registry.add<A>(e);
 
 			LazyRef<A> aRef(e, registry);

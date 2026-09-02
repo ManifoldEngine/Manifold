@@ -26,7 +26,7 @@ namespace Mani
 		//   tag: An optional tag used to group or categorize resources.
 		//
 		// Returns true if the resource was successfully loaded.
-		virtual bool load(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, uint32_t tag) const = 0;
+		virtual bool load(ECS::Registry& registry, const Path& absolutePath, EntityId resourceId, uint32_t tag) const = 0;
 
 		// Called after loading, is guaranteed to be called on the registry's thread 
 		// use this to do any main thread syncing like adding components or creating entities
@@ -36,7 +36,7 @@ namespace Mani
 		//   absolutePath: The absolute filesystem path to the resource file.
 		//   resourceId: The entity ID representing the resource. Access with registry.get<Resource<T>>(resourceId)
 		//   tag: An optional tag used to group or categorize resources.
-		virtual void postLoad(ECS::Registry& registry, const Path& absolutePath, ECS::EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const {};
+		virtual void postLoad(ECS::Registry& registry, const Path& absolutePath, EntityId resourceId, EResourceLoadMethod method, uint32_t tag) const {};
 
 		// Called when unloading a resource, might be called on a task thread
 		//
@@ -48,6 +48,6 @@ namespace Mani
 		//   resourceId: The entity ID representing the resource. Access with registry.get<Resource<T>>(resourceId)
 		//
 		// Returns true if the resource was successfully loaded.
-		virtual bool unload(ECS::Registry& registry, ECS::EntityId resourceId) const = 0;
+		virtual bool unload(ECS::Registry& registry, EntityId resourceId) const = 0;
 	};
 }

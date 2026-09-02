@@ -8,6 +8,6 @@ namespace Mani
 	{
 		constexpr Mani::LogChannel Log{ "STB" };
 
-		Mani::ECS::EntityId loadConfig(ECS::Registry& registry);
+		Mani::EntityId loadConfig(ECS::Registry& registry);
 	}
 }

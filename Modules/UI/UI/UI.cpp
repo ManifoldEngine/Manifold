@@ -17,9 +17,9 @@ Ref<const Camera> Mani::UI::getUICamera(const ECS::Registry& registry)
     return registry.get<Camera>(context->cameraId);
 }
 
-ECS::EntityId UI::createSprite(ECS::Registry& registry, const Vec2f& size, ECS::EntityId textureId, ECS::EntityId materialId, uint32_t tag)
+EntityId UI::createSprite(ECS::Registry& registry, const Vec2f& size, EntityId textureId, EntityId materialId, uint32_t tag)
 {
-    ECS::EntityId entityId = registry.create();
+    EntityId entityId = registry.create();
     registry.addMany<Position, Rotation, Scale>(entityId);
 
     constexpr bool withBoundingSphere = false;
@@ -30,9 +30,9 @@ ECS::EntityId UI::createSprite(ECS::Registry& registry, const Vec2f& size, ECS::
     return entityId;
 }
 
-ECS::EntityId UI::createFillableBar(ECS::Registry& registry, const Vec2f& size, ECS::EntityId textureId, ECS::EntityId materialId, const Vec4f& backgroundColor, uint32_t tag)
+EntityId UI::createFillableBar(ECS::Registry& registry, const Vec2f& size, EntityId textureId, EntityId materialId, const Vec4f& backgroundColor, uint32_t tag)
 {
-    ECS::EntityId entityId = registry.create();
+    EntityId entityId = registry.create();
     registry.addMany<Position, Rotation, Scale>(entityId);
 
     constexpr bool withBoundingSphere = false;

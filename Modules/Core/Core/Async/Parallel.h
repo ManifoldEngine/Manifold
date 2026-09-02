@@ -36,11 +36,11 @@ namespace Mani
 		if (workPerThread == 0 || chunkSize < minChunkSize)
 		{
 			// too wide
-			if constexpr (std::is_invocable_v<TFunctor, ECS::CommandBuffer&, SizeT, ECS::EntityId, Ts&...>)
+			if constexpr (std::is_invocable_v<TFunctor, ECS::CommandBuffer&, SizeT, EntityId, Ts&...>)
 			{
 				Mani::foreachWithCmd(view, std::forward<TFunctor>(f), 0);
 			}
-			else if constexpr (std::is_invocable_v<TFunctor, ECS::CommandBuffer&, ECS::EntityId, Ts&...>)
+			else if constexpr (std::is_invocable_v<TFunctor, ECS::CommandBuffer&, EntityId, Ts&...>)
 			{
 				Mani::foreachWithCmd(view, std::forward<TFunctor>(f));
 			}
@@ -68,11 +68,11 @@ namespace Mani
 				const auto end = base + endIndex;
 				for (; it != end; ++it)
 				{
-					if constexpr (std::is_invocable_v<TFunctor, ECS::CommandBuffer&, SizeT, ECS::EntityId, Ts&...>)
+					if constexpr (std::is_invocable_v<TFunctor, ECS::CommandBuffer&, SizeT, EntityId, Ts&...>)
 					{
 						it.apply(f, cmd, threadIdx);
 					}
-					else if constexpr (std::is_invocable_v<TFunctor, ECS::CommandBuffer&, ECS::EntityId, Ts&...>)
+					else if constexpr (std::is_invocable_v<TFunctor, ECS::CommandBuffer&, EntityId, Ts&...>)
 					{
 						it.apply(f, cmd);
 					}
@@ -117,11 +117,11 @@ namespace Mani
 		if (workPerThread == 0 || chunkSize < minChunkSize)
 		{
 			// too wide
-			if constexpr (std::is_invocable_v<TFunctor, SizeT, ECS::EntityId, Ts&...>)
+			if constexpr (std::is_invocable_v<TFunctor, SizeT, EntityId, Ts&...>)
 			{
 				Mani::foreach(view, std::forward<TFunctor>(f), 0);
 			}
-			else if constexpr (std::is_invocable_v<TFunctor, ECS::EntityId, Ts&...>)
+			else if constexpr (std::is_invocable_v<TFunctor, EntityId, Ts&...>)
 			{
 				Mani::foreach(view, std::forward<TFunctor>(f));
 			}
@@ -146,11 +146,11 @@ namespace Mani
 				const auto end = base + endIndex;
 				for (; it < end; ++it)
 				{
-					if constexpr (std::is_invocable_v<TFunctor, SizeT, ECS::EntityId, Ts&...>)
+					if constexpr (std::is_invocable_v<TFunctor, SizeT, EntityId, Ts&...>)
 					{
 						it.apply(f, threadIdx);
 					}
-					else if constexpr (std::is_invocable_v<TFunctor, ECS::EntityId, Ts&...>)
+					else if constexpr (std::is_invocable_v<TFunctor, EntityId, Ts&...>)
 					{
 						it.apply(f);
 					}

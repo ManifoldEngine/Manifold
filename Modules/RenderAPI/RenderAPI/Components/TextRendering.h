@@ -8,7 +8,7 @@ namespace Mani
 {
 	struct TextRendering
 	{
-		Mani::ECS::EntityId fontId = Mani::ECS::INVALID_ID;
+		Mani::EntityId fontId = Mani::INVALID_ID;
 		std::string_view text = "";
 		float size = 16.f;
 		Mani::Map<std::string_view, ShaderType> shaderParameters;
