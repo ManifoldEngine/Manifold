@@ -33,7 +33,28 @@ namespace Mani
 				}
 
 				constexpr bool withNamespace = true;
-				m_typeInfos[componentId] = TypeInfo{ ManiZ::RFL::getTypeName<T>(withNamespace), sizeof(T) };
+				TypeInfo typeinfo = createInfo<T>();
+
+				//Mani::List<std::string> names(ManiZ::RFL::getMemberNames<T>());
+
+				//auto f = [&info]<typename T> (const Mani::List<std::string>&names, SizeT & index, T)
+				//{
+				//	TypeMember memberInfo;
+				//	memberInfo.name = names[index];
+				//	memberInfo.info = createInfo<T>();
+
+				//	info.members.add(memberInfo);
+				//	index++;
+				//};
+
+				//T object{};
+				//ManiZ::RFL::visitMembers<T>(object, [&f, &info, &names](const auto& ...members)
+				//{
+				//	SizeT index = 0;
+				//	(f(names, index, members), ...);
+				//});
+
+				m_typeInfos[componentId] = std::move(typeinfo);
 				m_exists[componentId] = true;
 			}
 
@@ -47,6 +68,15 @@ namespace Mani
 			}
 
 		private:
+			template<typename T>
+			static TypeInfo createInfo()
+			{
+				TypeInfo info;
+				info.name = ManiZ::RFL::getTypeName<T>();
+				info.size = sizeof(T);
+				return info;
+			}
+
 			Mani::Array<bool, ECS::MAX_COMPONENTS> m_exists;
 			Mani::Array<TypeInfo, ECS::MAX_COMPONENTS> m_typeInfos;
 		};

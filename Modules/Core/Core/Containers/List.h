@@ -31,6 +31,9 @@ namespace Mani
 		List(const List<T>& other) : m_data(other.m_data) {}
 		List(List<T>&& other) noexcept : m_data(std::move(other.m_data)) {}
 
+		List(const std::vector<T>& vector) : m_data(vector) {}
+		List(std::vector<T>&& vector) : m_data(std::forward<std::vector<T>>(vector)) {}
+
 		List<T>& operator=(const List<T>& other)
 		{
 			if (this != &other)
