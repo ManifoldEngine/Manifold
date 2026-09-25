@@ -3,6 +3,7 @@ local locations = require("locations")
 group "AssetImporter"
     project "AssetImporter"
         kind "ConsoleApp"
+
         location (locations.enginedir .. "/%{prj.name}")
         
         targetdir (locations.enginedir .. "/%{prj.name}/bin/")

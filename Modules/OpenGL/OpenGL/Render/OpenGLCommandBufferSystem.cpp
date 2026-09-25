@@ -17,6 +17,8 @@
 #include <RenderAPI/Components/TextRendering.h>
 #include <RenderAPI/Components/BoundingSphere.h>
 
+#include <RenderAPI/Primitives.h> // TODO: temp for fonts, this shouldn't be here
+
 using namespace Mani;
 
 void OpenGLCommandBufferSystem::onInitialize(ECS::Registry& registry, World& world)
@@ -61,13 +63,22 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 			}
 		}
 
-		const Resource<OpenGLVertexArray>* vaoRes = registry.findPinned<Resource<OpenGLVertexArray>>(meshRendering.meshResourceId);
-		if (vaoRes == nullptr || !Resources::isReady(registry, meshRendering.meshResourceId))
+		OpenGLCommand command{ .model = Transform::model(position, rotation, scale) };
+		command.rendererId = meshRendering.rendererId;
+
+		if (Ref<TextRendering> textRendering = registry.find<TextRendering>(entityId))
 		{
-			// resource is not ready yet.
-			return;
+			if (Resources::isReady(registry, textRendering->fontId))
+			{
+				const Resource<Font>& font = registry.getPinned<Resource<Font>>(textRendering->fontId);
+
+				command.text.font = reinterpret_cast<const STB::STBFontData*>(font.value.buffer);
+				command.text.fontHeight = textRendering->height;
+				command.text.value = textRendering->text;
+				command.text.quad = Primitives::makeQuad();
+			}
 		}
-		
+
 		const Resource<OpenGLMaterial>* materialRes = registry.findPinned<Resource<OpenGLMaterial>>(meshRendering.materialResourceId);
 		if (materialRes == nullptr || !Resources::isReady(registry, meshRendering.materialResourceId))
 		{
@@ -81,13 +92,17 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 			return;
 		}
 
-		OpenGLCommand command = {
-			.model = Transform::model(position, rotation, scale),
+		command.shader = &shaderRes->value;
 
-			.vao = &vaoRes->value,
-			.shader = &shaderRes->value,
-			.rendererId = meshRendering.rendererId,
-		};
+		const Resource<OpenGLVertexArray>* vaoRes = registry.findPinned<Resource<OpenGLVertexArray>>(meshRendering.meshResourceId);
+		if (vaoRes == nullptr || !Resources::isReady(registry, meshRendering.meshResourceId))
+		{
+			// resource is not ready yet.
+			threadBuffers[threadIdx].add(std::move(command)); // todo: this is not how it should be, when text rendering is fully setup we shouldn't have to by pass early returns
+			return;
+		}
+
+		command.vao = &vaoRes->value;
 
 		if (Ref<SpriteRendering> spriteRendering = registry.find<SpriteRendering>(entityId))
 		{
@@ -101,11 +116,6 @@ void OpenGLCommandBufferSystem::tick(ECS::Registry& registry)
 				const auto& tex = registry.getPinned<Resource<Texture>>(spriteRendering->textureId);
 				command.customParamaters.add({ ShaderNames::MANI_SPRITE_TEXTURE_SIZE, tex.value.size });
 			}
-		}
-
-		if (Ref<TextRendering> textRendering = registry.find<TextRendering>(entityId))
-		{
-			// todo 
 		}
 
 		for (const auto& texture : materialRes->value.textures)

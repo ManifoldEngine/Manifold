@@ -6,6 +6,7 @@
 #include <Core/ECS/Entity.h>
 
 #include <RenderAPI/Shader.h>
+#include <RenderAPI/Font.h>
 
 #include <Core/Containers/Array.h>
 
@@ -14,9 +15,13 @@
 #include <OpenGL/Resources/OpenGLVertexArray.h>
 #include <OpenGL/Resources/OpenGLTexture.h>
 
+#include <STB/Fonts/STBTruetype.h>
+
 #include <memory>
 #include <atomic>
 #include <semaphore>
+
+#include <RenderAPI/Mesh.h> // todo: temporary while I figure out how to handle quads for fonts
 
 namespace Mani
 {
@@ -33,12 +38,22 @@ namespace Mani
 			OpenGLTexture2D* texture;
 		};
 
+		struct Text
+		{
+			Mani::Mesh quad;
+			const STB::STBFontData* font = nullptr;
+			float fontHeight = 32.f;
+			std::string_view value = "";
+		};
+
 		Mat4f model;
 
 		const OpenGLVertexArray* vao;
 		const OpenGLShader* shader;
 		List<TextureParam> textures;
 		List<OpenGLMaterial::ShaderParam> customParamaters;
+		
+		Text text;
 
 		int rendererId = 0;
 	};

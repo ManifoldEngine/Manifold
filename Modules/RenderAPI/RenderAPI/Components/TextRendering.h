@@ -10,7 +10,6 @@ namespace Mani
 	{
 		Mani::EntityId fontId = Mani::INVALID_ID;
 		std::string_view text = "";
-		float size = 16.f;
-		Mani::Map<std::string_view, ShaderType> shaderParameters;
+		float height = 16.f;
 	};
 }

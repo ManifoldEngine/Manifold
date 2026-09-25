@@ -45,11 +45,6 @@ m.setup = function(workspaceName, projectName)
         filter "platforms:Win64"
             architecture "x64"
             system "windows"
-
-        -- filter "platforms:WebGL"
-        --     defines { "MANI_WEBGL" }
-        --     linkoptions { "-sUSE_GLFW=3", "-sMAX_WEBGL_VERSION=2" }
-        --     system "windows"
             
         filter "system:windows"
             defines { "MANI_WINDOWS" }

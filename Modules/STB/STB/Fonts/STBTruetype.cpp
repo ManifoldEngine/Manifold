@@ -5,18 +5,9 @@
 
 #include <STB/STB.h>
 
-#define STB_TRUETYPE_IMPLEMENTATION
-#include <stb_truetype.h>
-
 using namespace Mani;
 
 constexpr std::string_view fileType = ".ttf";
-
-struct STBFontData
-{
-	Mani::List<unsigned char> data;
-	stbtt_fontinfo info;
-};
 
 bool STB::loadFont(const Path& absolutePath, Font& font)
 {
@@ -39,7 +30,7 @@ bool STB::loadFont(const Path& absolutePath, Font& font)
 		return false;
 	}
 
-	font.buffer = (unsigned char*)fontData;
+	font.buffer = reinterpret_cast<unsigned char*>(fontData);
 	return true;
 }
 
@@ -50,7 +41,7 @@ bool STB::unloadFont(Font& font)
 		return false;
 	}
 
-	STBFontData* fontData = (STBFontData*)font.buffer;
+	STBFontData* fontData = reinterpret_cast<STBFontData*>(font.buffer);
 	delete fontData;
 	font.buffer = nullptr;
 	return true;
