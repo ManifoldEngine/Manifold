@@ -4,7 +4,6 @@
 #include <Core/CoreFwd.h>
 
 #include <Resources/Resources.h>
-#include <Resources/ResourceSystem.h>
 
 #ifndef MANI_WEBGL
 extern "C" __declspec(dllexport) void runTests()
@@ -38,7 +37,6 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 		Application app;
 		World& world = app.getWorld();
 		ECS::Registry& registry = world.getMutableRegistry();
-		world.createSystem<ResourceSystem>();
 
 		auto entityId = Resources::loadSync<TestResource>(registry, "dummy.json");
 
@@ -54,7 +52,6 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 		Application app;
 		World& world = app.getWorld();
 		ECS::Registry& registry = world.getMutableRegistry();
-		world.createSystem<ResourceSystem>();
 
 		{
 			auto entityId = Resources::loadSync<TestResource>(registry, "dummy.json");
@@ -77,7 +74,6 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 		Application app;
 		World& world = app.getWorld();
 		ECS::Registry& registry = world.getMutableRegistry();
-		world.createSystem<ResourceSystem>();
 
 		auto entityId = Resources::load<TestResource>(registry, "dummy.json");
 
@@ -101,7 +97,6 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 		Application app;
 		World& world = app.getWorld();
 		ECS::Registry& registry = world.getMutableRegistry();
-		world.createSystem<ResourceSystem>();
 
 		TestResource data;
 		data.value = 1337;
@@ -120,7 +115,6 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 		Application app;
 		World& world = app.getWorld();
 		ECS::Registry& registry = world.getMutableRegistry();
-		world.createSystem<ResourceSystem>();
 
 		auto entityId = Resources::loadSync<TestResource>(registry, "dummy.json");
 
@@ -136,7 +130,7 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 		Application app;
 		World& world = app.getWorld();
 		ECS::Registry& registry = world.getMutableRegistry();
-		world.createSystem<ResourceSystem>();
+
 
 		uint32_t tagA = 1;
 		uint32_t tagB = 2;
@@ -157,7 +151,6 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 		Application app;
 		World& world = app.getWorld();
 		ECS::Registry& registry = world.getMutableRegistry();
-		world.createSystem<ResourceSystem>();
 
 		auto e1 = Resources::loadSync<TestResource>(registry, "a.json");
 		auto e2 = Resources::loadSync<TestResource>(registry, "b.json");
@@ -175,7 +168,7 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 		Application app;
 		World& world = app.getWorld();
 		ECS::Registry& registry = world.getMutableRegistry();
-		world.createSystem<ResourceSystem>();
+
 
 		auto entityId = Resources::load<TestResource>(registry, "dummy.json");
 
@@ -199,7 +192,6 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 		Application app;
 		World& world = app.getWorld();
 		ECS::Registry& registry = world.getMutableRegistry();
-		world.createSystem<ResourceSystem>();
 
 		auto entityId = Resources::inject<TestResource>(registry, TestResource{ 55 });
 
@@ -256,12 +248,9 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 			Application app;
 			World& world = app.getWorld();
 			ECS::Registry& registry = world.getMutableRegistry();
-			world.createSystem<ResourceSystem>();
 
-			DependencyExtension extension;
-			TestResourceALoader loaderA;
-			Resources::registerExtension(registry, &extension);
-			Resources::registerLoaderFor<TestResourceA>(registry, &loaderA);
+			Resources::registerExtension<DependencyExtension>(registry);
+			Resources::registerLoaderFor<TestResourceA, TestResourceALoader>(registry);
 
 			auto entityIdA = Resources::load<TestResourceA>(registry, "resource_a.json");
 
@@ -284,7 +273,7 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 			MANI_TEST_ASSERT(resExt.value == 7, "Dependency B value mismatch");
 
 			Resources::unregisterLoaderFor<TestResourceA>(registry);
-			Resources::unregisterExtension(registry, &extension);
+			Resources::unregisterExtension<DependencyExtension>(registry);
 		}
 
 		struct TestResourceB
@@ -335,16 +324,11 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 			Application app;
 			World& world = app.getWorld();
 			ECS::Registry& registry = world.getMutableRegistry();
-			world.createSystem<ResourceSystem>();
 
-			DependencyExtension extension;
-			TestResourceALoader loaderA;
-			TestResourceBLoader loaderB;
-			TestResourceCLoader loaderC;
-			Resources::registerExtension(registry, &extension);
-			Resources::registerLoaderFor<TestResourceA>(registry, &loaderA);
-			Resources::registerLoaderFor<TestResourceB>(registry, &loaderB);
-			Resources::registerLoaderFor<TestResourceC>(registry, &loaderC);
+			Resources::registerExtension<DependencyExtension>(registry);
+			Resources::registerLoaderFor<TestResourceA, TestResourceALoader>(registry);
+			Resources::registerLoaderFor<TestResourceB, TestResourceBLoader>(registry);
+			Resources::registerLoaderFor<TestResourceC, TestResourceCLoader>(registry);
 
 			auto entityIdC = Resources::load<TestResourceC>(registry, "resource_c.json");
 
@@ -385,7 +369,7 @@ MANI_SECTION_BEGIN(ResourcesTests, "Resources")
 			auto& resB = registry.getPinned<Resource<TestResourceB>>(resC.value.resourceBId);
 			MANI_TEST_ASSERT(resB.value.value == 420, "B should be properly loaded");
 
-			Resources::unregisterExtension(registry, &extension);
+			Resources::unregisterExtension<DependencyExtension>(registry);
 			Resources::unregisterLoaderFor<TestResourceA>(registry);
 			Resources::unregisterLoaderFor<TestResourceB>(registry);
 		}

@@ -2,9 +2,10 @@
 
 #include <FMod/Resources/FModSound.h>
 #include <FMod/Resources/FModStream.h>
+#include <FMod/Resources/ResourceLoader_FModSound.h>
+#include <FMod/Resources/ResourceLoader_FModStream.h>
 
 #include <Resources/Resources.h>
-#include <Resources/ResourceSystem.h>
 
 using namespace Mani;
 
@@ -24,15 +25,12 @@ void FModResourceExtension::onResourceUnloaded(ECS::Registry& registry, EntityId
 
 void FModResourceSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-	world.initializeDependency<ResourceSystem>();
-	Resources::registerLoaderFor<FModSound>(registry, &soundLoader);
-	Resources::registerLoaderFor<FModStream>(registry, &streamLoader);
-	Resources::registerExtension(registry, &extension);
+	Resources::registerLoaderFor<FModSound, ResourceLoader_FModSound>(registry);
+	Resources::registerLoaderFor<FModStream, ResourceLoader_FModStream>(registry);
+	Resources::registerExtension<FModResourceExtension>(registry);
 }
 
 void FModResourceSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	Resources::unregisterLoaderFor<FModSound>(registry);
-	Resources::unregisterLoaderFor<FModStream>(registry);
-	Resources::unregisterExtension(registry, &extension);
+	Resources::unregisterExtension<FModResourceExtension>(registry);
 }

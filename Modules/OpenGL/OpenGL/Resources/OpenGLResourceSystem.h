@@ -2,8 +2,6 @@
 
 #include <Core/CoreFwd.h>
 #include <Resources/IResourceSystemExtension.h>
-#include <Resources/ResourceSystem.h>
-#include <STB/Textures/ResourceLoader_Texture.h>
 
 namespace Mani
 {
@@ -23,9 +21,5 @@ namespace Mani
     protected:
         virtual void onInitialize(ECS::Registry& registry, World& world) override;
         virtual void onDeinitialize(ECS::Registry& registry, World& world) override;
-
-    private:
-        OpenGLResourceSystemExtension m_resourceExtension;
-        ResourceLoader_Texture m_textureLoader;
     };
 }

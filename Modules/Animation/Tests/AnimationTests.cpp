@@ -14,7 +14,6 @@
 #include <RenderAPI/Texture.h>
 
 #include <Resources/Resources.h>
-#include <Resources/ResourceSystem.h>
 
 #include <filesystem>
 

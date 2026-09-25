@@ -1,7 +1,6 @@
 #include "OpenGLResourceSystem.h"
 
 #include <Resources/Resources.h>
-#include <Resources/ResourceSystem.h>
 
 #include <ECS/Entity.h>
 
@@ -15,6 +14,7 @@
 #include <OpenGL/Render/OpenGLRenderSystem.h>
 
 #include <STB/Textures/STBImage.h>
+#include <STB/Textures/ResourceLoader_Texture.h>
 
 #include <RenderAPI/Mesh.h>
 #include <RenderAPI/Material.h>
@@ -213,15 +213,12 @@ void OpenGLResourceSystemExtension::onResourceUnloaded(ECS::Registry& registry, 
 
 void OpenGLResourceSystem::onInitialize(ECS::Registry& registry, World& world)
 {
-	world.initializeDependency<ResourceSystem>();
-
-	Resources::registerExtension(registry, &m_resourceExtension);
-	Resources::registerLoaderFor<Texture>(registry, &m_textureLoader);
+	Resources::registerExtension<OpenGLResourceSystemExtension>(registry);
+	Resources::registerLoaderFor<Texture, ResourceLoader_Texture>(registry);
 }
 
 void OpenGLResourceSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	Resources::unregisterLoaderFor<Texture>(registry);
-	Resources::unregisterExtension(registry, &m_resourceExtension);
+	Resources::unregisterExtension<OpenGLResourceSystemExtension>(registry);
 }
 

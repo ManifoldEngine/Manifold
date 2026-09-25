@@ -7,20 +7,6 @@ bool Mani::Resources::isReady(const ECS::Registry& registry, EntityId entityId)
 	return registry.hasPinned<ResourceReady>(entityId);
 }
 
-void Resources::registerExtension(ECS::Registry& registry, IResourceSystemExtension* extension)
-{
-	MANI_ASSERT(extension != nullptr, "trying to register a null extension");
-	Ref<ResourceStorage> storage = registry.getSingle<ResourceStorage>();
-	storage->extensions.addUnique(extension);
-}
-
-void Resources::unregisterExtension(ECS::Registry& registry, IResourceSystemExtension* extension)
-{
-	MANI_ASSERT(extension != nullptr, "trying to unregister a null extension");
-	Ref<ResourceStorage> storage = registry.getSingle<ResourceStorage>();
-	storage->extensions.remove(extension);
-}
-
 void Resources::unload(ECS::Registry& registry, EntityId inEntityId)
 {
 	constexpr bool checkForDeferredDestruction = true;

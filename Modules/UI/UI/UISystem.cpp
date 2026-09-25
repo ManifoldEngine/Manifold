@@ -4,7 +4,6 @@
 #include <Camera/CameraSystem.h>
 
 #include <Resources/Resources.h>
-#include <Resources/ResourceSystem.h>
 
 #include <RenderAPI/Texture.h>
 #include <RenderAPI/RenderContextSystem.h>
@@ -19,7 +18,6 @@ using namespace Mani;
 void UISystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<CameraSystem>();
-	world.initializeDependency<ResourceSystem>();
 	world.initializeDependency<RenderContextSystem>();
 	
 	const auto configId = Resources::loadSync<UIConfig>(registry, Mani::UICONFIG_PATH);

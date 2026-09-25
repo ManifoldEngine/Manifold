@@ -14,7 +14,6 @@
 #include <RenderAPI/Texture.h>
 #include <RenderAPI/Shader.h>
 
-#include <Resources/ResourceSystem.h>
 #include <Resources/Resources.h>
 
 using namespace Mani;
@@ -42,14 +41,13 @@ void AnimationSystem::onInitialize(ECS::Registry& registry, World& world)
 {
 	world.initializeDependency<TimeSystem>();
 	world.initializeDependency<CameraSystem>();
-	world.initializeDependency<ResourceSystem>();
 
-	Resources::registerExtension(registry, &extension);
+	Resources::registerExtension<AnimationResourceSystemExtension>(registry);
 }
 
 void AnimationSystem::onDeinitialize(ECS::Registry& registry, World& world)
 {
-	Resources::unregisterExtension(registry, &extension);
+	Resources::unregisterExtension<AnimationResourceSystemExtension>(registry);
 }
 
 void AnimationSystem::tick(ECS::Registry& registry)

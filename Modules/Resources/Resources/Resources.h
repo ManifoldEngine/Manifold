@@ -7,7 +7,6 @@
 #include <Core/ManiTypes.h>
 
 #include <Resources/Components/Resource.h>
-#include <Resources/Components/ResourceStorage.h>
 
 #include <Resources/IResourceLoader.h>
 #include <Resources/IResourceSystemExtension.h>
@@ -50,94 +49,42 @@ namespace Mani
 		// Pins a Resource<T> components to the resource entity
 		// Returns the entity id to the resource.
 		template<typename T>
-		static EntityId load(ECS::Registry& registry, const Path& relativePath, uint32_t tag = GLOBAL_RESOURCE_TAG);
-		
-		template<typename T>
-		static EntityId loadSync(ECS::Registry& registry, const Path& relativePath, uint32_t tag = GLOBAL_RESOURCE_TAG);
-
-		template<typename T>
-		static EntityId load(ECS::Registry& registry, const Path& relativePath, EResourceLoadMethod method, uint32_t tag = GLOBAL_RESOURCE_TAG);
-
-		// Unloads a specific resource associated with the given entity ID.
-		static void unload(ECS::Registry& registry, EntityId inEntityId);
-
-		// Unloads all loaded resources.
-		static void unloadAll(ECS::Registry& registry);
-
-		// Unloads all resources that share the specified tag.
-		static void unloadTag(ECS::Registry& registry, uint32_t tag);
-
-		// Injects an already constructed resource value into the registry.
-		// Returns the entity id representing the injected resource.
-		template<typename T>
-		static EntityId inject(ECS::Registry& registry, T&& value, uint32_t = GLOBAL_RESOURCE_TAG);
-
-		static bool isReady(const ECS::Registry& registry, EntityId entityId);
-
-		// Registers a system extension to be notified of resource-related events.
-		static void registerExtension(ECS::Registry& registry, IResourceSystemExtension* extension);
-
-		// Unregisters a previously registered system extension.
-		static void unregisterExtension(ECS::Registry& registry, IResourceSystemExtension* extension);
-
-		// Registers a custom resource loader for handling specific file types or formats.
-		template<typename T>
-		static void registerLoaderFor(ECS::Registry& registry, IResourceLoader* loader);
-		
-		// Unregisters a previously registered resource loader.
-		template<typename T>
-		static void unregisterLoaderFor(ECS::Registry& registry);
-
-	private:
-		template<typename T>
-		static bool callLoader(ECS::Registry& registry, EntityId entityId, const Path& path, uint32_t tag);
-
-		template<typename T>
-		static void postLoad(ECS::Registry& registry, EntityId entityId, const Path& path, EResourceLoadMethod method, uint32_t tag);
-
-		template<typename T>
-		static std::tuple<EntityId, Resource<T>&> createResource(ECS::Registry& registry, Optional<uint32_t> tag = {}, Optional<const Path> path = {});
-
-		static void forEachExtension(const ECS::Registry& registry, auto&& f);
-	};
-
-	template<typename T>
-	static EntityId Resources::load(ECS::Registry& registry, const Path& relativePath, uint32_t tag)
-	{
-		return Resources::load<T>(registry, relativePath, EResourceLoadMethod::Async, tag);
-	}
-
-	template<typename T>
-	static EntityId Resources::loadSync(ECS::Registry& registry, const Path& relativePath, uint32_t tag)
-	{
-		return Resources::load<T>(registry, relativePath, EResourceLoadMethod::Sync, tag);
-	}
-
-	template<typename T>
-	EntityId Resources::load(ECS::Registry& registry, const Path& relativePath, EResourceLoadMethod method, uint32_t tag)
-	{
-		const auto path = FileSystem::getAbsolutePath(relativePath);
-
-		for (auto [entityId, resource, metadata] : ECS::PinnedView<Resource<T>, ResourceMetadata>(registry))
+		static EntityId load(ECS::Registry& registry, const Path& relativePath, uint32_t tag = GLOBAL_RESOURCE_TAG)
 		{
-			if (metadata.path == path)
-			{
-				return entityId;
-			}
+			return Resources::load<T>(registry, relativePath, EResourceLoadMethod::Async, tag);
+		}
+		
+		template<typename T>
+		static EntityId loadSync(ECS::Registry& registry, const Path& relativePath, uint32_t tag = GLOBAL_RESOURCE_TAG)
+		{
+			return Resources::load<T>(registry, relativePath, EResourceLoadMethod::Sync, tag);
 		}
 
-		auto [entityId, resource] = createResource<T>(registry, tag, path);
-		
-		auto load = [&, entityId, path, tag, method] mutable
+		template<typename T>
+		static EntityId load(ECS::Registry& registry, const Path& relativePath, EResourceLoadMethod method, uint32_t tag = GLOBAL_RESOURCE_TAG)
 		{
-			if (!Resources::callLoader<T>(registry, entityId, path, tag))
+			const auto path = FileSystem::getAbsolutePath(relativePath);
+
+			for (auto [entityId, resource, metadata] : ECS::PinnedView<Resource<T>, ResourceMetadata>(registry))
 			{
-				MANI_LOG_ERROR(LogResources, "Could not load resource at {}", path.string());
-				return;
+				if (metadata.path == path)
+				{
+					return entityId;
+				}
 			}
 
-			switch (method)
+			auto [entityId, resource] = createResource<T>(registry, tag, path);
+
+			auto load = [&, entityId, path, tag, method] mutable
 			{
+				if (!Resources::callLoader<T>(registry, entityId, path, tag))
+				{
+					MANI_LOG_ERROR(LogResources, "Could not load resource at {}", path.string());
+					return;
+				}
+
+				switch (method)
+				{
 				case EResourceLoadMethod::Sync:
 				{
 					Resources::postLoad<T>(registry, entityId, path, method, tag);
@@ -151,117 +98,159 @@ namespace Mani
 					});
 					break;
 				}
-			}
-		};
+				}
+			};
 
-		MANI_LOG(LogResources, "Loading resource at {}.", path.string());
+			MANI_LOG(LogResources, "Loading resource at {}.", path.string());
 
-		switch (method)
-		{
+			switch (method)
+			{
 			case EResourceLoadMethod::Async:
 				Mani::enqueueTask(load);
 				break;
 			case EResourceLoadMethod::Sync:
 				load();
 				break;
+			}
+
+			return entityId;
 		}
 
-		return entityId;
-	}
-
-	template<typename T>
-	inline bool Resources::callLoader(ECS::Registry& registry, EntityId entityId, const Path& path, uint32_t tag)
-	{
-		bool wasLoaded = false;
-		ECS::PinnedView<ResourceLoader<T>> view(registry);
-		const auto it = view.begin();
-		if (it.isValid())
+		// Injects an already constructed resource value into the registry.
+		// Returns the entity id representing the injected resource.
+		template<typename T>
+		static EntityId inject(ECS::Registry& registry, T&& value, uint32_t tag = GLOBAL_RESOURCE_TAG)
 		{
-			const EntityId loaderId = it.getEntityId();
-			ResourceLoader<T>& loader = registry.getPinned<ResourceLoader<T>>(loaderId);
-			
-			MANI_ASSERT(loader.value != nullptr, "Registered a null loader");
-			ResourceMetadata& metadata = registry.getPinned<ResourceMetadata>(entityId);
-			metadata.unloaderId = loaderId;
-
-			wasLoaded = loader.value->load(registry, path, entityId, tag);
-		}
-		else
-		{
-			wasLoaded = DefaultResourceLoader::load<T>(registry, path, registry.getPinned<Resource<T>>(entityId), tag);
-		}
-		return wasLoaded;
-	}
-
-	template<typename T>
-	inline void Resources::postLoad(ECS::Registry& registry, EntityId entityId, const Path& path, EResourceLoadMethod method, uint32_t tag)
-	{
-		if (auto loader = registry.findSinglePinned<ResourceLoader<T>>())
-		{
-			MANI_ASSERT(loader->value != nullptr, "Registered a null loader");
-			loader->value->postLoad(registry, path, entityId, method, tag);
+			auto [entityId, resource] = createResource<T>(registry, tag);
+			resource.value = std::move(value);
+			registry.addPinned<ResourceReady>(entityId);
+			Resources::forEachExtension(registry, [&registry, &entityId, tag](const IResourceSystemExtension& ext)
+			{
+				ext.onResourceLoaded(registry, entityId, tag);
+			});
+			return entityId;
 		}
 
-		Resources::forEachExtension(registry, [&registry, entityId, tag](const IResourceSystemExtension& ext)
+		static bool isReady(const ECS::Registry& registry, EntityId entityId);
+
+		// Unloads a specific resource associated with the given entity ID.
+		static void unload(ECS::Registry& registry, EntityId inEntityId);
+
+		// Unloads all loaded resources.
+		static void unloadAll(ECS::Registry& registry);
+
+		// Unloads all resources that share the specified tag.
+		static void unloadTag(ECS::Registry& registry, uint32_t tag);
+
+		// Registers a system extension to be notified of resource-related events.
+		template<typename TExtension>
+		requires(DerivedFrom<TExtension, IResourceSystemExtension>)
+		static void registerExtension(ECS::Registry& registry)
 		{
-			ext.onResourceLoaded(registry, entityId, tag);
-		});
-
-		registry.addPinned<ResourceReady>(entityId);
-	}
-
-	template<typename T>
-	EntityId Resources::inject(ECS::Registry& registry, T&& value, uint32_t tag)
-	{
-		auto [entityId, resource] = createResource<T>(registry, tag);
-		resource.value = std::move(value);
-		registry.addPinned<ResourceReady>(entityId);
-		Resources::forEachExtension(registry, [&registry, &entityId, tag](const IResourceSystemExtension& ext)
-		{
-			ext.onResourceLoaded(registry, entityId, tag);
-		});
-		return entityId;
-	}
-
-	template<typename T>
-	std::tuple<EntityId, Resource<T>&> Resources::createResource(ECS::Registry& registry, Optional<uint32_t> tag, Optional<const Path> path)
-	{
-		EntityId entityId = registry.create();
-		registry.addPinned<ResourceMetadata>(entityId, ResourceMetadata{ .path = path.getOr("") });
-		registry.addPinned<ResourceTag>(entityId, tag.getOr(GLOBAL_RESOURCE_TAG));
-		auto& resource = registry.addPinned<Resource<T>>(entityId);
-		return { entityId, resource };
-	}
-
-	void Resources::forEachExtension(const ECS::Registry& registry, auto&& f)
-	{
-		auto storage = registry.findSingle<ResourceStorage>();
-		MANI_ASSERT(storage.isValid(), "outside of the lifetime of resource system");
-		for (const auto* extension : storage->extensions)
-		{
-			f(*extension);
+			const EntityId entityId = registry.create();
+			TExtension& extension = registry.addPinned<TExtension>(entityId);
+			registry.addPinned<ResourceExtension>(entityId, &extension);
 		}
-	}
 
-	template<typename T>
-	void Resources::registerLoaderFor(ECS::Registry& registry, IResourceLoader* loader)
-	{
-		MANI_ASSERT(loader != nullptr, "trying to register a null loader");
-		const EntityId entityId = registry.create();
-		registry.addPinned<ResourceLoader<T>>(entityId, loader);
-		registry.addPinned<ResourceUnloader>(entityId, loader);
-	}
-
-	template<typename T>
-	void Resources::unregisterLoaderFor(ECS::Registry& registry)
-	{
-		for (const auto [entityId, _] : ECS::PinnedView<ResourceLoader<T>>(registry))
+		// Unregisters a previously registered system extension.
+		template<typename TExtension>
+		requires(DerivedFrom<TExtension, IResourceSystemExtension>)
+		static void unregisterExtension(ECS::Registry& registry)
 		{
-			registry.removePinned<ResourceLoader<T>>(entityId);
-			registry.removePinned<ResourceUnloader>(entityId);
-			registry.deferDestroy(entityId);
+			for (const auto [entityId, _] : ECS::ConstPinnedView<TExtension>(registry))
+			{
+				registry.removePinned<ResourceExtension>(entityId);
+				registry.deferDestroy(entityId);
+			}
 		}
-	}
+
+		// Registers a custom resource loader for handling specific file types or formats.
+		template<typename T, typename TLoader>
+		requires(DerivedFrom<TLoader, IResourceLoader>)
+		static void registerLoaderFor(ECS::Registry& registry)
+		{
+			const EntityId entityId = registry.create();
+			TLoader& loader = registry.addPinned<TLoader>(entityId);
+			registry.addPinned<ResourceLoader<T>>(entityId, &loader);
+			registry.addPinned<ResourceUnloader>(entityId, &loader);
+		}
+		
+		// Unregisters a previously registered resource loader.
+		template<typename T>
+		static void unregisterLoaderFor(ECS::Registry& registry)
+		{
+			for (const auto [entityId, _] : ECS::PinnedView<ResourceLoader<T>>(registry))
+			{
+				registry.removePinned<ResourceLoader<T>>(entityId);
+				registry.removePinned<ResourceUnloader>(entityId);
+				registry.deferDestroy(entityId);
+			}
+		}
+
+	private:
+		template<typename T>
+		static bool callLoader(ECS::Registry& registry, EntityId entityId, const Path& path, uint32_t tag)
+		{
+			bool wasLoaded = false;
+			ECS::PinnedView<ResourceLoader<T>> view(registry);
+			const auto it = view.begin();
+			if (it.isValid())
+			{
+				const EntityId loaderId = it.getEntityId();
+				ResourceLoader<T>& loader = registry.getPinned<ResourceLoader<T>>(loaderId);
+
+				MANI_ASSERT(loader.value != nullptr, "Registered a null loader");
+				ResourceMetadata& metadata = registry.getPinned<ResourceMetadata>(entityId);
+				metadata.unloaderId = loaderId;
+
+				wasLoaded = loader.value->load(registry, path, entityId, tag);
+			}
+			else
+			{
+				wasLoaded = DefaultResourceLoader::load<T>(registry, path, registry.getPinned<Resource<T>>(entityId), tag);
+			}
+			return wasLoaded;
+		}
+
+		template<typename T>
+		static void postLoad(ECS::Registry& registry, EntityId entityId, const Path& path, EResourceLoadMethod method, uint32_t tag)
+		{
+			ECS::PinnedView<ResourceLoader<T>> view(registry);
+			const auto it = view.begin();
+			if (it.isValid())
+			{
+				const EntityId loaderId = it.getEntityId();
+				ResourceLoader<T>& loader = registry.getPinned<ResourceLoader<T>>(loaderId);
+				MANI_ASSERT(loader.value != nullptr, "Registered a null loader");
+				loader.value->postLoad(registry, path, entityId, method, tag);
+			}
+
+			Resources::forEachExtension(registry, [&registry, entityId, tag](const IResourceSystemExtension& ext)
+			{
+				ext.onResourceLoaded(registry, entityId, tag);
+			});
+
+			registry.addPinned<ResourceReady>(entityId);
+		}
+
+		template<typename T>
+		static std::tuple<EntityId, Resource<T>&> createResource(ECS::Registry& registry, Optional<uint32_t> tag = {}, Optional<const Path> path = {})
+		{
+			EntityId entityId = registry.create();
+			registry.addPinned<ResourceMetadata>(entityId, ResourceMetadata{ .path = path.getOr("") });
+			registry.addPinned<ResourceTag>(entityId, tag.getOr(GLOBAL_RESOURCE_TAG));
+			auto& resource = registry.addPinned<Resource<T>>(entityId);
+			return { entityId, resource };
+		}
+
+		static void forEachExtension(const ECS::Registry& registry, auto&& f)
+		{
+			for (const auto [entityId, extension] : ECS::ConstPinnedView<ResourceExtension>(registry))
+			{
+				f(*extension.value);
+			}
+		}
+	};
 
 	template<typename T>
 	bool DefaultResourceLoader::load(ECS::Registry& registry, const Path& absolutePath, Resource<T>& resource, uint32_t tag)

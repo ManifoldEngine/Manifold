@@ -1,8 +1,6 @@
 #pragma once
 
 #include <Core/CoreFwd.h>
-#include <FMod/Resources/ResourceLoader_FModSound.h>
-#include <FMod/Resources/ResourceLoader_FModStream.h>
 #include <Resources/IResourceSystemExtension.h>
 
 namespace Mani
@@ -23,10 +21,5 @@ namespace Mani
     protected:
         virtual void onInitialize(ECS::Registry& registry, World& world) override;
         virtual void onDeinitialize(ECS::Registry& registry, World& world) override;
-
-    private:
-        ResourceLoader_FModSound soundLoader;
-        ResourceLoader_FModStream streamLoader;
-        FModResourceExtension extension;
     };
 }

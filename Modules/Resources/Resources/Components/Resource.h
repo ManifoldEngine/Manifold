@@ -37,6 +37,11 @@ namespace Mani
 		class IResourceLoader* value = nullptr;
 	};
 
+	struct ResourceExtension
+	{
+		class IResourceSystemExtension* value = nullptr;
+	};
+
 	enum class EResourceLoadMethod : uint8_t
 	{
 		Async = 0,
